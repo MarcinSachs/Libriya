@@ -1,0 +1,57 @@
+.title-text {
+    font-family: "Cormorant Garamond", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: regular;
+    font-size: 36px;
+}
+
+body {
+    background-color: #f9f9fb;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+h2 {
+    margin-bottom: 1rem;
+}
+
+.navbar {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e2e2;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    color: #4e63ea !important;
+    font-size: 1.4rem;
+}
+
+.btn {
+    font-weight: 500;
+}
+
+.table thead {
+    background-color: #f1f3f5;
+}
+
+.table tbody tr:hover {
+    background-color: #f7f9fa;
+}
+
+.form-control:focus {
+    border-color: #4e63ea;
+    box-shadow: 0 0 0 0.2rem rgba(78, 99, 234, 0.25);
+}
+
+a.btn-link {
+    font-size: 0.95rem;
+}
+
+footer {
+    text-align: center;
+    color: #aaa;
+    font-size: 0.85rem;
+    margin-top: 40px;
+    padding-bottom: 20px;
+}

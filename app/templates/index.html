@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-5">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class=flashes>
+        {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+    <p>
+        {% set n = books|length %}
+        Library currently has {{ n }}
+        {% if n == 1 %}
+        book
+        {% elif n % 10 in [2, 3, 4] and n % 100 not in [12, 13, 14] %}
+        books
+        {% else %}
+        books
+        {% endif %}
+    </p>
+    <h2>List of books</h2>
+
+    <form class="row g-3 mb-4" method="POST" action="#">
+        <div class="col-md-5">
+            <input name="title" placeholder="Book Title" class="form-control" required>
+        </div>
+        <div class="col-md-5">
+            <input name="author" placeholder="Author" class="form-control" required>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100"><i class="bx bx-plus"></i> Add</button>
+        </div>
+    </form>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th><i class='bx bx-image'></i> Cover</th>
+                <th><i class="bx bx-book"></i> Title</th>
+                <th><i class="bx bx-user"></i> Author</th>
+                <th>Genre</th>
+                <th>Year</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td>{{ book.cover }}</td>
+                <td>{{ book.title }}</td>
+                <td>{{ book.author }}</td>
+                <td>{{ book.genre }}</td>
+                <td>{{ book.year }}</td>
+                <td>{{ 'Available' if book.is_available else 'On loan' }}</td>
+                <td>
+                    {% if book.is_available %}
+                    <a href="#" class="btn btn-outline-success btn-sm"><i class="bx bx-log-in-circle"></i> Loan</a>
+                    {% else %}
+                    <a href="#" class="btn btn-outline-warning btn-sm"><i class="bx bx-log-out-circle"></i> Return</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100"><i class="bx bx-plus"></i> Add book</button>
+    </div>
+</div>
+{% endblock %}
