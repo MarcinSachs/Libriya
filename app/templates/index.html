@@ -24,24 +24,12 @@
     </p>
     <h2>List of books</h2>
 
-    <form class="row g-3 mb-4" method="POST" action="#">
-        <div class="col-md-5">
-            <input name="title" placeholder="Book Title" class="form-control" required>
-        </div>
-        <div class="col-md-5">
-            <input name="author" placeholder="Author" class="form-control" required>
-        </div>
-        <div class="col-md-2">
-            <button class="btn btn-primary w-100"><i class="bx bx-plus"></i> Add</button>
-        </div>
-    </form>
-
     <table class="table table-hover">
         <thead>
             <tr>
-                <th><i class='bx bx-image'></i> Cover</th>
-                <th><i class="bx bx-book"></i> Title</th>
-                <th><i class="bx bx-user"></i> Author</th>
+                <th>Cover</th>
+                <th>Title</th>
+                <th>Author</th>
                 <th>Genre</th>
                 <th>Year</th>
                 <th>Status</th>
@@ -51,7 +39,14 @@
         <tbody>
             {% for book in books %}
             <tr>
-                <td>{{ book.cover }}</td>
+                <td>
+                    {% if book.cover %}
+                    <img src="{{ url_for('static', filename='uploads/' + book.cover) }}"
+                        alt="Book cover {{ book.title }}" style="width: 50px; height: auto;">
+                    {% else %}
+                    <i class='bx bx-image' style="font-size: 24px; color: #ccc;"></i>
+                    {% endif %}
+                </td>
                 <td>{{ book.title }}</td>
                 <td>{{ book.author }}</td>
                 <td>{{ book.genre }}</td>
@@ -68,8 +63,8 @@
             {% endfor %}
         </tbody>
     </table>
-    <div class="col-md-2">
-        <button class="btn btn-primary w-100"><i class="bx bx-plus"></i> Add book</button>
-    </div>
+    <a href="{{ url_for('main.book_add') }}" class="btn btn-primary" style="width: 150px;">
+        <i class="bx bx-plus"></i> Add book
+    </a>
 </div>
 {% endblock %}

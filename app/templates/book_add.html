@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Add a new book</h2>
+    <hr>
+
+    {# flash messages #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="" enctype="multipart/form-data" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.isbn.label(class="form-label") }}
+            {{ form.isbn(class="form-control", placeholder="Enter ISBN") }}
+            {% for error in form.isbn.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control", placeholder="e.g. The Lord of the Rings") }}
+            {% for error in form.title.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.author.label(class="form-label") }}
+            {{ form.author(class="form-control", placeholder="e.g. J.R.R. Tolkien") }}
+            {% for error in form.author.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.genre.label(class="form-label") }}
+            {{ form.genre(class="form-control", list="genre-list", placeholder="e.g. Fantasy") }}
+            <datalist id="genre-list">
+                {% for genre in genres %}
+                <option value="{{ genre }}">
+                    {% endfor %}
+            </datalist>
+            {% for error in form.genre.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.year.label(class="form-label") }}
+            {{ form.year(class="form-control", placeholder="e.g. 1954") }}
+            {% for error in form.year.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.cover.label(class="form-label") }}
+            {{ form.cover(class="form-control") }}
+            {% for error in form.cover.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="mt-4">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('main.home') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
