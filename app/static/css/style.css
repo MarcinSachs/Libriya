@@ -78,3 +78,11 @@ footer {
 .sidebar .nav-link .bx {
     font-size: 1.25rem;
 }
+
+.user-display {
+    padding: 0.4rem 0.8rem;
+    border-radius: 50rem; /* pill shape */
+    background-color: #e9ecef;
+    color: #495057;
+    font-weight: 500;
+}

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, IntegerField, PasswordField
+from wtforms import StringField, SubmitField, IntegerField, PasswordField, SelectField
 from flask_wtf.file import FileField, FileAllowed
 from wtforms.validators import DataRequired, NumberRange, Email, EqualTo
 from datetime import datetime
@@ -30,3 +30,9 @@ class UserForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password', validators=[
                                      DataRequired(), EqualTo('password')])
     submit = SubmitField('Add User', render_kw={"class": "btn"})
+
+
+class LoanForm(FlaskForm):
+    book_id = SelectField('Book', coerce=int, validators=[DataRequired()])
+    user_id = SelectField('User', coerce=int, validators=[DataRequired()])
+    submit = SubmitField('Loan Book')

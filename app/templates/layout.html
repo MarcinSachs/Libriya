@@ -25,6 +25,20 @@
             <a class="navbar-brand title-text d-flex align-items-center" href="/">
                 <img src="{{ url_for('static', filename='/images/logo.png') }}" alt="Libriya" class="me-2"> Libriya
             </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 d-flex align-items-center">
+                    <li class="nav-item">
+                        <span class="navbar-text user-display d-flex align-items-center">
+                            <i class='bx bxs-user-circle align-middle me-1'></i> {{ current_user.username }}
+                        </span>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
@@ -45,6 +59,13 @@
                                 href="{{ url_for('main.users') }}">
                                 <i class='bx bxs-user align-middle me-2'></i>
                                 <span class=" align-middle">Users</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'loans' %}active {% else %}text-dark {% endif %}"
+                                href="{{ url_for('main.loans') }}">
+                                <i class='bx bx-transfer-alt align-middle me-2'></i>
+                                <span class=" align-middle">Loans</span>
                             </a>
                         </li>
                     </ul>
