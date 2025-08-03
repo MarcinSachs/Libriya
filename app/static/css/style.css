@@ -115,3 +115,37 @@ footer {
     /* Wysokość okna minus wysokość paska nawigacyjnego */
     overflow-y: auto;
 }
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group>label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.input-with-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.input-with-button input[type="text"] {
+    /* Override the default 100% width for inputs in form-groups */
+    width: auto;
+    flex-grow: 1;
+    /* Make the input field take up the remaining space */
+}

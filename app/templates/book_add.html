@@ -15,9 +15,15 @@
 
     <form method="POST" action="" enctype="multipart/form-data" novalidate>
         {{ form.hidden_tag() }}
-        <div class="mb-3">
+        <div class="form-group mb-3">
             {{ form.isbn.label(class="form-label") }}
-            {{ form.isbn(class="form-control", placeholder="Enter ISBN") }}
+            <div class="input-with-button">
+                {{ form.isbn(class="form-control", placeholder="Enter ISBN to get data from Open Library") }}
+                <button type="button" id="find-by-isbn" class="btn btn-secondary">
+                    <i class='bx bx-search-alt'></i> Search
+                </button>
+            </div>
+            <div id="isbn-error" class="form-text text-danger mt-1"></div>
             {% for error in form.isbn.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
         <div class="mb-3">
@@ -47,6 +53,7 @@
         </div>
         <div class="mb-3">
             {{ form.cover.label(class="form-label") }}
+            <div id="cover-preview" class="mt-2"></div>
             {{ form.cover(class="form-control") }}
             {% for error in form.cover.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
@@ -56,4 +63,62 @@
         </div>
     </form>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const findBtn = document.getElementById('find-by-isbn');
+        const isbnInput = document.getElementById('isbn');
+        const titleInput = document.getElementById('title');
+        const authorInput = document.getElementById('author');
+        const yearInput = document.getElementById('year');
+        const errorDiv = document.getElementById('isbn-error');
+        const coverPreview = document.getElementById('cover-preview');
+
+        if (findBtn) {
+            findBtn.addEventListener('click', function () {
+                const isbn = isbnInput.value.trim().replace(/-/g, '');
+                if (!isbn) {
+                    alert('Please enter an ISBN.');
+                    return;
+                }
+
+                coverPreview.innerHTML = ''; // Clear previous preview
+                errorDiv.textContent = ''; // Clear previous errors
+                findBtn.disabled = true;
+                findBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Searching...';
+
+                fetch(`/api/v1/isbn/${isbn}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => { throw new Error(err.error || 'Error fetching data.') });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.title) titleInput.value = data.title;
+                        if (data.author) authorInput.value = data.author;
+                        if (data.year) yearInput.value = data.year;
+                        if (data.cover_image) {
+                            // Display image preview
+                            coverPreview.innerHTML = `<p class="form-label">Open Library Cover:</p><img src="${data.cover_image}" style="max-width: 150px; border-radius: 4px;">`;
+                            // Add a hidden input to submit the URL
+                            const hiddenInput = document.createElement('input');
+                            hiddenInput.type = 'hidden';
+                            hiddenInput.name = 'cover_url';
+                            hiddenInput.value = data.cover_image;
+                            document.querySelector('form').appendChild(hiddenInput);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching data by ISBN:', error);
+                        errorDiv.textContent = `Could not find data for ISBN ${isbn}. Please check the number and try again.`;
+                    })
+                    .finally(() => {
+                        findBtn.disabled = false;
+                        findBtn.innerHTML = '<i class="bx bx-search-alt"></i> Search';
+                    });
+            });
+        }
+    });
+</script>
 {% endblock %}

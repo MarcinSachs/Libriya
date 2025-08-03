@@ -12,14 +12,7 @@
 
     <p>
         {% set n = users|length %}
-        Library currently has {{ n }}
-        {% if n == 1 %}
-        user
-        {% elif n % 10 in [2, 3, 4] and n % 100 not in [12, 13, 14] %}
-        users
-        {% else %}
-        users
-        {% endif %}
+        Library currently has {{ n }} {{ 'user' if n == 1 else 'users' }}.
     </p>
     <h2>Users</h2>
 

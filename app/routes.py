@@ -1,12 +1,17 @@
 import os
 from datetime import datetime
 import secrets
+import re
+import requests
+from urllib.parse import urlparse
 from flask import (
+    jsonify,
     Blueprint,
     current_app,
     flash,
     redirect,
     render_template,
+    request,
     url_for,
 )
 from werkzeug.utils import secure_filename
@@ -63,6 +68,12 @@ def user_edit(user_id):
 
     if form.validate_on_submit():
         # user.username is readonly, so no need to update
+
+        # Prevent the last admin from revoking their own privileges
+        if user.is_admin and not form.is_admin.data and User.query.filter_by(is_admin=True).count() == 1:
+            flash("You cannot revoke the last administrator's privileges.", "danger")
+            return redirect(url_for('main.user_edit', user_id=user.id))
+
         user.email = form.email.data
         user.is_admin = form.is_admin.data
         db.session.commit()
@@ -107,9 +118,25 @@ def book_add():
             f = form.cover.data
             cover_filename = secure_filename(f.filename)
             # UPLOAD_FOLDER must be defined in your config.py
-            f.save(os.path.join(
-                current_app.config["UPLOAD_FOLDER"], cover_filename))
+            f.save(os.path.join(current_app.config["UPLOAD_FOLDER"], cover_filename))
             new_book.cover = cover_filename
+        elif 'cover_url' in request.form and request.form['cover_url']:
+            cover_url = request.form['cover_url']
+            try:
+                response = requests.get(cover_url, stream=True, timeout=10)
+                if response.status_code == 200:
+                    # Create a secure, unique filename from the URL
+                    random_hex = secrets.token_hex(8)
+                    # Get file extension from URL path
+                    _, f_ext = os.path.splitext(urlparse(cover_url).path)
+                    if not f_ext: f_ext = '.jpg' # Default extension
+                    cover_filename = random_hex + f_ext
+                    picture_path = os.path.join(current_app.config["UPLOAD_FOLDER"], cover_filename)
+                    with open(picture_path, 'wb') as f:
+                        f.write(response.content)
+                    new_book.cover = cover_filename
+            except requests.exceptions.RequestException as e:
+                flash(f"Could not download cover image: {e}", "danger")
 
         db.session.add(new_book)
         db.session.commit()
@@ -303,3 +330,45 @@ def user_settings():
 
     image_file_url = url_for('static', filename='uploads/' + user.image_file)
     return render_template("user_settings.html", form=form, title="My Settings", image_file_url=image_file_url)
+
+
+@bp.route("/api/v1/isbn/<isbn>", methods=["GET"])
+def get_book_by_isbn(isbn):
+    """
+    API endpoint to fetch book data from OpenLibrary based on ISBN.
+    """
+    url = "https://openlibrary.org/api/books"
+    params = {
+        "bibkeys": f"ISBN:{isbn}",
+        "jscmd": "data",
+        "format": "json"
+    }
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
+        data = response.json()
+        book_data = data.get(f"ISBN:{isbn}")
+
+        if not book_data:
+            return jsonify({"error": "No data found for this ISBN."}), 404
+
+        # Extract relevant fields
+        book_info = {
+            "title": book_data.get("title"),
+            "author": ", ".join(author["name"] for author in book_data.get("authors", [])),
+            "cover_image": book_data.get("cover", {}).get("large"),
+        }
+
+        publish_date_str = book_data.get("publish_date", "")
+        if publish_date_str:
+            match = re.search(r'\d{4}', publish_date_str)
+            if match:
+                book_info["year"] = match.group(0)
+
+        return jsonify(book_info)
+    except requests.exceptions.RequestException as e:
+        # Handle network errors, timeouts, etc.
+        return jsonify({"error": f"Network error connecting to Open Library: {e}"}), 500
+    except Exception as e:
+        # Handle other potential errors (e.g., JSON decoding)
+        return jsonify({"error": str(e)}), 500
