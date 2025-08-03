@@ -32,15 +32,19 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0 d-flex align-items-center">
+                    {% if current_user %}
                     <li class="nav-item dropdown">
                         <a class="user-display dropdown-toggle d-flex align-items-center" href="#" role="button"
                             id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <img class="rounded-circle me-2" src="{{ url_for('static', filename='uploads/' + current_user.image_file) }}" style="width: 32px; height: 32px; object-fit: cover;">
-                                {{ current_user.username }}
+                            <img class="rounded-circle me-2"
+                                src="{{ url_for('static', filename='uploads/' + current_user.image_file) }}"
+                                style="width: 32px; height: 32px; object-fit: cover;">
+                            {{ current_user.username }}
                         </a>
 
                         <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <a class="dropdown-item" href="{{ url_for('main.user_profile', user_id=current_user.id) }}"><i
+                            <a class="dropdown-item"
+                                href="{{ url_for('main.user_profile', user_id=current_user.id) }}"><i
                                     class='bx bx-user-circle align-middle me-2'></i>Profile & Loans</a>
                             <a class="dropdown-item" href="{{ url_for('main.user_settings') }}"><i
                                     class='bx bx-cog align-middle me-2'></i>Settings</a>
@@ -48,6 +52,7 @@
                             <a class="dropdown-item" href="#"><i class='bx bx-log-out align-middle me-2'></i>Logout</a>
                         </div>
                     </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -66,7 +71,7 @@
                                 <span class="align-middle">Books</span>
                             </a>
                         </li>
-                        {% if current_user.is_admin %}
+                        {% if current_user and current_user.is_admin %}
                         <li class="nav-item mb-1">
                             <a class="nav-link d-flex justify-content-between align-items-center {% if parent_page != 'admin' %}collapsed{% endif %} {% if parent_page == 'admin' %}active{% else %}text-dark{% endif %}"
                                 data-bs-toggle="collapse" href="#adminMenu" role="button"

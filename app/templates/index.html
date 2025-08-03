@@ -40,7 +40,7 @@
                     {% endif %}
                 </td>
                 <td>{{ book.title }}</td>
-                <td>{{ book.author }}</td>
+                <td>{{ book.authors|map(attribute='name')|join(', ') }}</td>
                 <td>{{ book.genre }}</td>
                 <td>{{ book.year }}</td>
                 <td>{{ 'Available' if book.is_available else 'On loan' }}</td>

@@ -1,13 +1,20 @@
 from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
+book_authors = db.Table('book_authors',
+                        db.Column('book_id', db.Integer, db.ForeignKey(
+                            'book.id'), primary_key=True),
+                        db.Column('author_id', db.Integer, db.ForeignKey(
+                            'author.id'), primary_key=True)
+                        )
+
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     isbn = db.Column(db.String(13), unique=True, nullable=False, index=True)
     title = db.Column(db.String(200), nullable=False, index=True)
-    author_id = db.Column(db.Integer, db.ForeignKey(
-        'author.id'), nullable=False)
+    authors = db.relationship(
+        'Author', secondary=book_authors, lazy='subquery', back_populates='books')
     genre_id = db.Column(db.Integer, db.ForeignKey(
         'genre.id'), nullable=False)
     year = db.Column(db.Integer, nullable=False)
@@ -15,13 +22,15 @@ class Book(db.Model):
     is_available = db.Column(db.Boolean, default=True)
 
     def __str__(self):
-        return f"{self.title} by {self.author.name} ({self.year})"
+        author_names = ", ".join([author.name for author in self.authors])
+        return f"{self.title} by {author_names} ({self.year})"
 
 
 class Author(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, index=True)
-    books = db.relationship('Book', backref='author', lazy=True)
+    books = db.relationship('Book', secondary=book_authors,
+                            lazy='subquery', back_populates='authors')
 
     def __str__(self):
         return self.name
@@ -42,7 +51,8 @@ class User(db.Model):
                          nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(128), nullable=False)
-    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
+    image_file = db.Column(db.String(20), nullable=False,
+                           default='default.jpg')
     loans = db.relationship('Loan', back_populates='user', lazy=True)
     is_admin = db.Column(db.Boolean, default=False)
 

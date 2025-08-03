@@ -8,7 +8,8 @@ from datetime import datetime
 class BookForm(FlaskForm):
     isbn = StringField('ISBN')
     title = StringField('Title', validators=[DataRequired()])
-    author = StringField('Author', validators=[DataRequired()])
+    author = StringField('Author(s) (comma-separated)',
+                         validators=[DataRequired()])
     genre = StringField('Genre', validators=[DataRequired()])
     year = IntegerField(
         'Year',
@@ -43,7 +44,8 @@ class UserSettingsForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     picture = FileField('Update Profile Picture', validators=[
         FileAllowed(['jpg', 'png'], 'Images only!'),
-        FileSize(max_size=2 * 1024 * 1024, message='File size must be less than 2MB.')
+        FileSize(max_size=2 * 1024 * 1024,
+                 message='File size must be less than 2MB.')
     ])
     password = PasswordField('New Password', validators=[Optional()])
     confirm_password = PasswordField(

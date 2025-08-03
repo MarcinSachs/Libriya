@@ -97,11 +97,6 @@ def book_add():
     genres = [g.name for g in Genre.query.distinct(Genre.name).all()]
 
     if form.validate_on_submit():
-        # Find or create author and genre
-        author = Author.query.filter_by(name=form.author.data).first()
-        if not author:
-            author = Author(name=form.author.data)
-
         genre = Genre.query.filter_by(name=form.genre.data).first()
         if not genre:
             genre = Genre(name=form.genre.data)
@@ -109,10 +104,18 @@ def book_add():
         new_book = Book(
             isbn=form.isbn.data,
             title=form.title.data,
-            author=author,
             genre=genre,
             year=form.year.data,
         )
+
+        # Handle multiple authors
+        author_names = [name.strip() for name in form.author.data.split(',') if name.strip()]
+        for name in author_names:
+            author = Author.query.filter_by(name=name).first()
+            if not author:
+                author = Author(name=name)
+                db.session.add(author)
+            new_book.authors.append(author)
 
         if form.cover.data:
             f = form.cover.data
@@ -166,8 +169,9 @@ def book_delete(book_id):
 @bp.route("/book_edit/<int:book_id>", methods=["GET", "POST"])
 def book_edit(book_id):
     book = Book.query.get_or_404(book_id)
+    author_string = ", ".join([author.name for author in book.authors])
     # Populate form with existing data, including related fields
-    form = BookForm(obj=book, author=book.author.name, genre=book.genre.name)
+    form = BookForm(obj=book, author=author_string, genre=book.genre.name)
     genres = [g.name for g in Genre.query.distinct(Genre.name).all()]
 
     if form.validate_on_submit():
@@ -176,11 +180,15 @@ def book_edit(book_id):
         book.title = form.title.data
         book.year = form.year.data
 
-        # Find or create author and genre
-        author = Author.query.filter_by(name=form.author.data).first()
-        if not author:
-            author = Author(name=form.author.data)
-        book.author = author
+        # Handle multiple authors
+        book.authors.clear()
+        author_names = [name.strip() for name in form.author.data.split(',') if name.strip()]
+        for name in author_names:
+            author = Author.query.filter_by(name=name).first()
+            if not author:
+                author = Author(name=name)
+                db.session.add(author)
+            book.authors.append(author)
 
         genre = Genre.query.filter_by(name=form.genre.data).first()
         if not genre:
