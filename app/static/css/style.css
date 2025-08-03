@@ -1,7 +1,12 @@
+:root {
+    --navbar-height: 56px;
+}
+
 body {
     background-color: #f9f9fb;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #333;
+    padding-top: var(--navbar-height);
 }
 
 .navbar-brand.title-text {
@@ -9,7 +14,7 @@ body {
     font-optical-sizing: auto;
     font-weight: 400;
     font-style: normal;
-    font-size: 64px;
+    font-size: 36px;
 }
 
 h2 {
@@ -56,16 +61,17 @@ footer {
     padding-bottom: 20px;
 }
 
-.container img {
-    width: 64px;
-    height: 64px;
+.navbar-brand img {
+    width: 40px;
+    height: 40px;
 }
 
 .sidebar {
     position: -webkit-sticky;
     position: sticky;
     top: 0;
-    height: calc(100vh - 96px); /* Dostosuj 96px do wysokości Twojego paska nawigacyjnego */
+    height: calc(100vh - var(--navbar-height));
+    /* Wysokość okna minus wysokość paska nawigacyjnego */
     padding-top: 1rem;
     overflow-x: hidden;
     overflow-y: auto;
@@ -81,7 +87,8 @@ footer {
 
 .user-display {
     padding: 0.4rem 0.8rem;
-    border-radius: 50rem; /* pill shape */
+    border-radius: 50rem;
+    /* pill shape */
     background-color: #e9ecef;
     color: #495057;
     font-weight: 500;
@@ -101,4 +108,10 @@ footer {
 
 .sidebar .nav-link[data-bs-toggle="collapse"]:not(.collapsed) .bx-chevron-down {
     transform: rotate(180deg);
+}
+
+.main-content {
+    height: calc(100vh - var(--navbar-height));
+    /* Wysokość okna minus wysokość paska nawigacyjnego */
+    overflow-y: auto;
 }
