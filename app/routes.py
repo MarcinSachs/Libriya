@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+import secrets
 from flask import (
     Blueprint,
     current_app,
@@ -11,8 +12,8 @@ from flask import (
 from werkzeug.utils import secure_filename
 
 from app import db
-from app.forms import BookForm, UserForm, LoanForm
-from app.models import Author, Book, Genre, Loan, User
+from app.forms import BookForm, LoanForm, UserEditForm, UserForm, UserSettingsForm
+from app.models import Author, Book, Genre, Loan, User, db
 
 bp = Blueprint("main", __name__)
 
@@ -33,7 +34,7 @@ def home():
 @bp.route("/users/")
 def users():
     all_users = db.session.query(User).distinct().all()
-    return render_template("users.html", users=all_users, active_page="users")
+    return render_template("users.html", users=all_users, active_page="users", parent_page="admin")
 
 
 @bp.route("/users/add/", methods=["GET", "POST"])
@@ -52,7 +53,30 @@ def user_add():
         db.session.commit()
         flash("User added successfully!", "success")
         return redirect(url_for("main.users"))
-    return render_template("user_add.html", form=form)
+    return render_template("user_add.html", form=form, parent_page="admin", active_page="users")
+
+
+@bp.route("/users/edit/<int:user_id>", methods=["GET", "POST"])
+def user_edit(user_id):
+    user = User.query.get_or_404(user_id)
+    form = UserEditForm(obj=user)
+
+    if form.validate_on_submit():
+        # user.username is readonly, so no need to update
+        user.email = form.email.data
+        user.is_admin = form.is_admin.data
+        db.session.commit()
+        flash(f"User '{user.username}' updated successfully!", "success")
+        return redirect(url_for("main.users"))
+
+    return render_template(
+        "user_edit.html",
+        form=form,
+        user=user,
+        parent_page="admin",
+        active_page="users",
+        title=f"Edit User: {user.username}"
+    )
 
 
 @bp.route("/books/add/", methods=["GET", "POST"])
@@ -99,6 +123,13 @@ def book_add():
 @bp.route("/book_delete/<int:book_id>", methods=["POST"])
 def book_delete(book_id):
     book = Book.query.get_or_404(book_id)
+
+    # Prevent deletion if the book has any associated loans (active or past)
+    if book.loans:
+        flash(f'Cannot delete "{book.title}" because it has a loan history.'
+              ' Consider implementing an "archive" feature instead.', "danger")
+        return redirect(url_for("main.home"))
+
     db.session.delete(book)
     db.session.commit()
     flash("Book deleted successfully!", "success")
@@ -146,7 +177,7 @@ def book_edit(book_id):
 @bp.route("/loans/")
 def loans():
     all_loans = Loan.query.all()
-    return render_template("loans.html", loans=all_loans, active_page="loans", title="Loans")
+    return render_template("loans.html", loans=all_loans, active_page="loans", parent_page="admin", title="Loans")
 
 
 @bp.route("/borrow/<int:book_id>/<int:user_id>", methods=["GET", "POST"])
@@ -177,6 +208,25 @@ def return_book(book_id):
     return redirect(url_for("main.home"))
 
 
+@bp.route('/loans/return/<int:loan_id>', methods=['POST'])
+def return_loan(loan_id):
+    loan = Loan.query.get_or_404(loan_id)
+    if loan.return_date is None:
+        loan.book.is_available = True
+        loan.return_date = datetime.utcnow()
+        db.session.commit()
+        flash(f'Book "{loan.book.title}" has been returned.', 'success')
+    else:
+        flash('This book has already been returned.', 'info')
+    return redirect(url_for('main.loans'))
+
+
+@bp.route("/loans/<user_id>")
+def user_loans(user_id):
+    user_loans = User.query.get_or_404(user_id).loans
+    return render_template("loans.html", loans=user_loans, active_page="", title="My Loans")
+
+
 @bp.route("/loans/add/", methods=["GET", "POST"])
 def loan_add():
     form = LoanForm()
@@ -202,17 +252,54 @@ def loan_add():
             flash("This book is already on loan.", "danger")
         else:
             flash("Invalid book or user.", "danger")
-    return render_template("loan_add.html", form=form, active_page="loans", title="Add Loan")
+    return render_template("loan_add.html", form=form, active_page="loans", parent_page="admin", title="Add Loan")
 
 
-@bp.route('/loans/return/<int:loan_id>', methods=['POST'])
-def return_loan(loan_id):
-    loan = Loan.query.get_or_404(loan_id)
-    if loan.return_date is None:
-        loan.return_date = datetime.utcnow()
-        loan.book.is_available = True
+@bp.route("/profile/<int:user_id>")
+def user_profile(user_id):
+    user = User.query.get_or_404(user_id)
+    # Sort all loans by date, newest first
+    all_loans = sorted(user.loans, key=lambda x: x.loan_date, reverse=True)
+    active_loans = [loan for loan in all_loans if loan.return_date is None]
+    loan_history = [loan for loan in all_loans if loan.return_date is not None]
+
+    return render_template(
+        "user_profile.html",
+        user=user,
+        loans=all_loans,
+        active_loans=active_loans,
+        loan_history=loan_history,
+        title=f"{user.username}'s Profile"
+    )
+
+
+@bp.route("/settings", methods=["GET", "POST"])
+def user_settings():
+    # This is a placeholder for a real login system like Flask-Login
+    user = User.query.first()
+    if not user:
+        flash("No user found to edit settings.", "danger")
+        return redirect(url_for('main.home'))
+
+    form = UserSettingsForm(obj=user)
+
+    if form.validate_on_submit():
+        if form.picture.data:
+            # Create a secure, unique filename
+            random_hex = secrets.token_hex(8)
+            _, f_ext = os.path.splitext(form.picture.data.filename)
+            picture_filename = random_hex + f_ext
+            picture_path = os.path.join(
+                current_app.config["UPLOAD_FOLDER"], picture_filename)
+            form.picture.data.save(picture_path)
+            user.image_file = picture_filename
+
+        user.email = form.email.data
+        if form.password.data:
+            user.set_password(form.password.data)
         db.session.commit()
-        flash(f'Book "{loan.book.title}" has been returned.', 'success')
-    else:
-        flash('This book has already been returned.', 'info')
-    return redirect(url_for('main.loans'))
+        flash("Your settings have been updated.", "success")
+        return redirect(url_for('main.user_profile', user_id=user.id))
+
+    image_file_url = url_for('static', filename='uploads/' + user.image_file)
+    return render_template("user_settings.html", form=form, title="My Settings", image_file_url=image_file_url)

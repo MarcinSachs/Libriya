@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex align-items-center mb-4">
+        <img class="rounded-circle" src="{{ url_for('static', filename='uploads/' + user.image_file) }}" style="width: 64px; height: 64px; object-fit: cover;">
+        <div class="ms-3">
+            <h2 class="mb-0">{{ user.username }}</h2>
+            <p class="text-muted mb-0">{{ user.email }}</p>
+        </div>
+    </div>
+    <hr>
+
+    <!-- Loan Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Loans</h5>
+                    <p class="card-text fs-2 fw-bold">{{ loans|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Currently On Loan</h5>
+                    <p class="card-text fs-2 fw-bold">{{ active_loans|length }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Currently On Loan -->
+    <h3 class="mt-5">Currently On Loan</h3>
+    {% if active_loans %}
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Book Title</th>
+                <th>Loan Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in active_loans %}
+            <tr>
+                <td>{{ loan.book.title }}</td>
+                <td>{{ loan.loan_date.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    <form action="{{ url_for('main.return_loan', loan_id=loan.id) }}" method="POST"
+                        style="display: inline;">
+                        <button type="submit" class="btn btn-outline-warning btn-sm"><i
+                                class="bx bx-log-out-circle"></i> Return</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No books are currently on loan.</p>
+    {% endif %}
+
+    <!-- Loan History -->
+    <h3 class="mt-5">Loan History</h3>
+    {% if loan_history %}
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Book Title</th>
+                <th>Loan Date</th>
+                <th>Return Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in loan_history %}
+            <tr>
+                <td>{{ loan.book.title }}</td>
+                <td>{{ loan.loan_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ loan.return_date.strftime('%Y-%m-%d') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No loan history.</p>
+    {% endif %}
+
+</div>
+{% endblock %}

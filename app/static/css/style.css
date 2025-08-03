@@ -86,3 +86,19 @@ footer {
     color: #495057;
     font-weight: 500;
 }
+
+.user-display.dropdown-toggle {
+    text-decoration: none;
+}
+
+.sidebar .nav-link[data-bs-toggle="collapse"] {
+    cursor: pointer;
+}
+
+.sidebar .nav-link[data-bs-toggle="collapse"] .bx-chevron-down {
+    transition: transform 0.2s ease-in-out;
+}
+
+.sidebar .nav-link[data-bs-toggle="collapse"]:not(.collapsed) .bx-chevron-down {
+    transform: rotate(180deg);
+}

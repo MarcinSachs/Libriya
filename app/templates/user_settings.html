@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2>My Settings</h2>
+    <hr>
+
+    {# flash messages #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            <label class="form-label">Current Profile Picture</label>
+            <div>
+                <img class="rounded-circle" src="{{ image_file_url }}" style="width: 150px; height: 150px; object-fit: cover;">
+            </div>
+        </div>
+        <div class="mb-3">
+            {{ form.picture.label(class="form-label") }}
+            {{ form.picture(class="form-control") }}
+            {% for error in form.picture.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class="form-control") }}
+            {% for error in form.email.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+        </div>
+        <p class="text-muted">Leave the password fields blank if you don't want to change your password.</p>
+        <div class="mb-3">
+            {{ form.password.label(class="form-label") }}
+            {{ form.password(class="form-control") }}
+            {% for error in form.password.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.confirm_password.label(class="form-label") }}
+            {{ form.confirm_password(class="form-control") }}
+            {% for error in form.confirm_password.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="mt-4">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('main.user_profile', user_id=current_user.id) }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

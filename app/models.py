@@ -42,6 +42,9 @@ class User(db.Model):
                          nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(128), nullable=False)
+    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
+    loans = db.relationship('Loan', back_populates='user', lazy=True)
+    is_admin = db.Column(db.Boolean, default=False)
 
     def __str__(self):
         return self.username
@@ -61,7 +64,7 @@ class Loan(db.Model):
     return_date = db.Column(db.DateTime)
 
     book = db.relationship('Book', backref='loans')
-    user = db.relationship('User', backref='loans')
+    user = db.relationship('User', back_populates='loans')
 
     def __str__(self):
         return f"{self.user.username} borrowed {self.book.title}"

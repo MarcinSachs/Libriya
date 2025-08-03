@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Edit User: <span class="text-muted">{{ user.username }}</span></h2>
+    <hr>
+
+    {# flash messages #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.username.label(class="form-label") }}
+            {{ form.username(class="form-control") }}
+            {% for error in form.username.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class="form-control") }}
+            {% for error in form.email.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="form-check form-switch mb-3 p-3 border rounded">
+            {{ form.is_admin(class="form-check-input", role="switch") }}
+            {{ form.is_admin.label(class="form-check-label") }}
+            {% for error in form.is_admin.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="mt-4">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('main.users') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
