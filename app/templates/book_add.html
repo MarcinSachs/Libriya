@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="container">
-    <h2>Add a new book</h2>
+    <h2>{{ _('Add a new book') }}</h2> {# Translated heading #}
     <hr>
 
     {# flash messages #}
@@ -18,27 +18,27 @@
         <div class="form-group mb-3">
             {{ form.isbn.label(class="form-label") }}
             <div class="input-with-button">
-                {{ form.isbn(class="form-control", placeholder="Enter ISBN to get data from Open Library") }}
+                {{ form.isbn(class="form-control", placeholder=_("Enter ISBN to get data from Open Library")) }} {# Translated placeholder #}
                 <button type="button" id="find-by-isbn" class="btn btn-secondary">
-                    <i class='bx bx-search-alt'></i> Search
+                    <i class='bx bx-search-alt'></i> {{ _('Search') }} {# Translated button text #}
                 </button>
             </div>
             <div id="isbn-error" class="form-text text-danger mt-1"></div>
             {% for error in form.isbn.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
         <div class="mb-3">
-            {{ form.title.label(class="form-label") }}
-            {{ form.title(class="form-control", placeholder="e.g. The Lord of the Rings") }}
+            {{ form.title.label(class="form-label") }} {# Label handled by WTForms + forms.py #}
+            {{ form.title(class="form-control", placeholder=_("e.g. The Lord of the Rings")) }} {# Translated placeholder #}
             {% for error in form.title.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
         <div class="mb-3">
-            {{ form.author.label(class="form-label") }}
-            {{ form.author(class="form-control", placeholder="e.g. J.R.R. Tolkien") }}
-            {% for error in form.author.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+            {{ form.author.label(class="form-label") }} {# Label handled by WTForms + forms.py #}
+            {{ form.author(class="form-control", placeholder=_("e.g. J.R.R. Tolkien")) }} {# Translated placeholder #}
+            {% for error in form.author.errors %"><span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
         <div class="mb-3">
-            {{ form.genre.label(class="form-label") }}
-            {{ form.genre(class="form-control", list="genre-list", placeholder="e.g. Fantasy") }}
+            {{ form.genre.label(class="form-label") }} {# Label handled by WTForms + forms.py #}
+            {{ form.genre(class="form-control", list="genre-list", placeholder=_("e.g. Fantasy")) }} {# Translated placeholder #}
             <datalist id="genre-list">
                 {% for genre in genres %}
                 <option value="{{ genre }}">
@@ -47,8 +47,8 @@
             {% for error in form.genre.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
         <div class="mb-3">
-            {{ form.year.label(class="form-label") }}
-            {{ form.year(class="form-control", placeholder="e.g. 1954") }}
+            {{ form.year.label(class="form-label") }} {# Label handled by WTForms + forms.py #}
+            {{ form.year(class="form-control", placeholder=_("e.g. 1954")) }} {# Translated placeholder #}
             {% for error in form.year.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
         <div class="mb-3">
@@ -58,8 +58,8 @@
             {% for error in form.cover.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
         <div class="mt-4">
-            {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('main.home') }}" class="btn btn-secondary">Cancel</a>
+            {{ form.submit(class="btn btn-primary") }} {# Submit button text handled by forms.py #}
+            <a href="{{ url_for('main.home') }}" class="btn btn-secondary">{{ _('Cancel') }}</a> {# Translated button text #}
         </div>
     </form>
 </div>
@@ -78,14 +78,14 @@
             findBtn.addEventListener('click', function () {
                 const isbn = isbnInput.value.trim().replace(/-/g, '');
                 if (!isbn) {
-                    alert('Please enter an ISBN.');
+                    alert("{{ _('Please enter an ISBN.') }}"); {# Translated JS alert #}
                     return;
                 }
 
                 coverPreview.innerHTML = ''; // Clear previous preview
                 errorDiv.textContent = ''; // Clear previous errors
                 findBtn.disabled = true;
-                findBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Searching...';
+                findBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> {{ _('Searching...') }}'; {# Translated JS button text #}
 
                 fetch(`/api/v1/isbn/${isbn}`)
                     .then(response => {
@@ -100,7 +100,7 @@
                         if (data.year) yearInput.value = data.year;
                         if (data.cover_image) {
                             // Display image preview
-                            coverPreview.innerHTML = `<p class="form-label">Open Library Cover:</p><img src="${data.cover_image}" style="max-width: 150px; border-radius: 4px;">`;
+                            coverPreview.innerHTML = `<p class="form-label">{{ _('Open Library Cover:') }}</p><img src="${data.cover_image}" style="max-width: 150px; border-radius: 4px;">`; {# Translated text #}
                             // Add a hidden input to submit the URL
                             const hiddenInput = document.createElement('input');
                             hiddenInput.type = 'hidden';
@@ -111,14 +111,13 @@
                     })
                     .catch(error => {
                         console.error('Error fetching data by ISBN:', error);
-                        errorDiv.textContent = `Could not find data for ISBN ${isbn}. Please check the number and try again.`;
+                        errorDiv.textContent = "{{ _('Could not find data for ISBN %s. Please check the number and try again.') | format(isbn) }}"; {# Translated JS error message #}
                     })
                     .finally(() => {
                         findBtn.disabled = false;
-                        findBtn.innerHTML = '<i class="bx bx-search-alt"></i> Search';
+                        findBtn.innerHTML = '<i class="bx bx-search-alt"></i> {{ _('Search') }}'; {# Translated JS button text #}
                     });
             });
         }
     });
 </script>
-{% endblock %}

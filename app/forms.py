@@ -3,6 +3,7 @@ from wtforms import StringField, SubmitField, IntegerField, PasswordField, Selec
 from flask_wtf.file import FileField, FileAllowed, FileSize
 from wtforms.validators import DataRequired, NumberRange, Email, EqualTo, Optional
 from datetime import datetime
+from flask_babel import lazy_gettext as _
 
 
 class BookForm(FlaskForm):

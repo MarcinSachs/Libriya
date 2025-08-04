@@ -6,3 +6,4 @@ python-dotenv
 wtforms[email]
 requests
 flask-login
+Flask-Babel

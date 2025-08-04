@@ -14,6 +14,7 @@ from flask import (
     render_template,
     request,
     url_for,
+    make_response
 )
 from werkzeug.utils import secure_filename
 
@@ -21,6 +22,8 @@ from app import db
 from app.forms import BookForm, LoanForm, UserEditForm, UserForm, UserSettingsForm
 from app.models import Author, Book, Genre, Loan, User, db
 from flask_login import login_user, login_required, current_user, logout_user
+
+from flask_babel import _, ngettext
 
 bp = Blueprint("main", __name__)
 
@@ -48,29 +51,34 @@ def home():
 
 @bp.route("/login/")
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.home'))
     return render_template("login.html", login_page=True, title='Log In')
 
 
 @bp.route("/login/" , methods=['POST'])
 def login_post():
-     username = request.form.get('username')
-     password = request.form.get('password')
-     user = User.query.filter_by(username=username).first()
-    
-     if user and user.check_password(password):
+    username = request.form.get('username')
+    password = request.form.get('password')
+    user = User.query.filter_by(username=username).first()
+
+    if user and user.check_password(password):
         login_user(user)
-        flash('Login successful!', 'success')
-        next_page = request.args.get('next')
-        return redirect(next_page or url_for('main.home'))
-     else:
-        flash('Invalid username or password. Please try again.', 'danger')
+        flash(_('Login successful!'), 'success')
+        # Use cookie with language if user is logged
+        response = make_response(redirect(url_for('main.home')))
+        if 'lang' in request.args:
+            response.set_cookie('lang', request.args['lang'])
+        return response
+    else:
+        flash(_('Invalid username or password. Please try again.'), 'danger')
         return redirect(url_for('main.login'))
 
 @bp.route('/logout')
 @login_required
 def logout():
     logout_user()
-    flash('You have been logged out.', 'info')
+    flash(_('You have been logged out.'), 'info')
     return redirect(url_for('main.login'))
 
 @bp.route("/users/" )
@@ -95,7 +103,7 @@ def user_add():
         # Add the user to the database
         db.session.add(user)
         db.session.commit()
-        flash("User added successfully!", "success")
+        flash(f"User '{user.username}' added successfully!", "success")
         return redirect(url_for("main.users"))
     return render_template("user_add.html", form=form, parent_page="admin", active_page="users")
 
@@ -117,7 +125,7 @@ def user_edit(user_id):
         user.email = form.email.data
         user.is_admin = form.is_admin.data
         db.session.commit()
-        flash(f"User '{user.username}' updated successfully!", "success")
+        flash(_("User '%(username)s' updated successfully!", username=user.username), "success")
         return redirect(url_for("main.users"))
 
     return render_template(
@@ -180,11 +188,11 @@ def book_add():
                         f.write(response.content)
                     new_book.cover = cover_filename
             except requests.exceptions.RequestException as e:
-                flash(f"Could not download cover image: {e}", "danger")
+                flash(_("Could not download cover image: '%(e)s'", e=e), "danger")
 
         db.session.add(new_book)
         db.session.commit()
-        flash("Book added successfully!", "success")
+        flash(_("Book added successfully!"), "success")
         # Redirect to the home page, which is part of the 'main' blueprint
         return redirect(url_for("main.home"))
 
@@ -198,13 +206,13 @@ def book_delete(book_id):
 
     # Prevent deletion if the book has any associated loans (active or past)
     if book.loans:
-        flash(f'Cannot delete "{book.title}" because it has a loan history.'
-              ' Consider implementing an "archive" feature instead.', "danger")
-        return redirect(url_for("main.home"))
+        if book.loans: # Użycie _()
+            flash(_('Cannot delete "%(title)s" because it has a loan history. Consider implementing an "archive" feature instead.', title=book.title), "danger")
+            return redirect(url_for("main.home"))
 
     db.session.delete(book)
     db.session.commit()
-    flash("Book deleted successfully!", "success")
+    flash(_("Book deleted successfully!"), "success")
     return redirect(url_for("main.home"))
 
 
@@ -247,7 +255,7 @@ def book_edit(book_id):
             book.cover = cover_filename
 
         db.session.commit()
-        flash("Book updated successfully!", "success")
+        flash(_("Book updated successfully!"), "success")
         return redirect(url_for("main.home"))
     return render_template("book_edit.html", form=form, book=book, genres=genres, active_page="books", title="Edit Book")
 
@@ -269,9 +277,9 @@ def borrow_book(book_id, user_id):
         new_loan = Loan(book=book, user=user)
         db.session.add(new_loan)
         db.session.commit()
-        flash("Book borrowed successfully!", "success")
+        flash(_("Book borrowed successfully!"), "success")
     else:
-        flash("This book is already on loan.", "danger")
+        flash(_("This book is already on loan."), "danger")
     return redirect(url_for("main.home"))
 
 
@@ -283,9 +291,9 @@ def return_book(book_id):
         loan.book.is_available = True
         loan.return_date = datetime.utcnow()
         db.session.commit()
-        flash("Book returned successfully!", "success")
+        flash(_("Book returned successfully!"), "success")
     else:
-        flash("This book is not currently on loan.", "danger")
+        flash(_("This book is not currently on loan."), "danger")
     return redirect(url_for("main.home"))
 
 
@@ -297,9 +305,9 @@ def return_loan(loan_id):
         loan.book.is_available = True
         loan.return_date = datetime.utcnow()
         db.session.commit()
-        flash(f'Book "{loan.book.title}" has been returned.', 'success')
+        flash(_('Book "%(title)s" has been returned.', title=loan.book.title), 'success')
     else:
-        flash('This book has already been returned.', 'info')
+        flash(_('This book has already been returned.'), 'info')
     return redirect(url_for('main.loans'))
 
 
@@ -330,12 +338,12 @@ def loan_add():
             new_loan = Loan(book=book, user=user)
             db.session.add(new_loan)
             db.session.commit()
-            flash("Loan added successfully!", "success")
+            flash(_("Loan added successfully!"), "success")
             return redirect(url_for("main.loans"))
         elif book and not book.is_available:
-            flash("This book is already on loan.", "danger")
+            flash(_("This book is already on loan."), "danger")
         else:
-            flash("Invalid book or user.", "danger")
+            flash(_("Invalid book or user."), "danger")
     return render_template("loan_add.html", form=form, active_page="loans", parent_page="admin", title="Add Loan")
 
 
@@ -354,7 +362,7 @@ def user_profile(user_id):
         loans=all_loans,
         active_loans=active_loans,
         loan_history=loan_history,
-        title=f"{user.username}'s Profile"
+        title=f"{user.username}"
     )
 
 
@@ -363,7 +371,7 @@ def user_profile(user_id):
 def user_settings():
     user = current_user
     if not user:
-        flash("No user found to edit settings.", "danger")
+        flash(_("No user found to edit settings."), "danger")
         return redirect(url_for('main.home'))
 
     form = UserSettingsForm(obj=user)
@@ -383,7 +391,7 @@ def user_settings():
         if form.password.data:
             user.set_password(form.password.data)
         db.session.commit()
-        flash("Your settings have been updated.", "success")
+        flash(_("Your settings have been updated."), "success")
         return redirect(url_for('main.user_profile', user_id=user.id))
 
     image_file_url = url_for('static', filename='uploads/' + user.image_file)
@@ -431,3 +439,13 @@ def get_book_by_isbn(isbn):
     except Exception as e:
         # Handle other potential errors (e.g., JSON decoding)
         return jsonify({"error": str(e)}), 500
+
+@bp.route('/set_language/<lang>')
+def set_language(lang):
+    if lang in current_app.config['LANGUAGES']:
+        response = make_response(redirect(request.referrer or url_for('main.home')))
+        response.set_cookie('lang', lang)
+        flash(_('Language changed to %(lang)s.', lang=lang), 'info')
+        return response
+    flash(_('Unsupported language.'), 'danger')
+    return redirect(request.referrer or url_for('main.home'))
