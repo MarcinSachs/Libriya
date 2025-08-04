@@ -35,6 +35,10 @@ def home():
     all_books = Book.query.all()
     return render_template("index.html", books=all_books, active_page="books")
 
+@bp.route("/login/")
+def login():
+    return render_template("login.html", login_page=True, title='Log In')
+
 
 @bp.route("/users/")
 def users():

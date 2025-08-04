@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="wrapper fadeInDown">
+  <div id="formContent">
+    <!-- Tabs Titles -->
+
+    <!-- Icon -->
+    <div class="fadeIn first">
+      <img src="{{ url_for('static', filename='/images/logo.png') }}" id="icon" alt="Logo" />
+      <h4>Libriya</h4>
+    </div>
+
+
+    <!-- Login Form -->
+    <form>
+      <input type="text" id="login" class="fadeIn second" name="username" placeholder="username">
+      <input type="password" id="password" class="fadeIn third" name="password" placeholder="password">
+        <input type="submit" class="fadeIn fourth" value="Log In">
+     </form>
+     <!-- Remind Passowrd -->
+    <div id="formFooter">
+      <a class="underlineHover" href="#">Forgot Password?</a>
+    </div>
+    <!-- Default credentials section -->
+        <div class="default-credentials">
+                <p class="section-title">Default credentials:</p>
+                <div class="credential-item">
+                    <p class="credential-label">Administrator:</p>
+                    <p class="credential-value"><i class='bx bx-user'></i> Admin <i class='bx bx-lock'></i> admin</p>
+                </div>
+                <div class="credential-item">
+                    <p class="credential-label">Standard User:</p>
+                    <p class="credential-value"><i class='bx bx-user'></i> User <i class='bx bx-lock'></i> user</p>
+                </div>
+        </div>
+     
+    
+
+  </div>
+  <div class="photo-credit">
+     <p>Photo by <a href="https://unsplash.com/@itfeelslikefilm?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">🇸🇮 Janko Ferlič</a> on <a href="https://unsplash.com/photos/photo-of-library-with-turned-on-lights-sfL_QOnmy00?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a></p>
+ </div>
+</div>
+
+
+
+{% endblock %}
