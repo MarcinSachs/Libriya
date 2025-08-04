@@ -7,3 +7,4 @@ wtforms[email]
 requests
 flask-login
 Flask-Babel
+flask-session

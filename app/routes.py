@@ -5,6 +5,7 @@ import re
 import requests
 from urllib.parse import urlparse
 from functools import wraps
+from flask_session import Session
 from flask import (
     jsonify,
     Blueprint,
@@ -33,10 +34,12 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_admin:
-            flash("You do not have administrative privileges to access this page.", "danger")
+            flash(
+                "You do not have administrative privileges to access this page.", "danger")
             return redirect(url_for('main.home'))
         return f(*args, **kwargs)
     return decorated_function
+
 
 @bp.route("/favicon.ico")
 def favicon():
@@ -49,6 +52,7 @@ def home():
     all_books = Book.query.all()
     return render_template("index.html", books=all_books, active_page="books")
 
+
 @bp.route("/login/")
 def login():
     if current_user.is_authenticated:
@@ -56,7 +60,7 @@ def login():
     return render_template("login.html", login_page=True, title='Log In')
 
 
-@bp.route("/login/" , methods=['POST'])
+@bp.route("/login/", methods=['POST'])
 def login_post():
     username = request.form.get('username')
     password = request.form.get('password')
@@ -74,6 +78,7 @@ def login_post():
         flash(_('Invalid username or password. Please try again.'), 'danger')
         return redirect(url_for('main.login'))
 
+
 @bp.route('/logout')
 @login_required
 def logout():
@@ -81,7 +86,8 @@ def logout():
     flash(_('You have been logged out.'), 'info')
     return redirect(url_for('main.login'))
 
-@bp.route("/users/" )
+
+@bp.route("/users/")
 @login_required
 def users():
     all_users = db.session.query(User).distinct().all()
@@ -125,7 +131,8 @@ def user_edit(user_id):
         user.email = form.email.data
         user.is_admin = form.is_admin.data
         db.session.commit()
-        flash(_("User '%(username)s' updated successfully!", username=user.username), "success")
+        flash(_("User '%(username)s' updated successfully!",
+              username=user.username), "success")
         return redirect(url_for("main.users"))
 
     return render_template(
@@ -158,7 +165,8 @@ def book_add():
         )
 
         # Handle multiple authors
-        author_names = [name.strip() for name in form.author.data.split(',') if name.strip()]
+        author_names = [name.strip()
+                        for name in form.author.data.split(',') if name.strip()]
         for name in author_names:
             author = Author.query.filter_by(name=name).first()
             if not author:
@@ -170,7 +178,8 @@ def book_add():
             f = form.cover.data
             cover_filename = secure_filename(f.filename)
             # UPLOAD_FOLDER must be defined in your config.py
-            f.save(os.path.join(current_app.config["UPLOAD_FOLDER"], cover_filename))
+            f.save(os.path.join(
+                current_app.config["UPLOAD_FOLDER"], cover_filename))
             new_book.cover = cover_filename
         elif 'cover_url' in request.form and request.form['cover_url']:
             cover_url = request.form['cover_url']
@@ -181,9 +190,11 @@ def book_add():
                     random_hex = secrets.token_hex(8)
                     # Get file extension from URL path
                     _, f_ext = os.path.splitext(urlparse(cover_url).path)
-                    if not f_ext: f_ext = '.jpg' # Default extension
+                    if not f_ext:
+                        f_ext = '.jpg'  # Default extension
                     cover_filename = random_hex + f_ext
-                    picture_path = os.path.join(current_app.config["UPLOAD_FOLDER"], cover_filename)
+                    picture_path = os.path.join(
+                        current_app.config["UPLOAD_FOLDER"], cover_filename)
                     with open(picture_path, 'wb') as f:
                         f.write(response.content)
                     new_book.cover = cover_filename
@@ -206,7 +217,7 @@ def book_delete(book_id):
 
     # Prevent deletion if the book has any associated loans (active or past)
     if book.loans:
-        if book.loans: # Użycie _()
+        if book.loans:  # Użycie _()
             flash(_('Cannot delete "%(title)s" because it has a loan history. Consider implementing an "archive" feature instead.', title=book.title), "danger")
             return redirect(url_for("main.home"))
 
@@ -233,7 +244,8 @@ def book_edit(book_id):
 
         # Handle multiple authors
         book.authors.clear()
-        author_names = [name.strip() for name in form.author.data.split(',') if name.strip()]
+        author_names = [name.strip()
+                        for name in form.author.data.split(',') if name.strip()]
         for name in author_names:
             author = Author.query.filter_by(name=name).first()
             if not author:
@@ -305,7 +317,8 @@ def return_loan(loan_id):
         loan.book.is_available = True
         loan.return_date = datetime.utcnow()
         db.session.commit()
-        flash(_('Book "%(title)s" has been returned.', title=loan.book.title), 'success')
+        flash(_('Book "%(title)s" has been returned.',
+              title=loan.book.title), 'success')
     else:
         flash(_('This book has already been returned.'), 'info')
     return redirect(url_for('main.loans'))
@@ -395,7 +408,7 @@ def user_settings():
         return redirect(url_for('main.user_profile', user_id=user.id))
 
     image_file_url = url_for('static', filename='uploads/' + user.image_file)
-    return render_template("user_settings.html", form=form, title="My Settings", image_file_url=image_file_url)
+    return render_template("user_settings.html", form=form, title="My Settings", image_file_url=image_file_url, user=user)
 
 
 @bp.route("/api/v1/isbn/<isbn>", methods=["GET"])
@@ -440,12 +453,12 @@ def get_book_by_isbn(isbn):
         # Handle other potential errors (e.g., JSON decoding)
         return jsonify({"error": str(e)}), 500
 
+
 @bp.route('/set_language/<lang>')
 def set_language(lang):
     if lang in current_app.config['LANGUAGES']:
-        response = make_response(redirect(request.referrer or url_for('main.home')))
-        response.set_cookie('lang', lang)
+        # session['lang'] = lang  # Set language in session remove this
         flash(_('Language changed to %(lang)s.', lang=lang), 'info')
-        return response
+        return redirect(request.referrer or url_for('main.home'))
     flash(_('Unsupported language.'), 'danger')
     return redirect(request.referrer or url_for('main.home'))

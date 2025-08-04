@@ -1,26 +1,30 @@
-
-from flask import Flask, request, current_app
+from flask import Flask, request, current_app, session  # Usuń import sesji
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_babel import Babel
+from flask_session import Session  # Usuń Import Flask-Session
 
 db = SQLAlchemy()
 migrate = Migrate()
 
+
 def get_locale_selector_function():
     if 'lang' in request.args:
-        if request.args['lang'] in current_app.config.get('LANGUAGES', []): # Użyj .get z domyślną wartością dla bezpieczeństwa
-            return request.args['lang']
-    lang_cookie = request.cookies.get('lang')
-    if lang_cookie and lang_cookie in current_app.config.get('LANGUAGES', []):
+        session['lang'] = request.args['lang']  # Ustaw język w sesji #Usuń to
+        return session['lang']  # usuń to
+    lang_cookie = request.cookies.get('lang')  # Pobierz język z sesji
+    if lang_cookie:
         return lang_cookie
     return request.accept_languages.best_match(current_app.config.get('LANGUAGES', []))
+
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    # Add the config var usuń to!
+    # app.config['SESSION_TYPE'] = config_class.SESSION_TYPE
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -32,9 +36,11 @@ def create_app(config_class=Config):
     login_manager.login_view = 'main.login'
     login_manager.init_app(app)
 
+    # sess = Session()  # Call the session, store it in sess
+    # sess.init_app(app)  # Init the session Usuń to!
+
     babel = Babel(app)
     app.config['BABEL_LOCALE_SELECTOR'] = get_locale_selector_function
-
 
     from app import models
 

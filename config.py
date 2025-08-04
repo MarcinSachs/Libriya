@@ -13,5 +13,5 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'app/static/uploads')
     LANGUAGES = ['en', 'pl']
-    BABEL_DEFAULT_LOCALE = 'en'
+    BABEL_DEFAULT_LOCALE = 'pl'
     BABEL_DEFAULT_TIMEZONE = 'UTC'

@@ -1,3 +1,4 @@
+from flask import session
 from app import create_app, db
 from app.models import Genre, Book, Author
 
@@ -11,6 +12,7 @@ def make_shell_context():
         "Book": Book,
         "Author": Author,
         "Genre": Genre,
+        "session": session,
     }
 
 

@@ -30,7 +30,7 @@
         <div class="form-group mb-3"> {# Added form-group #}
             {{ form.email.label(class="form-label") }} {# Label handled by WTForms + forms.py #}
             {{ form.email(class="form-control") }}
-            {% for error in form.email.errors %"><span class="text-danger">{{ error }}</span>{% endfor %} {# Corrected
+            {% for error in form.email.errors %}<span class="text-danger">{{ error }}</span>{% endfor %} {# Corrected
             from previous trace: removed extra '"' #}
         </div>
         <p class="text-muted">{{ _('Leave the password fields blank if you don\'t want to change your password.') }}</p>
