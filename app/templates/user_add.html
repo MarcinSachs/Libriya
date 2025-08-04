@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="container mt-5">
+<div class="container">
     <h2>Add a new user</h2>
     <hr>
 
@@ -19,7 +19,7 @@
             <i class='bx bx-user'></i> {{ form.username.label(class="form-label") }}
             {{ form.username(class="form-control", placeholder="") }}
             {% for error in form.username.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
+         </div>
         <div class="mb-3">
             <i class='bx bx-envelope'></i> {{ form.email.label(class="form-label") }}
             {{ form.email(class="form-control", placeholder="user@example.com") }}

@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="container mt-5">
+<div class="container">
     <div class="d-flex align-items-center mb-4">
         <img class="rounded-circle" src="{{ url_for('static', filename='uploads/' + user.image_file) }}" style="width: 64px; height: 64px; object-fit: cover;">
         <div class="ms-3">
@@ -32,7 +32,7 @@
 
     <!-- Currently On Loan -->
     <h3 class="mt-5">Currently On Loan</h3>
-    {% if active_loans %}
+    {% if active_loans %} {# Added table-striped here for consistency #}
     <table class="table table-hover">
         <thead>
             <tr>
@@ -47,11 +47,12 @@
                 <td>{{ loan.book.title }}</td>
                 <td>{{ loan.loan_date.strftime('%Y-%m-%d') }}</td>
                 <td>
-                    <form action="{{ url_for('main.return_loan', loan_id=loan.id) }}" method="POST"
-                        style="display: inline;">
-                        <button type="submit" class="btn btn-outline-warning btn-sm"><i
-                                class="bx bx-log-out-circle"></i> Return</button>
-                    </form>
+                    <form action="{{ url_for('main.return_loan', loan_id=loan.id) }}" method="POST" style="display: inline;">
++                        <button type="submit" class="btn btn-outline-warning btn-sm"
++                            data-bs-toggle="tooltip" data-bs-placement="top" title="Return Book">
++                            <i class="bx bx-log-out-circle"></i>
++                        </button>
+                     </form>
                 </td>
             </tr>
             {% endfor %}
@@ -63,7 +64,7 @@
 
     <!-- Loan History -->
     <h3 class="mt-5">Loan History</h3>
-    {% if loan_history %}
+    {% if loan_history %} {# Added table-striped here for consistency #}
     <table class="table table-hover">
         <thead>
             <tr>

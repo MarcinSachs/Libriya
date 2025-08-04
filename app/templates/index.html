@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="container mt-5">
+{# Removed mt-5, padding will be provided by main-content #}
+<div class="container">
     {# flash messages #}
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -10,13 +11,18 @@
     {% endif %}
     {% endwith %}
 
-    <p>
-        {% set n = books|length %}
-        Library currently has {{ n }} {{ 'book' if n == 1 else 'books' }}.
-    </p>
+    {# New card for book count #}
+    <div class="book-count-card">
+        <i class='bx bxs-info-circle'></i>
+        <p class="mb-0">
+            {% set n = books|length %}
+            Library currently has {{ n }} {{ 'book' if n == 1 else 'books' }}.
+        </p>
+    </div>
+    
     <h2>List of books</h2>
 
-    <table class="table table-hover">
+    <table class="table table-hover table-striped"> {# Added table-striped #}
         <thead>
             <tr>
                 <th>Cover</th>
@@ -33,10 +39,12 @@
             <tr>
                 <td>
                     {% if book.cover %}
+                    {# Removed inline styles, styled by CSS #}
                     <img src="{{ url_for('static', filename='uploads/' + book.cover) }}"
-                        alt="Book cover {{ book.title }}" style="width: 50px; height: auto;">
+                        alt="Book cover {{ book.title }}">
                     {% else %}
-                    <i class='bx bx-image' style="font-size: 24px; color: #ccc;"></i>
+                    {# Removed inline styles, styled by CSS #}
+                    <i class='bx bx-image'></i>
                     {% endif %}
                 </td>
                 <td>{{ book.title }}</td>
@@ -44,25 +52,26 @@
                 <td>{{ book.genre }}</td>
                 <td>{{ book.year }}</td>
                 <td>{{ 'Available' if book.is_available else 'On loan' }}</td>
-                <td>
+                {# Buttons with icons only and tooltips #}
+                <td class="text-nowrap">
                     {% if book.is_available %}
                     <a href="{{ url_for('main.borrow_book', book_id=book.id, user_id=current_user.id) }}"
-                        class="btn btn-outline-success btn-sm"><i class="bx bx-log-in-circle"></i> Borrow</a>
+                        class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Borrow Book"><i class="bx bx-log-in-circle"></i></a>
                     {% else %}
                     <a href="{{ url_for('main.return_book', book_id=book.id) }}"
-                        class="btn btn-outline-warning btn-sm"><i class="bx bx-log-out-circle"></i> Return</a>
+                        class="btn btn-outline-warning btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Return Book"><i class="bx bx-log-out-circle"></i></a>
                     {% endif %}
-                    <a href="{{ url_for('main.book_edit', book_id=book.id)}}" class="btn btn-outline-primary btn-sm"><i
-                            class="bx bx-edit"></i> Edit</a>
-                    <a href="{{ url_for('main.book_delete', book_id=book.id)}}" class="btn btn-outline-danger btn-sm"><i
-                            class="bx bx-trash"></i> Delete</a>
+                    <a href="{{ url_for('main.book_edit', book_id=book.id)}}" class="btn btn-outline-primary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Book"><i
+                            class="bx bx-edit"></i></a>
+                    <a href="{{ url_for('main.book_delete', book_id=book.id)}}" class="btn btn-outline-danger btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Book"><i
+                            class="bx bx-trash"></i></a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <a href="{{ url_for('main.book_add') }}" class="btn btn-primary" style="width: 150px;">
-        <i class="bx bx-plus"></i> Add book
+    {# New class add-book-btn #}
+    <a href="{{ url_for('main.book_add') }}" class="btn btn-primary add-book-btn">Add book
     </a>
 </div>
 {% endblock %}

@@ -12,15 +12,17 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    {# Added new 'Inter' font for general text #}
     <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <!-- Favicon -->
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm fixed-top">
+    {# Changing navbar classes: navbar-dark for light text, bg-custom-dark for background color, shadow-lg for a larger shadow #}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-custom-dark border-bottom shadow-lg fixed-top">
         <div class="container">
             <a class="navbar-brand title-text d-flex align-items-center" href="/">
                 <img src="{{ url_for('static', filename='/images/logo.png') }}" alt="Libriya" class="me-2"> Libriya
@@ -34,7 +36,8 @@
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0 d-flex align-items-center">
                     {% if current_user %}
                     <li class="nav-item dropdown">
-                        <a class="user-display dropdown-toggle d-flex align-items-center" href="#" role="button"
+                        {# Adding text-white for username to be visible on dark background #}
+                        <a class="user-display dropdown-toggle d-flex align-items-center text-white" href="#" role="button"
                             id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <img class="rounded-circle me-2"
                                 src="{{ url_for('static', filename='uploads/' + current_user.image_file) }}"
@@ -49,6 +52,7 @@
                             <a class="dropdown-item" href="{{ url_for('main.user_settings') }}"><i
                                     class='bx bx-cog align-middle me-2'></i>Settings</a>
                             <div class="dropdown-divider"></div>
+                            {# Remember to replace '#' with the actual logout URL #}
                             <a class="dropdown-item" href="#"><i class='bx bx-log-out align-middle me-2'></i>Logout</a>
                         </div>
                     </li>
@@ -61,7 +65,8 @@
     <div class="container-fluid">
         <div class="row">
 
-            <nav id="sidebarMenu" class="col-md-2 d-none d-md-block bg-light sidebar border-end">
+            {# Adding pt-5 so content is not covered by fixed-top navbar #}
+            <nav id="sidebarMenu" class="col-md-2 d-none d-md-block bg-light sidebar border-end pt-5">
                 <div class="position-sticky pt-3">
                     <ul class="nav nav-pills flex-column">
                         <li class="nav-item mb-1">
@@ -101,15 +106,21 @@
                 </div>
             </nav>
 
-
-
-            <main class="col-md-10 ms-sm-auto main-content">
+            {# Adding pt-5 so content is not covered by fixed-top navbar #}
+            <main class="col-md-10 ms-sm-auto main-content pt-5">
                 {% block content %}{% endblock %}
             </main>
         </div>
     </div>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Bootstrap tooltips initialization
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
 </body>
 
 </html>
