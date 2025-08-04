@@ -5,3 +5,4 @@ flask-wtf
 python-dotenv
 wtforms[email]
 requests
+flask-login

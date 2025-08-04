@@ -4,6 +4,7 @@ import secrets
 import re
 import requests
 from urllib.parse import urlparse
+from functools import wraps
 from flask import (
     jsonify,
     Blueprint,
@@ -19,11 +20,20 @@ from werkzeug.utils import secure_filename
 from app import db
 from app.forms import BookForm, LoanForm, UserEditForm, UserForm, UserSettingsForm
 from app.models import Author, Book, Genre, Loan, User, db
+from flask_login import login_user, login_required, current_user, logout_user
 
 bp = Blueprint("main", __name__)
 
-# Set the active user for the session
 
+# Decorator to check if user is admin
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            flash("You do not have administrative privileges to access this page.", "danger")
+            return redirect(url_for('main.home'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @bp.route("/favicon.ico")
 def favicon():
@@ -31,6 +41,7 @@ def favicon():
 
 
 @bp.route("/")
+@login_required
 def home():
     all_books = Book.query.all()
     return render_template("index.html", books=all_books, active_page="books")
@@ -40,13 +51,37 @@ def login():
     return render_template("login.html", login_page=True, title='Log In')
 
 
-@bp.route("/users/")
+@bp.route("/login/" , methods=['POST'])
+def login_post():
+     username = request.form.get('username')
+     password = request.form.get('password')
+     user = User.query.filter_by(username=username).first()
+    
+     if user and user.check_password(password):
+        login_user(user)
+        flash('Login successful!', 'success')
+        next_page = request.args.get('next')
+        return redirect(next_page or url_for('main.home'))
+     else:
+        flash('Invalid username or password. Please try again.', 'danger')
+        return redirect(url_for('main.login'))
+
+@bp.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('main.login'))
+
+@bp.route("/users/" )
+@login_required
 def users():
     all_users = db.session.query(User).distinct().all()
     return render_template("users.html", users=all_users, active_page="users", parent_page="admin")
 
 
 @bp.route("/users/add/", methods=["GET", "POST"])
+@login_required
 def user_add():
     form = UserForm()
     if form.validate_on_submit():
@@ -66,6 +101,7 @@ def user_add():
 
 
 @bp.route("/users/edit/<int:user_id>", methods=["GET", "POST"])
+@login_required
 def user_edit(user_id):
     user = User.query.get_or_404(user_id)
     form = UserEditForm(obj=user)
@@ -95,6 +131,7 @@ def user_edit(user_id):
 
 
 @bp.route("/books/add/", methods=["GET", "POST"])
+@login_required
 def book_add():
     form = BookForm()
     # This provides a list of existing genres for autocompletion in the form
@@ -155,6 +192,7 @@ def book_add():
 
 
 @bp.route("/book_delete/<int:book_id>", methods=["POST"])
+@login_required
 def book_delete(book_id):
     book = Book.query.get_or_404(book_id)
 
@@ -171,6 +209,7 @@ def book_delete(book_id):
 
 
 @bp.route("/book_edit/<int:book_id>", methods=["GET", "POST"])
+@login_required
 def book_edit(book_id):
     book = Book.query.get_or_404(book_id)
     author_string = ", ".join([author.name for author in book.authors])
@@ -214,12 +253,14 @@ def book_edit(book_id):
 
 
 @bp.route("/loans/")
+@login_required
 def loans():
     all_loans = Loan.query.all()
     return render_template("loans.html", loans=all_loans, active_page="loans", parent_page="admin", title="Loans")
 
 
 @bp.route("/borrow/<int:book_id>/<int:user_id>", methods=["GET", "POST"])
+@login_required
 def borrow_book(book_id, user_id):
     book = Book.query.get_or_404(book_id)
     user = User.query.get_or_404(user_id)
@@ -235,6 +276,7 @@ def borrow_book(book_id, user_id):
 
 
 @bp.route("/return_book/<int:book_id>", methods=["GET", "POST"])
+@login_required
 def return_book(book_id):
     loan = Loan.query.filter_by(book_id=book_id, return_date=None).first()
     if loan:
@@ -248,6 +290,7 @@ def return_book(book_id):
 
 
 @bp.route('/loans/return/<int:loan_id>', methods=['POST'])
+@login_required
 def return_loan(loan_id):
     loan = Loan.query.get_or_404(loan_id)
     if loan.return_date is None:
@@ -261,12 +304,14 @@ def return_loan(loan_id):
 
 
 @bp.route("/loans/<user_id>")
+@login_required
 def user_loans(user_id):
     user_loans = User.query.get_or_404(user_id).loans
     return render_template("loans.html", loans=user_loans, active_page="", title="My Loans")
 
 
 @bp.route("/loans/add/", methods=["GET", "POST"])
+@login_required
 def loan_add():
     form = LoanForm()
     # Populate choices for books and users
@@ -294,9 +339,10 @@ def loan_add():
     return render_template("loan_add.html", form=form, active_page="loans", parent_page="admin", title="Add Loan")
 
 
-@bp.route("/profile/<int:user_id>")
+@bp.route("/user/profile/<int:user_id>")
+@login_required
 def user_profile(user_id):
-    user = User.query.get_or_404(user_id)
+    user = current_user
     # Sort all loans by date, newest first
     all_loans = sorted(user.loans, key=lambda x: x.loan_date, reverse=True)
     active_loans = [loan for loan in all_loans if loan.return_date is None]
@@ -312,10 +358,10 @@ def user_profile(user_id):
     )
 
 
-@bp.route("/settings", methods=["GET", "POST"])
+@bp.route("/user/settings", methods=["GET", "POST"])
+@login_required
 def user_settings():
-    # This is a placeholder for a real login system like Flask-Login
-    user = User.query.first()
+    user = current_user
     if not user:
         flash("No user found to edit settings.", "danger")
         return redirect(url_for('main.home'))
@@ -345,6 +391,7 @@ def user_settings():
 
 
 @bp.route("/api/v1/isbn/<isbn>", methods=["GET"])
+@login_required
 def get_book_by_isbn(isbn):
     """
     API endpoint to fetch book data from OpenLibrary based on ISBN.

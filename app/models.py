@@ -1,6 +1,6 @@
 from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from flask_login import UserMixin
 book_authors = db.Table('book_authors',
                         db.Column('book_id', db.Integer, db.ForeignKey(
                             'book.id'), primary_key=True),
@@ -45,7 +45,7 @@ class Genre(db.Model):
         return self.name
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True,
                          nullable=False, index=True)
