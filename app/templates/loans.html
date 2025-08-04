@@ -2,9 +2,9 @@
 {% block content %}
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>{{ title }}</h2>
-        <a href="{{ url_for('main.loan_add') }}" class="btn btn-primary add-book-btn">Add Loan
-        </a>
+        <h2>{{ title }}</h2> {# Title is passed from Python, assumed to be already translated or a dynamic value #}
+        <a href="{{ url_for('main.loan_add') }}" class="btn btn-primary add-book-btn">{{ _('Add Loan') }}
+        </a> {# Translated button text #}
     </div>
     <hr>
 
@@ -20,11 +20,11 @@
     <table class="table table-hover table-striped">
         <thead>
             <tr>
-                <th>Book Title</th>
-                <th>User</th>
-                <th>Loan Date</th>
-                <th>Return Date</th>
-                <th>Actions</th>
+                <th>{{ _('Book Title') }}</th> {# Translated table header #}
+                <th>{{ _('User') }}</th> {# Translated table header #}
+                <th>{{ _('Loan Date') }}</th> {# Translated table header #}
+                <th>{{ _('Return Date') }}</th> {# Translated table header #}
+                <th>{{ _('Actions') }}</th> {# Translated table header #}
             </tr>
         </thead>
         <tbody>
@@ -37,7 +37,7 @@
                     {% if loan.return_date %}
                     {{ loan.return_date.strftime('%Y-%m-%d %H:%M') }}
                     {% else %}
-                    <span class="badge bg-warning text-dark">On Loan</span>
+                    <span class="badge bg-warning text-dark">{{ _('On Loan') }}</span> {# Translated badge text #}
                     {% endif %}
                 </td>
                 <td>
@@ -45,8 +45,9 @@
                     <form action="{{ url_for('main.return_loan', loan_id=loan.id) }}" method="POST"
                         style="display: inline;">
                         <button type="submit" class="btn btn-outline-warning btn-sm" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Return Book"><i class="bx bx-log-out-circle"></i></button>
-                     </form>
+                            data-bs-placement="top" title="{{ _('Return Book') }}"><i
+                                class="bx bx-log-out-circle"></i></button> {# Translated tooltip #}
+                    </form>
                     {% endif %}
                 </td>
             </tr>

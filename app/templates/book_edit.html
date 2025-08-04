@@ -9,38 +9,41 @@
     {% endfor %}
     {% endif %}
     {% endwith %}
-    <h2>Edit Book: <span class="text-muted">{{ book.title }}</span></h2>
+    <h2>{{ _('Edit Book:') }} <span class="text-muted">{{ book.title }}</span></h2> {# Translated heading prefix #}
     <hr>
 
     <form method="POST" action="" enctype="multipart/form-data" novalidate>
         {{ form.hidden_tag() }}
 
         {% if book.cover %}
-        <div class="mb-3">
-            <p class="form-label">Current Cover:</p>
+        <div class="form-group mb-3"> {# Added form-group #}
+            <p class="form-label">{{ _('Current Cover:') }}</p> {# Translated label #}
             <img src="{{ url_for('static', filename='uploads/' + book.cover) }}"
-                alt="Current cover for {{ book.title }}" style="max-width: 150px; height: auto; border-radius: 4px;">
+                alt="{{ _('Current cover for %(title)s', title=book.title) }}"
+                style="max-width: 150px; height: auto; border-radius: 4px;"> {# Translated alt text #}
         </div>
         {% endif %}
 
-        <div class="mb-3">
-            {{ form.isbn.label(class="form-label") }}
-            {{ form.isbn(class="form-control", placeholder="Enter ISBN") }}
+        <div class="form-group mb-3"> {# Added form-group #}
+            {{ form.isbn.label(class="form-label") }} {# Label handled by WTForms + forms.py #}
+            {{ form.isbn(class="form-control", placeholder=_("Enter ISBN")) }} {# Translated placeholder #}
             {% for error in form.isbn.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
-        <div class="mb-3">
-            {{ form.title.label(class="form-label") }}
-            {{ form.title(class="form-control", placeholder="e.g. The Lord of the Rings") }}
+        <div class="form-group mb-3"> {# Added form-group #}
+            {{ form.title.label(class="form-label") }} {# Label handled by WTForms + forms.py #}
+            {{ form.title(class="form-control", placeholder=_("e.g. The Lord of the Rings")) }} {# Translated
+            placeholder #}
             {% for error in form.title.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
-        <div class="mb-3">
-            {{ form.author.label(class="form-label") }}
-            {{ form.author(class="form-control", placeholder="e.g. J.R.R. Tolkien") }}
+        <div class="form-group mb-3"> {# Added form-group #}
+            {{ form.author.label(class="form-label") }} {# Label handled by WTForms + forms.py #}
+            {{ form.author(class="form-control", placeholder=_("e.g. J.R.R. Tolkien")) }} {# Translated placeholder #}
             {% for error in form.author.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
-        <div class="mb-3">
-            {{ form.genre.label(class="form-label") }}
-            {{ form.genre(class="form-control", list="genre-list", placeholder="e.g. Fantasy") }}
+        <div class="form-group mb-3"> {# Added form-group #}
+            {{ form.genre.label(class="form-label") }} {# Label handled by WTForms + forms.py #}
+            {{ form.genre(class="form-control", list="genre-list", placeholder=_("e.g. Fantasy")) }} {# Translated
+            placeholder #}
             <datalist id="genre-list">
                 {% if genres %}
                 {% for genre in genres %}
@@ -50,20 +53,23 @@
             </datalist>
             {% for error in form.genre.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
-        <div class="mb-3">
-            {{ form.year.label(class="form-label") }}
-            {{ form.year(class="form-control", placeholder="e.g. 1954") }}
+        <div class="form-group mb-3"> {# Added form-group #}
+            {{ form.year.label(class="form-label") }} {# Label handled by WTForms + forms.py #}
+            {{ form.year(class="form-control", placeholder=_("e.g. 1954")) }} {# Translated placeholder #}
             {% for error in form.year.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
-        <div class="mb-3">
-            {{ form.cover.label(class="form-label") }}
-            <small class="form-text text-muted d-block mb-1">Upload a new cover to replace the current one.</small>
+        <div class="form-group mb-3"> {# Added form-group #}
+            {{ form.cover.label(class="form-label") }} {# Label handled by WTForms + forms.py #}
+            <small class="form-text text-muted d-block mb-1">{{ _('Upload a new cover to replace the current one.')
+                }}</small> {# Translated text #}
             {{ form.cover(class="form-control") }}
             {% for error in form.cover.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
-        <div class="mt-4">
-            {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('main.home') }}" class="btn btn-secondary">Cancel</a>
+        <div class="mt-4 d-flex align-items-center gap-2"> {# Added d-flex, align-items-center, gap-2 for alignment #}
+            {{ form.submit(class="btn btn-primary") }} {# Submit button text handled by forms.py #}
+            <a href="{{ url_for('main.home') }}" class="btn btn-secondary">
+                {{ _('Cancel') }} {# Added icon for consistency #}
+            </a> {# Translated button text with icon #}
         </div>
     </form>
 </div>

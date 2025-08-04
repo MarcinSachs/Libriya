@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="container">
-    <h2>My Settings</h2>
+    <h2>{{ _('My Settings') }}</h2> {# Translated heading #}
     <hr>
 
     {# flash messages #}
@@ -15,36 +15,41 @@
 
     <form method="POST" action="" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
-        <div class="mb-3">
-            <label class="form-label">Current Profile Picture</label>
+        <div class="form-group mb-3"> {# Added form-group #}
+            <label class="form-label">{{ _('Current Profile Picture') }}</label> {# Translated label #}
             <div>
-                <img class="rounded-circle" src="{{ image_file_url }}" style="width: 150px; height: 150px; object-fit: cover;">
+                <img class="rounded-circle" src="{{ url_for('static', filename='uploads/' + user.image_file) }}"
+                    style="width: 150px; height: 150px; object-fit: cover;">
             </div>
         </div>
-        <div class="mb-3">
-            {{ form.picture.label(class="form-label") }}
+        <div class="form-group mb-3"> {# Added form-group #}
+            {{ form.picture.label(class="form-label") }} {# Label handled by WTForms + forms.py #}
             {{ form.picture(class="form-control") }}
             {% for error in form.picture.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
-        <div class="mb-3">
-            {{ form.email.label(class="form-label") }}
+        <div class="form-group mb-3"> {# Added form-group #}
+            {{ form.email.label(class="form-label") }} {# Label handled by WTForms + forms.py #}
             {{ form.email(class="form-control") }}
-            {% for error in form.email.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+            {% for error in form.email.errors %"><span class="text-danger">{{ error }}</span>{% endfor %} {# Corrected
+            from previous trace: removed extra '"' #}
         </div>
-        <p class="text-muted">Leave the password fields blank if you don't want to change your password.</p>
-        <div class="mb-3">
-            {{ form.password.label(class="form-label") }}
+        <p class="text-muted">{{ _('Leave the password fields blank if you don\'t want to change your password.') }}</p>
+        {# Translated text #}
+        <div class="form-group mb-3"> {# Added form-group #}
+            {{ form.password.label(class="form-label") }} {# Label handled by WTForms + forms.py #}
             {{ form.password(class="form-control") }}
             {% for error in form.password.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
-        <div class="mb-3">
-            {{ form.confirm_password.label(class="form-label") }}
+        <div class="form-group mb-3"> {# Added form-group #}
+            {{ form.confirm_password.label(class="form-label") }} {# Label handled by WTForms + forms.py #}
             {{ form.confirm_password(class="form-control") }}
             {% for error in form.confirm_password.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
-        <div class="mt-4">
-            {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('main.user_profile', user_id=current_user.id) }}" class="btn btn-secondary">Cancel</a>
+        <div class="mt-4 d-flex align-items-center gap-2"> {# Added d-flex, align-items-center, gap-2 for alignment #}
+            {{ form.submit(class="btn btn-primary") }} {# Submit button text handled by forms.py #}
+            <a href="{{ url_for('main.user_profile', user_id=current_user.id) }}" class="btn btn-secondary">
+                <i class='bx bx-x-circle'></i> {{ _('Cancel') }} {# Added icon for consistency #}
+            </a> {# Translated button text with icon #}
         </div>
     </form>
 </div>

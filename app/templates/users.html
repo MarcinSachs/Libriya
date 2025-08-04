@@ -12,17 +12,18 @@
 
     <p>
         {% set n = users|length %}
-        Library currently has {{ n }} {{ 'user' if n == 1 else 'users' }}.
+        {{ ngettext('Library currently has %(n)s user.', 'Library currently has %(n)s users.', n, n=n) }} {# Corrected:
+        Added n=n for string interpolation #}
     </p>
-    <h2>Users</h2>
+    <h2>{{ _('Users') }}</h2> {# Translated heading #}
 
     <table class="table table-hover table-striped">
         <thead>
             <tr>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Actions</th>
+                <th>{{ _('Username') }}</th> {# Translated table header #}
+                <th>{{ _('Email') }}</th> {# Translated table header #}
+                <th>{{ _('Role') }}</th> {# Translated table header #}
+                <th>{{ _('Actions') }}</th> {# Translated table header #}
             </tr>
         </thead>
         <tbody>
@@ -30,16 +31,19 @@
             <tr>
                 <td>{{ user.username }}</td>
                 <td>{{ user.email }}</td>
-                <td>{% if user.is_admin %}<span class="badge bg-info">Admin</span>{% else %}<span class="badge bg-secondary">User</span>{% endif %}</td>
+                <td>{% if user.is_admin %}<span class="badge bg-info">{{ _('Admin') }}</span>{% else %}<span
+                        class="badge bg-secondary">{{ _('User') }}</span>{% endif %}</td> {# Translated badge text #}
                 <td>
                     {# Changed to icon-only with tooltip for consistency #}
-                    <a href="{{ url_for('main.user_edit', user_id=user.id) }}" class="btn btn-outline-primary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit User"><i class="bx bx-edit"></i></a>
+                    <a href="{{ url_for('main.user_edit', user_id=user.id) }}" class="btn btn-outline-primary btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Edit User') }}"><i
+                            class="bx bx-edit"></i></a> {# Translated tooltip #}
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <a href="{{ url_for('main.user_add') }}" class="btn btn-primary add-book-btn">Add user
-     </a>
+    <a href="{{ url_for('main.user_add') }}" class="btn btn-primary add-book-btn">{{ _('Add user') }}
+    </a> {# Translated button text #}
 </div>
 {% endblock %}

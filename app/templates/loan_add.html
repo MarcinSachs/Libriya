@@ -1,10 +1,9 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="container">
-    <h2>Loan a Book</h2>
+    <h2>{{ _('Loan a Book') }}</h2>
     <hr>
 
-    {# flash messages #}
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
@@ -15,19 +14,21 @@
 
     <form method="POST" action="" novalidate>
         {{ form.hidden_tag() }}
-        <div class="mb-3">
+        <div class="form-group mb-3">
             {{ form.book_id.label(class="form-label") }}
             {{ form.book_id(class="form-select") }}
             {% for error in form.book_id.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
-        <div class="mb-3">
+        <div class="form-group mb-3">
             {{ form.user_id.label(class="form-label") }}
             {{ form.user_id(class="form-select") }}
             {% for error in form.user_id.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
-        <div class="mt-4">
+        <div class="mt-4 d-flex align-items-center gap-2">
             {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('main.loans') }}" class="btn btn-secondary">Cancel</a>
+            <a href="{{ url_for('main.loans') }}" class="btn btn-secondary">
+                {{ _('Cancel') }}
+            </a>
         </div>
     </form>
 </div>

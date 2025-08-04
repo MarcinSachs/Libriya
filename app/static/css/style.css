@@ -1,113 +1,147 @@
 /* CSS variable definitions for color and shadow consistency */
 :root {
-    --primary-color: #1a535c; /* Dark teal for header and accents */
-    --accent-color: #4ecdc4; /* Lighter teal for secondary accents */
+    --primary-color: #1a535c;
+    /* Dark teal for header and accents */
+    --accent-color: #4ecdc4;
+    /* Lighter teal for secondary accents */
     --text-dark: #333;
-    --text-light: #f8f9fa; /* Light text on dark background */
-    --gray-bg: #f8f9fa; /* Very light page background */
-    --box-shadow-light: 0 .125rem .25rem rgba(0,0,0,.075);
-    --box-shadow-medium: 0 .5rem 1rem rgba(0,0,0,.15);
+    --text-light: #f8f9fa;
+    /* Light text on dark background */
+    --gray-bg: #f8f9fa;
+    /* Very light page background */
+    --box-shadow-light: 0 .125rem .25rem rgba(0, 0, 0, .075);
+    --box-shadow-medium: 0 .5rem 1rem rgba(0, 0, 0, .15);
 }
 
 /* Global styles for the body */
 body {
-    font-family: 'Inter', sans-serif; /* New, readable font */
+    font-family: 'Inter', sans-serif;
+    /* New, readable font */
     color: var(--text-dark);
-    background-color: var(--gray-bg); /* Subtle background for the entire page */
-    padding-top: 56px; /* Top padding so content is not covered by fixed navbar */
+    background-color: var(--gray-bg);
+    /* Subtle background for the entire page */
+    padding-top: 56px;
+    /* Top padding so content is not covered by fixed navbar */
 }
+
 /* Specific styles for the login page background */
 body.login-background {
-    background: url('../images/library-bg.jpg') no-repeat center center fixed; /* Upewnij się, że ten plik istnieje! */
+    background: url('../images/library-bg.jpg') no-repeat center center fixed;
+    /* Upewnij się, że ten plik istnieje! */
     background-size: cover;
-    background-color: #f0f2f5; /* Fallback color */
-    padding-top: 0; /* No top padding for full background on login page */
-    display: flex; /* Make body a flex container to push content below fixed navbar */
-    flex-direction: column; /* Stack children vertically */
+    background-color: #f0f2f5;
+    /* Fallback color */
+    padding-top: 0;
+    /* No top padding for full background on login page */
+    display: flex;
+    /* Make body a flex container to push content below fixed navbar */
+    flex-direction: column;
+    /* Stack children vertically */
 }
 
 h2 {
     margin-bottom: 1.5rem;
     margin-top: 1.5rem;
-    /* padding-bottom: 3rem; */ /* Usunięto, gdyż h2 w login.html został usunięty, a ta reguła globalnie wpływała na wszystkie h2 */
     color: var(--primary-color);
 }
 
 /* Adjust main-content for login page to take full height and center content */
 .main-content.login-full-height {
-    flex-grow: 1; /* Allows main-content to take up available space */
-    display: flex; /* Make it a flex container */
-    align-items: center; /* Center content vertically */
-    justify-content: center; /* Center content horizontally */
-    padding-top: 0 !important; /* Remove any padding that might interfere with centering */
+    flex-grow: 1;
+    /* Allows main-content to take up available space */
+    display: flex;
+    /* Make it a flex container */
+    align-items: center;
+    /* Center content vertically */
+    justify-content: center;
+    /* Center content horizontally */
+    padding-top: 0 !important;
+    /* Remove any padding that might interfere with centering */
     padding-bottom: 0 !important;
-    margin-top: 56px; /* Push content down by navbar height */
-    min-height: calc(100vh - 56px); /* Take remaining height */
- }
- 
+    margin-top: 56px;
+    /* Push content down by navbar height */
+    min-height: calc(100vh - 56px);
+    /* Take remaining height */
+}
+
 
 /* Navbar */
 .bg-custom-dark {
-    background-color: var(--primary-color) !important; /* Using variable for background */
+    background-color: var(--primary-color) !important;
+    /* Using variable for background */
 }
 
 .navbar-brand.title-text {
-    font-family: 'Cormorant Garamond', serif; /* Retaining style for application name */
+    font-family: 'Cormorant Garamond', serif;
+    /* Retaining style for application name */
     font-size: 1.8rem;
     font-weight: 700;
-    color: var(--text-light) !important; /* Application name text white */
+    color: var(--text-light) !important;
+    /* Application name text white */
 }
 
 .navbar-brand.title-text img {
-    height: 30px; /* Adjusting logo size */
+    height: 30px;
+    /* Adjusting logo size */
     width: auto;
 }
 
 .user-display {
-    color: var(--text-light); /* User name text color */
+    color: var(--text-light);
+    /* User name text color */
 }
 
 .user-display:hover {
-    color: var(--accent-color); /* User name hover color */
+    color: var(--accent-color);
+    /* User name hover color */
 }
 
 .dropdown-menu {
     border-radius: .5rem;
-    box-shadow: var(--box-shadow-medium); /* Subtle shadow for dropdown menu */
+    box-shadow: var(--box-shadow-medium);
+    /* Subtle shadow for dropdown menu */
 }
 
 /* Sidebar */
 .sidebar {
-    height: 100vh; /* Full sidebar height */
+    height: 100vh;
+    /* Full sidebar height */
     position: fixed;
     top: 0;
     left: 0;
-    padding-top: 56px; /* Top padding for fixed navbar */
+    padding-top: 56px;
+    /* Top padding for fixed navbar */
     background-color: var(--gray-bg);
-    z-index: 1000; /* Ensure sidebar is above other elements but below navbar */
+    z-index: 1000;
+    /* Ensure sidebar is above other elements but below navbar */
 }
 
 .sidebar .nav-link {
     font-weight: 500;
     color: var(--text-dark);
     transition: background-color 0.2s, color 0.2s;
-    border-radius: .25rem; /* Rounded corners for links */
-    padding: .75rem 1rem; /* More padding for better clickability */
+    border-radius: .25rem;
+    /* Rounded corners for links */
+    padding: .75rem 1rem;
+    /* More padding for better clickability */
 }
 
 .sidebar .nav-link:hover {
     color: var(--primary-color);
-    background-color: rgba(26, 83, 92, 0.05); /* Very light background on hover (RGB from --primary-color) */
+    background-color: rgba(26, 83, 92, 0.05);
+    /* Very light background on hover (RGB from --primary-color) */
 }
 
 .sidebar .nav-link.active {
     color: var(--text-light);
     background-color: var(--primary-color);
-    box-shadow: var(--box-shadow-light); /* Light shadow for active link */
+    box-shadow: var(--box-shadow-light);
+    /* Light shadow for active link */
 }
 
 .sidebar .nav-link.active .bx {
-    color: var(--text-light); /* Icons white when active */
+    color: var(--text-light);
+    /* Icons white when active */
 }
 
 .sidebar .nav-link .bx {
@@ -115,7 +149,8 @@ h2 {
 }
 
 .sidebar .collapse .nav-link {
-    padding-left: 2.5rem; /* Indentation for sub-menu items */
+    padding-left: 2.5rem;
+    /* Indentation for sub-menu items */
 }
 
 .sidebar .bx-chevron-down {
@@ -123,22 +158,25 @@ h2 {
 }
 
 .sidebar .nav-link:not(.collapsed) .bx-chevron-down {
-    transform: rotate(180deg); /* Icon rotation when expanded */
+    transform: rotate(180deg);
+    /* Icon rotation when expanded */
 }
 
 /* Main content */
 .main-content {
-    padding-top: 1.5rem; /* Additional top spacing */
-    padding-bottom: 3rem; /* Bottom spacing */
+    padding-top: 1.5rem;
+    /* Additional top spacing */
+    padding-bottom: 3rem;
+    /* Bottom spacing */
 }
 
 /* Flash messages */
 .alert {
     border-radius: .5rem;
-    box-shadow: var(--box-shadow-light); /* Przywrócono lżejszy cień, jak dla innych elementów informacyjnych */
+    box-shadow: var(--box-shadow-light);
+    /* Przywrócono lżejszy cień, jak dla innych elementów informacyjnych */
     margin-bottom: 1.5rem;
     font-weight: 500;
-    /* text-align: center; */ /* Usunięto globalne centrowanie, alerty zazwyczaj są wyrównane do lewej */
 }
 
 
@@ -167,110 +205,170 @@ h2 {
 .table {
     background-color: white;
     border-radius: .5rem;
-    overflow: hidden; /* Ensures border-radius works */
-    box-shadow: var(--box-shadow-medium); /* More prominent shadow for table */
+    overflow: hidden;
+    /* Ensures border-radius works */
+    box-shadow: var(--box-shadow-medium);
+    /* More prominent shadow for table */
     margin-top: 1.5rem;
 }
 
 .table thead th {
-    background-color: var(--primary-color); /* Darker table header */
+    background-color: var(--primary-color);
+    /* Darker table header */
     color: var(--text-light);
     font-weight: 600;
     vertical-align: middle;
-    padding: 1rem; /* More padding in header */
+    padding: 1rem;
+    /* More padding in header */
 }
 
 .table tbody tr:hover {
-    background-color: rgba(26, 83, 92, 0.03); /* Very subtle hover effect on rows (RGB from --primary-color) */
+    background-color: rgba(26, 83, 92, 0.03);
+    /* Very subtle hover effect on rows (RGB from --primary-color) */
 }
 
 .table td {
-    vertical-align: middle; /* Vertical alignment of content in cells */
-    padding: .75rem 1rem; /* More padding in cells */
+    vertical-align: middle;
+    /* Vertical alignment of content in cells */
+    padding: .75rem 1rem;
+    /* More padding in cells */
 }
 
 .table img {
-    width: 60px; /* Slightly larger images */
-    height: 80px; /* Fixed height for consistency */
-    object-fit: cover; /* Image fitting, preserving aspect ratio */
-    border-radius: .25rem; /* Slight rounding of image corners */
-    box-shadow: 0 2px 4px rgba(0,0,0,.08);
+    width: 60px;
+    /* Slightly larger images */
+    height: 80px;
+    /* Fixed height for consistency */
+    object-fit: cover;
+    /* Image fitting, preserving aspect ratio */
+    border-radius: .25rem;
+    /* Slight rounding of image corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .08);
 }
 
 .table i.bx-image {
-    font-size: 36px !important; /* Larger placeholder icon */
+    font-size: 36px !important;
+    /* Larger placeholder icon */
     color: #a0a0a0 !important;
 }
 
 /* Table action buttons */
 .table td .btn {
-    margin-right: .25rem; /* Spacing between buttons */
-    margin-bottom: .25rem; /* For wrapping on smaller screens */
-    white-space: nowrap; /* Prevents text/icon breaking */
-    padding: .375rem .5rem; /* Adjusting padding for btn-sm with icons */
+    margin-right: .25rem;
+    /* Spacing between buttons */
+    margin-bottom: .25rem;
+    /* For wrapping on smaller screens */
+    white-space: nowrap;
+    /* Prevents text/icon breaking */
+    padding: .375rem .5rem;
+    /* Adjusting padding for btn-sm with icons */
 }
 
 .table td .btn i {
-    font-size: 1rem; /* Consistent icon size */
+    font-size: 1rem;
+    /* Consistent icon size */
 }
 
 /* Custom colors for outline buttons */
-/* Using Bootstrap variables for easy color overriding */
-.btn-outline-success { 
-    --bs-btn-color: var(--primary-color); 
-    --bs-btn-border-color: var(--primary-color); 
-    --bs-btn-hover-bg: var(--primary-color); 
-    --bs-btn-hover-border-color: var(--primary-color); 
-    --bs-btn-active-bg: var(--primary-color); 
-    --bs-btn-active-border-color: var(--primary-color); 
+.btn-outline-success {
+    --bs-btn-color: var(--primary-color);
+    --bs-btn-border-color: var(--primary-color);
+    --bs-btn-hover-bg: var(--primary-color);
+    --bs-btn-hover-border-color: var(--primary-color);
+    --bs-btn-active-bg: var(--primary-color);
+    --bs-btn-active-border-color: var(--primary-color);
     --bs-btn-active-color: var(--text-light);
     --bs-btn-hover-color: var(--text-light);
 }
-.btn-outline-warning { 
-    --bs-btn-color: var(--accent-color); 
-    --bs-btn-border-color: var(--accent-color); 
-    --bs-btn-hover-bg: var(--accent-color); 
-    --bs-btn-hover-border-color: var(--accent-color); 
-    --bs-btn-active-bg: var(--accent-color); 
-    --bs-btn-active-border-color: var(--accent-color); 
+
+.btn-outline-warning {
+    --bs-btn-color: var(--accent-color);
+    --bs-btn-border-color: var(--accent-color);
+    --bs-btn-hover-bg: var(--accent-color);
+    --bs-btn-hover-border-color: var(--accent-color);
+    --bs-btn-active-bg: var(--accent-color);
+    --bs-btn-active-border-color: var(--accent-color);
     --bs-btn-active-color: var(--text-light);
     --bs-btn-hover-color: var(--text-light);
 }
-/* Default Bootstrap colors for primary/danger (can be customized if desired to match the rest) */
-/* Keeping default Bootstrap blue and red, but you can change them to other teal shades or something that matches the rest. */
-.btn-outline-primary { 
-    /* --bs-btn-color: #0d6efd; --bs-btn-border-color: #0d6efd; 
-    --bs-btn-hover-bg: #0d6efd; --bs-btn-hover-border-color: #0d6efd; 
-    --bs-btn-active-bg: #0d6efd; --bs-btn-active-border-color: #0d6efd;  */
+
+.btn-outline-primary {
     --bs-btn-active-color: var(--text-light);
     --bs-btn-hover-color: var(--text-light);
 }
-.btn-outline-danger { 
-    /* --bs-btn-color: #dc3545; --bs-btn-border-color: #dc3545; 
-    --bs-btn-hover-bg: #dc3545; --bs-btn-hover-border-color: #dc3545; 
-    --bs-btn-active-bg: #dc3545; --bs-btn-active-border-color: #dc3545;  */
+
+.btn-outline-danger {
     --bs-btn-active-color: var(--text-light);
     --bs-btn-hover-color: var(--text-light);
 }
 
 /* "Add Book" button */
 .add-book-btn {
-    width: 200px; /* Wider button */
-    padding: .75rem 1.5rem; /* More padding */
+    width: 200px;
+    padding: .75rem 1.5rem;
     border-radius: .5rem;
     font-size: 1.1rem;
     margin-top: 1.5rem;
     margin-bottom: 2rem;
     background-color: var(--primary-color);
     border-color: var(--primary-color);
-    transition: background-color 0.2s, border-color 0.2s, transform 0.2s; /* Smooth transitions */
+    transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
 }
 
 .add-book-btn:hover {
     background-color: var(--accent-color);
     border-color: var(--accent-color);
-    transform: translateY(-2px); /* Slight lift on hover */
+    transform: translateY(-2px);
 }
+
+/* Normalize button height and alignment for all .btn elements (including <input> and <a>) */
+.btn {
+    vertical-align: middle;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    /* Use Bootstrap's variables for padding to ensure consistency */
+    padding: var(--bs-btn-padding-y, .375rem) var(--bs-btn-padding-x, .75rem);
+    height: auto;
+    /* Let content and padding determine height */
+    box-sizing: border-box;
+    /* Ensure padding is included in the element's total width and height */
+    font-size: var(--bs-btn-font-size);
+    /* Ensure font size is consistent with Bootstrap's default button font size */
+    line-height: var(--bs-btn-line-height);
+    /* Ensure line height is consistent */
+}
+
+/* For specific browser quirks on <input type="submit"> - explicitly override user agent styles */
+/* This rule must come AFTER the general .btn rule to apply correctly */
+input[type="submit"].btn,
+input[type="button"].btn,
+input[type="reset"].btn {
+    /* Explicitly reset properties that might cause height differences */
+    -webkit-appearance: none;
+    /* Remove default Webkit button styles */
+    -moz-appearance: none;
+    /* Remove default Mozilla button styles */
+    appearance: none;
+    /* Remove default button styles for other browsers */
+    background-image: none;
+    /* Remove default gradient/image backgrounds */
+    /* Make sure all font-related properties are inherited or explicitly set */
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    /* Ensure border and outline are consistent */
+    border: var(--bs-btn-border-width) var(--bs-btn-border-style) var(--bs-btn-border-color);
+    outline: none;
+    /* Re-apply padding and box-sizing to ensure consistency */
+    padding: var(--bs-btn-padding-y, .375rem) var(--bs-btn-padding-x, .75rem);
+    height: auto;
+    /* Still let content and padding define height */
+    /* Add a minimal margin to avoid any potential adjacent element issues, if not already handled by flexbox gap */
+    margin: 0;
+}
+
 
 /* Responsiveness adjustments */
 @media (max-width: 768px) {
@@ -281,14 +379,20 @@ h2 {
         border-right: none;
         border-bottom: 1px solid #e2e2e2;
     }
+
     .main-content {
-        padding-top: 1.5rem; /* Reset padding-top after removing sticky sidebar */
-        margin-left: 0 !important; /* Remove margin-left for small screens */
+        padding-top: 1.5rem;
+        /* Reset padding-top after removing sticky sidebar */
+        margin-left: 0 !important;
+        /* Remove margin-left for small screens */
     }
+
     .table td.text-nowrap {
-        white-space: normal; /* Allow buttons to wrap on small screens */
+        white-space: normal;
+        /* Allow buttons to wrap on small screens */
     }
 }
+
 .form-group {
     margin-bottom: 1.5rem;
 }
@@ -326,40 +430,39 @@ h2 {
 /* STRUCTURE */
 
 .wrapper {
-  display: flex;
-  align-items: center;
-  flex-direction: column; 
-  justify-content: center;
-  width: 100%;
-  min-height: 100%;
-  padding: 20px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    min-height: 100%;
+    padding: 20px;
 }
 
 /* Apply blur effect to the form content */
 #formContent {
-  -webkit-border-radius: 10px; /* Uproszczono i usunięto duplikaty */
-  border-radius: 10px; /* Uproszczono i usunięto duplikaty */
-  background: rgba(255, 255, 255, 0.7); /* Semi-transparent white background */
-  backdrop-filter: blur(10px); /* Apply blur effect */
-  -webkit-backdrop-filter: blur(10px); /* Safari support */
-  padding: 30px; /* Zachowano to padding, aby zawartość miała odstęp od krawędzi rozmytego tła */
-  width: 90%;
-  max-width: 450px;
-  position: relative;
-  -webkit-box-shadow: 0 30px 60px 0 rgba(0,0,0,0.3);
-  box-shadow: 0 30px 60px 0 rgba(0,0,0,0.3);
-  text-align: center;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 30px;
+    width: 90%;
+    max-width: 450px;
+    position: relative;
+    -webkit-box-shadow: 0 30px 60px 0 rgba(0, 0, 0, 0.3);
+    box-shadow: 0 30px 60px 0 rgba(0, 0, 0, 0.3);
+    text-align: center;
 }
 
 
 
 #formFooter {
-  background-color: #f6f6f6;
-  border-top: 1px solid #dce8f1;
-  padding: 25px;
-  text-align: center; /* Stopka formularza ma mieć takie same zaokrąglenia na dole jak formContent */
-  -webkit-border-radius: 0 0 10px 10px;
-   border-radius: 10px 10px 10px 10px;
+    background-color: #f6f6f6;
+    border-top: 1px solid #dce8f1;
+    padding: 25px;
+    text-align: center;
+    border-radius: 0 0 10px 10px;
 }
 
 
@@ -368,189 +471,225 @@ h2 {
 /* TABS */
 
 h2.inactive {
-  color: #cccccc;
+    color: #cccccc;
 }
 
 h2.active {
-  color: #0d0d0d;
-  border-bottom: 2px solid #5fbae9;
+    color: #0d0d0d;
+    border-bottom: 2px solid #5fbae9;
 }
 
 
 
 /* FORM TYPOGRAPHY*/
 
-input[type=button], input[type=submit], input[type=reset]  {
-  background-color: #56baed;
-  border: none;
-  color: white;
-  padding: 15px 80px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  text-transform: uppercase;
-  font-size: 13px;
-  -webkit-box-shadow: 0 10px 30px 0 rgba(95,186,233,0.4);
-  box-shadow: 0 10px 30px 0 rgba(95,186,233,0.4);
-  -webkit-border-radius: 5px 5px 5px 5px;
-  border-radius: 5px 5px 5px 5px;
-  margin: 5px 20px 40px 20px;
-  -webkit-transition: all 0.3s ease-in-out;
-  -moz-transition: all 0.3s ease-in-out;
-  -ms-transition: all 0.3s ease-in-out;
-  -o-transition: all 0.3s ease-in-out;
-  transition: all 0.3s ease-in-out;
+/* Removed conflicting global input[type=submit] rule. */
+/* Styles for login button (fadeIn.fourth) are now self-contained below */
+
+
+input[type=text],
+input[type=password] {
+    background-color: #f6f6f6;
+    border: none;
+    color: #0d0d0d;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 5px;
+    width: 85%;
+    border: 2px solid #f6f6f6;
+    -webkit-transition: all 0.5s ease-in-out;
+    -moz-transition: all 0.5s ease-in-out;
+    -ms-transition: all 0.5s ease-in-out;
+    -o-transition: all 0.5s ease-in-out;
+    transition: all 0.5s ease-in-out;
+    -webkit-border-radius: 5px 5px 5px 5px;
+    border-radius: 5px 5px 5px 5px;
 }
 
-input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover  {
-  background-color: #39ace7;
+input[type=text]:focus,
+input[type=password]:focus {
+    background-color: #fff;
+    border-bottom: 2px solid #5fbae9;
 }
 
-input[type=button]:active, input[type=submit]:active, input[type=reset]:active  {
-  -moz-transform: scale(0.95);
-  -webkit-transform: scale(0.95);
-  -o-transform: scale(0.95);
-  -ms-transform: scale(0.95);
-  transform: scale(0.95);
-}
-
-input[type=text], input[type=password]{
-  background-color: #f6f6f6;
-  border: none;
-  color: #0d0d0d;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 5px;
-  width: 85%;
-  border: 2px solid #f6f6f6;
-  -webkit-transition: all 0.5s ease-in-out;
-  -moz-transition: all 0.5s ease-in-out;
-  -ms-transition: all 0.5s ease-in-out;
-  -o-transition: all 0.5s ease-in-out;
-  transition: all 0.5s ease-in-out;
-  -webkit-border-radius: 5px 5px 5px 5px;
-  border-radius: 5px 5px 5px 5px;
-}
-
-input[type=text]:focus, input[type=password]:focus {
-  background-color: #fff;
-  border-bottom: 2px solid #5fbae9;
-}
-
-input[type=text]:placeholder, input[type=password]:placeholder {
-  color: #cccccc;
+input[type=text]:placeholder,
+input[type=password]:placeholder {
+    color: #cccccc;
 }
 
 /* For general form inputs in this specific login form */
 input[type=text],
-input[type=password] { /* Added password to this rule */
-  background-color: rgba(246, 246, 246, 0.8); /* Make inputs slightly transparent */
+input[type=password] {
+    background-color: rgba(246, 246, 246, 0.8);
 }
- 
+
 
 /* ANIMATIONS */
 
 /* Simple CSS3 Fade-in-down Animation */
 .fadeInDown {
-  -webkit-animation-name: fadeInDown;
-  animation-name: fadeInDown;
-  -webkit-animation-duration: 1s;
-  animation-duration: 1s;
-  -webkit-animation-fill-mode: both;
-  animation-fill-mode: both;
+    -webkit-animation-name: fadeInDown;
+    animation-name: fadeInDown;
+    -webkit-animation-duration: 1s;
+    animation-duration: 1s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
 }
 
 @-webkit-keyframes fadeInDown {
-  0% {
-    opacity: 0;
-    -webkit-transform: translate3d(0, -100%, 0);
-    transform: translate3d(0, -100%, 0);
-  }
-  100% {
-    opacity: 1;
-    -webkit-transform: none;
-    transform: none;
-  }
+    0% {
+        opacity: 0;
+        -webkit-transform: translate3d(0, -100%, 0);
+        transform: translate3d(0, -100%, 0);
+    }
+
+    100% {
+        opacity: 1;
+        -webkit-transform: none;
+        transform: none;
+    }
 }
 
 @keyframes fadeInDown {
-  0% {
-    opacity: 0;
-    -webkit-transform: translate3d(0, -100%, 0);
-    transform: translate3d(0, -100%, 0);
-  }
-  100% {
-    opacity: 1;
-    -webkit-transform: none;
-    transform: none;
-  }
+    0% {
+        opacity: 0;
+        -webkit-transform: translate3d(0, -100%, 0);
+        transform: translate3d(0, -100%, 0);
+    }
+
+    100% {
+        opacity: 1;
+        -webkit-transform: none;
+        transform: none;
+    }
 }
 
 /* Simple CSS3 Fade-in Animation */
-@-webkit-keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-@-moz-keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@-webkit-keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@-moz-keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
 
 .fadeIn {
-  opacity:0;
-  -webkit-animation:fadeIn ease-in 1;
-  -moz-animation:fadeIn ease-in 1;
-  animation:fadeIn ease-in 1;
+    opacity: 0;
+    -webkit-animation: fadeIn ease-in 1;
+    -moz-animation: fadeIn ease-in 1;
+    animation: fadeIn ease-in 1;
 
-  -webkit-animation-fill-mode:forwards;
-  -moz-animation-fill-mode:forwards;
-  animation-fill-mode:forwards;
+    -webkit-animation-fill-mode: forwards;
+    -moz-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
 
-  -webkit-animation-duration:1s;
-  -moz-animation-duration:1s;
-  animation-duration:1s;
+    -webkit-animation-duration: 1s;
+    -moz-animation-duration: 1s;
+    animation-duration: 1s;
 }
 
 .fadeIn.first {
-  -webkit-animation-delay: 0.4s;
-  -moz-animation-delay: 0.4s;
-  animation-delay: 0.4s;
+    -webkit-animation-delay: 0.4s;
+    -moz-animation-delay: 0.4s;
+    animation-delay: 0.4s;
 }
 
 .fadeIn.second {
-  -webkit-animation-delay: 0.6s;
-  -moz-animation-delay: 0.6s;
-  animation-delay: 0.6s;
+    -webkit-animation-delay: 0.6s;
+    -moz-animation-delay: 0.6s;
+    animation-delay: 0.6s;
 }
 
 .fadeIn.third {
-  -webkit-animation-delay: 0.8s;
-  -moz-animation-delay: 0.8s;
-  animation-delay: 0.8s;
+    -webkit-animation-delay: 0.8s;
+    -moz-animation-delay: 0.8s;
+    animation-delay: 0.8s;
 }
 
+/* Specific styling for the login button to prevent it from affecting other .btn elements */
 .fadeIn.fourth {
-  -webkit-animation-delay: 1s;
-  -moz-animation-delay: 1s;
-  animation-delay: 1s;
+    background-color: #56baed;
+    /* Specific color for login button */
+    border: none;
+    color: white;
+    padding: 15px 80px;
+    /* Specific padding for login button */
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    text-transform: uppercase;
+    font-size: 13px;
+    /* Specific font size for login button */
+    -webkit-box-shadow: 0 10px 30px 0 rgba(95, 186, 233, 0.4);
+    box-shadow: 0 10px 30px 0 rgba(95, 186, 233, 0.4);
+    -webkit-border-radius: 5px 5px 5px 5px;
+    border-radius: 5px 5px 5px 5px;
+    margin: 5px 20px 40px 20px;
+    /* Specific margin for login button */
+    -webkit-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -ms-transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
 }
+
+/* Hover and active states for login button */
+.fadeIn.fourth:hover {
+    background-color: #39ace7;
+}
+
+.fadeIn.fourth:active {
+    -moz-transform: scale(0.95);
+    -webkit-transform: scale(0.95);
+    -o-transform: scale(0.95);
+    -ms-transform: scale(0.95);
+    transform: scale(0.95);
+}
+
 
 /* Simple CSS3 Fade-in Animation */
 .underlineHover:after {
-  display: block;
-  left: 0;
-  bottom: -10px;
-  width: 0;
-  height: 2px;
-  background-color: #56baed;
-  content: "";
-  transition: width 0.2s;
+    display: block;
+    left: 0;
+    bottom: -10px;
+    width: 0;
+    height: 2px;
+    background-color: #56baed;
+    content: "";
+    transition: width 0.2s;
 }
 
 .underlineHover:hover {
-  color: #0d0d0d;
+    color: #0d0d0d;
 }
 
-.underlineHover:hover:after{
-  width: 100%;
+.underlineHover:hover:after {
+    width: 100%;
 }
 
 
@@ -559,10 +698,10 @@ input[type=password] { /* Added password to this rule */
 
 *:focus {
     outline: none;
-} 
+}
 
 #icon {
-  width:60%;
+    width: 60%;
 }
 
 /* Styles for photo credit on login page */
@@ -571,7 +710,7 @@ input[type=password] { /* Added password to this rule */
     text-align: center;
     color: var(--text-light);
     font-size: 0.85rem;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 /* Style for links within photo credit */

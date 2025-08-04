@@ -16,22 +16,23 @@
         <i class='bx bxs-info-circle'></i>
         <p class="mb-0">
             {% set n = books|length %}
-            Library currently has {{ n }} {{ 'book' if n == 1 else 'books' }}.
+            {{ ngettext('Library currently has %(n)s book.', 'Library currently has %(n)s books.', n, n=n) }} {#
+            Corrected: Added n=n for string interpolation #}
         </p>
     </div>
-    
-    <h2>List of books</h2>
+
+    <h2>{{ _('List of books') }}</h2> {# Translated heading #}
 
     <table class="table table-hover table-striped"> {# Added table-striped #}
         <thead>
             <tr>
-                <th>Cover</th>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Genre</th>
-                <th>Year</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{{ _('Cover') }}</th> {# Translated table header #}
+                <th>{{ _('Title') }}</th> {# Translated table header #}
+                <th>{{ _('Author') }}</th> {# Translated table header #}
+                <th>{{ _('Genre') }}</th> {# Translated table header #}
+                <th>{{ _('Year') }}</th> {# Translated table header #}
+                <th>{{ _('Status') }}</th> {# Translated table header #}
+                <th>{{ _('Actions') }}</th> {# Translated table header #}
             </tr>
         </thead>
         <tbody>
@@ -41,7 +42,8 @@
                     {% if book.cover %}
                     {# Removed inline styles, styled by CSS #}
                     <img src="{{ url_for('static', filename='uploads/' + book.cover) }}"
-                        alt="Book cover {{ book.title }}">
+                        alt="{{ _('Book cover %(title)s', title=book.title) }}"> {# Corrected: Use named placeholder
+                    directly with _() #}
                     {% else %}
                     {# Removed inline styles, styled by CSS #}
                     <i class='bx bx-image'></i>
@@ -51,27 +53,31 @@
                 <td>{{ book.authors|map(attribute='name')|join(', ') }}</td>
                 <td>{{ book.genre }}</td>
                 <td>{{ book.year }}</td>
-                <td>{{ 'Available' if book.is_available else 'On loan' }}</td>
+                <td>{{ _('Available') if book.is_available else _('On loan') }}</td> {# Translated status #}
                 {# Buttons with icons only and tooltips #}
                 <td class="text-nowrap">
                     {% if book.is_available %}
                     <a href="{{ url_for('main.borrow_book', book_id=book.id, user_id=current_user.id) }}"
-                        class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Borrow Book"><i class="bx bx-log-in-circle"></i></a>
+                        class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="{{ _('Borrow Book') }}"><i class="bx bx-log-in-circle"></i></a> {# Translated tooltip #}
                     {% else %}
-                    <a href="{{ url_for('main.return_book', book_id=book.id) }}"
-                        class="btn btn-outline-warning btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Return Book"><i class="bx bx-log-out-circle"></i></a>
+                    <a href="{{ url_for('main.return_book', book_id=book.id) }}" class="btn btn-outline-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Return Book') }}"><i
+                            class="bx bx-log-out-circle"></i></a> {# Translated tooltip #}
                     {% endif %}
-                    <a href="{{ url_for('main.book_edit', book_id=book.id)}}" class="btn btn-outline-primary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Book"><i
-                            class="bx bx-edit"></i></a>
-                    <a href="{{ url_for('main.book_delete', book_id=book.id)}}" class="btn btn-outline-danger btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Book"><i
-                            class="bx bx-trash"></i></a>
+                    <a href="{{ url_for('main.book_edit', book_id=book.id)}}" class="btn btn-outline-primary btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Edit Book') }}"><i {# Translated
+                            tooltip #} class="bx bx-edit"></i></a>
+                    <a href="{{ url_for('main.book_delete', book_id=book.id)}}" class="btn btn-outline-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Delete Book') }}"><i {# Translated
+                            tooltip #} class="bx bx-trash"></i></a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {# New class add-book-btn #}
-    <a href="{{ url_for('main.book_add') }}" class="btn btn-primary add-book-btn">Add book
-    </a>
+    <a href="{{ url_for('main.book_add') }}" class="btn btn-primary add-book-btn">{{ _('Add book') }}
+    </a> {# Translated button text #}
 </div>
 {% endblock %}

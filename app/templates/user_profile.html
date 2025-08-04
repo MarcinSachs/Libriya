@@ -2,7 +2,8 @@
 {% block content %}
 <div class="container">
     <div class="d-flex align-items-center mb-4">
-        <img class="rounded-circle" src="{{ url_for('static', filename='uploads/' + user.image_file) }}" style="width: 64px; height: 64px; object-fit: cover;">
+        <img class="rounded-circle" src="{{ url_for('static', filename='uploads/' + user.image_file) }}"
+            style="width: 64px; height: 64px; object-fit: cover;">
         <div class="ms-3">
             <h2 class="mb-0">{{ user.username }}</h2>
             <p class="text-muted mb-0">{{ user.email }}</p>
@@ -15,7 +16,7 @@
         <div class="col-md-6">
             <div class="card text-center h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Total Loans</h5>
+                    <h5 class="card-title">{{ _('Total Loans') }}</h5> {# Translated card title #}
                     <p class="card-text fs-2 fw-bold">{{ loans|length }}</p>
                 </div>
             </div>
@@ -23,7 +24,7 @@
         <div class="col-md-6">
             <div class="card text-center h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Currently On Loan</h5>
+                    <h5 class="card-title">{{ _('Currently On Loan') }}</h5> {# Translated card title #}
                     <p class="card-text fs-2 fw-bold">{{ active_loans|length }}</p>
                 </div>
             </div>
@@ -31,14 +32,14 @@
     </div>
 
     <!-- Currently On Loan -->
-    <h3 class="mt-5">Currently On Loan</h3>
+    <h3 class="mt-5">{{ _('Currently On Loan') }}</h3> {# Translated heading #}
     {% if active_loans %} {# Added table-striped here for consistency #}
     <table class="table table-hover">
         <thead>
             <tr>
-                <th>Book Title</th>
-                <th>Loan Date</th>
-                <th>Actions</th>
+                <th>{{ _('Book Title') }}</th> {# Translated table header #}
+                <th>{{ _('Loan Date') }}</th> {# Translated table header #}
+                <th>{{ _('Actions') }}</th> {# Translated table header #}
             </tr>
         </thead>
         <tbody>
@@ -47,30 +48,31 @@
                 <td>{{ loan.book.title }}</td>
                 <td>{{ loan.loan_date.strftime('%Y-%m-%d') }}</td>
                 <td>
-                    <form action="{{ url_for('main.return_loan', loan_id=loan.id) }}" method="POST" style="display: inline;">
-+                        <button type="submit" class="btn btn-outline-warning btn-sm"
-+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Return Book">
-+                            <i class="bx bx-log-out-circle"></i>
-+                        </button>
-                     </form>
+                    <form action="{{ url_for('main.return_loan', loan_id=loan.id) }}" method="POST"
+                        style="display: inline;">
+                        <button type="submit" class="btn btn-outline-warning btn-sm" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="{{ _('Return Book') }}"> {# Translated tooltip #}
+                            <i class="bx bx-log-out-circle"></i>
+                        </button>
+                    </form>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {% else %}
-    <p>No books are currently on loan.</p>
+    <p>{{ _('No books are currently on loan.') }}</p> {# Translated text #}
     {% endif %}
 
     <!-- Loan History -->
-    <h3 class="mt-5">Loan History</h3>
+    <h3 class="mt-5">{{ _('Loan History') }}</h3> {# Translated heading #}
     {% if loan_history %} {# Added table-striped here for consistency #}
     <table class="table table-hover">
         <thead>
             <tr>
-                <th>Book Title</th>
-                <th>Loan Date</th>
-                <th>Return Date</th>
+                <th>{{ _('Book Title') }}</th> {# Translated table header #}
+                <th>{{ _('Loan Date') }}</th> {# Translated table header #}
+                <th>{{ _('Return Date') }}</th> {# Translated table header #}
             </tr>
         </thead>
         <tbody>
@@ -84,7 +86,7 @@
         </tbody>
     </table>
     {% else %}
-    <p>No loan history.</p>
+    <p>{{ _('No loan history.') }}</p> {# Translated text #}
     {% endif %}
 
 </div>

@@ -22,23 +22,26 @@ class BookForm(FlaskForm):
     )
     cover = FileField('Cover', validators=[
         FileAllowed(['jpg', 'png', 'jpeg'], 'Only image files (jpg, png, jpeg) are allowed!')])
-    submit = SubmitField('Submit', render_kw={"class": "btn"})
+    # Added btn-primary class
+    submit = SubmitField('Submit', render_kw={"class": "btn btn-primary"})
 
 
 class UserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired(), Email()])
+    email = StringField('Email', validators=[DataRequired(), Email()],
+                        render_kw={'placeholder': _('user@example.com')})  # Translated placeholder in forms.py
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password', validators=[
                                      DataRequired(), EqualTo('password')])
-    submit = SubmitField('Add User', render_kw={"class": "btn"})
+    submit = SubmitField('Add User', render_kw={"class": "btn btn-primary"})
 
 
 class UserEditForm(FlaskForm):
     username = StringField('Username', render_kw={'readonly': True})
     email = StringField('Email', validators=[DataRequired(), Email()])
     is_admin = BooleanField('Administrator privileges')
-    submit = SubmitField('Save Changes')
+    submit = SubmitField('Save Changes', render_kw={
+                         "class": "btn btn-primary"})
 
 
 class UserSettingsForm(FlaskForm):
@@ -53,10 +56,12 @@ class UserSettingsForm(FlaskForm):
         'Confirm New Password',
         validators=[EqualTo('password', message='Passwords must match.')]
     )
-    submit = SubmitField('Save Changes')
+    submit = SubmitField('Save Changes', render_kw={
+                         "class": "btn btn-primary"})
 
 
 class LoanForm(FlaskForm):
     book_id = SelectField('Book', coerce=int, validators=[DataRequired()])
     user_id = SelectField('User', coerce=int, validators=[DataRequired()])
-    submit = SubmitField('Loan Book')
+    # Added btn-primary class
+    submit = SubmitField('Loan Book', render_kw={"class": "btn btn-primary"})
