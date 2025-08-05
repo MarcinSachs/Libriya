@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-05 15:43+0200\n"
+"POT-Creation-Date: 2025-08-05 17:37+0200\n"
 "PO-Revision-Date: 2025-08-04 21:13+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pl\n"
@@ -35,6 +35,14 @@ msgstr "Gatunek"
 msgid "Year"
 msgstr "Rok"
 
+#: app/forms.py:18
+msgid "Field 'Year' is required."
+msgstr "Pole 'Rok' jest wymagane."
+
+#: app/forms.py:20
+msgid "Please enter a valid year (e.g. 1999)."
+msgstr "Proszę wprowadzić poprawny rok (np. 1999)."
+
 #: app/forms.py:23 app/templates/index.html:28
 msgid "Cover"
 msgstr "Okładka"
@@ -42,6 +50,10 @@ msgstr "Okładka"
 #: app/forms.py:24
 msgid "Only image files (jpg, png, jpeg) are allowed!"
 msgstr "Dozwolone są tylko pliki graficzne (jpg, png, jpeg)!"
+
+#: app/forms.py:26 app/forms.py:43 app/forms.py:59 app/forms.py:67
+msgid "Submit"
+msgstr "Zatwierdź"
 
 #: app/forms.py:30 app/forms.py:40 app/templates/users.html:22
 msgid "Username"
@@ -70,10 +82,6 @@ msgstr "Dodaj użytkownika"
 #: app/forms.py:42
 msgid "Administrator privileges"
 msgstr "Uprawnienia administratora"
-
-#: app/forms.py:43 app/forms.py:59
-msgid "Save Changes"
-msgstr "Zapisz zmiany"
 
 #: app/forms.py:49
 msgid "Update Profile Picture"
@@ -107,10 +115,6 @@ msgstr "Książka"
 #: app/templates/users.html:34
 msgid "User"
 msgstr "Użytkownik"
-
-#: app/forms.py:67
-msgid "Loan Book"
-msgstr "Wypożycz książkę"
 
 #: app/routes.py:72
 msgid "Login successful!"
@@ -493,4 +497,10 @@ msgstr "Edytuj użytkownika"
 #: app/templates/users.html:45
 msgid "Add user"
 msgstr "Dodaj użytkownika"
+
+#~ msgid "Save Changes"
+#~ msgstr "Zapisz zmiany"
+
+#~ msgid "Loan Book"
+#~ msgstr "Wypożycz książkę"
 

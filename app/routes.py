@@ -36,7 +36,7 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_admin:
             flash(
-                "You do not have administrative privileges to access this page.", "danger")
+                _("You do not have administrative privileges to access this page."), "danger")
             return redirect(url_for('main.home'))
         return f(*args, **kwargs)
     return decorated_function
@@ -86,6 +86,7 @@ def logout():
 
 @bp.route("/users/")
 @login_required
+@admin_required
 def users():
     all_users = db.session.query(User).distinct().all()
     return render_template("users.html", users=all_users, active_page="users", parent_page="admin")
@@ -93,6 +94,7 @@ def users():
 
 @bp.route("/users/add/", methods=["GET", "POST"])
 @login_required
+@admin_required
 def user_add():
     form = UserForm()
     if form.validate_on_submit():
@@ -144,6 +146,7 @@ def user_edit(user_id):
 
 @bp.route("/books/add/", methods=["GET", "POST"])
 @login_required
+@admin_required
 def book_add():
     form = BookForm()
     # This provides a list of existing genres for autocompletion in the form
@@ -209,6 +212,7 @@ def book_add():
 
 @bp.route("/book_delete/<int:book_id>", methods=["POST"])
 @login_required
+@admin_required
 def book_delete(book_id):
     book = Book.query.get_or_404(book_id)
 
@@ -226,6 +230,7 @@ def book_delete(book_id):
 
 @bp.route("/book_edit/<int:book_id>", methods=["GET", "POST"])
 @login_required
+@admin_required
 def book_edit(book_id):
     book = Book.query.get_or_404(book_id)
     author_string = ", ".join([author.name for author in book.authors])
@@ -271,6 +276,7 @@ def book_edit(book_id):
 
 @bp.route("/loans/")
 @login_required
+@admin_required
 def loans():
     all_loans = Loan.query.all()
     return render_template("loans.html", loans=all_loans, active_page="loans", parent_page="admin", title="Loans")
@@ -330,6 +336,7 @@ def user_loans(user_id):
 
 @bp.route("/loans/add/", methods=["GET", "POST"])
 @login_required
+@admin_required
 def loan_add():
     form = LoanForm()
     # Populate choices for books and users
@@ -455,7 +462,8 @@ def get_book_by_isbn(isbn):
 def set_language(lang):
     if lang in current_app.config['LANGUAGES']:
         # Create a response object from the redirect to set a cookie
-        response = make_response(redirect(request.referrer or url_for('main.home')))
+        response = make_response(
+            redirect(request.referrer or url_for('main.home')))
         # Set cookie for 2 years
         response.set_cookie('language', lang, max_age=60*60*24*365*2)
         flash(_('Language changed to %(lang)s.', lang=lang), 'info')

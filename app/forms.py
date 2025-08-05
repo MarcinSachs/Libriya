@@ -15,15 +15,15 @@ class BookForm(FlaskForm):
     year = IntegerField(
         _('Year'),
         validators=[
-            DataRequired(message="Field 'Year' is required."),
+            DataRequired(message=_("Field 'Year' is required.")),
             NumberRange(min=0, max=datetime.now().year,
-                        message="Please enter a valid year (e.g. 1999).")
+                        message=_("Please enter a valid year (e.g. 1999)."))
         ]
     )
     cover = FileField(_('Cover'), validators=[
         FileAllowed(['jpg', 'png', 'jpeg'], _('Only image files (jpg, png, jpeg) are allowed!'))])
     # Added btn-primary class
-    submit = SubmitField('Submit', render_kw={"class": "btn btn-primary"})
+    submit = SubmitField(_('Submit'), render_kw={"class": "btn btn-primary"})
 
 
 class UserForm(FlaskForm):
@@ -40,7 +40,7 @@ class UserEditForm(FlaskForm):
     username = StringField(_('Username'), render_kw={'readonly': True})
     email = StringField(_('Email'), validators=[DataRequired(), Email()])
     is_admin = BooleanField(_('Administrator privileges'))
-    submit = SubmitField(_('Save Changes'), render_kw={
+    submit = SubmitField(_('Submit'), render_kw={
                          "class": "btn btn-primary"})
 
 
@@ -56,7 +56,7 @@ class UserSettingsForm(FlaskForm):
         _('Confirm New Password'),
         validators=[EqualTo('password', message=_('Passwords must match.'))]
     )
-    submit = SubmitField(_('Save Changes'), render_kw={
+    submit = SubmitField(_('Submit'), render_kw={
                          "class": "btn btn-primary"})
 
 
@@ -64,4 +64,5 @@ class LoanForm(FlaskForm):
     book_id = SelectField(_('Book'), coerce=int, validators=[DataRequired()])
     user_id = SelectField(_('User'), coerce=int, validators=[DataRequired()])
     # Added btn-primary class
-    submit = SubmitField(_('Loan Book'), render_kw={"class": "btn btn-primary"})
+    submit = SubmitField(_('Submit'), render_kw={
+                         "class": "btn btn-primary"})

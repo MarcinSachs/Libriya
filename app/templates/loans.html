@@ -2,13 +2,15 @@
 {% block content %}
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>{{ title }}</h2> 
+        <h2>{{ title }}</h2>
+        {% if current_user and current_user.is_admin %}
         <a href="{{ url_for('main.loan_add') }}" class="btn btn-primary add-book-btn">{{ _('Add Loan') }}
-        </a> 
+        </a>
+        {% endif %}
     </div>
     <hr>
 
-    
+
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
@@ -20,11 +22,11 @@
     <table class="table table-hover table-striped">
         <thead>
             <tr>
-                <th>{{ _('Book Title') }}</th> 
-                <th>{{ _('User') }}</th> 
-                <th>{{ _('Loan Date') }}</th> 
-                <th>{{ _('Return Date') }}</th> 
-                <th>{{ _('Actions') }}</th> 
+                <th>{{ _('Book Title') }}</th>
+                <th>{{ _('User') }}</th>
+                <th>{{ _('Loan Date') }}</th>
+                <th>{{ _('Return Date') }}</th>
+                <th>{{ _('Actions') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -37,7 +39,7 @@
                     {% if loan.return_date %}
                     {{ loan.return_date.strftime('%Y-%m-%d %H:%M') }}
                     {% else %}
-                    <span class="badge bg-warning text-dark">{{ _('On Loan') }}</span> 
+                    <span class="badge bg-warning text-dark">{{ _('On Loan') }}</span>
                     {% endif %}
                 </td>
                 <td>
@@ -46,7 +48,7 @@
                         style="display: inline;">
                         <button type="submit" class="btn btn-outline-warning btn-sm" data-bs-toggle="tooltip"
                             data-bs-placement="top" title="{{ _('Return Book') }}"><i
-                                class="bx bx-log-out-circle"></i></button> 
+                                class="bx bx-log-out-circle"></i></button>
                     </form>
                     {% endif %}
                 </td>

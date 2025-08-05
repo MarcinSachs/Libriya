@@ -13,7 +13,6 @@ login_manager.login_view = 'main.login'
 babel = Babel()
 
 
-
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
@@ -26,17 +25,20 @@ def create_app(config_class=Config):
         # 1. Check for language in cookie first
         lang = request.cookies.get("language")
         if lang and lang in app.config["LANGUAGES"]:
-            current_app.logger.debug(f"Locale selector: found language in cookie: {lang}")
+            current_app.logger.debug(
+                f"Locale selector: found language in cookie: {lang}")
             return lang
 
         # 2. Check session for backward compatibility (can be removed later)
         lang = session.get("language")
         if lang and lang in app.config["LANGUAGES"]:
-            current_app.logger.debug(f"Locale selector: found language in session: {lang}")
+            current_app.logger.debug(
+                f"Locale selector: found language in session: {lang}")
             return lang
 
         # 3. Fallback to browser's preferred language
-        browser_lang = request.accept_languages.best_match(app.config["LANGUAGES"])
+        browser_lang = request.accept_languages.best_match(
+            app.config["LANGUAGES"])
         current_app.logger.debug(
             f"Locale selector: falling back to browser language: {browser_lang}"
         )
