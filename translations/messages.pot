@@ -1,0 +1,492 @@
+# Translations template for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-08-05 17:37+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: app/forms.py:11 app/templates/index.html:29
+msgid "Title"
+msgstr ""
+
+#: app/forms.py:12
+msgid "Author(s) (comma-separated)"
+msgstr ""
+
+#: app/forms.py:14 app/templates/index.html:31
+msgid "Genre"
+msgstr ""
+
+#: app/forms.py:16 app/templates/index.html:32
+msgid "Year"
+msgstr ""
+
+#: app/forms.py:18
+msgid "Field 'Year' is required."
+msgstr ""
+
+#: app/forms.py:20
+msgid "Please enter a valid year (e.g. 1999)."
+msgstr ""
+
+#: app/forms.py:23 app/templates/index.html:28
+msgid "Cover"
+msgstr ""
+
+#: app/forms.py:24
+msgid "Only image files (jpg, png, jpeg) are allowed!"
+msgstr ""
+
+#: app/forms.py:26 app/forms.py:43 app/forms.py:59 app/forms.py:67
+msgid "Submit"
+msgstr ""
+
+#: app/forms.py:30 app/forms.py:40 app/templates/users.html:22
+msgid "Username"
+msgstr ""
+
+#: app/forms.py:31 app/forms.py:41 app/forms.py:48 app/templates/users.html:23
+msgid "Email"
+msgstr ""
+
+#: app/forms.py:32
+msgid "user@example.com"
+msgstr ""
+
+#: app/forms.py:33
+msgid "Password"
+msgstr ""
+
+#: app/forms.py:34
+msgid "Confirm Password"
+msgstr ""
+
+#: app/forms.py:36
+msgid "Add User"
+msgstr ""
+
+#: app/forms.py:42
+msgid "Administrator privileges"
+msgstr ""
+
+#: app/forms.py:49
+msgid "Update Profile Picture"
+msgstr ""
+
+#: app/forms.py:50
+msgid "Images only!"
+msgstr ""
+
+#: app/forms.py:52
+msgid "File size must be less than 2MB."
+msgstr ""
+
+#: app/forms.py:54
+msgid "New Password"
+msgstr ""
+
+#: app/forms.py:56
+msgid "Confirm New Password"
+msgstr ""
+
+#: app/forms.py:57
+msgid "Passwords must match."
+msgstr ""
+
+#: app/forms.py:64
+msgid "Book"
+msgstr ""
+
+#: app/forms.py:65 app/templates/loans.html:24 app/templates/login.html:45
+#: app/templates/users.html:34
+msgid "User"
+msgstr ""
+
+#: app/routes.py:72
+msgid "Login successful!"
+msgstr ""
+
+#: app/routes.py:75
+msgid "Invalid username or password. Please try again."
+msgstr ""
+
+#: app/routes.py:83
+msgid "You have been logged out."
+msgstr ""
+
+#: app/routes.py:131
+#, python-format
+msgid "User '%(username)s' updated successfully!"
+msgstr ""
+
+#: app/routes.py:199
+#, python-format
+msgid "Could not download cover image: '%(e)s'"
+msgstr ""
+
+#: app/routes.py:203
+msgid "Book added successfully!"
+msgstr ""
+
+#: app/routes.py:218
+#, python-format
+msgid ""
+"Cannot delete \"%(title)s\" because it has a loan history. Consider "
+"implementing an \"archive\" feature instead."
+msgstr ""
+
+#: app/routes.py:223
+msgid "Book deleted successfully!"
+msgstr ""
+
+#: app/routes.py:267
+msgid "Book updated successfully!"
+msgstr ""
+
+#: app/routes.py:289
+msgid "Book borrowed successfully!"
+msgstr ""
+
+#: app/routes.py:291 app/routes.py:354
+msgid "This book is already on loan."
+msgstr ""
+
+#: app/routes.py:303
+msgid "Book returned successfully!"
+msgstr ""
+
+#: app/routes.py:305
+msgid "This book is not currently on loan."
+msgstr ""
+
+#: app/routes.py:317
+#, python-format
+msgid "Book \"%(title)s\" has been returned."
+msgstr ""
+
+#: app/routes.py:320
+msgid "This book has already been returned."
+msgstr ""
+
+#: app/routes.py:351
+msgid "Loan added successfully!"
+msgstr ""
+
+#: app/routes.py:356
+msgid "Invalid book or user."
+msgstr ""
+
+#: app/routes.py:384
+msgid "No user found to edit settings."
+msgstr ""
+
+#: app/routes.py:404
+msgid "Your settings have been updated."
+msgstr ""
+
+#: app/routes.py:461
+#, python-format
+msgid "Language changed to %(lang)s."
+msgstr ""
+
+#: app/routes.py:463
+msgid "Unsupported language."
+msgstr ""
+
+#: app/templates/book_add.html:4
+msgid "Add a new book"
+msgstr ""
+
+#: app/templates/book_add.html:22
+msgid "Enter ISBN to get data from Open Library"
+msgstr ""
+
+#: app/templates/book_add.html:24 app/templates/book_add.html:125
+msgid "Search"
+msgstr ""
+
+#: app/templates/book_add.html:33 app/templates/book_edit.html:34
+msgid "e.g. The Lord of the Rings"
+msgstr ""
+
+#: app/templates/book_add.html:38 app/templates/book_edit.html:39
+msgid "e.g. J.R.R. Tolkien"
+msgstr ""
+
+#: app/templates/book_add.html:44 app/templates/book_edit.html:44
+msgid "e.g. Fantasy"
+msgstr ""
+
+#: app/templates/book_add.html:54 app/templates/book_edit.html:56
+msgid "e.g. 1954"
+msgstr ""
+
+#: app/templates/book_add.html:68 app/templates/book_edit.html:69
+#: app/templates/loan_add.html:30 app/templates/user_add.html:39
+#: app/templates/user_edit.html:35 app/templates/user_settings.html:50
+msgid "Cancel"
+msgstr ""
+
+#: app/templates/book_add.html:88
+msgid "Please enter an ISBN."
+msgstr ""
+
+#: app/templates/book_add.html:95
+msgid "Searching..."
+msgstr ""
+
+#: app/templates/book_add.html:110
+msgid "Open Library Cover:"
+msgstr ""
+
+#: app/templates/book_add.html:121
+#, python-format
+msgid ""
+"Could not find data for ISBN %(isbn_num)s. Please check the number and "
+"try again."
+msgstr ""
+
+#: app/templates/book_edit.html:12
+msgid "Edit Book:"
+msgstr ""
+
+#: app/templates/book_edit.html:20
+msgid "Current Cover:"
+msgstr ""
+
+#: app/templates/book_edit.html:22
+#, python-format
+msgid "Current cover for %(title)s"
+msgstr ""
+
+#: app/templates/book_edit.html:29
+msgid "Enter ISBN"
+msgstr ""
+
+#: app/templates/book_edit.html:61
+msgid "Upload a new cover to replace the current one."
+msgstr ""
+
+#: app/templates/index.html:19
+#, python-format
+msgid "Library currently has %(n)s book."
+msgid_plural "Library currently has %(n)s books."
+msgstr[0] ""
+msgstr[1] ""
+
+#: app/templates/index.html:23
+msgid "List of books"
+msgstr ""
+
+#: app/templates/index.html:30
+msgid "Author"
+msgstr ""
+
+#: app/templates/index.html:33
+msgid "Status"
+msgstr ""
+
+#: app/templates/index.html:34 app/templates/loans.html:27
+#: app/templates/user_profile.html:42 app/templates/users.html:25
+msgid "Actions"
+msgstr ""
+
+#: app/templates/index.html:44
+#, python-format
+msgid "Book cover %(title)s"
+msgstr ""
+
+#: app/templates/index.html:54
+msgid "Available"
+msgstr ""
+
+#: app/templates/index.html:54
+msgid "On loan"
+msgstr ""
+
+#: app/templates/index.html:60
+msgid "Borrow Book"
+msgstr ""
+
+#: app/templates/index.html:63 app/templates/loans.html:48
+#: app/templates/user_profile.html:54
+msgid "Return Book"
+msgstr ""
+
+#: app/templates/index.html:67
+msgid "Edit Book"
+msgstr ""
+
+#: app/templates/index.html:70
+msgid "Delete Book"
+msgstr ""
+
+#: app/templates/index.html:78
+msgid "Add book"
+msgstr ""
+
+#: app/templates/layout.html:34
+msgid "Toggle navigation"
+msgstr ""
+
+#: app/templates/layout.html:53
+msgid "Profile & Loans"
+msgstr ""
+
+#: app/templates/layout.html:55
+msgid "Settings"
+msgstr ""
+
+#: app/templates/layout.html:58
+msgid "Logout"
+msgstr ""
+
+#: app/templates/layout.html:80
+msgid "Books"
+msgstr ""
+
+#: app/templates/layout.html:91
+msgid "Administration"
+msgstr ""
+
+#: app/templates/layout.html:99 app/templates/users.html:17
+msgid "Users"
+msgstr ""
+
+#: app/templates/layout.html:103
+msgid "Loans"
+msgstr ""
+
+#: app/templates/loan_add.html:4
+msgid "Loan a Book"
+msgstr ""
+
+#: app/templates/loans.html:6
+msgid "Add Loan"
+msgstr ""
+
+#: app/templates/loans.html:23 app/templates/user_profile.html:40
+#: app/templates/user_profile.html:73
+msgid "Book Title"
+msgstr ""
+
+#: app/templates/loans.html:25 app/templates/user_profile.html:41
+#: app/templates/user_profile.html:74
+msgid "Loan Date"
+msgstr ""
+
+#: app/templates/loans.html:26 app/templates/user_profile.html:75
+msgid "Return Date"
+msgstr ""
+
+#: app/templates/loans.html:40
+msgid "On Loan"
+msgstr ""
+
+#: app/templates/login.html:28
+msgid "username"
+msgstr ""
+
+#: app/templates/login.html:29
+msgid "password"
+msgstr ""
+
+#: app/templates/login.html:30
+msgid "Log In"
+msgstr ""
+
+#: app/templates/login.html:34
+msgid "Forgot Password?"
+msgstr ""
+
+#: app/templates/login.html:38
+msgid "Default credentials:"
+msgstr ""
+
+#: app/templates/login.html:40
+msgid "Administrator:"
+msgstr ""
+
+#: app/templates/login.html:41 app/templates/users.html:33
+msgid "Admin"
+msgstr ""
+
+#: app/templates/login.html:44
+msgid "Standard User:"
+msgstr ""
+
+#: app/templates/login.html:51
+msgid "Language"
+msgstr ""
+
+#: app/templates/user_add.html:4
+msgid "Add a new user"
+msgstr ""
+
+#: app/templates/user_edit.html:4
+msgid "Edit User:"
+msgstr ""
+
+#: app/templates/user_profile.html:19
+msgid "Total Loans"
+msgstr ""
+
+#: app/templates/user_profile.html:27 app/templates/user_profile.html:35
+msgid "Currently On Loan"
+msgstr ""
+
+#: app/templates/user_profile.html:64
+msgid "No books are currently on loan."
+msgstr ""
+
+#: app/templates/user_profile.html:68
+msgid "Loan History"
+msgstr ""
+
+#: app/templates/user_profile.html:89
+msgid "No loan history."
+msgstr ""
+
+#: app/templates/user_settings.html:4
+msgid "My Settings"
+msgstr ""
+
+#: app/templates/user_settings.html:19
+msgid "Current Profile Picture"
+msgstr ""
+
+#: app/templates/user_settings.html:35
+msgid "Leave the password fields blank if you don't want to change your password."
+msgstr ""
+
+#: app/templates/users.html:15
+#, python-format
+msgid "Library currently has %(n)s user."
+msgid_plural "Library currently has %(n)s users."
+msgstr[0] ""
+msgstr[1] ""
+
+#: app/templates/users.html:24
+msgid "Role"
+msgstr ""
+
+#: app/templates/users.html:38
+msgid "Edit User"
+msgstr ""
+
+#: app/templates/users.html:45
+msgid "Add user"
+msgstr ""
+
