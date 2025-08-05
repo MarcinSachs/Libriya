@@ -70,10 +70,6 @@ def login_post():
     if user and user.check_password(password):
         login_user(user)
         flash(_('Login successful!'), 'success')
-        # Set language in session if provided
-        lang = request.args.get('lang')
-        if lang and lang in current_app.config['LANGUAGES']:
-            session['language'] = lang
         return redirect(url_for('main.home'))
     else:
         flash(_('Invalid username or password. Please try again.'), 'danger')
@@ -458,8 +454,11 @@ def get_book_by_isbn(isbn):
 @bp.route('/set_language/<lang>')
 def set_language(lang):
     if lang in current_app.config['LANGUAGES']:
-        session['language'] = lang
+        # Create a response object from the redirect to set a cookie
+        response = make_response(redirect(request.referrer or url_for('main.home')))
+        # Set cookie for 2 years
+        response.set_cookie('language', lang, max_age=60*60*24*365*2)
         flash(_('Language changed to %(lang)s.', lang=lang), 'info')
-        return redirect(request.referrer or url_for('main.home'))
+        return response
     flash(_('Unsupported language.'), 'danger')
     return redirect(request.referrer or url_for('main.home'))
