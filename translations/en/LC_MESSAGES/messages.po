@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-05 13:24+0200\n"
+"POT-Creation-Date: 2025-08-05 15:43+0200\n"
 "PO-Revision-Date: 2025-08-04 21:13+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -102,7 +102,7 @@ msgstr "Passwords must match."
 msgid "Book"
 msgstr "Book"
 
-#: app/forms.py:65 app/templates/loans.html:24 app/templates/login.html:41
+#: app/forms.py:65 app/templates/loans.html:24 app/templates/login.html:45
 #: app/templates/users.html:34
 msgid "User"
 msgstr "User"
@@ -115,29 +115,29 @@ msgstr "Loan Book"
 msgid "Login successful!"
 msgstr "Login successful!"
 
-#: app/routes.py:79
+#: app/routes.py:75
 msgid "Invalid username or password. Please try again."
 msgstr "Invalid username or password. Please try again."
 
-#: app/routes.py:87
+#: app/routes.py:83
 msgid "You have been logged out."
 msgstr "You have been logged out."
 
-#: app/routes.py:135
+#: app/routes.py:131
 #, python-format
 msgid "User '%(username)s' updated successfully!"
 msgstr "User '%(username)s' updated successfully!"
 
-#: app/routes.py:203
+#: app/routes.py:199
 #, python-format
 msgid "Could not download cover image: '%(e)s'"
 msgstr "Could not download cover image: '%(e)s'"
 
-#: app/routes.py:207
+#: app/routes.py:203
 msgid "Book added successfully!"
 msgstr "Book added successfully!"
 
-#: app/routes.py:222
+#: app/routes.py:218
 #, python-format
 msgid ""
 "Cannot delete \"%(title)s\" because it has a loan history. Consider "
@@ -146,61 +146,61 @@ msgstr ""
 "Cannot delete \"%(title)s\" because it has a loan history. Consider "
 "implementing an \"archive\" feature instead."
 
-#: app/routes.py:227
+#: app/routes.py:223
 msgid "Book deleted successfully!"
 msgstr "Book deleted successfully!"
 
-#: app/routes.py:271
+#: app/routes.py:267
 msgid "Book updated successfully!"
 msgstr "Book updated successfully!"
 
-#: app/routes.py:293
+#: app/routes.py:289
 msgid "Book borrowed successfully!"
 msgstr "Book borrowed successfully!"
 
-#: app/routes.py:295 app/routes.py:358
+#: app/routes.py:291 app/routes.py:354
 msgid "This book is already on loan."
 msgstr "This book is already on loan."
 
-#: app/routes.py:307
+#: app/routes.py:303
 msgid "Book returned successfully!"
 msgstr "Book returned successfully!"
 
-#: app/routes.py:309
+#: app/routes.py:305
 msgid "This book is not currently on loan."
 msgstr "This book is not currently on loan."
 
-#: app/routes.py:321
+#: app/routes.py:317
 #, python-format
 msgid "Book \"%(title)s\" has been returned."
 msgstr "Book \"%(title)s\" has been returned."
 
-#: app/routes.py:324
+#: app/routes.py:320
 msgid "This book has already been returned."
 msgstr "This book has already been returned."
 
-#: app/routes.py:355
+#: app/routes.py:351
 msgid "Loan added successfully!"
 msgstr "Loan added successfully!"
 
-#: app/routes.py:360
+#: app/routes.py:356
 msgid "Invalid book or user."
 msgstr "Invalid book or user."
 
-#: app/routes.py:388
+#: app/routes.py:384
 msgid "No user found to edit settings."
 msgstr "No user found to edit settings."
 
-#: app/routes.py:408
+#: app/routes.py:404
 msgid "Your settings have been updated."
 msgstr "Your settings have been updated."
 
-#: app/routes.py:462
+#: app/routes.py:461
 #, python-format
 msgid "Language changed to %(lang)s."
 msgstr "Language changed to %(lang)s."
 
-#: app/routes.py:464
+#: app/routes.py:463
 msgid "Unsupported language."
 msgstr "Unsupported language."
 
@@ -338,35 +338,35 @@ msgstr "Delete Book"
 msgid "Add book"
 msgstr "Add book"
 
-#: app/templates/layout.html:32
+#: app/templates/layout.html:34
 msgid "Toggle navigation"
 msgstr "Toggle navigation"
 
-#: app/templates/layout.html:51
+#: app/templates/layout.html:53
 msgid "Profile & Loans"
 msgstr "Profile & Loans"
 
-#: app/templates/layout.html:53
+#: app/templates/layout.html:55
 msgid "Settings"
 msgstr "Settings"
 
-#: app/templates/layout.html:56
+#: app/templates/layout.html:58
 msgid "Logout"
 msgstr "Logout"
 
-#: app/templates/layout.html:78
+#: app/templates/layout.html:80
 msgid "Books"
 msgstr "Books"
 
-#: app/templates/layout.html:89
+#: app/templates/layout.html:91
 msgid "Administration"
 msgstr "Administration"
 
-#: app/templates/layout.html:97 app/templates/users.html:17
+#: app/templates/layout.html:99 app/templates/users.html:17
 msgid "Users"
 msgstr "Users"
 
-#: app/templates/layout.html:101
+#: app/templates/layout.html:103
 msgid "Loans"
 msgstr "Loans"
 
@@ -396,37 +396,41 @@ msgstr "Return Date"
 msgid "On Loan"
 msgstr "On Loan"
 
-#: app/templates/login.html:24
+#: app/templates/login.html:28
 msgid "username"
 msgstr "username"
 
-#: app/templates/login.html:25
+#: app/templates/login.html:29
 msgid "password"
 msgstr "password"
 
-#: app/templates/login.html:26
+#: app/templates/login.html:30
 msgid "Log In"
 msgstr "Log In"
 
-#: app/templates/login.html:30
+#: app/templates/login.html:34
 msgid "Forgot Password?"
 msgstr "Forgot Password?"
 
-#: app/templates/login.html:34
+#: app/templates/login.html:38
 msgid "Default credentials:"
 msgstr "Default credentials:"
 
-#: app/templates/login.html:36
+#: app/templates/login.html:40
 msgid "Administrator:"
 msgstr "Administrator:"
 
-#: app/templates/login.html:37 app/templates/users.html:33
+#: app/templates/login.html:41 app/templates/users.html:33
 msgid "Admin"
 msgstr "Admin"
 
-#: app/templates/login.html:40
+#: app/templates/login.html:44
 msgid "Standard User:"
 msgstr "Standard User:"
+
+#: app/templates/login.html:51
+msgid "Language"
+msgstr "Language"
 
 #: app/templates/user_add.html:4
 msgid "Add a new user"
@@ -486,3 +490,4 @@ msgstr "Edit User"
 #: app/templates/users.html:45
 msgid "Add user"
 msgstr "Add user"
+
