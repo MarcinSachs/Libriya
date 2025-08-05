@@ -55,14 +55,19 @@ def favicon():
 def home():
     status_filter = request.args.get('status')
     genre_filter = request.args.get('genre')
+    author_filter = request.args.get('author')
+    title_filter = request.args.get('title')  # Pobierz tytuł z formularza
 
     query = Book.query
+
+    if title_filter:  # Dodaj filtr tytułu
+        query = query.filter(Book.title.ilike(f"%{title_filter}%"))
 
     if status_filter:
         if status_filter == 'available':
             query = query.filter(Book.is_available == True)
         elif status_filter == 'on_loan':
-            query = query = query.filter(Book.is_available == False)
+            query = query.filter(Book.is_available == False)
 
     if genre_filter:
         query = query.filter(Book.genre_id == genre_filter)

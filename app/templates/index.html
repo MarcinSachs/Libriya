@@ -21,9 +21,14 @@
 
     <h2>{{ _('List of books') }}</h2>
 
-    <!-- Formularz filtrowania -->
+    <!-- Filtering form -->
     <form method="GET" action="{{ url_for('main.home') }}" class="mb-3">
         <div class="row g-2">
+            <div class="col-md-3">
+                <label for="title" class="form-label">{{ _('Title') }}</label>
+                <input type="text" class="form-control" id="title" name="title"
+                    value="{{ request.args.get('title', '') }}" placeholder="{{ _('Enter title to search') }}">
+            </div>
             <div class="col-md-3">
                 <label for="status" class="form-label">{{ _('Status') }}</label>
                 <select class="form-select" id="status" name="status">
@@ -44,7 +49,8 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-3 d-flex align-items-end">
+            <div class="col-md-3 d-flex align-items-center buttons-container">
+                <div style="height: 100%; width: 0; visibility: hidden;"></div>
                 <button type="submit" class="btn btn-primary me-2">{{ _('Filter') }}</button>
                 <a href="{{ url_for('main.home') }}" class="btn btn-secondary">{{ _('Reset') }}</a>
             </div>

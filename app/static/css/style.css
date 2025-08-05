@@ -810,3 +810,24 @@ input[type=password] {
 .card-footer .btn {
     margin-left: auto;
 }
+
+.filter-input {
+    margin-top: auto;
+}
+
+.form-select {
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+}
+
+.form-control {
+    height: 3rem;
+}
+
+#title {
+    margin-top: 0.0rem;
+}
+
+.buttons-container .btn {
+    margin-top: 1.5em;
+}
