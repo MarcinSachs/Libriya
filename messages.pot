@@ -1,19 +1,17 @@
-# Polish translations for PROJECT.
+# Translations template for PROJECT.
 # Copyright (C) 2025 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
 #
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-05 20:34+0200\n"
-"PO-Revision-Date: 2025-08-04 21:13+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: pl\n"
-"Language-Team: pl <LL@li.org>\n"
-"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && "
-"(n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -22,140 +20,140 @@ msgstr ""
 #: app/forms.py:11 app/templates/book_detail.html:17
 #: app/templates/index.html:29
 msgid "Title"
-msgstr "Tytuł"
+msgstr ""
 
 #: app/forms.py:12
 msgid "Author(s) (comma-separated)"
-msgstr "Autor(zy) (oddzieleni przecinkami)"
+msgstr ""
 
 #: app/forms.py:14 app/templates/book_detail.html:23
 #: app/templates/index.html:31
 msgid "Genre"
-msgstr "Gatunek"
+msgstr ""
 
 #: app/forms.py:16 app/templates/book_detail.html:24
 #: app/templates/index.html:32
 msgid "Year"
-msgstr "Rok"
+msgstr ""
 
 #: app/forms.py:18
 msgid "Field 'Year' is required."
-msgstr "Pole 'Rok' jest wymagane."
+msgstr ""
 
 #: app/forms.py:20
 msgid "Please enter a valid year (e.g. 1999)."
-msgstr "Proszę wprowadzić poprawny rok (np. 1999)."
+msgstr ""
 
 #: app/forms.py:23 app/templates/index.html:28
 msgid "Cover"
-msgstr "Okładka"
+msgstr ""
 
 #: app/forms.py:24
 msgid "Only image files (jpg, png, jpeg) are allowed!"
-msgstr "Dozwolone są tylko pliki graficzne (jpg, png, jpeg)!"
+msgstr ""
 
 #: app/forms.py:26 app/forms.py:43 app/forms.py:59 app/forms.py:67
 msgid "Submit"
-msgstr "Zatwierdź"
+msgstr ""
 
 #: app/forms.py:30 app/forms.py:40 app/templates/users.html:22
 msgid "Username"
-msgstr "Nazwa użytkownika"
+msgstr ""
 
 #: app/forms.py:31 app/forms.py:41 app/forms.py:48 app/templates/users.html:23
 msgid "Email"
-msgstr "Email"
+msgstr ""
 
 #: app/forms.py:32
 msgid "user@example.com"
-msgstr "użytkownik@przykład.com"
+msgstr ""
 
 #: app/forms.py:33
 msgid "Password"
-msgstr "Hasło"
+msgstr ""
 
 #: app/forms.py:34
 msgid "Confirm Password"
-msgstr "Potwierdź hasło"
+msgstr ""
 
 #: app/forms.py:36
 msgid "Add User"
-msgstr "Dodaj użytkownika"
+msgstr ""
 
 #: app/forms.py:42
 msgid "Administrator privileges"
-msgstr "Uprawnienia administratora"
+msgstr ""
 
 #: app/forms.py:49
 msgid "Update Profile Picture"
-msgstr "Zaktualizuj zdjęcie profilowe"
+msgstr ""
 
 #: app/forms.py:50
 msgid "Images only!"
-msgstr "Tylko obrazy!"
+msgstr ""
 
 #: app/forms.py:52
 msgid "File size must be less than 2MB."
-msgstr "Rozmiar pliku musi być mniejszy niż 2MB."
+msgstr ""
 
 #: app/forms.py:54
 msgid "New Password"
-msgstr "Nowe hasło"
+msgstr ""
 
 #: app/forms.py:56
 msgid "Confirm New Password"
-msgstr "Potwierdź nowe hasło"
+msgstr ""
 
 #: app/forms.py:57
 msgid "Passwords must match."
-msgstr "Hasła muszą się zgadzać."
+msgstr ""
 
 #: app/forms.py:64
 msgid "Book"
-msgstr "Książka"
+msgstr ""
 
 #: app/forms.py:65 app/templates/loans.html:26 app/templates/login.html:45
 #: app/templates/users.html:34
 msgid "User"
-msgstr "Użytkownik"
+msgstr ""
 
 #: app/routes.py:39
 msgid "You do not have administrative privileges to access this page."
-msgstr "Nie masz uprawnień administratora do tej strony."
+msgstr ""
 
 #: app/routes.py:74
 msgid "Login successful!"
-msgstr "Logowanie udane!"
+msgstr ""
 
 #: app/routes.py:77
 msgid "Invalid username or password. Please try again."
-msgstr "Nieprawidłowa nazwa użytkownika lub hasło. Spróbuj ponownie."
+msgstr ""
 
 #: app/routes.py:85
 msgid "You have been logged out."
-msgstr "Zostałeś wylogowany."
+msgstr ""
 
 #: app/routes.py:137
 #, python-format
 msgid "User '%(username)s' updated successfully!"
-msgstr "Użytkownik '%(username)s' zaktualizowany pomyślnie!"
+msgstr ""
 
 #: app/routes.py:179
 msgid "No user found to edit settings."
-msgstr "Nie znaleziono użytkownika do edycji ustawień."
+msgstr ""
 
 #: app/routes.py:199
 msgid "Your settings have been updated."
-msgstr "Twoje ustawienia zostały zaktualizowane."
+msgstr ""
 
 #: app/routes.py:270
 #, python-format
 msgid "Could not download cover image: '%(e)s'"
-msgstr "Nie można pobrać zdjęcia okładki: '%(e)s'"
+msgstr ""
 
 #: app/routes.py:274
 msgid "Book added successfully!"
-msgstr "Książka dodana pomyślnie!"
+msgstr ""
 
 #: app/routes.py:290
 #, python-format
@@ -163,120 +161,118 @@ msgid ""
 "Cannot delete \"%(title)s\" because it has a loan history. Consider "
 "implementing an \"archive\" feature instead."
 msgstr ""
-"Nie można usunąć \"%(title)s\", ponieważ ma historię wypożyczeń. Rozważ "
-"implementację funkcji \"archiwum\"."
 
 #: app/routes.py:295
 msgid "Book deleted successfully!"
-msgstr "Książka usunięta pomyślnie!"
+msgstr ""
 
 #: app/routes.py:340
 msgid "Book updated successfully!"
-msgstr "Książka zaktualizowana pomyślnie!"
+msgstr ""
 
 #: app/routes.py:353
 msgid "Book is already in favorites."
-msgstr "Ta książka jest już w ulubionych."
+msgstr ""
 
 #: app/routes.py:357
 msgid "Book added to favorites."
-msgstr "Książka została dodana do ulubionych."
+msgstr ""
 
 #: app/routes.py:370
 msgid "Book removed from favorites."
-msgstr "Książka została usunięta z ulubionych."
+msgstr ""
 
 #: app/routes.py:372
 msgid "Book is not in favorites."
-msgstr "Książka nie jest w ulubionych."
+msgstr ""
 
 #: app/routes.py:396
 msgid "Book borrowed successfully!"
-msgstr "Książka wypożyczona pomyślnie!"
+msgstr ""
 
 #: app/routes.py:398 app/routes.py:462
 msgid "This book is already on loan."
-msgstr "Ta książka jest już wypożyczona."
+msgstr ""
 
 #: app/routes.py:410
 msgid "Book returned successfully!"
-msgstr "Książka zwrócona pomyślnie!"
+msgstr ""
 
 #: app/routes.py:412
 msgid "This book is not currently on loan."
-msgstr "Ta książka nie jest aktualnie wypożyczona."
+msgstr ""
 
 #: app/routes.py:424
 #, python-format
 msgid "Book \"%(title)s\" has been returned."
-msgstr "Książka \"%(title)s\" została zwrócona."
+msgstr ""
 
 #: app/routes.py:427
 msgid "This book has already been returned."
-msgstr "Ta książka została już zwrócona."
+msgstr ""
 
 #: app/routes.py:459
 msgid "Loan added successfully!"
-msgstr "Wypożyczenie dodane pomyślnie!"
+msgstr ""
 
 #: app/routes.py:464
 msgid "Invalid book or user."
-msgstr "Nieprawidłowa książka lub użytkownik."
+msgstr ""
 
 #: app/routes.py:478
 #, python-format
 msgid "Language changed to %(lang)s."
-msgstr "Język zmieniony na %(lang)s."
+msgstr ""
 
 #: app/routes.py:480
 msgid "Unsupported language."
-msgstr "Nieobsługiwany język."
+msgstr ""
 
 #: app/templates/book_add.html:4
 msgid "Add a new book"
-msgstr "Dodaj nową książkę"
+msgstr ""
 
 #: app/templates/book_add.html:22
 msgid "Enter ISBN to get data from Open Library"
-msgstr "Wprowadź ISBN, aby pobrać dane z Open Library"
+msgstr ""
 
 #: app/templates/book_add.html:24 app/templates/book_add.html:125
 msgid "Search"
-msgstr "Szukaj"
+msgstr ""
 
 #: app/templates/book_add.html:33 app/templates/book_edit.html:34
 msgid "e.g. The Lord of the Rings"
-msgstr "np. Władca Pierścieni"
+msgstr ""
 
 #: app/templates/book_add.html:38 app/templates/book_edit.html:39
 msgid "e.g. J.R.R. Tolkien"
-msgstr "np. J.R.R. Tolkien"
+msgstr ""
 
 #: app/templates/book_add.html:44 app/templates/book_edit.html:44
 msgid "e.g. Fantasy"
-msgstr "np. Fantasy"
+msgstr ""
 
 #: app/templates/book_add.html:54 app/templates/book_edit.html:56
 msgid "e.g. 1954"
-msgstr "np. 1954"
+msgstr ""
 
 #: app/templates/book_add.html:68 app/templates/book_edit.html:69
 #: app/templates/loan_add.html:30 app/templates/user_add.html:39
 #: app/templates/user_edit.html:35 app/templates/user_settings.html:50
 msgid "Cancel"
-msgstr "Anuluj"
+msgstr ""
 
 #: app/templates/book_add.html:88
 msgid "Please enter an ISBN."
-msgstr "Proszę wprowadzić numer ISBN."
+msgstr ""
 
 #: app/templates/book_add.html:95
 msgid "Searching..."
-msgstr "Wyszukiwanie..."
+msgstr ""
 
 #: app/templates/book_add.html:110
 msgid "Open Library Cover:"
-msgstr "Okładka z Open Library:"
+msgstr ""
 
 #: app/templates/book_add.html:121
 #, python-format
@@ -284,274 +280,264 @@ msgid ""
 "Could not find data for ISBN %(isbn_num)s. Please check the number and "
 "try again."
 msgstr ""
-"Nie można znaleźć danych dla ISBN %(isbn_num)s. Sprawdź numer i spróbuj "
-"ponownie."
 
 #: app/templates/book_detail.html:18
 msgid "Author(s)"
-msgstr "Autor(zy)"
+msgstr ""
 
 #: app/templates/book_detail.html:25
 msgid "ISBN"
-msgstr "ISBN"
+msgstr ""
 
 #: app/templates/book_detail.html:26 app/templates/index.html:33
 msgid "Status"
-msgstr "Status"
+msgstr ""
 
 #: app/templates/book_detail.html:26 app/templates/index.html:54
 msgid "Available"
-msgstr "Dostępna"
+msgstr ""
 
 #: app/templates/book_detail.html:26 app/templates/index.html:54
 msgid "On loan"
-msgstr "Wypożyczona"
+msgstr ""
 
 #: app/templates/book_detail.html:32 app/templates/index.html:67
 msgid "Borrow Book"
-msgstr "Wypożycz książkę"
+msgstr ""
 
 #: app/templates/book_detail.html:36 app/templates/index.html:70
 #: app/templates/loans.html:50 app/templates/user_profile.html:54
 msgid "Return Book"
-msgstr "Zwróć książkę"
+msgstr ""
 
 #: app/templates/book_detail.html:40
 msgid "Back to List"
-msgstr "Powrót do listy"
+msgstr ""
 
 #: app/templates/book_detail.html:47 app/templates/index.html:75
 msgid "Edit Book"
-msgstr "Edytuj książkę"
+msgstr ""
 
 #: app/templates/book_detail.html:51 app/templates/index.html:78
 msgid "Delete Book"
-msgstr "Usuń książkę"
+msgstr ""
 
 #: app/templates/book_edit.html:12
 msgid "Edit Book:"
-msgstr "Edytuj książkę:"
+msgstr ""
 
 #: app/templates/book_edit.html:20
 msgid "Current Cover:"
-msgstr "Aktualna okładka:"
+msgstr ""
 
 #: app/templates/book_edit.html:22
 #, python-format
 msgid "Current cover for %(title)s"
-msgstr "Aktualna okładka dla %(title)s"
+msgstr ""
 
 #: app/templates/book_edit.html:29
 msgid "Enter ISBN"
-msgstr "Wprowadź ISBN"
+msgstr ""
 
 #: app/templates/book_edit.html:61
 msgid "Upload a new cover to replace the current one."
-msgstr "Załaduj nową okładkę, aby zastąpić obecną."
+msgstr ""
 
 #: app/templates/index.html:19
 #, python-format
 msgid "Library currently has %(n)s book."
 msgid_plural "Library currently has %(n)s books."
-msgstr[0] "Biblioteka aktualnie ma %(n)s książkę."
-msgstr[1] "Biblioteka aktualnie ma %(n)s książki."
-msgstr[2] "Biblioteka aktualnie ma %(n)s książek."
+msgstr[0] ""
+msgstr[1] ""
 
 #: app/templates/index.html:23
 msgid "List of books"
-msgstr "Lista książek"
+msgstr ""
 
 #: app/templates/index.html:30
 msgid "Author"
-msgstr "Autor"
+msgstr ""
 
 #: app/templates/index.html:34 app/templates/loans.html:29
 #: app/templates/user_profile.html:42 app/templates/users.html:25
 msgid "Actions"
-msgstr "Akcje"
+msgstr ""
 
 #: app/templates/index.html:44
 #, python-format
 msgid "Book cover %(title)s"
-msgstr "Okładka książki %(title)s"
+msgstr ""
 
 #: app/templates/index.html:60
 msgid "Add to favorites"
-msgstr "Dodaj do ulubionych"
+msgstr ""
 
 #: app/templates/index.html:87
 msgid "Add book"
-msgstr "Dodaj książkę"
+msgstr ""
 
 #: app/templates/layout.html:34
 msgid "Toggle navigation"
-msgstr "Przełącz nawigację"
+msgstr ""
 
 #: app/templates/layout.html:53
 msgid "Profile & Loans"
-msgstr "Profil i wypożyczenia"
+msgstr ""
 
 #: app/templates/layout.html:55
 msgid "Settings"
-msgstr "Ustawienia"
+msgstr ""
 
 #: app/templates/layout.html:58
 msgid "Logout"
-msgstr "Wyloguj się"
+msgstr ""
 
 #: app/templates/layout.html:80
 msgid "Books"
-msgstr "Książki"
+msgstr ""
 
 #: app/templates/layout.html:91
 msgid "Administration"
-msgstr "Administracja"
+msgstr ""
 
 #: app/templates/layout.html:99 app/templates/users.html:17
 msgid "Users"
-msgstr "Użytkownicy"
+msgstr ""
 
 #: app/templates/layout.html:103
 msgid "Loans"
-msgstr "Wypożyczenia"
+msgstr ""
 
 #: app/templates/loan_add.html:4
 msgid "Loan a Book"
-msgstr "Wypożycz książkę"
+msgstr ""
 
 #: app/templates/loans.html:7
 msgid "Add Loan"
-msgstr "Dodaj wypożyczenie"
+msgstr ""
 
 #: app/templates/loans.html:25 app/templates/user_profile.html:40
 #: app/templates/user_profile.html:73
 msgid "Book Title"
-msgstr "Tytuł książki"
+msgstr ""
 
 #: app/templates/loans.html:27 app/templates/user_profile.html:41
 #: app/templates/user_profile.html:74
 msgid "Loan Date"
-msgstr "Data wypożyczenia"
+msgstr ""
 
 #: app/templates/loans.html:28 app/templates/user_profile.html:75
 msgid "Return Date"
-msgstr "Data zwrotu"
+msgstr ""
 
 #: app/templates/loans.html:42
 msgid "On Loan"
-msgstr "Wypożyczona"
+msgstr ""
 
 #: app/templates/login.html:28
 msgid "username"
-msgstr "nazwa użytkownika"
+msgstr ""
 
 #: app/templates/login.html:29
 msgid "password"
-msgstr "hasło"
+msgstr ""
 
 #: app/templates/login.html:30
 msgid "Log In"
-msgstr "Zaloguj się"
+msgstr ""
 
 #: app/templates/login.html:34
 msgid "Forgot Password?"
-msgstr "Zapomniałeś hasła?"
+msgstr ""
 
 #: app/templates/login.html:38
 msgid "Default credentials:"
-msgstr "Domyślne dane uwierzytelniające:"
+msgstr ""
 
 #: app/templates/login.html:40
 msgid "Administrator:"
-msgstr "Administrator:"
+msgstr ""
 
 #: app/templates/login.html:41 app/templates/users.html:33
 msgid "Admin"
-msgstr "Admin"
+msgstr ""
 
 #: app/templates/login.html:44
 msgid "Standard User:"
-msgstr "Użytkownik standardowy:"
+msgstr ""
 
 #: app/templates/login.html:51
 msgid "Language"
-msgstr "Język"
+msgstr ""
 
 #: app/templates/user_add.html:4
 msgid "Add a new user"
-msgstr "Dodaj nowego użytkownika"
+msgstr ""
 
 #: app/templates/user_edit.html:4
 msgid "Edit User:"
-msgstr "Edytuj użytkownika:"
+msgstr ""
 
 #: app/templates/user_profile.html:19
 msgid "Total Loans"
-msgstr "Wszystkich wypożyczeń"
+msgstr ""
 
 #: app/templates/user_profile.html:27 app/templates/user_profile.html:35
 msgid "Currently On Loan"
-msgstr "Aktualnie wypożyczone"
+msgstr ""
 
 #: app/templates/user_profile.html:64
 msgid "No books are currently on loan."
-msgstr "Brak aktualnie wypożyczonych książek."
+msgstr ""
 
 #: app/templates/user_profile.html:68
 msgid "Loan History"
-msgstr "Historia wypożyczeń"
+msgstr ""
 
 #: app/templates/user_profile.html:89
 msgid "No loan history."
-msgstr "Brak historii wypożyczeń."
+msgstr ""
 
 #: app/templates/user_profile.html:93
 msgid "Favorite Books"
-msgstr "Ulubione książki"
+msgstr ""
 
 #: app/templates/user_profile.html:114
 msgid "Remove from Favorites"
-msgstr "Usuń z ulubionych"
+msgstr ""
 
 #: app/templates/user_profile.html:124
 msgid "No favorite books yet."
-msgstr "Brak ulubionych książek."
+msgstr ""
 
 #: app/templates/user_settings.html:4
 msgid "My Settings"
-msgstr "Ustawienia"
+msgstr ""
 
 #: app/templates/user_settings.html:19
 msgid "Current Profile Picture"
-msgstr "Aktualne zdjęcie profilowe"
+msgstr ""
 
 #: app/templates/user_settings.html:35
 msgid "Leave the password fields blank if you don't want to change your password."
-msgstr "Pozostaw pola hasła puste, jeśli nie chcesz go zmieniać."
+msgstr ""
 
 #: app/templates/users.html:15
 #, python-format
 msgid "Library currently has %(n)s user."
 msgid_plural "Library currently has %(n)s users."
-msgstr[0] "Biblioteka aktualnie ma %(n)s użytkownika."
-msgstr[1] "Biblioteka aktualnie ma %(n)s użytkowników."
-msgstr[2] "Biblioteka aktualnie ma %(n)s użytkowników."
+msgstr[0] ""
+msgstr[1] ""
 
 #: app/templates/users.html:24
 msgid "Role"
-msgstr "Rola"
+msgstr ""
 
 #: app/templates/users.html:38
 msgid "Edit User"
-msgstr "Edytuj użytkownika"
+msgstr ""
 
 #: app/templates/users.html:45
 msgid "Add user"
-msgstr "Dodaj użytkownika"
-
-#~ msgid "Save Changes"
-#~ msgstr "Zapisz zmiany"
-
-#~ msgid "Loan Book"
-#~ msgstr "Wypożycz książkę"
+msgstr ""
 

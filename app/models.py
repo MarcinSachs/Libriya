@@ -8,6 +8,14 @@ book_authors = db.Table('book_authors',
                             'author.id'), primary_key=True)
                         )
 
+# Define the association table for favorites
+favorites = db.Table('favorites',
+                     db.Column('user_id', db.Integer, db.ForeignKey(
+                         'user.id'), primary_key=True),
+                     db.Column('book_id', db.Integer, db.ForeignKey(
+                         'book.id'), primary_key=True)
+                     )
+
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -55,6 +63,8 @@ class User(UserMixin, db.Model):
                            default='default.jpg')
     loans = db.relationship('Loan', back_populates='user', lazy=True)
     is_admin = db.Column(db.Boolean, default=False)
+    favorites = db.relationship('Book', secondary=favorites, lazy='subquery',
+                                backref=db.backref('favorited_by', lazy=True))
 
     def __str__(self):
         return self.username

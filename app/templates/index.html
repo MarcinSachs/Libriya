@@ -54,6 +54,13 @@
                 <td>{{ _('Available') if book.is_available else _('On loan') }}</td>
 
                 <td class="text-nowrap">
+                    <form action="{{ url_for('main.add_favorite', book_id=book.id) }}" method="POST"
+                        style="display: inline;">
+                        <button type="submit" class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="{{ _('Add to favorites') }}">
+                            <i class='bx bx-heart'></i>
+                        </button>
+                    </form>
                     {% if book.is_available %}
                     <a href="{{ url_for('main.borrow_book', book_id=book.id, user_id=current_user.id) }}"
                         class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"

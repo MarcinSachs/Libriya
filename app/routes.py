@@ -53,6 +53,8 @@ def home():
     all_books = Book.query.all()
     return render_template("index.html", books=all_books, active_page="books")
 
+# Login and Logout
+
 
 @bp.route("/login/")
 def login():
@@ -82,6 +84,8 @@ def logout():
     logout_user()
     flash(_('You have been logged out.'), 'info')
     return redirect(url_for('main.login'))
+
+# Users
 
 
 @bp.route("/users/")
@@ -142,6 +146,70 @@ def user_edit(user_id):
         active_page="users",
         title=f"Edit User: {user.username}"
     )
+
+
+@bp.route("/user/profile/<int:user_id>")
+@login_required
+def user_profile(user_id):
+    user = current_user
+    # Sort all loans by date, newest first
+    all_loans = sorted(user.loans, key=lambda x: x.loan_date, reverse=True)
+    active_loans = [loan for loan in all_loans if loan.return_date is None]
+    loan_history = [loan for loan in all_loans if loan.return_date is not None]
+
+    # Access favorites
+    favorite_books = user.favorites
+
+    return render_template(
+        "user_profile.html",
+        user=user,
+        loans=all_loans,
+        active_loans=active_loans,
+        loan_history=loan_history,
+        favorite_books=favorite_books,
+        title=f"{user.username}"
+    )
+
+
+@bp.route("/user/settings", methods=["GET", "POST"])
+@login_required
+def user_settings():
+    user = current_user
+    if not user:
+        flash(_("No user found to edit settings."), "danger")
+        return redirect(url_for('main.home'))
+
+    form = UserSettingsForm(obj=user)
+
+    if form.validate_on_submit():
+        if form.picture.data:
+            # Create a secure, unique filename
+            random_hex = secrets.token_hex(8)
+            _, f_ext = os.path.splitext(form.picture.data.filename)
+            picture_filename = random_hex + f_ext
+            picture_path = os.path.join(
+                current_app.config["UPLOAD_FOLDER"], picture_filename)
+            form.picture.data.save(picture_path)
+            user.image_file = picture_filename
+
+        user.email = form.email.data
+        if form.password.data:
+            user.set_password(form.password.data)
+        db.session.commit()
+        flash(_("Your settings have been updated."), "success")
+        return redirect(url_for('main.user_profile', user_id=user.id))
+
+    image_file_url = url_for('static', filename='uploads/' + user.image_file)
+    return render_template("user_settings.html", form=form, title="My Settings", image_file_url=image_file_url, user=user)
+
+# Books
+
+
+@bp.route("/book/<int:book_id>")
+@login_required
+def book_detail(book_id):
+    book = Book.query.get_or_404(book_id)
+    return render_template("book_detail.html", book=book, active_page="books")
 
 
 @bp.route("/books/add/", methods=["GET", "POST"])
@@ -273,6 +341,39 @@ def book_edit(book_id):
         return redirect(url_for("main.home"))
     return render_template("book_edit.html", form=form, book=book, genres=genres, active_page="books", title="Edit Book")
 
+# Favorites
+
+
+@bp.route('/favorites/add/<int:book_id>', methods=['POST'])
+@login_required
+def add_favorite(book_id):
+    user = current_user
+    book = Book.query.get_or_404(book_id)
+    if book in user.favorites:
+        flash(_('Book is already in favorites.'), 'info')
+    else:
+        user.favorites.append(book)
+        db.session.commit()
+        flash(_('Book added to favorites.'), 'success')
+    return redirect(url_for('main.home'))
+    # return redirect(url_for('main.book_detail', book_id=book.id))
+
+
+@bp.route('/favorites/remove/<int:book_id>', methods=['POST'])
+@login_required
+def remove_favorite(book_id):
+    user = current_user
+    book = Book.query.get_or_404(book_id)
+    if book in user.favorites:
+        user.favorites.remove(book)
+        db.session.commit()
+        flash(_('Book removed from favorites.'), 'success')
+    else:
+        flash(_('Book is not in favorites.'), 'info')
+    return redirect(url_for('main.book_detail', book_id=book.id))
+
+# Loans
+
 
 @bp.route("/loans/")
 @login_required
@@ -363,56 +464,23 @@ def loan_add():
             flash(_("Invalid book or user."), "danger")
     return render_template("loan_add.html", form=form, active_page="loans", parent_page="admin", title="Add Loan")
 
-
-@bp.route("/user/profile/<int:user_id>")
-@login_required
-def user_profile(user_id):
-    user = current_user
-    # Sort all loans by date, newest first
-    all_loans = sorted(user.loans, key=lambda x: x.loan_date, reverse=True)
-    active_loans = [loan for loan in all_loans if loan.return_date is None]
-    loan_history = [loan for loan in all_loans if loan.return_date is not None]
-
-    return render_template(
-        "user_profile.html",
-        user=user,
-        loans=all_loans,
-        active_loans=active_loans,
-        loan_history=loan_history,
-        title=f"{user.username}"
-    )
+# Language selection
 
 
-@bp.route("/user/settings", methods=["GET", "POST"])
-@login_required
-def user_settings():
-    user = current_user
-    if not user:
-        flash(_("No user found to edit settings."), "danger")
-        return redirect(url_for('main.home'))
+@bp.route('/set_language/<lang>')
+def set_language(lang):
+    if lang in current_app.config['LANGUAGES']:
+        # Create a response object from the redirect to set a cookie
+        response = make_response(
+            redirect(request.referrer or url_for('main.home')))
+        # Set cookie for 2 years
+        response.set_cookie('language', lang, max_age=60*60*24*365*2)
+        flash(_('Language changed to %(lang)s.', lang=lang), 'info')
+        return response
+    flash(_('Unsupported language.'), 'danger')
+    return redirect(request.referrer or url_for('main.home'))
 
-    form = UserSettingsForm(obj=user)
-
-    if form.validate_on_submit():
-        if form.picture.data:
-            # Create a secure, unique filename
-            random_hex = secrets.token_hex(8)
-            _, f_ext = os.path.splitext(form.picture.data.filename)
-            picture_filename = random_hex + f_ext
-            picture_path = os.path.join(
-                current_app.config["UPLOAD_FOLDER"], picture_filename)
-            form.picture.data.save(picture_path)
-            user.image_file = picture_filename
-
-        user.email = form.email.data
-        if form.password.data:
-            user.set_password(form.password.data)
-        db.session.commit()
-        flash(_("Your settings have been updated."), "success")
-        return redirect(url_for('main.user_profile', user_id=user.id))
-
-    image_file_url = url_for('static', filename='uploads/' + user.image_file)
-    return render_template("user_settings.html", form=form, title="My Settings", image_file_url=image_file_url, user=user)
+# API for ISBN lookup
 
 
 @bp.route("/api/v1/isbn/<isbn>", methods=["GET"])
@@ -456,17 +524,3 @@ def get_book_by_isbn(isbn):
     except Exception as e:
         # Handle other potential errors (e.g., JSON decoding)
         return jsonify({"error": str(e)}), 500
-
-
-@bp.route('/set_language/<lang>')
-def set_language(lang):
-    if lang in current_app.config['LANGUAGES']:
-        # Create a response object from the redirect to set a cookie
-        response = make_response(
-            redirect(request.referrer or url_for('main.home')))
-        # Set cookie for 2 years
-        response.set_cookie('language', lang, max_age=60*60*24*365*2)
-        flash(_('Language changed to %(lang)s.', lang=lang), 'info')
-        return response
-    flash(_('Unsupported language.'), 'danger')
-    return redirect(request.referrer or url_for('main.home'))
