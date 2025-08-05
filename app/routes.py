@@ -6,6 +6,7 @@ import requests
 from urllib.parse import urlparse
 from functools import wraps
 from flask_session import Session
+from sqlalchemy import or_
 from flask import (
     jsonify,
     Blueprint,
@@ -46,12 +47,30 @@ def admin_required(f):
 def favicon():
     return current_app.send_static_file("favicon.ico")
 
+# Home Page
+
 
 @bp.route("/")
 @login_required
 def home():
-    all_books = Book.query.all()
-    return render_template("index.html", books=all_books, active_page="books")
+    status_filter = request.args.get('status')
+    genre_filter = request.args.get('genre')
+
+    query = Book.query
+
+    if status_filter:
+        if status_filter == 'available':
+            query = query.filter(Book.is_available == True)
+        elif status_filter == 'on_loan':
+            query = query = query.filter(Book.is_available == False)
+
+    if genre_filter:
+        query = query.filter(Book.genre_id == genre_filter)
+
+    books = query.all()
+    genres = Genre.query.all()
+
+    return render_template("index.html", books=books, genres=genres, active_page="books")
 
 # Login and Logout
 

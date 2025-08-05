@@ -11,7 +11,6 @@
     {% endif %}
     {% endwith %}
 
-
     <div class="book-count-card">
         <i class='bx bxs-info-circle'></i>
         <p class="mb-0">
@@ -21,6 +20,36 @@
     </div>
 
     <h2>{{ _('List of books') }}</h2>
+
+    <!-- Formularz filtrowania -->
+    <form method="GET" action="{{ url_for('main.home') }}" class="mb-3">
+        <div class="row g-2">
+            <div class="col-md-3">
+                <label for="status" class="form-label">{{ _('Status') }}</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">{{ _('All') }}</option>
+                    <option value="available" {% if request.args.get('status')=='available' %}selected{% endif %}>{{
+                        _('Available') }}</option>
+                    <option value="on_loan" {% if request.args.get('status')=='on_loan' %}selected{% endif %}>{{ _('On
+                        Loan') }}</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="genre" class="form-label">{{ _('Genre') }}</label>
+                <select class="form-select" id="genre" name="genre">
+                    <option value="">{{ _('All') }}</option>
+                    {% for genre in genres %}
+                    <option value="{{ genre.id }}" {% if request.args.get('genre')==genre.id|string %}selected{% endif
+                        %}>{{ genre.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">{{ _('Filter') }}</button>
+                <a href="{{ url_for('main.home') }}" class="btn btn-secondary">{{ _('Reset') }}</a>
+            </div>
+        </div>
+    </form>
 
     <table class="table table-hover table-striped">
         <thead>
@@ -40,11 +69,9 @@
                 style="cursor: pointer;">
                 <td>
                     {% if book.cover %}
-
                     <img src="{{ url_for('static', filename='uploads/' + book.cover) }}"
                         alt="{{ _('Book cover %(title)s', title=book.title) }}">
                     {% else %}
-
                     <i class='bx bx-image'></i>
                     {% endif %}
                 </td>
