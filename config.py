@@ -15,3 +15,5 @@ class Config:
     LANGUAGES = ['en', 'pl']
     BABEL_DEFAULT_LOCALE = 'pl'
     BABEL_DEFAULT_TIMEZONE = 'UTC'
+    BABEL_TRANSLATION_DIRECTORIES = os.path.join(BASE_DIR, 'translations')
+

@@ -15,7 +15,8 @@ from flask import (
     render_template,
     request,
     url_for,
-    make_response
+    make_response,
+    session,
 )
 from werkzeug.utils import secure_filename
 
@@ -69,11 +70,11 @@ def login_post():
     if user and user.check_password(password):
         login_user(user)
         flash(_('Login successful!'), 'success')
-        # Use cookie with language if user is logged
-        response = make_response(redirect(url_for('main.home')))
-        if 'lang' in request.args:
-            response.set_cookie('lang', request.args['lang'])
-        return response
+        # Set language in session if provided
+        lang = request.args.get('lang')
+        if lang and lang in current_app.config['LANGUAGES']:
+            session['language'] = lang
+        return redirect(url_for('main.home'))
     else:
         flash(_('Invalid username or password. Please try again.'), 'danger')
         return redirect(url_for('main.login'))
@@ -457,7 +458,7 @@ def get_book_by_isbn(isbn):
 @bp.route('/set_language/<lang>')
 def set_language(lang):
     if lang in current_app.config['LANGUAGES']:
-        # session['lang'] = lang  # Set language in session remove this
+        session['language'] = lang
         flash(_('Language changed to %(lang)s.', lang=lang), 'info')
         return redirect(request.referrer or url_for('main.home'))
     flash(_('Unsupported language.'), 'danger')

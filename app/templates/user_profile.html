@@ -16,7 +16,7 @@
         <div class="col-md-6">
             <div class="card text-center h-100">
                 <div class="card-body">
-                    <h5 class="card-title">{{ _('Total Loans') }}</h5> {# Translated card title #}
+                    <h5 class="card-title">{{ _('Total Loans') }}</h5> 
                     <p class="card-text fs-2 fw-bold">{{ loans|length }}</p>
                 </div>
             </div>
@@ -24,7 +24,7 @@
         <div class="col-md-6">
             <div class="card text-center h-100">
                 <div class="card-body">
-                    <h5 class="card-title">{{ _('Currently On Loan') }}</h5> {# Translated card title #}
+                    <h5 class="card-title">{{ _('Currently On Loan') }}</h5> 
                     <p class="card-text fs-2 fw-bold">{{ active_loans|length }}</p>
                 </div>
             </div>
@@ -32,14 +32,14 @@
     </div>
 
     <!-- Currently On Loan -->
-    <h3 class="mt-5">{{ _('Currently On Loan') }}</h3> {# Translated heading #}
-    {% if active_loans %} {# Added table-striped here for consistency #}
+    <h3 class="mt-5">{{ _('Currently On Loan') }}</h3> 
+    {% if active_loans %} 
     <table class="table table-hover">
         <thead>
             <tr>
-                <th>{{ _('Book Title') }}</th> {# Translated table header #}
-                <th>{{ _('Loan Date') }}</th> {# Translated table header #}
-                <th>{{ _('Actions') }}</th> {# Translated table header #}
+                <th>{{ _('Book Title') }}</th> 
+                <th>{{ _('Loan Date') }}</th> 
+                <th>{{ _('Actions') }}</th> 
             </tr>
         </thead>
         <tbody>
@@ -51,7 +51,7 @@
                     <form action="{{ url_for('main.return_loan', loan_id=loan.id) }}" method="POST"
                         style="display: inline;">
                         <button type="submit" class="btn btn-outline-warning btn-sm" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="{{ _('Return Book') }}"> {# Translated tooltip #}
+                            data-bs-placement="top" title="{{ _('Return Book') }}"> 
                             <i class="bx bx-log-out-circle"></i>
                         </button>
                     </form>
@@ -61,18 +61,18 @@
         </tbody>
     </table>
     {% else %}
-    <p>{{ _('No books are currently on loan.') }}</p> {# Translated text #}
+    <p>{{ _('No books are currently on loan.') }}</p> 
     {% endif %}
 
     <!-- Loan History -->
-    <h3 class="mt-5">{{ _('Loan History') }}</h3> {# Translated heading #}
-    {% if loan_history %} {# Added table-striped here for consistency #}
+    <h3 class="mt-5">{{ _('Loan History') }}</h3> 
+    {% if loan_history %} 
     <table class="table table-hover">
         <thead>
             <tr>
-                <th>{{ _('Book Title') }}</th> {# Translated table header #}
-                <th>{{ _('Loan Date') }}</th> {# Translated table header #}
-                <th>{{ _('Return Date') }}</th> {# Translated table header #}
+                <th>{{ _('Book Title') }}</th> 
+                <th>{{ _('Loan Date') }}</th> 
+                <th>{{ _('Return Date') }}</th> 
             </tr>
         </thead>
         <tbody>
@@ -86,7 +86,7 @@
         </tbody>
     </table>
     {% else %}
-    <p>{{ _('No loan history.') }}</p> {# Translated text #}
+    <p>{{ _('No loan history.') }}</p> 
     {% endif %}
 
 </div>

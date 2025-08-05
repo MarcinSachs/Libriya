@@ -8,60 +8,60 @@ from flask_babel import lazy_gettext as _
 
 class BookForm(FlaskForm):
     isbn = StringField('ISBN')
-    title = StringField('Title', validators=[DataRequired()])
-    author = StringField('Author(s) (comma-separated)',
+    title = StringField(_('Title'), validators=[DataRequired()])
+    author = StringField(_('Author(s) (comma-separated)'),
                          validators=[DataRequired()])
-    genre = StringField('Genre', validators=[DataRequired()])
+    genre = StringField(_('Genre'), validators=[DataRequired()])
     year = IntegerField(
-        'Year',
+        _('Year'),
         validators=[
             DataRequired(message="Field 'Year' is required."),
             NumberRange(min=0, max=datetime.now().year,
                         message="Please enter a valid year (e.g. 1999).")
         ]
     )
-    cover = FileField('Cover', validators=[
-        FileAllowed(['jpg', 'png', 'jpeg'], 'Only image files (jpg, png, jpeg) are allowed!')])
+    cover = FileField(_('Cover'), validators=[
+        FileAllowed(['jpg', 'png', 'jpeg'], _('Only image files (jpg, png, jpeg) are allowed!'))])
     # Added btn-primary class
     submit = SubmitField('Submit', render_kw={"class": "btn btn-primary"})
 
 
 class UserForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired(), Email()],
+    username = StringField(_('Username'), validators=[DataRequired()])
+    email = StringField(_('Email'), validators=[DataRequired(), Email()],
                         render_kw={'placeholder': _('user@example.com')})  # Translated placeholder in forms.py
-    password = PasswordField('Password', validators=[DataRequired()])
-    confirm_password = PasswordField('Confirm Password', validators=[
+    password = PasswordField(_('Password'), validators=[DataRequired()])
+    confirm_password = PasswordField(_('Confirm Password'), validators=[
                                      DataRequired(), EqualTo('password')])
-    submit = SubmitField('Add User', render_kw={"class": "btn btn-primary"})
+    submit = SubmitField(_('Add User'), render_kw={"class": "btn btn-primary"})
 
 
 class UserEditForm(FlaskForm):
-    username = StringField('Username', render_kw={'readonly': True})
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    is_admin = BooleanField('Administrator privileges')
-    submit = SubmitField('Save Changes', render_kw={
+    username = StringField(_('Username'), render_kw={'readonly': True})
+    email = StringField(_('Email'), validators=[DataRequired(), Email()])
+    is_admin = BooleanField(_('Administrator privileges'))
+    submit = SubmitField(_('Save Changes'), render_kw={
                          "class": "btn btn-primary"})
 
 
 class UserSettingsForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    picture = FileField('Update Profile Picture', validators=[
-        FileAllowed(['jpg', 'png'], 'Images only!'),
+    email = StringField(_('Email'), validators=[DataRequired(), Email()])
+    picture = FileField(_('Update Profile Picture'), validators=[
+        FileAllowed(['jpg', 'png'], _('Images only!')),
         FileSize(max_size=2 * 1024 * 1024,
-                 message='File size must be less than 2MB.')
+                 message=_('File size must be less than 2MB.'))
     ])
-    password = PasswordField('New Password', validators=[Optional()])
+    password = PasswordField(_('New Password'), validators=[Optional()])
     confirm_password = PasswordField(
-        'Confirm New Password',
-        validators=[EqualTo('password', message='Passwords must match.')]
+        _('Confirm New Password'),
+        validators=[EqualTo('password', message=_('Passwords must match.'))]
     )
-    submit = SubmitField('Save Changes', render_kw={
+    submit = SubmitField(_('Save Changes'), render_kw={
                          "class": "btn btn-primary"})
 
 
 class LoanForm(FlaskForm):
-    book_id = SelectField('Book', coerce=int, validators=[DataRequired()])
-    user_id = SelectField('User', coerce=int, validators=[DataRequired()])
+    book_id = SelectField(_('Book'), coerce=int, validators=[DataRequired()])
+    user_id = SelectField(_('User'), coerce=int, validators=[DataRequired()])
     # Added btn-primary class
-    submit = SubmitField('Loan Book', render_kw={"class": "btn btn-primary"})
+    submit = SubmitField(_('Loan Book'), render_kw={"class": "btn btn-primary"})

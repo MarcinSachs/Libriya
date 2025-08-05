@@ -7,11 +7,10 @@
 
     <!-- Icon -->
     <div class="fadeIn first">
-      <img src="{{ url_for('static', filename='/images/logo.png') }}" id="icon" alt="Logo" /> {# Alt text usually not
-      translated #}
-      <h4>Libriya</h4> {# App name, typically not translated #}
+      <img src="{{ url_for('static', filename='/images/logo.png') }}" id="icon" alt="Logo" /> 
+      <h4>Libriya</h4> 
     </div>
-    {# flash messages #}
+    
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
@@ -22,28 +21,24 @@
 
     <!-- Login Form -->
     <form method="POST" action="/login">
-      <input type="text" id="username" class="fadeIn second" name="username" placeholder="{{ _('username') }}"> {#
-      Translated placeholder #}
-      <input type="password" id="password" class="fadeIn third" name="password" placeholder="{{ _('password') }}"> {#
-      Translated placeholder #}
-      <input type="submit" class="fadeIn fourth" value="{{ _('Log In') }}"> {# Translated button value #}
+      <input type="text" id="username" class="fadeIn second" name="username" placeholder="{{ _('username') }}"> 
+      <input type="password" id="password" class="fadeIn third" name="password" placeholder="{{ _('password') }}"> 
+      <input type="submit" class="fadeIn fourth" value="{{ _('Log In') }}"> 
     </form>
     <!-- Remind Passowrd -->
     <div id="formFooter">
-      <a class="underlineHover" href="#">{{ _('Forgot Password?') }}</a> {# Translated link text #}
+      <a class="underlineHover" href="#">{{ _('Forgot Password?') }}</a> 
     </div>
     <!-- Default credentials section -->
     <div class="default-credentials">
-      <p class="section-title">{{ _('Default credentials:') }}</p> {# Translated text #}
+      <p class="section-title">{{ _('Default credentials:') }}</p> 
       <div class="credential-item">
-        <p class="credential-label">{{ _('Administrator:') }}</p> {# Translated text #}
-        <p class="credential-value"><i class='bx bx-user'></i> {{ _('Admin') }} <i class='bx bx-lock'></i> admin</p> {#
-        Translated text, "admin" for password/username can be left untranslated if it's a fixed value #}
+        <p class="credential-label">{{ _('Administrator:') }}</p> 
+        <p class="credential-value"><i class='bx bx-user'></i> {{ _('Admin') }} <i class='bx bx-lock'></i> admin</p> 
       </div>
       <div class="credential-item">
-        <p class="credential-label">{{ _('Standard User:') }}</p> {# Translated text #}
-        <p class="credential-value"><i class='bx bx-user'></i> {{ _('User') }} <i class='bx bx-lock'></i> user</p> {#
-        Translated text, "user" for password/username can be left untranslated #}
+        <p class="credential-label">{{ _('Standard User:') }}</p> 
+        <p class="credential-value"><i class='bx bx-user'></i> {{ _('User') }} <i class='bx bx-lock'></i> user</p> 
       </div>
     </div>
 
@@ -55,7 +50,7 @@
         href="https://unsplash.com/@itfeelslikefilm?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">🇸🇮
         Janko Ferlič</a> on <a
         href="https://unsplash.com/photos/photo-of-library-with-turned-on-lights-sfL_QOnmy00?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>
-    </p> {# Attribution, typically not translated #}
+    </p> 
   </div>
 </div>
 

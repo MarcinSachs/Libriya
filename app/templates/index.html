@@ -1,8 +1,8 @@
 {% extends "layout.html" %}
 {% block content %}
-{# Removed mt-5, padding will be provided by main-content #}
+
 <div class="container">
-    {# flash messages #}
+    
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
@@ -11,28 +11,27 @@
     {% endif %}
     {% endwith %}
 
-    {# New card for book count #}
+    
     <div class="book-count-card">
         <i class='bx bxs-info-circle'></i>
         <p class="mb-0">
             {% set n = books|length %}
-            {{ ngettext('Library currently has %(n)s book.', 'Library currently has %(n)s books.', n, n=n) }} {#
-            Corrected: Added n=n for string interpolation #}
+            {{ ngettext('Library currently has %(n)s book.', 'Library currently has %(n)s books.', n, n=n) }} 
         </p>
     </div>
 
-    <h2>{{ _('List of books') }}</h2> {# Translated heading #}
+    <h2>{{ _('List of books') }}</h2> 
 
-    <table class="table table-hover table-striped"> {# Added table-striped #}
+    <table class="table table-hover table-striped"> 
         <thead>
             <tr>
-                <th>{{ _('Cover') }}</th> {# Translated table header #}
-                <th>{{ _('Title') }}</th> {# Translated table header #}
-                <th>{{ _('Author') }}</th> {# Translated table header #}
-                <th>{{ _('Genre') }}</th> {# Translated table header #}
-                <th>{{ _('Year') }}</th> {# Translated table header #}
-                <th>{{ _('Status') }}</th> {# Translated table header #}
-                <th>{{ _('Actions') }}</th> {# Translated table header #}
+                <th>{{ _('Cover') }}</th> 
+                <th>{{ _('Title') }}</th> 
+                <th>{{ _('Author') }}</th> 
+                <th>{{ _('Genre') }}</th> 
+                <th>{{ _('Year') }}</th> 
+                <th>{{ _('Status') }}</th> 
+                <th>{{ _('Actions') }}</th> 
             </tr>
         </thead>
         <tbody>
@@ -40,12 +39,11 @@
             <tr>
                 <td>
                     {% if book.cover %}
-                    {# Removed inline styles, styled by CSS #}
+                    
                     <img src="{{ url_for('static', filename='uploads/' + book.cover) }}"
-                        alt="{{ _('Book cover %(title)s', title=book.title) }}"> {# Corrected: Use named placeholder
-                    directly with _() #}
+                        alt="{{ _('Book cover %(title)s', title=book.title) }}"> 
                     {% else %}
-                    {# Removed inline styles, styled by CSS #}
+                    
                     <i class='bx bx-image'></i>
                     {% endif %}
                 </td>
@@ -53,31 +51,31 @@
                 <td>{{ book.authors|map(attribute='name')|join(', ') }}</td>
                 <td>{{ book.genre }}</td>
                 <td>{{ book.year }}</td>
-                <td>{{ _('Available') if book.is_available else _('On loan') }}</td> {# Translated status #}
-                {# Buttons with icons only and tooltips #}
+                <td>{{ _('Available') if book.is_available else _('On loan') }}</td> 
+                
                 <td class="text-nowrap">
                     {% if book.is_available %}
                     <a href="{{ url_for('main.borrow_book', book_id=book.id, user_id=current_user.id) }}"
                         class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
-                        title="{{ _('Borrow Book') }}"><i class="bx bx-log-in-circle"></i></a> {# Translated tooltip #}
+                        title="{{ _('Borrow Book') }}"><i class="bx bx-log-in-circle"></i></a> 
                     {% else %}
                     <a href="{{ url_for('main.return_book', book_id=book.id) }}" class="btn btn-outline-warning btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Return Book') }}"><i
-                            class="bx bx-log-out-circle"></i></a> {# Translated tooltip #}
+                            class="bx bx-log-out-circle"></i></a> 
                     {% endif %}
                     <a href="{{ url_for('main.book_edit', book_id=book.id)}}" class="btn btn-outline-primary btn-sm"
-                        data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Edit Book') }}"><i {# Translated
-                            tooltip #} class="bx bx-edit"></i></a>
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Edit Book') }}"><i 
+                            class="bx bx-edit"></i></a>
                     <a href="{{ url_for('main.book_delete', book_id=book.id)}}" class="btn btn-outline-danger btn-sm"
-                        data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Delete Book') }}"><i {# Translated
-                            tooltip #} class="bx bx-trash"></i></a>
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Delete Book') }}"><i 
+                            class="bx bx-trash"></i></a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    {# New class add-book-btn #}
+    
     <a href="{{ url_for('main.book_add') }}" class="btn btn-primary add-book-btn">{{ _('Add book') }}
-    </a> {# Translated button text #}
+    </a> 
 </div>
 {% endblock %}
