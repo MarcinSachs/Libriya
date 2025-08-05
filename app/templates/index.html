@@ -36,7 +36,8 @@
         </thead>
         <tbody>
             {% for book in books %}
-            <tr>
+            <tr onclick="window.location='{{ url_for('main.book_detail', book_id=book.id) }}';"
+                style="cursor: pointer;">
                 <td>
                     {% if book.cover %}
 
