@@ -48,6 +48,7 @@
                 <td>{{ loan.book.title }}</td>
                 <td>{{ loan.loan_date.strftime('%Y-%m-%d') }}</td>
                 <td>
+                    <!-- 
                     <form action="{{ url_for('main.return_loan', loan_id=loan.id) }}" method="POST"
                         style="display: inline;">
                         <button type="submit" class="btn btn-outline-warning btn-sm" data-bs-toggle="tooltip"
@@ -55,6 +56,7 @@
                             <i class="bx bx-log-out-circle"></i>
                         </button>
                     </form>
+                    -->
                 </td>
             </tr>
             {% endfor %}

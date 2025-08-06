@@ -31,7 +31,7 @@
                     class="btn btn-success">
                     <i class="bx bx-log-in-circle align-middle"></i> {{ _('Borrow Book') }}
                 </a>
-                {% else %}
+                {% elif current_user and current_user.is_admin %}
                 <a href="{{ url_for('main.return_book', book_id=book.id) }}" class="btn btn-warning">
                     <i class="bx bx-log-out-circle align-middle"></i> {{ _('Return Book') }}
                 </a>

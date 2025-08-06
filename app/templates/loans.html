@@ -19,6 +19,38 @@
     {% endif %}
     {% endwith %}
 
+
+    <!-- Filtering form -->
+    <form method="GET" action="{{ url_for('main.loans') }}" class="mb-3">
+        <div class="row g-2">
+            <div class="col-md-3">
+                <label for="status" class="form-label">{{ _('Status') }}</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">{{ _('All') }}</option>
+                    <option value="available" {% if request.args.get('status')=='available' %}selected{% endif %}>{{
+                        _('Returned') }}</option> {# Changed "Available" to "Returned" for clarity regarding loans #}
+                    <option value="on_loan" {% if request.args.get('status')=='on_loan' %}selected{% endif %}>{{ _('On
+                        Loan') }}</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="user" class="form-label">{{ _('User') }}</label>
+                <select class="form-select" id="user" name="user">
+                    <option value="">{{ _('All') }}</option>
+                    {% for user in users %}
+                    <option value="{{ user.id }}" {% if request.args.get('user')==user.id|string %}selected{% endif
+                        %}>{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-center buttons-container">
+                <div style="height: 100%; width: 0; visibility: hidden;"></div>
+                <button type="submit" class="btn btn-primary me-2">{{ _('Filter') }}</button>
+                <a href="{{ url_for('main.loans') }}" class="btn btn-secondary">{{ _('Reset') }}</a>
+            </div>
+        </div>
+    </form>
+    
     <table class="table table-hover table-striped">
         <thead>
             <tr>

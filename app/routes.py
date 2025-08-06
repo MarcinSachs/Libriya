@@ -55,8 +55,7 @@ def favicon():
 def home():
     status_filter = request.args.get('status')
     genre_filter = request.args.get('genre')
-    author_filter = request.args.get('author')
-    title_filter = request.args.get('title')  # Pobierz tytuł z formularza
+    title_filter = request.args.get('title')
 
     query = Book.query
 
@@ -403,8 +402,34 @@ def remove_favorite(book_id):
 @login_required
 @admin_required
 def loans():
-    all_loans = Loan.query.all()
-    return render_template("loans.html", loans=all_loans, active_page="loans", parent_page="admin", title="Loans")
+    loan_query = Loan.query
+    # Apply user filter
+    user_filter_id = request.args.get('user')
+    if user_filter_id:
+        try:
+            user_filter_id = int(user_filter_id)
+            loan_query = loan_query.filter(Loan.user_id == user_filter_id)
+        except ValueError:
+            # Handle case where user_filter_id is not a valid integer
+            # You might want to flash an error message here, or just ignore the filter
+            flash(_("Invalid user ID provided for filtering."), "danger")
+     # Apply status filter
+    status_filter = request.args.get('status')
+    if status_filter:
+        if status_filter == 'available': # Show loans that have been returned
+            loan_query = loan_query.filter(Loan.return_date.isnot(None))
+        elif status_filter == 'on_loan': # Show loans that are currently active (not returned)
+            loan_query = loan_query.filter(Loan.return_date.is_(None))
+    # Order the results for consistent display (e.g., by loan date descending)
+    loan_query = loan_query.order_by(Loan.loan_date.desc())
+
+    # Execute the final query to get filtered loans
+    filtered_loans = loan_query.all()  
+
+    # Get all users for the user filter dropdown (always need all for the selection)
+    all_users = User.query.order_by(User.username).all()
+
+    return render_template("loans.html", loans=filtered_loans, users=all_users, active_page="loans", parent_page="admin", title="Loans")
 
 
 @bp.route("/borrow/<int:book_id>/<int:user_id>", methods=["GET", "POST"])
