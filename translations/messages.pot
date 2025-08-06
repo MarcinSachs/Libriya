@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-06 08:14+0200\n"
+"POT-Creation-Date: 2025-08-06 10:19+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -112,7 +112,7 @@ msgstr ""
 msgid "Book"
 msgstr ""
 
-#: app/forms.py:65 app/templates/loans.html:37 app/templates/loans.html:58
+#: app/forms.py:65 app/templates/loans.html:39 app/templates/loans.html:60
 #: app/templates/login.html:45 app/templates/users.html:34
 msgid "User"
 msgstr ""
@@ -138,97 +138,145 @@ msgstr ""
 msgid "User '%(username)s' updated successfully!"
 msgstr ""
 
-#: app/routes.py:202
+#: app/routes.py:204
 msgid "No user found to edit settings."
 msgstr ""
 
-#: app/routes.py:222
+#: app/routes.py:224
 msgid "Your settings have been updated."
 msgstr ""
 
-#: app/routes.py:293
+#: app/routes.py:296
 #, python-format
 msgid "Could not download cover image: '%(e)s'"
 msgstr ""
 
-#: app/routes.py:297
+#: app/routes.py:300
 msgid "Book added successfully!"
 msgstr ""
 
-#: app/routes.py:313
+#: app/routes.py:315
 #, python-format
 msgid ""
-"Cannot delete \"%(title)s\" because it has a loan history. Consider "
-"implementing an \"archive\" feature instead."
+"Cannot delete \"%(title)s\" because it is currently \"%(status)s\". "
+"Consider marking it as inactive instead."
 msgstr ""
 
-#: app/routes.py:318
+#: app/routes.py:320
 msgid "Book deleted successfully!"
 msgstr ""
 
-#: app/routes.py:363
+#: app/routes.py:365
 msgid "Book updated successfully!"
 msgstr ""
 
-#: app/routes.py:376
+#: app/routes.py:378
 msgid "Book is already in favorites."
 msgstr ""
 
-#: app/routes.py:380
+#: app/routes.py:382
 msgid "Book added to favorites."
 msgstr ""
 
-#: app/routes.py:393
+#: app/routes.py:395
 msgid "Book removed from favorites."
 msgstr ""
 
-#: app/routes.py:395
+#: app/routes.py:397
 msgid "Book is not in favorites."
 msgstr ""
 
-#: app/routes.py:415
+#: app/routes.py:417
 msgid "Invalid user ID provided for filtering."
 msgstr ""
 
-#: app/routes.py:445
-msgid "Book borrowed successfully!"
+#: app/routes.py:432 app/templates/layout.html:103
+msgid "Loans"
 msgstr ""
 
-#: app/routes.py:447 app/routes.py:511
-msgid "This book is already on loan."
+#: app/routes.py:448
+msgid "You already have an active or pending reservation for this book."
+msgstr ""
+
+#: app/routes.py:457
+msgid "Book has been reserved successfully! An admin will approve it shortly."
 msgstr ""
 
 #: app/routes.py:459
-msgid "Book returned successfully!"
+msgid "This book is already reserved by another user."
 msgstr ""
 
 #: app/routes.py:461
+msgid "This book is currently on loan."
+msgstr ""
+
+#: app/routes.py:476
+msgid "Book borrowed successfully!"
+msgstr ""
+
+#: app/routes.py:478
+msgid "This book is already on loan."
+msgstr ""
+
+#: app/routes.py:490
+msgid "Book returned successfully!"
+msgstr ""
+
+#: app/routes.py:492
 msgid "This book is not currently on loan."
 msgstr ""
 
-#: app/routes.py:473
+#: app/routes.py:508
+#, python-format
+msgid "Loan for \"%(title)s\" to %(username)s has been approved!"
+msgstr ""
+
+#: app/routes.py:511
+msgid ""
+"Cannot approve loan: Book status is not \"reserved\". It might have been "
+"cancelled or loaned differently."
+msgstr ""
+
+#: app/routes.py:513
+msgid "Loan is not in \"pending\" status and cannot be approved."
+msgstr ""
+
+#: app/routes.py:528
+#, python-format
+msgid "Reservation for \"%(title)s\" by %(username)s has been cancelled."
+msgstr ""
+
+#: app/routes.py:531
+msgid "Cannot cancel loan: It is not in \"pending\" status."
+msgstr ""
+
+#: app/routes.py:544
 #, python-format
 msgid "Book \"%(title)s\" has been returned."
 msgstr ""
 
-#: app/routes.py:476
-msgid "This book has already been returned."
+#: app/routes.py:547
+msgid "This loan is not active or has already been returned."
 msgstr ""
 
-#: app/routes.py:508
+#: app/routes.py:582
 msgid "Loan added successfully!"
 msgstr ""
 
-#: app/routes.py:513
+#: app/routes.py:585
+msgid "This book is currently on loan or reserved."
+msgstr ""
+
+#: app/routes.py:587
 msgid "Invalid book or user."
 msgstr ""
 
-#: app/routes.py:527
+#: app/routes.py:601
 #, python-format
 msgid "Language changed to %(lang)s."
 msgstr ""
 
-#: app/routes.py:529
+#: app/routes.py:603
 msgid "Unsupported language."
 msgstr ""
 
@@ -294,25 +342,25 @@ msgid "ISBN"
 msgstr ""
 
 #: app/templates/book_detail.html:26 app/templates/index.html:33
-#: app/templates/index.html:68 app/templates/loans.html:27
+#: app/templates/index.html:68 app/templates/loans.html:64
+#: app/templates/user_profile.html:50 app/templates/user_profile.html:114
 msgid "Status"
 msgstr ""
 
 #: app/templates/book_detail.html:26 app/templates/index.html:37
-#: app/templates/index.html:88
+#: app/templates/index.html:90
 msgid "Available"
 msgstr ""
 
-#: app/templates/book_detail.html:26 app/templates/index.html:88
+#: app/templates/book_detail.html:26
 msgid "On loan"
 msgstr ""
 
-#: app/templates/book_detail.html:32 app/templates/index.html:101
+#: app/templates/book_detail.html:32
 msgid "Borrow Book"
 msgstr ""
 
-#: app/templates/book_detail.html:36 app/templates/index.html:104
-#: app/templates/loans.html:82 app/templates/user_profile.html:55
+#: app/templates/book_detail.html:36 app/templates/loans.html:120
 msgid "Return Book"
 msgstr ""
 
@@ -320,11 +368,11 @@ msgstr ""
 msgid "Back to List"
 msgstr ""
 
-#: app/templates/book_detail.html:47 app/templates/index.html:109
+#: app/templates/book_detail.html:47 app/templates/index.html:120
 msgid "Edit Book"
 msgstr ""
 
-#: app/templates/book_detail.html:51 app/templates/index.html:112
+#: app/templates/book_detail.html:51 app/templates/index.html:123
 msgid "Delete Book"
 msgstr ""
 
@@ -365,21 +413,21 @@ msgid "Enter title to search"
 msgstr ""
 
 #: app/templates/index.html:35 app/templates/index.html:45
-#: app/templates/loans.html:29 app/templates/loans.html:39
+#: app/templates/loans.html:29 app/templates/loans.html:41
 msgid "All"
 msgstr ""
 
-#: app/templates/index.html:38 app/templates/loans.html:32
+#: app/templates/index.html:38
 msgid ""
 "On\n"
-"                        Loan"
+"                        Loan/Reserved"
 msgstr ""
 
-#: app/templates/index.html:54 app/templates/loans.html:48
+#: app/templates/index.html:54 app/templates/loans.html:50
 msgid "Filter"
 msgstr ""
 
-#: app/templates/index.html:55 app/templates/loans.html:49
+#: app/templates/index.html:55 app/templates/loans.html:51
 msgid "Reset"
 msgstr ""
 
@@ -387,8 +435,9 @@ msgstr ""
 msgid "Author"
 msgstr ""
 
-#: app/templates/index.html:69 app/templates/loans.html:61
-#: app/templates/user_profile.html:42 app/templates/users.html:25
+#: app/templates/index.html:69 app/templates/loans.html:65
+#: app/templates/user_profile.html:51 app/templates/user_profile.html:85
+#: app/templates/users.html:25
 msgid "Actions"
 msgstr ""
 
@@ -397,11 +446,27 @@ msgstr ""
 msgid "Book cover %(title)s"
 msgstr ""
 
+#: app/templates/index.html:92
+msgid "Reserved"
+msgstr ""
+
 #: app/templates/index.html:94
+msgid "On Loan"
+msgstr ""
+
+#: app/templates/index.html:104
 msgid "Add to favorites"
 msgstr ""
 
-#: app/templates/index.html:121
+#: app/templates/index.html:111
+msgid "Request Reservation"
+msgstr ""
+
+#: app/templates/index.html:114
+msgid "Book not available for reservation"
+msgstr ""
+
+#: app/templates/index.html:132
 msgid "Add book"
 msgstr ""
 
@@ -433,10 +498,6 @@ msgstr ""
 msgid "Users"
 msgstr ""
 
-#: app/templates/layout.html:103
-msgid "Loans"
-msgstr ""
-
 #: app/templates/loan_add.html:4
 msgid "Loan a Book"
 msgstr ""
@@ -445,26 +506,68 @@ msgstr ""
 msgid "Add Loan"
 msgstr ""
 
-#: app/templates/loans.html:31
+#: app/templates/loans.html:27
+msgid "Loan Status"
+msgstr ""
+
+#: app/templates/loans.html:31 app/templates/loans.html:90
+#: app/templates/user_profile.html:59
+msgid "Pending Approval"
+msgstr ""
+
+#: app/templates/loans.html:32
+msgid ""
+"Active\n"
+"                        Loan"
+msgstr ""
+
+#: app/templates/loans.html:34 app/templates/loans.html:94
+#: app/templates/user_profile.html:138
 msgid "Returned"
 msgstr ""
 
-#: app/templates/loans.html:57 app/templates/user_profile.html:40
-#: app/templates/user_profile.html:75
+#: app/templates/loans.html:35 app/templates/loans.html:96
+#: app/templates/user_profile.html:140
+msgid "Cancelled"
+msgstr ""
+
+#: app/templates/loans.html:59 app/templates/user_profile.html:48
+#: app/templates/user_profile.html:83 app/templates/user_profile.html:110
 msgid "Book Title"
 msgstr ""
 
-#: app/templates/loans.html:59 app/templates/user_profile.html:41
-#: app/templates/user_profile.html:76
-msgid "Loan Date"
+#: app/templates/loans.html:61 app/templates/user_profile.html:49
+#: app/templates/user_profile.html:111
+msgid "Reservation Date"
 msgstr ""
 
-#: app/templates/loans.html:60 app/templates/user_profile.html:77
+#: app/templates/loans.html:62 app/templates/user_profile.html:84
+#: app/templates/user_profile.html:112
+msgid "Issue Date"
+msgstr ""
+
+#: app/templates/loans.html:63 app/templates/user_profile.html:113
 msgid "Return Date"
 msgstr ""
 
-#: app/templates/loans.html:74
-msgid "On Loan"
+#: app/templates/loans.html:78
+msgid "Not issued yet"
+msgstr ""
+
+#: app/templates/loans.html:85
+msgid "Not returned yet"
+msgstr ""
+
+#: app/templates/loans.html:92
+msgid "Active Loan"
+msgstr ""
+
+#: app/templates/loans.html:107
+msgid "Approve Loan"
+msgstr ""
+
+#: app/templates/loans.html:113
+msgid "Cancel Reservation"
 msgstr ""
 
 #: app/templates/login.html:28
@@ -515,31 +618,63 @@ msgstr ""
 msgid "Total Loans"
 msgstr ""
 
-#: app/templates/user_profile.html:27 app/templates/user_profile.html:35
+#: app/templates/user_profile.html:27 app/templates/user_profile.html:78
 msgid "Currently On Loan"
 msgstr ""
 
-#: app/templates/user_profile.html:66
+#: app/templates/user_profile.html:35 app/templates/user_profile.html:43
+msgid "Pending Reservations"
+msgstr ""
+
+#: app/templates/user_profile.html:64
+msgid "Cancel My Reservation"
+msgstr ""
+
+#: app/templates/user_profile.html:67
+msgid "Waiting for admin approval"
+msgstr ""
+
+#: app/templates/user_profile.html:74
+msgid "No pending reservations."
+msgstr ""
+
+#: app/templates/user_profile.html:94
+msgid "Return via admin"
+msgstr ""
+
+#: app/templates/user_profile.html:101
 msgid "No books are currently on loan."
 msgstr ""
 
-#: app/templates/user_profile.html:70
+#: app/templates/user_profile.html:105
 msgid "Loan History"
 msgstr ""
 
-#: app/templates/user_profile.html:91
+#: app/templates/user_profile.html:126
+msgid "Not issued"
+msgstr ""
+
+#: app/templates/user_profile.html:133
+msgid "N/A"
+msgstr ""
+
+#: app/templates/user_profile.html:150
 msgid "No loan history."
 msgstr ""
 
-#: app/templates/user_profile.html:95
+#: app/templates/user_profile.html:154
 msgid "Favorite Books"
 msgstr ""
 
-#: app/templates/user_profile.html:116
+#: app/templates/user_profile.html:166
+msgid "No cover available"
+msgstr ""
+
+#: app/templates/user_profile.html:180
 msgid "Remove from Favorites"
 msgstr ""
 
-#: app/templates/user_profile.html:126
+#: app/templates/user_profile.html:190
 msgid "No favorite books yet."
 msgstr ""
 

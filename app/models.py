@@ -1,6 +1,10 @@
 from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+import datetime
+
+
+# Define the association table for book-author relationship
 book_authors = db.Table('book_authors',
                         db.Column('book_id', db.Integer, db.ForeignKey(
                             'book.id'), primary_key=True),
@@ -27,7 +31,7 @@ class Book(db.Model):
         'genre.id'), nullable=False)
     year = db.Column(db.Integer, nullable=False)
     cover = db.Column(db.String(200))
-    is_available = db.Column(db.Boolean, default=True)
+    status = db.Column(db.String(50), default='available', nullable=False) # 'available', 'reserved', 'on_loan'
 
     def __str__(self):
         author_names = ", ".join([author.name for author in self.authors])
@@ -80,11 +84,14 @@ class Loan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    loan_date = db.Column(db.DateTime, default=db.func.current_timestamp())
+    reservation_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    issue_date = db.Column(db.DateTime)
     return_date = db.Column(db.DateTime)
+
+    status = db.Column(db.String(50), default='pending', nullable=False)
 
     book = db.relationship('Book', backref='loans')
     user = db.relationship('User', back_populates='loans')
 
     def __str__(self):
-        return f"{self.user.username} borrowed {self.book.title}"
+        return f"Loan {self.id}: {self.book.title} to {self.user.username} - Status: {self.status}"

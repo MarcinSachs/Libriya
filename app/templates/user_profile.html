@@ -13,7 +13,7 @@
 
     <!-- Loan Statistics -->
     <div class="row mb-4">
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="card text-center h-100">
                 <div class="card-body">
                     <h5 class="card-title">{{ _('Total Loans') }}</h5>
@@ -21,7 +21,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="card text-center h-100">
                 <div class="card-body">
                     <h5 class="card-title">{{ _('Currently On Loan') }}</h5>
@@ -29,7 +29,51 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ _('Pending Reservations') }}</h5>
+                    <p class="card-text fs-2 fw-bold">{{ pending_loans|length }}</p>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Pending Reservations -->
+    <h3 class="mt-5">{{ _('Pending Reservations') }}</h3>
+    {% if pending_loans %}
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>{{ _('Book Title') }}</th>
+                <th>{{ _('Reservation Date') }}</th>
+                <th>{{ _('Status') }}</th>
+                <th>{{ _('Actions') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in pending_loans %}
+            <tr>
+                <td>{{ loan.book.title }}</td>
+                <td>{{ loan.reservation_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td><span class="badge bg-info">{{ _('Pending Approval') }}</span></td>
+                <td>
+                    <form action="{{ url_for('main.user_cancel_reservation', loan_id=loan.id) }}" method="POST"
+                        style="display: inline;">
+                        <button type="submit" class="btn btn-outline-danger btn-sm" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="{{ _('Cancel My Reservation') }}">
+                            <i class="bx bx-x-circle"></i>
+                        </button>
+                    </form>
+                    <span class="text-muted ms-2">{{ _('Waiting for admin approval') }}</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>{{ _('No pending reservations.') }}</p>
+    {% endif %}
 
     <!-- Currently On Loan -->
     <h3 class="mt-5">{{ _('Currently On Loan') }}</h3>
@@ -38,7 +82,7 @@
         <thead>
             <tr>
                 <th>{{ _('Book Title') }}</th>
-                <th>{{ _('Loan Date') }}</th>
+                <th>{{ _('Issue Date') }}</th>
                 <th>{{ _('Actions') }}</th>
             </tr>
         </thead>
@@ -46,17 +90,9 @@
             {% for loan in active_loans %}
             <tr>
                 <td>{{ loan.book.title }}</td>
-                <td>{{ loan.loan_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ loan.issue_date.strftime('%Y-%m-%d %H:%M') }}</td>
                 <td>
-                    <!-- 
-                    <form action="{{ url_for('main.return_loan', loan_id=loan.id) }}" method="POST"
-                        style="display: inline;">
-                        <button type="submit" class="btn btn-outline-warning btn-sm" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="{{ _('Return Book') }}">
-                            <i class="bx bx-log-out-circle"></i>
-                        </button>
-                    </form>
-                    -->
+                    <span class="text-muted">{{ _('Return via admin') }}</span>
                 </td>
             </tr>
             {% endfor %}
@@ -73,16 +109,40 @@
         <thead>
             <tr>
                 <th>{{ _('Book Title') }}</th>
-                <th>{{ _('Loan Date') }}</th>
+                <th>{{ _('Reservation Date') }}</th>
+                <th>{{ _('Issue Date') }}</th>
                 <th>{{ _('Return Date') }}</th>
+                <th>{{ _('Status') }}</th>
             </tr>
         </thead>
         <tbody>
             {% for loan in loan_history %}
             <tr>
                 <td>{{ loan.book.title }}</td>
-                <td>{{ loan.loan_date.strftime('%Y-%m-%d') }}</td>
-                <td>{{ loan.return_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ loan.reservation_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    {% if loan.issue_date %}
+                        {{ loan.issue_date.strftime('%Y-%m-%d %H:%M') }}
+                    {% else %}
+                        <span class="text-muted">{{ _('Not issued') }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if loan.return_date %}
+                        {{ loan.return_date.strftime('%Y-%m-%d %H:%M') }}
+                    {% else %}
+                        <span class="text-muted">{{ _('N/A') }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if loan.status == 'returned' %}
+                        <span class="badge bg-secondary">{{ _('Returned') }}</span>
+                    {% elif loan.status == 'cancelled' %}
+                        <span class="badge bg-danger">{{ _('Cancelled') }}</span>
+                    {% else %}
+                        <span class="badge bg-light text-dark">{{ loan.status.replace('_', ' ').title() }}</span>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -99,8 +159,13 @@
         <div class="col-md-4 mb-3">
             <form action="{{ url_for('main.book_detail', book_id=book.id) }}" method="GET" class="card h-100 card-link">
                 <button type="submit" class="card-button">
-                    <img src="{{ url_for('static', filename='uploads/' + book.cover) }}" class="card-img-top"
-                        alt="{{ book.title }}" style="object-fit: cover; height: 200px;">
+                    {% if book.cover %}
+                        <img src="{{ url_for('static', filename='uploads/' + book.cover) }}" class="card-img-top"
+                            alt="{{ book.title }}" style="object-fit: cover; height: 200px;">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='img/default_book_cover.jpg') }}" class="card-img-top"
+                            alt="{{ _('No cover available') }}" style="object-fit: cover; height: 200px;">
+                    {% endif %}
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">{{ book.title }}</h5>
                         <p class="card-text">

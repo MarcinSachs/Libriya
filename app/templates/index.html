@@ -36,7 +36,7 @@
                     <option value="available" {% if request.args.get('status')=='available' %}selected{% endif %}>{{
                         _('Available') }}</option>
                     <option value="on_loan" {% if request.args.get('status')=='on_loan' %}selected{% endif %}>{{ _('On
-                        Loan') }}</option>
+                        Loan/Reserved') }}</option> {# Zmieniono tekst #}
                 </select>
             </div>
             <div class="col-md-3">
@@ -85,7 +85,17 @@
                 <td>{{ book.authors|map(attribute='name')|join(', ') }}</td>
                 <td>{{ book.genre }}</td>
                 <td>{{ book.year }}</td>
-                <td>{{ _('Available') if book.is_available else _('On loan') }}</td>
+                <td>
+                    {% if book.status == 'available' %}
+                        <span class="badge bg-success">{{ _('Available') }}</span>
+                    {% elif book.status == 'reserved' %}
+                        <span class="badge bg-info">{{ _('Reserved') }}</span>
+                    {% elif book.status == 'on_loan' %}
+                        <span class="badge bg-warning text-dark">{{ _('On Loan') }}</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ book.status.replace('_', ' ').title() }}</span>
+                    {% endif %}
+                </td>
 
                 <td class="text-nowrap">
                     <form action="{{ url_for('main.add_favorite', book_id=book.id) }}" method="POST"
@@ -95,15 +105,16 @@
                             <i class='bx bx-heart'></i>
                         </button>
                     </form>
-                    {% if book.is_available %}
-                    <a href="{{ url_for('main.borrow_book', book_id=book.id, user_id=current_user.id) }}"
+                    {% if book.status == 'available' %}
+                    <a href="{{ url_for('main.request_reservation', book_id=book.id, user_id=current_user.id) }}"
                         class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
-                        title="{{ _('Borrow Book') }}"><i class="bx bx-log-in-circle"></i></a>
-                    {% elif current_user and current_user.is_admin %}
-                    <a href="{{ url_for('main.return_book', book_id=book.id) }}" class="btn btn-outline-warning btn-sm"
-                        data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Return Book') }}"><i
-                            class="bx bx-log-out-circle"></i></a>
+                        title="{{ _('Request Reservation') }}"><i class="bx bx-file"></i></a>
+                    {% else %}
+                    <button type="button" class="btn btn-outline-secondary btn-sm" disabled data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="{{ _('Book not available for reservation') }}"><i
+                            class="bx bx-block"></i></button>
                     {% endif %}
+
                     {% if current_user and current_user.is_admin %}
                     <a href="{{ url_for('main.book_edit', book_id=book.id)}}" class="btn btn-outline-primary btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Edit Book') }}"><i

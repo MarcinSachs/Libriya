@@ -23,19 +23,30 @@
             <p><strong>{{ _('Genre') }}:</strong> {{ book.genre }}</p>
             <p><strong>{{ _('Year') }}:</strong> {{ book.year }}</p>
             <p><strong>{{ _('ISBN') }}:</strong> {{ book.isbn }}</p>
-            <p><strong>{{ _('Status') }}:</strong> {{ _('Available') if book.is_available else _('On loan') }}</p>
+            <p><strong>{{ _('Status') }}:</strong>
+                {% if book.status == 'available' %}
+                    <span class="badge bg-success">{{ _('Available') }}</span>
+                {% elif book.status == 'reserved' %}
+                    <span class="badge bg-info">{{ _('Reserved') }}</span>
+                {% elif book.status == 'on_loan' %}
+                    <span class="badge bg-warning text-dark">{{ _('On Loan') }}</span>
+                {% else %}
+                    <span class="badge bg-secondary">{{ book.status.replace('_', ' ').title() }}</span>
+                {% endif %}
+            </p>
 
             <div class="mt-4">
-                {% if book.is_available %}
-                <a href="{{ url_for('main.borrow_book', book_id=book.id, user_id=current_user.id) }}"
+                {% if book.status == 'available' %}
+                <a href="{{ url_for('main.request_reservation', book_id=book.id, user_id=current_user.id) }}"
                     class="btn btn-success">
-                    <i class="bx bx-log-in-circle align-middle"></i> {{ _('Borrow Book') }}
+                    <i class="bx bx-file align-middle"></i> {{ _('Request Reservation') }}
                 </a>
-                {% elif current_user and current_user.is_admin %}
-                <a href="{{ url_for('main.return_book', book_id=book.id) }}" class="btn btn-warning">
-                    <i class="bx bx-log-out-circle align-middle"></i> {{ _('Return Book') }}
-                </a>
+                {% else %}
+                <button type="button" class="btn btn-secondary" disabled>
+                    <i class="bx bx-block align-middle"></i> {{ _('Book not available for reservation') }}
+                </button>
                 {% endif %}
+
                 <a href="{{ url_for('main.home') }}" class="btn btn-secondary">
                     <i class="bx bx-arrow-back align-middle"></i> {{ _('Back to List') }}
                 </a>

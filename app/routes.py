@@ -64,9 +64,9 @@ def home():
 
     if status_filter:
         if status_filter == 'available':
-            query = query.filter(Book.is_available == True)
+            query = query.filter(Book.status == 'available')
         elif status_filter == 'on_loan':
-            query = query.filter(Book.is_available == False)
+            query = query.filter(or_(Book.status == 'on_loan', Book.status == 'reserved'))
 
     if genre_filter:
         query = query.filter(Book.genre_id == genre_filter)
@@ -176,9 +176,10 @@ def user_edit(user_id):
 def user_profile(user_id):
     user = current_user
     # Sort all loans by date, newest first
-    all_loans = sorted(user.loans, key=lambda x: x.loan_date, reverse=True)
-    active_loans = [loan for loan in all_loans if loan.return_date is None]
-    loan_history = [loan for loan in all_loans if loan.return_date is not None]
+    all_loans = sorted(user.loans, key=lambda x: x.reservation_date, reverse=True)
+    active_loans = [loan for loan in all_loans if loan.status == 'active']
+    loan_history = [loan for loan in all_loans if loan.status == 'returned' or loan.status == 'cancelled']
+    pending_loans = [loan for loan in all_loans if loan.status == 'pending']
 
     # Access favorites
     favorite_books = user.favorites
@@ -189,6 +190,7 @@ def user_profile(user_id):
         loans=all_loans,
         active_loans=active_loans,
         loan_history=loan_history,
+        pending_loans=pending_loans,
         favorite_books=favorite_books,
         title=f"{user.username}"
     )
@@ -253,6 +255,7 @@ def book_add():
             title=form.title.data,
             genre=genre,
             year=form.year.data,
+            status='available'
         )
 
         # Handle multiple authors
@@ -308,10 +311,9 @@ def book_delete(book_id):
     book = Book.query.get_or_404(book_id)
 
     # Prevent deletion if the book has any associated loans (active or past)
-    if book.loans:
-        if book.loans:  # Użycie _()
-            flash(_('Cannot delete "%(title)s" because it has a loan history. Consider implementing an "archive" feature instead.', title=book.title), "danger")
-            return redirect(url_for("main.home"))
+    if book.status != 'available':
+        flash(_('Cannot delete "%(title)s" because it is currently "%(status)s". Consider marking it as inactive instead.', title=book.title, status=book.status), "danger")
+        return redirect(url_for("main.home"))
 
     db.session.delete(book)
     db.session.commit()
@@ -402,7 +404,7 @@ def remove_favorite(book_id):
 @login_required
 @admin_required
 def loans():
-    loan_query = Loan.query
+    loan_query = Loan.query.join(Book).join(User)
     # Apply user filter
     user_filter_id = request.args.get('user')
     if user_filter_id:
@@ -416,12 +418,10 @@ def loans():
      # Apply status filter
     status_filter = request.args.get('status')
     if status_filter:
-        if status_filter == 'available': # Show loans that have been returned
-            loan_query = loan_query.filter(Loan.return_date.isnot(None))
-        elif status_filter == 'on_loan': # Show loans that are currently active (not returned)
-            loan_query = loan_query.filter(Loan.return_date.is_(None))
+        loan_query = loan_query.filter(Loan.status == status_filter)
+        
     # Order the results for consistent display (e.g., by loan date descending)
-    loan_query = loan_query.order_by(Loan.loan_date.desc())
+    loan_query = loan_query.order_by(Loan.reservation_date.desc())
 
     # Execute the final query to get filtered loans
     filtered_loans = loan_query.all()  
@@ -429,7 +429,38 @@ def loans():
     # Get all users for the user filter dropdown (always need all for the selection)
     all_users = User.query.order_by(User.username).all()
 
-    return render_template("loans.html", loans=filtered_loans, users=all_users, active_page="loans", parent_page="admin", title="Loans")
+    return render_template("loans.html", loans=filtered_loans, users=all_users, active_page="loans", parent_page="admin", title=_("Loans"))
+
+@bp.route("/request_reservation/<int:book_id>/<int:user_id>", methods=["GET", "POST"])
+@login_required
+def request_reservation(book_id, user_id):
+    book = Book.query.get_or_404(book_id)
+    user = User.query.get_or_404(user_id)
+
+    # Check if book is avaible
+    if book.status == 'available':
+        # Check if user do not have reservation
+        existing_loan = Loan.query.filter_by(
+            book_id=book.id, user_id=user.id
+        ).filter(or_(Loan.status == 'pending', Loan.status == 'active')).first()
+
+        if existing_loan:
+            flash(_("You already have an active or pending reservation for this book."), "info")
+            return redirect(url_for("main.home"))
+            
+        # Change status to 'reserved'
+        book.status = 'reserved'
+        # Create new record with pending status
+        new_loan = Loan(book=book, user=user, reservation_date=datetime.utcnow(), status='pending')
+        db.session.add(new_loan)
+        db.session.commit()
+        flash(_("Book has been reserved successfully! An admin will approve it shortly."), "success")
+    elif book.status == 'reserved':
+        flash(_("This book is already reserved by another user."), "danger")
+    elif book.status == 'on_loan':
+        flash(_("This book is currently on loan."), "danger")
+    return redirect(url_for("main.home"))
+
 
 
 @bp.route("/borrow/<int:book_id>/<int:user_id>", methods=["GET", "POST"])
@@ -461,19 +492,59 @@ def return_book(book_id):
         flash(_("This book is not currently on loan."), "danger")
     return redirect(url_for("main.home"))
 
+@bp.route('/loans/approve/<int:loan_id>', methods=['POST'])
+@login_required
+@admin_required
+def approve_loan(loan_id):
+    loan = Loan.query.get_or_404(loan_id)
+
+    if loan.status == 'pending':
+        # Check if book is already in reserved status and was not cancelled
+        if loan.book.status == 'reserved':
+            loan.status = 'active'
+            loan.issue_date = datetime.utcnow()
+            loan.book.status = 'on_loan'
+            db.session.commit()
+            flash(_('Loan for "%(title)s" to %(username)s has been approved!',
+                    title=loan.book.title, username=loan.user.username), 'success')
+        else:
+            flash(_('Cannot approve loan: Book status is not "reserved". It might have been cancelled or loaned differently.'), 'danger')
+    else:
+        flash(_('Loan is not in "pending" status and cannot be approved.'), 'info')
+    return redirect(url_for('main.loans'))
+
+@bp.route('/loans/cancel/<int:loan_id>', methods=['POST'])
+@login_required
+@admin_required
+def cancel_loan(loan_id):
+    loan = Loan.query.get_or_404(loan_id)
+
+    if loan.status == 'pending':
+        # Return 'available' status if was reserved
+        if loan.book.status == 'reserved':
+            loan.book.status = 'available'
+        loan.status = 'cancelled'
+        db.session.commit()
+        flash(_('Reservation for "%(title)s" by %(username)s has been cancelled.',
+                title=loan.book.title, username=loan.user.username), 'info')
+    else:
+        flash(_('Cannot cancel loan: It is not in "pending" status.'), 'danger')
+    return redirect(url_for('main.loans'))
 
 @bp.route('/loans/return/<int:loan_id>', methods=['POST'])
 @login_required
+@admin_required
 def return_loan(loan_id):
     loan = Loan.query.get_or_404(loan_id)
-    if loan.return_date is None:
-        loan.book.is_available = True
+    if loan.status == 'active': 
+        loan.book.status = 'available'
         loan.return_date = datetime.utcnow()
+        loan.status = 'returned'
         db.session.commit()
         flash(_('Book "%(title)s" has been returned.',
               title=loan.book.title), 'success')
     else:
-        flash(_('This book has already been returned.'), 'info')
+        flash(_('This loan is not active or has already been returned.'), 'info')
     return redirect(url_for('main.loans'))
 
 
@@ -481,6 +552,7 @@ def return_loan(loan_id):
 @login_required
 def user_loans(user_id):
     user_loans = User.query.get_or_404(user_id).loans
+    user_loans = sorted(user_loans, key=lambda x: x.reservation_date, reverse=True)
     return render_template("loans.html", loans=user_loans, active_page="", title="My Loans")
 
 
@@ -492,27 +564,53 @@ def loan_add():
     # Populate choices for books and users
     # We only want to loan available books
     form.book_id.choices = [(b.id, b.title) for b in Book.query.filter_by(
-        is_available=True).order_by(Book.title).all()]
+        status='available').order_by(Book.title).all()]
     form.user_id.choices = [(u.id, u.username)
                             for u in User.query.order_by(User.username).all()]
 
     if form.validate_on_submit():
         book = Book.query.get(form.book_id.data)
         user = User.query.get(form.user_id.data)
-        if book and user and book.is_available:
-            # Mark book as unavailable
-            book.is_available = False
-            new_loan = Loan(book=book, user=user)
+        if book and user and book.status == 'available':
+            book.status = 'on_loan'
+            new_loan = Loan(book=book, user=user,
+                            reservation_date=datetime.utcnow(),
+                            issue_date=datetime.utcnow(),      
+                            status='active')                   
             db.session.add(new_loan)
             db.session.commit()
             flash(_("Loan added successfully!"), "success")
             return redirect(url_for("main.loans"))
-        elif book and not book.is_available:
-            flash(_("This book is already on loan."), "danger")
+        elif book and (book.status == 'on_loan' or book.status == 'reserved'):
+            flash(_("This book is currently on loan or reserved."), "danger")
         else:
             flash(_("Invalid book or user."), "danger")
     return render_template("loan_add.html", form=form, active_page="loans", parent_page="admin", title="Add Loan")
 
+@bp.route('/user/loans/cancel/<int:loan_id>', methods=['POST'])
+@login_required
+def user_cancel_reservation(loan_id):
+    loan = Loan.query.get_or_404(loan_id)
+
+    # Sprawdź, czy to wypożyczenie należy do aktualnie zalogowanego użytkownika
+    if loan.user_id != current_user.id:
+        flash(_("You can only cancel your own reservations."), "danger")
+        return redirect(url_for('main.user_profile', user_id=current_user.id))
+
+    # Sprawdź, czy wypożyczenie ma status "oczekujące"
+    if loan.status == 'pending':
+        # Przywróć status książki na 'available' tylko jeśli była zarezerwowana przez to konkretne wypożyczenie
+        if loan.book.status == 'reserved':
+            loan.book.status = 'available'
+        loan.status = 'cancelled' # Zmień status wypożyczenia na "anulowane"
+        db.session.commit()
+        flash(_("Your reservation for '%(title)s' has been cancelled.",
+              title=loan.book.title), 'success')
+    else:
+        # Jeśli status nie jest "pending", nie można anulować przez użytkownika
+        flash(_("This reservation cannot be cancelled as it is not in 'pending' status."), 'danger')
+    
+    return redirect(url_for('main.user_profile', user_id=current_user.id))
 # Language selection
 
 

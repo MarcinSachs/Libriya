@@ -24,13 +24,15 @@
     <form method="GET" action="{{ url_for('main.loans') }}" class="mb-3">
         <div class="row g-2">
             <div class="col-md-3">
-                <label for="status" class="form-label">{{ _('Status') }}</label>
+                <label for="status" class="form-label">{{ _('Loan Status') }}</label> {# Zmieniono etykietę #}
                 <select class="form-select" id="status" name="status">
                     <option value="">{{ _('All') }}</option>
-                    <option value="available" {% if request.args.get('status')=='available' %}selected{% endif %}>{{
-                        _('Returned') }}</option> {# Changed "Available" to "Returned" for clarity regarding loans #}
-                    <option value="on_loan" {% if request.args.get('status')=='on_loan' %}selected{% endif %}>{{ _('On
+                    <option value="pending" {% if request.args.get('status')=='pending' %}selected{% endif %}>{{
+                        _('Pending Approval') }}</option>
+                    <option value="active" {% if request.args.get('status')=='active' %}selected{% endif %}>{{ _('Active
                         Loan') }}</option>
+                    <option value="returned" {% if request.args.get('status')=='returned' %}selected{% endif %}>{{ _('Returned') }}</option>
+                    <option value="cancelled" {% if request.args.get('status')=='cancelled' %}selected{% endif %}>{{ _('Cancelled') }}</option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -56,8 +58,10 @@
             <tr>
                 <th>{{ _('Book Title') }}</th>
                 <th>{{ _('User') }}</th>
-                <th>{{ _('Loan Date') }}</th>
+                <th>{{ _('Reservation Date') }}</th>
+                <th>{{ _('Issue Date') }}</th>
                 <th>{{ _('Return Date') }}</th>
+                <th>{{ _('Status') }}</th>
                 <th>{{ _('Actions') }}</th>
             </tr>
         </thead>
@@ -66,22 +70,57 @@
             <tr>
                 <td>{{ loan.book.title }}</td>
                 <td>{{ loan.user.username }}</td>
-                <td>{{ loan.loan_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ loan.reservation_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    {% if loan.issue_date %}
+                    {{ loan.issue_date.strftime('%Y-%m-%d %H:%M') }}
+                    {% else %}
+                    <span class="text-muted">{{ _('Not issued yet') }}</span>
+                    {% endif %}
+                </td>
                 <td>
                     {% if loan.return_date %}
                     {{ loan.return_date.strftime('%Y-%m-%d %H:%M') }}
                     {% else %}
-                    <span class="badge bg-warning text-dark">{{ _('On Loan') }}</span>
+                    <span class="text-muted">{{ _('Not returned yet') }}</span>
                     {% endif %}
                 </td>
                 <td>
-                    {% if not loan.return_date %}
-                    <form action="{{ url_for('main.return_loan', loan_id=loan.id) }}" method="POST"
-                        style="display: inline;">
-                        <button type="submit" class="btn btn-outline-warning btn-sm" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="{{ _('Return Book') }}"><i
-                                class="bx bx-log-out-circle"></i></button>
-                    </form>
+                    {% if loan.status == 'pending' %}
+                        <span class="badge bg-info">{{ _('Pending Approval') }}</span>
+                    {% elif loan.status == 'active' %}
+                        <span class="badge bg-success">{{ _('Active Loan') }}</span>
+                    {% elif loan.status == 'returned' %}
+                        <span class="badge bg-secondary">{{ _('Returned') }}</span>
+                    {% elif loan.status == 'cancelled' %}
+                        <span class="badge bg-danger">{{ _('Cancelled') }}</span>
+                    {% else %}
+                        <span class="badge bg-light text-dark">{{ loan.status.replace('_', ' ').title() }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if current_user and current_user.is_admin %}
+                        {% if loan.status == 'pending' %}
+                        <form action="{{ url_for('main.approve_loan', loan_id=loan.id) }}" method="POST"
+                            style="display: inline;">
+                            <button type="submit" class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip"
+                                data-bs-placement="top" title="{{ _('Approve Loan') }}"><i
+                                    class="bx bx-check-circle"></i></button>
+                        </form>
+                        <form action="{{ url_for('main.cancel_loan', loan_id=loan.id) }}" method="POST"
+                            style="display: inline;">
+                            <button type="submit" class="btn btn-outline-danger btn-sm" data-bs-toggle="tooltip"
+                                data-bs-placement="top" title="{{ _('Cancel Reservation') }}"><i
+                                    class="bx bx-x-circle"></i></button>
+                        </form>
+                        {% elif loan.status == 'active' %}
+                        <form action="{{ url_for('main.return_loan', loan_id=loan.id) }}" method="POST"
+                            style="display: inline;">
+                            <button type="submit" class="btn btn-outline-warning btn-sm" data-bs-toggle="tooltip"
+                                data-bs-placement="top" title="{{ _('Return Book') }}"><i
+                                    class="bx bx-log-out-circle"></i></button>
+                        </form>
+                        {% endif %}
                     {% endif %}
                 </td>
             </tr>
