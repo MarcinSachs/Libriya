@@ -79,7 +79,6 @@ Libriya is a web application for managing a library, built with Flask, SQLAlchem
 
 *   **Add Advanced Features:**
     *   Comments to books.
-    *   Send email notifications for overdue books.
     *   Implement a system for managing fines.
     *   Add a book recommendation system.
     *   Implement an "archive" feature for books with loan history instead of deleting them

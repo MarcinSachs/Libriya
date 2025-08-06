@@ -23,7 +23,7 @@ from werkzeug.utils import secure_filename
 
 from app import db
 from app.forms import BookForm, LoanForm, UserEditForm, UserForm, UserSettingsForm
-from app.models import Author, Book, Genre, Loan, User, db
+from app.models import Author, Book, Genre, Loan, User, Notification, db
 from flask_login import login_user, login_required, current_user, logout_user
 
 from flask_babel import _, ngettext
@@ -42,6 +42,21 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# Function to check notifications
+def create_notification(recipients, sender, message, notification_type, loan=None):
+    if not isinstance(recipients, list):
+        recipients = [recipients]
+
+    for recipient in recipients:
+        new_notification = Notification(
+            recipient=recipient,
+            sender=sender,
+            message=message,
+            type=notification_type,
+            loan=loan
+        )
+        db.session.add(new_notification)
+    db.session.commit()
 
 @bp.route("/favicon.ico")
 def favicon():
@@ -74,7 +89,13 @@ def home():
     books = query.all()
     genres = Genre.query.all()
 
-    return render_template("index.html", books=books, genres=genres, active_page="books")
+    # Numbers of unread notifications to layout
+    unread_notifications_count = Notification.query.filter_by(
+        recipient=current_user, is_read=False
+    ).count()
+
+    return render_template("index.html", books=books, genres=genres, active_page="books",
+                           unread_notifications_count=unread_notifications_count)
 
 # Login and Logout
 
@@ -429,7 +450,12 @@ def loans():
     # Get all users for the user filter dropdown (always need all for the selection)
     all_users = User.query.order_by(User.username).all()
 
-    return render_template("loans.html", loans=filtered_loans, users=all_users, active_page="loans", parent_page="admin", title=_("Loans"))
+    unread_notifications_count = Notification.query.filter_by(
+        recipient=current_user, is_read=False
+    ).count()
+
+    return render_template("loans.html", loans=filtered_loans, users=all_users, active_page="loans", parent_page="admin", title=_("Loans"),
+                           unread_notifications_count=unread_notifications_count)
 
 @bp.route("/request_reservation/<int:book_id>/<int:user_id>", methods=["GET", "POST"])
 @login_required
@@ -454,6 +480,13 @@ def request_reservation(book_id, user_id):
         new_loan = Loan(book=book, user=user, reservation_date=datetime.utcnow(), status='pending')
         db.session.add(new_loan)
         db.session.commit()
+
+        # --- Notifications for admins ---
+        admins = User.query.filter_by(is_admin=True).all()
+        message = _("%(username)s has requested to reserve \"%(title)s\".",
+                    username=user.username, title=book.title)
+        create_notification(admins, current_user, message, 'reservation_request', loan=new_loan)
+
         flash(_("Book has been reserved successfully! An admin will approve it shortly."), "success")
     elif book.status == 'reserved':
         flash(_("This book is already reserved by another user."), "danger")
@@ -505,6 +538,12 @@ def approve_loan(loan_id):
             loan.issue_date = datetime.utcnow()
             loan.book.status = 'on_loan'
             db.session.commit()
+
+            # --- Create notification for users ---
+            message = _("Your reservation for \"%(title)s\" has been approved!", title=loan.book.title)
+            create_notification(loan.user, current_user, message, 'loan_approved', loan=loan)
+
+
             flash(_('Loan for "%(title)s" to %(username)s has been approved!',
                     title=loan.book.title, username=loan.user.username), 'success')
         else:
@@ -525,6 +564,13 @@ def cancel_loan(loan_id):
             loan.book.status = 'available'
         loan.status = 'cancelled'
         db.session.commit()
+
+        # --- Create notification for users ---
+        message = _("Your reservation for \"%(title)s\" has been cancelled by an administrator.",
+                    title=loan.book.title)
+        create_notification(loan.user, current_user, message, 'loan_cancelled', loan=loan)
+
+
         flash(_('Reservation for "%(title)s" by %(username)s has been cancelled.',
                 title=loan.book.title, username=loan.user.username), 'info')
     else:
@@ -541,6 +587,12 @@ def return_loan(loan_id):
         loan.return_date = datetime.utcnow()
         loan.status = 'returned'
         db.session.commit()
+
+        # --- Create notification for user ---
+        message = _("The book \"%(title)s\" that you loaned has been marked as returned.",
+                    title=loan.book.title)
+        create_notification(loan.user, current_user, message, 'loan_returned', loan=loan)
+
         flash(_('Book "%(title)s" has been returned.',
               title=loan.book.title), 'success')
     else:
@@ -579,6 +631,13 @@ def loan_add():
                             status='active')                   
             db.session.add(new_loan)
             db.session.commit()
+
+            # --- Create notification for user ---
+            message = _("A loan for \"%(title)s\" has been directly issued to you by an administrator.",
+                        title=book.title)
+            create_notification(user, current_user, message, 'admin_issued_loan', loan=new_loan)
+
+
             flash(_("Loan added successfully!"), "success")
             return redirect(url_for("main.loans"))
         elif book and (book.status == 'on_loan' or book.status == 'reserved'):
@@ -604,6 +663,13 @@ def user_cancel_reservation(loan_id):
             loan.book.status = 'available'
         loan.status = 'cancelled' # Zmień status wypożyczenia na "anulowane"
         db.session.commit()
+
+        # --- Create notyfication for admin ---
+        admins = User.query.filter_by(is_admin=True).all()
+        message = _("%(username)s has cancelled their reservation for \"%(title)s\".",
+                    username=current_user.username, title=loan.book.title)
+        create_notification(admins, current_user, message, 'user_cancelled_reservation', loan=loan)
+
         flash(_("Your reservation for '%(title)s' has been cancelled.",
               title=loan.book.title), 'success')
     else:
@@ -626,6 +692,70 @@ def set_language(lang):
         return response
     flash(_('Unsupported language.'), 'danger')
     return redirect(request.referrer or url_for('main.home'))
+
+# Notifications
+
+@bp.route("/notifications/")
+@login_required
+def view_notifications():
+    if current_user.is_admin:
+        notifications = Notification.query.filter(Notification.recipient_id == current_user.id).order_by(Notification.timestamp.desc()).all()
+    else:
+        notifications = Notification.query.filter_by(recipient=current_user).order_by(Notification.timestamp.desc()).all()
+    
+    unread_notifications_count = Notification.query.filter_by(
+        recipient=current_user, is_read=False
+    ).count()
+
+    return render_template("notifications.html", notifications=notifications, title=_("Your Notifications"),
+                           unread_notifications_count=unread_notifications_count)
+
+
+@bp.route("/notifications/mark_read/<int:notification_id>", methods=['POST'])
+@login_required
+def mark_notification_as_read(notification_id):
+    notification = Notification.query.get_or_404(notification_id)
+    
+    if notification.recipient_id != current_user.id and not current_user.is_admin:
+        flash(_("You do not have permission to mark this notification as read."), "danger")
+        return redirect(url_for('main.view_notifications'))
+
+    notification.is_read = True
+    db.session.commit()
+    flash(_("Notification marked as read."), "success")
+    return redirect(url_for('main.view_notifications'))
+
+
+@bp.route("/notifications/mark_all_read/", methods=['POST'])
+@login_required
+def mark_all_notifications_as_read():
+    notifications_to_mark = Notification.query.filter_by(
+        recipient=current_user, is_read=False
+    ).all()
+    
+    for notification in notifications_to_mark:
+        notification.is_read = True
+    db.session.commit()
+    flash(_("All notifications marked as read."), "success")
+    return redirect(url_for('main.view_notifications'))
+
+
+@bp.route("/admin/send_overdue_reminder/<int:loan_id>", methods=['POST'])
+@login_required
+@admin_required
+def send_overdue_reminder(loan_id):
+    loan = Loan.query.get_or_404(loan_id)
+
+    if loan.status == 'active' and loan.issue_date and (datetime.utcnow() - loan.issue_date).days > 14:
+        message = _("Reminder: Your loan for \"%(title)s\" is overdue. Please return it as soon as possible.",
+                    title=loan.book.title)
+        create_notification(loan.user, current_user, message, 'overdue_reminder', loan=loan)
+        flash(_("Overdue reminder sent to %(username)s for book \"%(title)s\".",
+                username=loan.user.username, title=loan.book.title), "success")
+    else:
+        flash(_("Cannot send overdue reminder. Loan is not active or not overdue."), "danger")
+    
+    return redirect(url_for('main.loans'))
 
 # API for ISBN lookup
 
@@ -671,3 +801,11 @@ def get_book_by_isbn(isbn):
     except Exception as e:
         # Handle other potential errors (e.g., JSON decoding)
         return jsonify({"error": str(e)}), 500
+
+# Global context for notification count
+@bp.context_processor
+def inject_unread_notifications_count():
+    if current_user.is_authenticated:
+        unread_count = Notification.query.filter_by(recipient=current_user, is_read=False).count()
+        return {'unread_notifications_count': unread_count}
+    return {'unread_notifications_count': 0}
