@@ -120,7 +120,7 @@
                                 data-bs-placement="top" title="{{ _('Return Book') }}"><i
                                     class="bx bx-log-out-circle"></i></button>
                         </form>
-                        {% if loan.issue_date and (now() - loan.issue_date).days > 14 %}
+                        {% if loan.issue_date and (now - loan.issue_date).days > 14 %}
                         <form action="{{ url_for('main.send_overdue_reminder', loan_id=loan.id) }}" method="POST"
                             style="display: inline;">
                             <button type="submit" class="btn btn-outline-danger btn-sm" data-bs-toggle="tooltip"

@@ -455,7 +455,7 @@ def loans():
     ).count()
 
     return render_template("loans.html", loans=filtered_loans, users=all_users, active_page="loans", parent_page="admin", title=_("Loans"),
-                           unread_notifications_count=unread_notifications_count)
+                           now=datetime.utcnow())
 
 @bp.route("/request_reservation/<int:book_id>/<int:user_id>", methods=["GET", "POST"])
 @login_required
