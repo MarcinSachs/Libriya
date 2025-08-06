@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="container">
-    <h2>{{ _('Add a new book') }}</h2> 
+    <h2>{{ _('Add a new book') }}</h2>
     <hr>
 
-    
+
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
@@ -16,57 +16,52 @@
     <form method="POST" action="" enctype="multipart/form-data" novalidate>
         {{ form.hidden_tag() }}
 
-        <div class="form-group mb-3"> 
+        <div class="form-group mb-3">
             {{ form.isbn.label(class="form-label") }}
-            <div class="input-with-button d-flex align-items-center"> 
-                {{ form.isbn(class="form-control", placeholder=_("Enter ISBN to get data from Open Library")) }} 
-                <button type="button" id="find-by-isbn" class="btn btn-secondary flex-shrink-0 ms-2"> 
-                    <i class='bx bx-search-alt'></i> {{ _('Search') }} 
+            <div class="input-with-button d-flex align-items-center">
+                {{ form.isbn(class="form-control", placeholder=_("Enter ISBN to get data from Open Library")) }}
+                <button type="button" id="find-by-isbn" class="btn btn-secondary flex-shrink-0 ms-2">
+                    <i class='bx bx-search-alt'></i> {{ _('Search') }}
                 </button>
             </div>
             <div id="isbn-error" class="form-text text-danger mt-1"></div>
             {% for error in form.isbn.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
 
-        <div class="form-group mb-3"> 
-            {{ form.title.label(class="form-label") }} 
-            {{ form.title(class="form-control", placeholder=_("e.g. The Lord of the Rings")) }} 
+        <div class="form-group mb-3">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control", placeholder=_("e.g. The Lord of the Rings")) }}
             {% for error in form.title.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
-        <div class="form-group mb-3"> 
-            {{ form.author.label(class="form-label") }} 
-            {{ form.author(class="form-control", placeholder=_("e.g. J.R.R. Tolkien")) }} 
+        <div class="form-group mb-3">
+            {{ form.author.label(class="form-label") }}
+            {{ form.author(class="form-control", placeholder=_("e.g. J.R.R. Tolkien")) }}
             {% for error in form.author.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
 
-        <div class="form-group mb-3"> 
-            {{ form.genre.label(class="form-label") }} 
-            {{ form.genre(class="form-control", list="genre-list", placeholder=_("e.g. Fantasy")) }} 
-            <datalist id="genre-list">
-                {% for genre in genres %}
-                <option value="{{ genre }}">
-                    {% endfor %}
-            </datalist>
+        <div class="form-group mb-3">
+            {{ form.genre.label(class="form-label") }}
+            {{ form.genre(class="form-control") }}
             {% for error in form.genre.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
-        <div class="form-group mb-3"> 
-            {{ form.year.label(class="form-label") }} 
-            {{ form.year(class="form-control", placeholder=_("e.g. 1954")) }} 
+        <div class="form-group mb-3">
+            {{ form.year.label(class="form-label") }}
+            {{ form.year(class="form-control", placeholder=_("e.g. 1954")) }}
             {% for error in form.year.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
 
-        <div class="form-group mb-3"> 
+        <div class="form-group mb-3">
             {{ form.cover.label(class="form-label") }}
             <div id="cover-preview" class="mt-2"></div>
             {{ form.cover(class="form-control") }}
             {% for error in form.cover.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
 
-        <div class="mt-4 d-flex align-items-center gap-2"> 
-            {{ form.submit(class="btn btn-primary") }} 
+        <div class="mt-4 d-flex align-items-center gap-2">
+            {{ form.submit(class="btn btn-primary") }}
             <a href="{{ url_for('main.home') }}" class="btn btn-secondary">
-                {{ _('Cancel') }} 
-            </a> 
+                {{ _('Cancel') }}
+            </a>
         </div>
     </form>
 </div>
@@ -89,8 +84,8 @@
                     return;
                 }
 
-                coverPreview.innerHTML = ''; 
-                errorDiv.textContent = ''; 
+                coverPreview.innerHTML = '';
+                errorDiv.textContent = '';
                 findBtn.disabled = true;
                 findBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> {{ _('Searching...') }}';
 
@@ -106,9 +101,9 @@
                     if (data.author) authorInput.value = data.author;
                     if (data.year) yearInput.value = data.year;
                     if (data.cover_image) {
-                        
-                        coverPreview.innerHTML = `<p class="form-label">{{ _('Open Library Cover:') }}</p><img src="${data.cover_image}" style="max-width: 150px; border-radius: 4px;">`; 
-                        
+
+                        coverPreview.innerHTML = `<p class="form-label">{{ _('Open Library Cover:') }}</p><img src="${data.cover_image}" style="max-width: 150px; border-radius: 4px;">`;
+
                         const hiddenInput = document.createElement('input');
                         hiddenInput.type = 'hidden';
                         hiddenInput.name = 'cover_url';

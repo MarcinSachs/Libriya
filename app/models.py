@@ -31,7 +31,8 @@ class Book(db.Model):
         'genre.id'), nullable=False)
     year = db.Column(db.Integer, nullable=False)
     cover = db.Column(db.String(200))
-    status = db.Column(db.String(50), default='available', nullable=False) # 'available', 'reserved', 'on_loan'
+    # 'available', 'reserved', 'on_loan'
+    status = db.Column(db.String(50), default='available', nullable=False)
 
     def __str__(self):
         author_names = ", ".join([author.name for author in self.authors])
@@ -70,8 +71,10 @@ class User(UserMixin, db.Model):
     favorites = db.relationship('Book', secondary=favorites, lazy='subquery',
                                 backref=db.backref('favorited_by', lazy=True))
     # Add relation to notifications
-    received_notifications = db.relationship('Notification', foreign_keys='Notification.recipient_id', back_populates='recipient', lazy=True, cascade='all, delete-orphan')
-    sent_notifications = db.relationship('Notification', foreign_keys='Notification.sender_id', back_populates='sender', lazy=True)
+    received_notifications = db.relationship(
+        'Notification', foreign_keys='Notification.recipient_id', back_populates='recipient', lazy=True, cascade='all, delete-orphan')
+    sent_notifications = db.relationship(
+        'Notification', foreign_keys='Notification.sender_id', back_populates='sender', lazy=True)
 
     def __str__(self):
         return self.username
@@ -97,13 +100,17 @@ class Loan(db.Model):
     user = db.relationship('User', back_populates='loans')
 
     # Add relation to the notifications
-    notifications = db.relationship('Notification', back_populates='loan', lazy=True, cascade='all, delete-orphan')
+    notifications = db.relationship(
+        'Notification', back_populates='loan', lazy=True, cascade='all, delete-orphan')
+
     def __str__(self):
         return f"Loan {self.id}: {self.book.title} to {self.user.username} - Status: {self.status}"
 
+
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    recipient_id = db.Column(
+        db.Integer, db.ForeignKey('user.id'), nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     message = db.Column(db.String(500), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
@@ -111,8 +118,10 @@ class Notification(db.Model):
     type = db.Column(db.String(100), nullable=False)
     loan_id = db.Column(db.Integer, db.ForeignKey('loan.id'), nullable=True)
 
-    recipient = db.relationship('User', foreign_keys=[recipient_id], back_populates='received_notifications')
-    sender = db.relationship('User', foreign_keys=[sender_id], back_populates='sent_notifications')
+    recipient = db.relationship(
+        'User', foreign_keys=[recipient_id], back_populates='received_notifications')
+    sender = db.relationship('User', foreign_keys=[
+                             sender_id], back_populates='sent_notifications')
     loan = db.relationship('Loan', back_populates='notifications')
 
     def __str__(self):

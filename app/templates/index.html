@@ -36,7 +36,7 @@
                     <option value="available" {% if request.args.get('status')=='available' %}selected{% endif %}>{{
                         _('Available') }}</option>
                     <option value="on_loan" {% if request.args.get('status')=='on_loan' %}selected{% endif %}>{{ _('On
-                        Loan/Reserved') }}</option> {# Zmieniono tekst #}
+                        Loan/Reserved') }}</option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -45,7 +45,7 @@
                     <option value="">{{ _('All') }}</option>
                     {% for genre in genres %}
                     <option value="{{ genre.id }}" {% if request.args.get('genre')==genre.id|string %}selected{% endif
-                        %}>{{ genre.name }}</option>
+                        %}>{{ _(genre.name) }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -83,17 +83,17 @@
                 </td>
                 <td>{{ book.title }}</td>
                 <td>{{ book.authors|map(attribute='name')|join(', ') }}</td>
-                <td>{{ book.genre }}</td>
+                <td>{{ _(book.genre.name) }}</td>
                 <td>{{ book.year }}</td>
                 <td>
                     {% if book.status == 'available' %}
-                        <span class="badge bg-success">{{ _('Available') }}</span>
+                    <span class="badge bg-success">{{ _('Available') }}</span>
                     {% elif book.status == 'reserved' %}
-                        <span class="badge bg-info">{{ _('Reserved') }}</span>
+                    <span class="badge bg-info">{{ _('Reserved') }}</span>
                     {% elif book.status == 'on_loan' %}
-                        <span class="badge bg-warning text-dark">{{ _('On Loan') }}</span>
+                    <span class="badge bg-warning text-dark">{{ _('On Loan') }}</span>
                     {% else %}
-                        <span class="badge bg-secondary">{{ book.status.replace('_', ' ').title() }}</span>
+                    <span class="badge bg-secondary">{{ book.status.replace('_', ' ').title() }}</span>
                     {% endif %}
                 </td>
 
