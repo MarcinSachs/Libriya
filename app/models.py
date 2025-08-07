@@ -44,6 +44,8 @@ class Book(db.Model):
     # 'available', 'reserved', 'on_loan'
     status = db.Column(db.String(50), default='available', nullable=False)
 
+    comments = db.relationship('Comment', back_populates='book', lazy=True, cascade='all, delete-orphan')
+
     def __str__(self):
         author_names = ", ".join([author.name for author in self.authors])
         genre_names = ", ".join([genre.name for genre in self.genres])
@@ -87,6 +89,8 @@ class User(UserMixin, db.Model):
         'Notification', foreign_keys='Notification.recipient_id', back_populates='recipient', lazy=True, cascade='all, delete-orphan')
     sent_notifications = db.relationship(
         'Notification', foreign_keys='Notification.sender_id', back_populates='sender', lazy=True)
+
+    comments = db.relationship('Comment', back_populates='user', lazy=True, cascade='all, delete-orphan')
 
     def __str__(self):
         return self.username
@@ -138,3 +142,17 @@ class Notification(db.Model):
 
     def __str__(self):
         return f"Notification for {self.recipient.username}: {self.message[:50]}..."
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+
+    user = db.relationship('User', back_populates='comments')
+    book = db.relationship('Book', back_populates='comments')
+
+    def __str__(self):
+        return f"Comment by {self.user.username} on {self.book.title} at {self.timestamp}"

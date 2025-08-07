@@ -23,8 +23,8 @@ from flask import (
 from werkzeug.utils import secure_filename
 
 from app import db
-from app.forms import BookForm, LoanForm, UserEditForm, UserForm, UserSettingsForm
-from app.models import Author, Book, Genre, Loan, User, Notification # db już zaimportowane z app
+from app.forms import BookForm, LoanForm, UserEditForm, UserForm, UserSettingsForm, CommentForm
+from app.models import Author, Book, Genre, Loan, User, Notification, Comment
 from flask_login import login_user, login_required, current_user, logout_user
 
 from flask_babel import _, ngettext
@@ -256,11 +256,38 @@ def user_settings():
 # Books
 
 
-@bp.route("/book/<int:book_id>")
+@bp.route("/book/<int:book_id>", methods=['GET', 'POST'])
 @login_required
 def book_detail(book_id):
     book = Book.query.get_or_404(book_id)
-    return render_template("book_detail.html", book=book, active_page="books")
+    user_comment = Comment.query.filter_by(
+        book_id=book.id,
+        user_id=current_user.id
+    ).first()
+
+    comment_form = CommentForm(obj=user_comment)
+
+    if comment_form.validate_on_submit() and request.method == 'POST':
+        if user_comment:
+            user_comment.text = comment_form.text.data
+            user_comment.timestamp = datetime.utcnow()
+            db.session.commit()
+            flash(_('Your comment has been updated!'), 'success')
+        else:
+            new_comment = Comment(
+                text=comment_form.text.data,
+                book=book,
+                user=current_user
+            )
+            db.session.add(new_comment)
+            db.session.commit()
+            flash(_('Your comment has been added!'), 'success')
+        
+        return redirect(url_for('main.book_detail', book_id=book.id))
+
+
+    return render_template("book_detail.html", book=book, active_page="books", 
+                           user_comment=user_comment, comment_form=comment_form)
 
 
 @bp.route("/books/add/", methods=["GET", "POST"])
@@ -346,7 +373,6 @@ def book_edit(book_id):
     book = Book.query.get_or_404(book_id)
     author_string = ", ".join([author.name for author in book.authors])
     
-    # Inicjowanie formularza dla GET request
     if request.method == 'GET':
 
         form = BookForm(obj=book, author=author_string, genres=book.genres)
@@ -371,7 +397,6 @@ def book_edit(book_id):
                 db.session.add(author)
             book.authors.append(author)
 
-        # NOWA OBSŁUGA WIELU GATUNKÓW DLA EDYCJI
         book.genres.clear()
         selected_genres = form.genres.data
         book.genres.extend(selected_genres)

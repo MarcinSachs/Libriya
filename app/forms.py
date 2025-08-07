@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, IntegerField, PasswordField, SelectField, BooleanField, SelectMultipleField
+from wtforms import StringField, SubmitField, IntegerField, PasswordField, SelectField, BooleanField, SelectMultipleField, TextAreaField
 from flask_wtf.file import FileField, FileAllowed, FileSize
-from wtforms.validators import DataRequired, NumberRange, Email, EqualTo, Optional
+from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional, ValidationError, NumberRange
 from datetime import datetime
 from flask_babel import lazy_gettext as _, gettext as _real
 from app.models import Genre
@@ -13,7 +13,7 @@ class BookForm(FlaskForm):
     title = StringField(_('Title'), validators=[DataRequired()])
     author = StringField(_('Author(s) (comma-separated)'),
                          validators=[DataRequired()])
-    genres = SelectMultipleField( # <--- ZMIANA TYPU POLA
+    genres = SelectMultipleField(
         _('Genres'),
         coerce=int,
         validators=[DataRequired()] 
@@ -28,13 +28,17 @@ class BookForm(FlaskForm):
     )
     cover = FileField(_('Cover'), validators=[
         FileAllowed(['jpg', 'png', 'jpeg'], _('Only image files (jpg, png, jpeg) are allowed!'))])
+    
+
     submit = SubmitField(_('Submit'), render_kw={"class": "btn btn-primary"})
+
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         all_genres = Genre.query.all()
 
-        translated_genres = [(g.id, _real(g.name)) for g in all_genres] # Używamy _real!
+        translated_genres = [(g.id, _real(g.name)) for g in all_genres]
         sorted_translated_genres = sorted(translated_genres, key=lambda x: x[1])
         
         self.genres.choices = sorted_translated_genres
@@ -82,3 +86,6 @@ class LoanForm(FlaskForm):
     # Added btn-primary class
     submit = SubmitField(_('Submit'), render_kw={
                          "class": "btn btn-primary"})
+class CommentForm(FlaskForm):
+    text = TextAreaField(_('Your Comment'), validators=[DataRequired(), Length(min=1, max=500)], render_kw={"rows": 8})
+    submit = SubmitField(_('Add Comment'))

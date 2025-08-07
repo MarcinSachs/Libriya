@@ -823,6 +823,10 @@ input[type=password] {
 .form-control {
     height: 3rem;
 }
+textarea.comment-input { 
+    height: auto;
+    min-height: 8rem;
+}
 
 #title {
     margin-top: 0.0rem;

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-07 11:38+0200\n"
+"POT-Creation-Date: 2025-08-07 16:00+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -378,11 +378,11 @@ msgstr ""
 msgid "Author(s) (comma-separated)"
 msgstr ""
 
-#: app/forms.py:17 app/templates/book_detail.html:24
+#: app/forms.py:17 app/templates/book_detail.html:23
 msgid "Genres"
 msgstr ""
 
-#: app/forms.py:22 app/templates/book_detail.html:33
+#: app/forms.py:22 app/templates/book_detail.html:32
 #: app/templates/index.html:67
 msgid "Year"
 msgstr ""
@@ -403,69 +403,78 @@ msgstr ""
 msgid "Only image files (jpg, png, jpeg) are allowed!"
 msgstr ""
 
-#: app/forms.py:31 app/forms.py:59 app/forms.py:75 app/forms.py:83
+#: app/forms.py:33 app/forms.py:63 app/forms.py:79 app/forms.py:87
 msgid "Submit"
 msgstr ""
 
-#: app/forms.py:46 app/forms.py:56 app/templates/users.html:22
+#: app/forms.py:50 app/forms.py:60 app/templates/users.html:22
 msgid "Username"
 msgstr ""
 
-#: app/forms.py:47 app/forms.py:57 app/forms.py:64 app/templates/users.html:23
+#: app/forms.py:51 app/forms.py:61 app/forms.py:68 app/templates/users.html:23
 msgid "Email"
 msgstr ""
 
-#: app/forms.py:48
+#: app/forms.py:52
 msgid "user@example.com"
 msgstr ""
 
-#: app/forms.py:49
+#: app/forms.py:53
 msgid "Password"
 msgstr ""
 
-#: app/forms.py:50
+#: app/forms.py:54
 msgid "Confirm Password"
 msgstr ""
 
-#: app/forms.py:52
+#: app/forms.py:56
 msgid "Add User"
 msgstr ""
 
-#: app/forms.py:58
+#: app/forms.py:62
 msgid "Administrator privileges"
 msgstr ""
 
-#: app/forms.py:65
+#: app/forms.py:69
 msgid "Update Profile Picture"
 msgstr ""
 
-#: app/forms.py:66
+#: app/forms.py:70
 msgid "Images only!"
 msgstr ""
 
-#: app/forms.py:68
+#: app/forms.py:72
 msgid "File size must be less than 2MB."
 msgstr ""
 
-#: app/forms.py:70
+#: app/forms.py:74
 msgid "New Password"
 msgstr ""
 
-#: app/forms.py:72
+#: app/forms.py:76
 msgid "Confirm New Password"
 msgstr ""
 
-#: app/forms.py:73
+#: app/forms.py:77
 msgid "Passwords must match."
 msgstr ""
 
-#: app/forms.py:80
+#: app/forms.py:84
 msgid "Book"
 msgstr ""
 
-#: app/forms.py:81 app/templates/loans.html:39 app/templates/loans.html:60
+#: app/forms.py:85 app/templates/loans.html:39 app/templates/loans.html:60
 #: app/templates/login.html:45 app/templates/users.html:34
 msgid "User"
+msgstr ""
+
+#: app/forms.py:90 app/templates/book_detail.html:81
+#: app/templates/book_detail.html:87
+msgid "Your Comment"
+msgstr ""
+
+#: app/forms.py:91 app/templates/book_detail.html:117
+msgid "Add Comment"
 msgstr ""
 
 #: app/routes.py:41
@@ -497,214 +506,222 @@ msgstr ""
 msgid "Your settings have been updated."
 msgstr ""
 
-#: app/routes.py:314
+#: app/routes.py:275
+msgid "Your comment has been updated!"
+msgstr ""
+
+#: app/routes.py:284
+msgid "Your comment has been added!"
+msgstr ""
+
+#: app/routes.py:341
 #, python-format
 msgid "Could not download cover image: '%(e)s'"
 msgstr ""
 
-#: app/routes.py:318
+#: app/routes.py:345
 msgid "Book added successfully!"
 msgstr ""
 
-#: app/routes.py:332
+#: app/routes.py:359
 #, python-format
 msgid ""
 "Cannot delete \"%(title)s\" because it is currently \"%(status)s\". "
 "Consider marking it as inactive instead."
 msgstr ""
 
-#: app/routes.py:338
+#: app/routes.py:365
 msgid "Book deleted successfully!"
 msgstr ""
 
-#: app/routes.py:389
+#: app/routes.py:414
 msgid "Book updated successfully!"
 msgstr ""
 
-#: app/routes.py:404
+#: app/routes.py:429
 msgid "Book is already in favorites."
 msgstr ""
 
-#: app/routes.py:408
+#: app/routes.py:433
 msgid "Book added to favorites."
 msgstr ""
 
-#: app/routes.py:420
+#: app/routes.py:445
 msgid "Book removed from favorites."
 msgstr ""
 
-#: app/routes.py:422
+#: app/routes.py:447
 msgid "Book is not in favorites."
 msgstr ""
 
-#: app/routes.py:441
+#: app/routes.py:466
 msgid "Invalid user ID provided for filtering."
 msgstr ""
 
-#: app/routes.py:460 app/templates/layout.html:133
+#: app/routes.py:485 app/templates/layout.html:133
 msgid "Loans"
 msgstr ""
 
-#: app/routes.py:479
+#: app/routes.py:504
 msgid "You already have an active or pending reservation for this book."
 msgstr ""
 
-#: app/routes.py:492
+#: app/routes.py:517
 #, python-format
 msgid "%(username)s has requested to reserve \"%(title)s\"."
 msgstr ""
 
-#: app/routes.py:497
+#: app/routes.py:522
 msgid "Book has been reserved successfully! An admin will approve it shortly."
 msgstr ""
 
-#: app/routes.py:499
+#: app/routes.py:524
 msgid "This book is already reserved by another user."
 msgstr ""
 
-#: app/routes.py:501
+#: app/routes.py:526
 msgid "This book is currently on loan."
 msgstr ""
 
-#: app/routes.py:516
+#: app/routes.py:541
 msgid "Book borrowed successfully!"
 msgstr ""
 
-#: app/routes.py:518
+#: app/routes.py:543
 msgid "This book is not available for direct loan."
 msgstr ""
 
-#: app/routes.py:531
+#: app/routes.py:556
 msgid "Book returned successfully!"
 msgstr ""
 
-#: app/routes.py:533
+#: app/routes.py:558
 msgid "This book is not currently on loan or is already returned."
 msgstr ""
 
-#: app/routes.py:553
+#: app/routes.py:578
 #, python-format
 msgid "Your reservation for \"%(title)s\" has been approved!"
 msgstr ""
 
-#: app/routes.py:557
+#: app/routes.py:582
 #, python-format
 msgid "Loan for \"%(title)s\" to %(username)s has been approved!"
 msgstr ""
 
-#: app/routes.py:560
+#: app/routes.py:585
 msgid ""
 "Cannot approve loan: Book status is not \"reserved\". It might have been "
 "cancelled or loaned differently."
 msgstr ""
 
-#: app/routes.py:562
+#: app/routes.py:587
 msgid "Loan is not in \"pending\" status and cannot be approved."
 msgstr ""
 
-#: app/routes.py:580
+#: app/routes.py:605
 #, python-format
 msgid "Your reservation for \"%(title)s\" has been cancelled by an administrator."
 msgstr ""
 
-#: app/routes.py:585
+#: app/routes.py:610
 #, python-format
 msgid "Reservation for \"%(title)s\" by %(username)s has been cancelled."
 msgstr ""
 
-#: app/routes.py:588
+#: app/routes.py:613
 msgid "Cannot cancel loan: It is not in \"pending\" status."
 msgstr ""
 
-#: app/routes.py:604
+#: app/routes.py:629
 #, python-format
 msgid "The book \"%(title)s\" that you loaned has been marked as returned."
 msgstr ""
 
-#: app/routes.py:609
+#: app/routes.py:634
 #, python-format
 msgid "Book \"%(title)s\" has been returned."
 msgstr ""
 
-#: app/routes.py:612
+#: app/routes.py:637
 msgid "This loan is not active or has already been returned."
 msgstr ""
 
-#: app/routes.py:650
+#: app/routes.py:675
 #, python-format
 msgid ""
 "A loan for \"%(title)s\" has been directly issued to you by an "
 "administrator."
 msgstr ""
 
-#: app/routes.py:655
+#: app/routes.py:680
 msgid "Loan added successfully!"
 msgstr ""
 
-#: app/routes.py:658
+#: app/routes.py:683
 msgid "This book is currently on loan or reserved."
 msgstr ""
 
-#: app/routes.py:660
+#: app/routes.py:685
 msgid "Invalid book or user."
 msgstr ""
 
-#: app/routes.py:670
+#: app/routes.py:695
 msgid "You can only cancel your own reservations."
 msgstr ""
 
-#: app/routes.py:681
+#: app/routes.py:706
 #, python-format
 msgid "%(username)s has cancelled their reservation for \"%(title)s\"."
 msgstr ""
 
-#: app/routes.py:686
+#: app/routes.py:711
 #, python-format
 msgid "Your reservation for '%(title)s' has been cancelled."
 msgstr ""
 
-#: app/routes.py:689
+#: app/routes.py:714
 msgid "This reservation cannot be cancelled as it is not in 'pending' status."
 msgstr ""
 
-#: app/routes.py:703
+#: app/routes.py:728
 #, python-format
 msgid "Language changed to %(lang)s."
 msgstr ""
 
-#: app/routes.py:705
+#: app/routes.py:730
 msgid "Unsupported language."
 msgstr ""
 
-#: app/routes.py:725 app/templates/notifications.html:5
+#: app/routes.py:750 app/templates/notifications.html:5
 msgid "Your Notifications"
 msgstr ""
 
-#: app/routes.py:735
+#: app/routes.py:760
 msgid "You do not have permission to mark this notification as read."
 msgstr ""
 
-#: app/routes.py:740
+#: app/routes.py:765
 msgid "Notification marked as read."
 msgstr ""
 
-#: app/routes.py:754
+#: app/routes.py:779
 msgid "All notifications marked as read."
 msgstr ""
 
-#: app/routes.py:765
+#: app/routes.py:790
 #, python-format
 msgid ""
 "Reminder: Your loan for \"%(title)s\" is overdue. Please return it as "
 "soon as possible."
 msgstr ""
 
-#: app/routes.py:769
+#: app/routes.py:794
 #, python-format
 msgid "Overdue reminder sent to %(username)s for book \"%(title)s\"."
 msgstr ""
 
-#: app/routes.py:773
+#: app/routes.py:798
 msgid "Cannot send overdue reminder. Loan is not active or not overdue."
 msgstr ""
 
@@ -765,51 +782,71 @@ msgstr ""
 msgid "Author(s)"
 msgstr ""
 
-#: app/templates/book_detail.html:30
+#: app/templates/book_detail.html:29
 msgid "No genres assigned"
 msgstr ""
 
-#: app/templates/book_detail.html:34
+#: app/templates/book_detail.html:33
 msgid "ISBN"
 msgstr ""
 
-#: app/templates/book_detail.html:35 app/templates/index.html:33
+#: app/templates/book_detail.html:34 app/templates/index.html:33
 #: app/templates/index.html:68 app/templates/loans.html:64
 #: app/templates/user_profile.html:50 app/templates/user_profile.html:115
 msgid "Status"
 msgstr ""
 
-#: app/templates/book_detail.html:37 app/templates/index.html:37
+#: app/templates/book_detail.html:36 app/templates/index.html:37
 #: app/templates/index.html:98
 msgid "Available"
 msgstr ""
 
-#: app/templates/book_detail.html:39 app/templates/index.html:100
+#: app/templates/book_detail.html:38 app/templates/index.html:100
 msgid "Reserved"
 msgstr ""
 
-#: app/templates/book_detail.html:41 app/templates/index.html:102
+#: app/templates/book_detail.html:40 app/templates/index.html:102
 msgid "On Loan"
 msgstr ""
 
-#: app/templates/book_detail.html:51 app/templates/index.html:119
+#: app/templates/book_detail.html:50 app/templates/index.html:119
 msgid "Request Reservation"
 msgstr ""
 
-#: app/templates/book_detail.html:55 app/templates/index.html:122
+#: app/templates/book_detail.html:54 app/templates/index.html:122
 msgid "Book not available for reservation"
 msgstr ""
 
-#: app/templates/book_detail.html:60
+#: app/templates/book_detail.html:59
 msgid "Back to List"
 msgstr ""
 
-#: app/templates/book_detail.html:67 app/templates/index.html:128
+#: app/templates/book_detail.html:66 app/templates/index.html:128
 msgid "Edit Book"
 msgstr ""
 
-#: app/templates/book_detail.html:71 app/templates/index.html:131
+#: app/templates/book_detail.html:70 app/templates/index.html:131
 msgid "Delete Book"
+msgstr ""
+
+#: app/templates/book_detail.html:94
+msgid "You have not added a comment for this book yet."
+msgstr ""
+
+#: app/templates/book_detail.html:99
+msgid "Edit Your Comment"
+msgstr ""
+
+#: app/templates/book_detail.html:101
+msgid "Add Your Comment"
+msgstr ""
+
+#: app/templates/book_detail.html:108
+msgid "Enter your comment here..."
+msgstr ""
+
+#: app/templates/book_detail.html:117
+msgid "Update Comment"
 msgstr ""
 
 #: app/templates/book_edit.html:12

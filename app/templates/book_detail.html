@@ -20,7 +20,6 @@
                 {{ author.name }}{% if not loop.last %}, {% endif %}
                 {% endfor %}
             </p>
-            {# ZMIANA: Wyświetlanie wielu gatunków #}
             <p><strong>{{ _('Genres') }}:</strong>
                 {% if book.genres %}
                     {% for genre in book.genres %}
@@ -73,6 +72,50 @@
                 </form>
             </div>
             {% endif %}
+        </div>
+    </div>
+
+    <!-- Cmment section -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h3>{{ _('Your Comment') }}</h3>
+            <hr>
+            {% if user_comment %}
+                <div class="list-group mb-4">
+                    <div class="list-group-item list-group-item-action flex-column align-items-start">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ _('Your Comment') }}</h5>
+                            <small>{{ user_comment.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        <p class="mb-1">{{ user_comment.text }}</p>
+                    </div>
+                </div>
+            {% else %}
+                <p>{{ _('You have not added a comment for this book yet.') }}</p>
+            {% endif %}
+
+            <h4 class="mt-4">
+                {% if user_comment %}
+                    {{ _('Edit Your Comment') }}
+                {% else %}
+                    {{ _('Add Your Comment') }}
+                {% endif %}
+            </h4>
+            <form method="POST" action="{{ url_for('main.book_detail', book_id=book.id) }}">
+                {{ comment_form.csrf_token }}
+                <div class="mb-3">
+                    {{ comment_form.text.label(class="form-label") }}
+                    {{ comment_form.text(class="form-control comment-input", placeholder=_('Enter your comment here...')) }}
+                    {% if comment_form.text.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in comment_form.text.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                {{ comment_form.submit(class="btn btn-primary", value=(_('Update Comment') if user_comment else _('Add Comment'))) }}
+            </form>
         </div>
     </div>
 </div>
