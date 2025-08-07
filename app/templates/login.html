@@ -7,14 +7,14 @@
 
     <!-- Icon -->
     <div class="fadeIn first">
-      <img src="{{ url_for('static', filename='/images/logo.png') }}" id="icon" alt="Logo" /> 
-      <h4>Libriya</h4> 
+      <img src="{{ url_for('static', filename='/images/logo-background.svg') }}" id="icon" alt="Logo" />
+      <h4 class="libriya-title">Libriya</h4>
 
-      
 
-    <!-- Login Form -->
+
+      <!-- Login Form -->
     </div>
-    
+
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
@@ -22,40 +22,42 @@
     {% endfor %}
     {% endif %}
     {% endwith %}
-    
-    
+
+
     <form method="POST" action="/login">
-      <input type="text" id="username" class="fadeIn second" name="username" placeholder="{{ _('username') }}"> 
-      <input type="password" id="password" class="fadeIn third" name="password" placeholder="{{ _('password') }}"> 
-      <input type="submit" class="fadeIn fourth" value="{{ _('Log In') }}"> 
+      <input type="text" id="username" class="fadeIn second" name="username" placeholder="{{ _('username') }}">
+      <input type="password" id="password" class="fadeIn third" name="password" placeholder="{{ _('password') }}">
+      <input type="submit" class="fadeIn fourth" value="{{ _('Log In') }}">
     </form>
     <!-- Remind Passowrd -->
     <div id="formFooter">
-      <a class="underlineHover" href="#">{{ _('Forgot Password?') }}</a> 
+      <a class="underlineHover" href="#">{{ _('Forgot Password?') }}</a>
     </div>
     <!-- Default credentials section -->
     <div class="default-credentials">
-      <p class="section-title">{{ _('Default credentials:') }}</p> 
+      <p class="section-title">{{ _('Default credentials:') }}</p>
       <div class="credential-item">
-        <p class="credential-label">{{ _('Administrator:') }}</p> 
-        <p class="credential-value"><i class='bx bx-user'></i> {{ _('Admin') }} <i class='bx bx-lock'></i> admin</p> 
+        <p class="credential-label">{{ _('Administrator:') }}</p>
+        <p class="credential-value"><i class='bx bx-user'></i> Admin <i class='bx bx-lock'></i> admin</p>
       </div>
       <div class="credential-item">
-        <p class="credential-label">{{ _('Standard User:') }}</p> 
-        <p class="credential-value"><i class='bx bx-user'></i> {{ _('User') }} <i class='bx bx-lock'></i> user</p> 
+        <p class="credential-label">{{ _('Standard User:') }}</p>
+        <p class="credential-value"><i class='bx bx-user'></i> User <i class='bx bx-lock'></i> user</p>
       </div>
     </div>
-<!-- Language Dropdown -->
-      <div class="dropdown my-3">
-        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class='bx bx-globe'></i> {{ _('Language') }}
-        </button>
-        <ul class="dropdown-menu" aria-labelledby="languageDropdown">
-          {% for lang_code in config.LANGUAGES %}
-          <li><a class="dropdown-item" href="{{ url_for('main.set_language', lang=lang_code) }}"><span class="fi fi-{{ 'gb' if lang_code == 'en' else lang_code }} me-2"></span>{{ lang_code|upper }}</a></li>
-          {% endfor %}
-        </ul>
-      </div>
+    <!-- Language Dropdown -->
+    <div class="dropdown my-3">
+      <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="languageDropdown"
+        data-bs-toggle="dropdown" aria-expanded="false">
+        <i class='bx bx-globe'></i> {{ _('Language') }}
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="languageDropdown">
+        {% for lang_code in config.LANGUAGES %}
+        <li><a class="dropdown-item" href="{{ url_for('main.set_language', lang=lang_code) }}"><span
+              class="fi fi-{{ 'gb' if lang_code == 'en' else lang_code }} me-2"></span>{{ lang_code|upper }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
 
 
   </div>
@@ -64,7 +66,7 @@
         href="https://unsplash.com/@itfeelslikefilm?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">🇸🇮
         Janko Ferlič</a> on <a
         href="https://unsplash.com/photos/photo-of-library-with-turned-on-lights-sfL_QOnmy00?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>
-    </p> 
+    </p>
   </div>
 </div>
 

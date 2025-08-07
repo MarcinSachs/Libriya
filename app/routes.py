@@ -386,7 +386,7 @@ def book_edit(book_id):
         book.title = form.title.data
         book.year = form.year.data
 
-        # Handle multiple authors (niezmieniona)
+        # Handle multiple authors
         book.authors.clear()
         author_names = [name.strip()
                         for name in form.author.data.split(',') if name.strip()]
@@ -398,7 +398,8 @@ def book_edit(book_id):
             book.authors.append(author)
 
         book.genres.clear()
-        selected_genres = form.genres.data
+        selected_genre_ids = form.genres.data
+        selected_genres = [Genre.query.get(genre_id) for genre_id in selected_genre_ids]
         book.genres.extend(selected_genres)
 
         # Handle cover update (niezmieniona)

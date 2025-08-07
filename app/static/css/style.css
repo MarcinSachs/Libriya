@@ -823,7 +823,8 @@ input[type=password] {
 .form-control {
     height: 3rem;
 }
-textarea.comment-input { 
+
+textarea.comment-input {
     height: auto;
     min-height: 8rem;
 }
@@ -835,7 +836,19 @@ textarea.comment-input {
 .buttons-container .btn {
     margin-top: 1.5em;
 }
+
 select.form-control[multiple] {
     height: auto;
-    min-height: 200px; /* lub inna preferowana wysokość */
+    min-height: 200px;
+    /* lub inna preferowana wysokość */
+}
+
+.libriya-title {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: bolder;
+    margin-top: 0.5rem;
+    margin-bottom: 1.0rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }

@@ -1,20 +1,24 @@
 # Libriya
+![alt text](app/static/images/logo.svg)
 
 Libriya is a web application for managing a library, built with Flask, SQLAlchemy, and other Python packages.
 
 **Please Note: This project is still under development and is not yet feature-complete.**
 
-## Features (Planned/Implemented)
+## Features (Implemented/Planned)
 
 *   **Book Management:** Add, edit, and delete books from the library.
 *   **Author and Genre Management:** Automatically create and manage authors and genres associated with books.
 *   **User Authentication:** User login, and logout.
-*   **Admin Privileges:**  Admin users can manage users and books.
+*   **Admin Privileges:** Admin users can manage users and books.
 *   **Book Loans:** Track which books are currently borrowed and by whom.
 *   **User Profiles:** Users can view their loan history.
-*   **User Settings:**  Users can edit their profile and settings.
+*   **User Settings:** Users can edit their profile and settings.
 *   **Internationalization (i18n):** Basic support for multiple languages (currently English and Polish).
-*   **ISBN Lookup:**  Integration with OpenLibrary API to fetch book data by ISBN.
+*   **ISBN Lookup:** Integration with OpenLibrary API to fetch book data by ISBN.
+*   **Comments:** Users can add comments to books.
+*   **Favorites:** Users can add books to their favorites list.
+*   **Notifications:**  Users and administrators receive notifications about loan requests, approvals, cancellations, and overdue reminders.
 
 ## Setup
 
@@ -41,7 +45,7 @@ Libriya is a web application for managing a library, built with Flask, SQLAlchem
 
 4.  **Configure the application:**
 
-    *   Set environment variables (see `config.py` for available options).  A `.flaskenv` file can be used.  For example:
+    *   Set environment variables (see `config.py` for available options). A `.flaskenv` file can be used. For example:
 
         ```
         FLASK_APP=libriya.py
@@ -78,7 +82,6 @@ Libriya is a web application for managing a library, built with Flask, SQLAlchem
     *   Improve the user experience on mobile devices.
 
 *   **Add Advanced Features:**
-    *   Comments to books.
     *   Implement a system for managing fines.
     *   Add a book recommendation system.
     *   Implement an "archive" feature for books with loan history instead of deleting them
@@ -95,8 +98,8 @@ Libriya is a web application for managing a library, built with Flask, SQLAlchem
 
 ## Contributing
 
-Contributions are welcome!  Please fork the repository and submit a pull request with your changes.
+Contributions are welcome! Please fork the repository and submit a pull request with your changes.
 
 ## License
 
-[License information] (e.g., MIT License)
+MIT License
