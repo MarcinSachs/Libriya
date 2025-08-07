@@ -20,7 +20,16 @@
                 {{ author.name }}{% if not loop.last %}, {% endif %}
                 {% endfor %}
             </p>
-            <p><strong>{{ _('Genre') }}:</strong> {{ book.genre }}</p>
+            {# ZMIANA: Wyświetlanie wielu gatunków #}
+            <p><strong>{{ _('Genres') }}:</strong>
+                {% if book.genres %}
+                    {% for genre in book.genres %}
+                        {{ _(genre.name) }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    {{ _('No genres assigned') }}
+                {% endif %}
+            </p>
             <p><strong>{{ _('Year') }}:</strong> {{ book.year }}</p>
             <p><strong>{{ _('ISBN') }}:</strong> {{ book.isbn }}</p>
             <p><strong>{{ _('Status') }}:</strong>

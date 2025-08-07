@@ -83,7 +83,15 @@
                 </td>
                 <td>{{ book.title }}</td>
                 <td>{{ book.authors|map(attribute='name')|join(', ') }}</td>
-                <td>{{ _(book.genre.name) }}</td>
+                <td>
+                    {% if book.genres %}
+                        {% for genre in book.genres %}
+                            {{ _(genre.name) }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        {{ _('No genres') }} {# Opcjonalnie: komunikat, jeśli brak gatunków #}
+                    {% endif %}
+                </td>
                 <td>{{ book.year }}</td>
                 <td>
                     {% if book.status == 'available' %}

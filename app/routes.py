@@ -24,7 +24,7 @@ from werkzeug.utils import secure_filename
 
 from app import db
 from app.forms import BookForm, LoanForm, UserEditForm, UserForm, UserSettingsForm
-from app.models import Author, Book, Genre, Loan, User, Notification, db
+from app.models import Author, Book, Genre, Loan, User, Notification # db już zaimportowane z app
 from flask_login import login_user, login_required, current_user, logout_user
 
 from flask_babel import _, ngettext
@@ -67,13 +67,11 @@ def favicon():
     return current_app.send_static_file("favicon.ico")
 
 # Home Page
-
-
 @bp.route("/")
 @login_required
 def home():
     status_filter = request.args.get('status')
-    genre_filter = request.args.get('genre')
+    genre_filter_id = request.args.get('genre', type=int)
     title_filter = request.args.get('title')
 
     query = Book.query
@@ -88,8 +86,8 @@ def home():
             query = query.filter(
                 or_(Book.status == 'on_loan', Book.status == 'reserved'))
 
-    if genre_filter:
-        query = query.filter(Book.genre_id == genre_filter)
+    if genre_filter_id:
+        query = query.join(Book.genres).filter(Genre.id == genre_filter_id)
 
     books = query.all()
     genres = Genre.query.all()
@@ -174,7 +172,6 @@ def user_edit(user_id):
     form = UserEditForm(obj=user)
 
     if form.validate_on_submit():
-        # user.username is readonly, so no need to update
 
         # Prevent the last admin from revoking their own privileges
         if user.is_admin and not form.is_admin.data and User.query.filter_by(is_admin=True).count() == 1:
@@ -273,24 +270,13 @@ def book_add():
     form = BookForm()
 
     if form.validate_on_submit():
-
-        # Handle genre
-        genre_id = form.genre.data  # Get genre ID from form
-        genre = Genre.query.get(genre_id)
-
-        if not genre:
-            flash(_('Invalid genre.'), 'danger')
-            return render_template('book_add.html', form=form)
-
         new_book = Book(
             isbn=form.isbn.data,
             title=form.title.data,
-            genre=genre,
             year=form.year.data,
             status='available'
         )
 
-        # Handle multiple authors
         author_names = [name.strip()
                         for name in form.author.data.split(',') if name.strip()]
         for name in author_names:
@@ -300,10 +286,12 @@ def book_add():
                 db.session.add(author)
             new_book.authors.append(author)
 
+        selected_genres = form.genres.data
+        new_book.genres.extend(selected_genres)
+
         if form.cover.data:
             f = form.cover.data
             cover_filename = secure_filename(f.filename)
-            # UPLOAD_FOLDER must be defined in your config.py
             f.save(os.path.join(
                 current_app.config["UPLOAD_FOLDER"], cover_filename))
             new_book.cover = cover_filename
@@ -312,12 +300,10 @@ def book_add():
             try:
                 response = requests.get(cover_url, stream=True, timeout=10)
                 if response.status_code == 200:
-                    # Create a secure, unique filename from the URL
                     random_hex = secrets.token_hex(8)
-                    # Get file extension from URL path
                     _, f_ext = os.path.splitext(urlparse(cover_url).path)
                     if not f_ext:
-                        f_ext = '.jpg'  # Default extension
+                        f_ext = '.jpg'
                     cover_filename = random_hex + f_ext
                     picture_path = os.path.join(
                         current_app.config["UPLOAD_FOLDER"], cover_filename)
@@ -330,7 +316,6 @@ def book_add():
         db.session.add(new_book)
         db.session.commit()
         flash(_("Book added successfully!"), "success")
-        # Redirect to the home page, which is part of the 'main' blueprint
         return redirect(url_for("main.home"))
 
     return render_template("book_add.html", form=form)
@@ -360,9 +345,14 @@ def book_delete(book_id):
 def book_edit(book_id):
     book = Book.query.get_or_404(book_id)
     author_string = ", ".join([author.name for author in book.authors])
-    # Populate form with existing data, including related fields
-    form = BookForm(obj=book, author=author_string, genre=book.genre.name)
-    genres = [g.name for g in Genre.query.distinct(Genre.name).all()]
+    
+    # Inicjowanie formularza dla GET request
+    if request.method == 'GET':
+
+        form = BookForm(obj=book, author=author_string, genres=book.genres)
+    else: # POST request
+        form = BookForm()
+
 
     if form.validate_on_submit():
         # Update book fields from form data
@@ -370,7 +360,7 @@ def book_edit(book_id):
         book.title = form.title.data
         book.year = form.year.data
 
-        # Handle multiple authors
+        # Handle multiple authors (niezmieniona)
         book.authors.clear()
         author_names = [name.strip()
                         for name in form.author.data.split(',') if name.strip()]
@@ -381,13 +371,12 @@ def book_edit(book_id):
                 db.session.add(author)
             book.authors.append(author)
 
-        genre_id = form.genre.data
-        genre = Genre.query.get(genre_id)
-        if not genre:
-            return render_template('book_edit.html', form=form, book=book, genres=genres, active_page="books", title="Edit Book")
-        book.genre = genre
+        # NOWA OBSŁUGA WIELU GATUNKÓW DLA EDYCJI
+        book.genres.clear()
+        selected_genres = form.genres.data
+        book.genres.extend(selected_genres)
 
-        # Handle cover update
+        # Handle cover update (niezmieniona)
         if form.cover.data:
             if isinstance(form.cover.data, FileStorage):
                 f = form.cover.data
@@ -399,7 +388,9 @@ def book_edit(book_id):
         db.session.commit()
         flash(_("Book updated successfully!"), "success")
         return redirect(url_for("main.home"))
-    return render_template("book_edit.html", form=form, book=book, genres=genres, active_page="books", title="Edit Book")
+    
+    # Render template for GET request or form validation error
+    return render_template("book_edit.html", form=form, book=book, active_page="books", title="Edit Book") # Usunięto genres=genres, nie jest już potrzebne
 
 # Favorites
 
@@ -416,7 +407,6 @@ def add_favorite(book_id):
         db.session.commit()
         flash(_('Book added to favorites.'), 'success')
     return redirect(url_for('main.home'))
-    # return redirect(url_for('main.book_detail', book_id=book.id))
 
 
 @bp.route('/favorites/remove/<int:book_id>', methods=['POST'])
@@ -448,7 +438,6 @@ def loans():
             loan_query = loan_query.filter(Loan.user_id == user_filter_id)
         except ValueError:
             # Handle case where user_filter_id is not a valid integer
-            # You might want to flash an error message here, or just ignore the filter
             flash(_("Invalid user ID provided for filtering."), "danger")
      # Apply status filter
     status_filter = request.args.get('status')
@@ -518,28 +507,30 @@ def request_reservation(book_id, user_id):
 def borrow_book(book_id, user_id):
     book = Book.query.get_or_404(book_id)
     user = User.query.get_or_404(user_id)
-    if book.is_available:
-        book.is_available = False
+
+    if book.status == 'available':
+        book.status = 'on_loan'
         new_loan = Loan(book=book, user=user)
         db.session.add(new_loan)
         db.session.commit()
         flash(_("Book borrowed successfully!"), "success")
     else:
-        flash(_("This book is already on loan."), "danger")
+        flash(_("This book is not available for direct loan."), "danger") # ZMIANA KOMUNIKATU
     return redirect(url_for("main.home"))
 
 
 @bp.route("/return_book/<int:book_id>", methods=["GET", "POST"])
 @login_required
 def return_book(book_id):
-    loan = Loan.query.filter_by(book_id=book_id, return_date=None).first()
+    loan = Loan.query.filter_by(book_id=book_id, status='active').first()
     if loan:
-        loan.book.is_available = True
+        loan.book.status = 'available'
         loan.return_date = datetime.utcnow()
+        loan.status = 'returned'
         db.session.commit()
         flash(_("Book returned successfully!"), "success")
     else:
-        flash(_("This book is not currently on loan."), "danger")
+        flash(_("This book is not currently on loan or is already returned."), "danger") # ZMIANA KOMUNIKATU
     return redirect(url_for("main.home"))
 
 
@@ -675,17 +666,14 @@ def loan_add():
 def user_cancel_reservation(loan_id):
     loan = Loan.query.get_or_404(loan_id)
 
-    # Sprawdź, czy to wypożyczenie należy do aktualnie zalogowanego użytkownika
     if loan.user_id != current_user.id:
         flash(_("You can only cancel your own reservations."), "danger")
         return redirect(url_for('main.user_profile', user_id=current_user.id))
 
-    # Sprawdź, czy wypożyczenie ma status "oczekujące"
     if loan.status == 'pending':
-        # Przywróć status książki na 'available' tylko jeśli była zarezerwowana przez to konkretne wypożyczenie
         if loan.book.status == 'reserved':
             loan.book.status = 'available'
-        loan.status = 'cancelled'  # Zmień status wypożyczenia na "anulowane"
+        loan.status = 'cancelled'
         db.session.commit()
 
         # --- Create notyfication for admin ---
@@ -698,7 +686,6 @@ def user_cancel_reservation(loan_id):
         flash(_("Your reservation for '%(title)s' has been cancelled.",
               title=loan.book.title), 'success')
     else:
-        # Jeśli status nie jest "pending", nie można anulować przez użytkownika
         flash(_("This reservation cannot be cancelled as it is not in 'pending' status."), 'danger')
 
     return redirect(url_for('main.user_profile', user_id=current_user.id))

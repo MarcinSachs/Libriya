@@ -24,7 +24,7 @@
     <form method="GET" action="{{ url_for('main.loans') }}" class="mb-3">
         <div class="row g-2">
             <div class="col-md-3">
-                <label for="status" class="form-label">{{ _('Loan Status') }}</label> {# Zmieniono etykietę #}
+                <label for="status" class="form-label">{{ _('Loan Status') }}</label>
                 <select class="form-select" id="status" name="status">
                     <option value="">{{ _('All') }}</option>
                     <option value="pending" {% if request.args.get('status')=='pending' %}selected{% endif %}>{{
@@ -38,7 +38,7 @@
             <div class="col-md-3">
                 <label for="user" class="form-label">{{ _('User') }}</label>
                 <select class="form-select" id="user" name="user">
-                    <option value="">{{ _('All') }}</option>
+                    <option value="">{{ _('All Users') }}</option>
                     {% for user in users %}
                     <option value="{{ user.id }}" {% if request.args.get('user')==user.id|string %}selected{% endif
                         %}>{{ user.username }}</option>

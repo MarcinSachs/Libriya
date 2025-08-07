@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-06 21:24+0200\n"
+"POT-Creation-Date: 2025-08-07 11:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,470 +50,425 @@ msgid "Autobiography"
 msgstr ""
 
 #: seed.py:20
-msgid "Baking"
-msgstr ""
-
-#: seed.py:21
 msgid "Biography"
 msgstr ""
 
-#: seed.py:22
+#: seed.py:21
 msgid "Business"
 msgstr ""
 
-#: seed.py:23
+#: seed.py:22
 msgid "Cars"
 msgstr ""
 
-#: seed.py:24
+#: seed.py:23
 msgid "Chick Lit"
 msgstr ""
 
-#: seed.py:25
+#: seed.py:24
 msgid "Children's"
 msgstr ""
 
-#: seed.py:26
+#: seed.py:25
 msgid "Christian Fiction"
 msgstr ""
 
-#: seed.py:27
+#: seed.py:26
 msgid "Classics"
 msgstr ""
 
-#: seed.py:28
-msgid "Comic Book"
-msgstr ""
-
-#: seed.py:29
+#: seed.py:27
 msgid "Comics"
 msgstr ""
 
-#: seed.py:30
+#: seed.py:28
 msgid "Contemporary"
 msgstr ""
 
-#: seed.py:31
+#: seed.py:29
 msgid "Cookbook"
 msgstr ""
 
-#: seed.py:32
+#: seed.py:30
 msgid "Crafts"
 msgstr ""
 
-#: seed.py:33
+#: seed.py:31
 msgid "Crime"
 msgstr ""
 
-#: seed.py:34
+#: seed.py:32
 msgid "Dance"
 msgstr ""
 
-#: seed.py:35
+#: seed.py:33
 msgid "Drama"
 msgstr ""
 
-#: seed.py:36
+#: seed.py:34
 msgid "Dystopian"
 msgstr ""
 
-#: seed.py:37
+#: seed.py:35
 msgid "Education"
 msgstr ""
 
-#: seed.py:38
+#: seed.py:36
 msgid "Environment"
 msgstr ""
 
-#: seed.py:39
+#: seed.py:37
 msgid "Epic Fantasy"
 msgstr ""
 
-#: seed.py:40
+#: seed.py:38
 msgid "Erotic"
 msgstr ""
 
-#: seed.py:41
+#: seed.py:39
 msgid "Fable"
 msgstr ""
 
-#: seed.py:42
+#: seed.py:40
 msgid "Fairy Tale"
 msgstr ""
 
-#: seed.py:43
+#: seed.py:41
 msgid "Family Saga"
 msgstr ""
 
-#: seed.py:44
+#: seed.py:42
 msgid "Fantasy"
 msgstr ""
 
-#: seed.py:45
+#: seed.py:43
 msgid "Food"
 msgstr ""
 
-#: seed.py:46
+#: seed.py:44
 msgid "Gardening"
 msgstr ""
 
-#: seed.py:47
+#: seed.py:45
 msgid "Gothic"
 msgstr ""
 
-#: seed.py:48
+#: seed.py:46
 msgid "Graphic Novel"
 msgstr ""
 
-#: seed.py:49
+#: seed.py:47
 msgid "Guide"
 msgstr ""
 
-#: seed.py:50
+#: seed.py:48
 msgid "Health"
 msgstr ""
 
-#: seed.py:51
+#: seed.py:49
 msgid "Historical"
 msgstr ""
 
-#: seed.py:52
+#: seed.py:50
 msgid "Historical Fiction"
 msgstr ""
 
-#: seed.py:53
+#: seed.py:51
 msgid "Home Improvement"
 msgstr ""
 
-#: seed.py:54
+#: seed.py:52
 msgid "Horror"
 msgstr ""
 
-#: seed.py:55
+#: seed.py:53
 msgid "Humor"
 msgstr ""
 
-#: seed.py:56
+#: seed.py:54
 msgid "Inspirational"
 msgstr ""
 
-#: seed.py:57
+#: seed.py:55
 msgid "Journal"
 msgstr ""
 
-#: seed.py:58
-msgid "Knitting"
-msgstr ""
-
-#: seed.py:59
+#: seed.py:56
 msgid "Languages"
 msgstr ""
 
-#: seed.py:60
+#: seed.py:57
 msgid "Legal"
 msgstr ""
 
-#: seed.py:61
+#: seed.py:58
 msgid "LGBTQ+"
 msgstr ""
 
-#: seed.py:62
+#: seed.py:59
 msgid "Literary Fiction"
 msgstr ""
 
-#: seed.py:63
+#: seed.py:60
 msgid "Magic"
 msgstr ""
 
-#: seed.py:64
+#: seed.py:61
 msgid "Medical"
 msgstr ""
 
-#: seed.py:65
+#: seed.py:62
 msgid "Memoir"
 msgstr ""
 
-#: seed.py:66
+#: seed.py:63
 msgid "Military"
 msgstr ""
 
-#: seed.py:67
+#: seed.py:64
 msgid "Music"
 msgstr ""
 
-#: seed.py:68
+#: seed.py:65
 msgid "Mystery"
 msgstr ""
 
-#: seed.py:69
+#: seed.py:66
 msgid "Mythology"
 msgstr ""
 
-#: seed.py:70
+#: seed.py:67
 msgid "Nature"
 msgstr ""
 
-#: seed.py:71
+#: seed.py:68
 msgid "New Adult"
 msgstr ""
 
-#: seed.py:72
-msgid "Outdoor"
-msgstr ""
-
-#: seed.py:73
+#: seed.py:69
 msgid "Painting"
 msgstr ""
 
-#: seed.py:74
-msgid "Paranormal Romance"
-msgstr ""
-
-#: seed.py:75
+#: seed.py:70
 msgid "Parenting"
 msgstr ""
 
-#: seed.py:76
-msgid "Pets"
-msgstr ""
-
-#: seed.py:77
+#: seed.py:71
 msgid "Philosophy"
 msgstr ""
 
-#: seed.py:78
+#: seed.py:72
 msgid "Picture Book"
 msgstr ""
 
-#: seed.py:79
+#: seed.py:73
 msgid "Poetry"
 msgstr ""
 
-#: seed.py:80
+#: seed.py:74
 msgid "Political"
 msgstr ""
 
-#: seed.py:81
+#: seed.py:75
 msgid "Psychology"
 msgstr ""
 
-#: seed.py:82
+#: seed.py:76
 msgid "Reference"
 msgstr ""
 
-#: seed.py:83
+#: seed.py:77
 msgid "Relationships"
 msgstr ""
 
-#: seed.py:84
+#: seed.py:78
 msgid "Religion"
 msgstr ""
 
-#: seed.py:85
+#: seed.py:79
 msgid "Review"
 msgstr ""
 
-#: seed.py:86
+#: seed.py:80
 msgid "Romance"
 msgstr ""
 
-#: seed.py:87
+#: seed.py:81
 msgid "Satire"
 msgstr ""
 
-#: seed.py:88
+#: seed.py:82
 msgid "Science"
 msgstr ""
 
-#: seed.py:89
+#: seed.py:83
 msgid "Science Fiction"
 msgstr ""
 
-#: seed.py:90
-msgid "Science Fiction Romance"
-msgstr ""
-
-#: seed.py:91
+#: seed.py:84
 msgid "Self-Help"
 msgstr ""
 
-#: seed.py:92
+#: seed.py:85
 msgid "Short Story"
 msgstr ""
 
-#: seed.py:93
+#: seed.py:86
 msgid "Social Science"
 msgstr ""
 
-#: seed.py:94
+#: seed.py:87
 msgid "Sociology"
 msgstr ""
 
-#: seed.py:95
+#: seed.py:88
 msgid "Space"
 msgstr ""
 
-#: seed.py:96
+#: seed.py:89
 msgid "Spirituality"
 msgstr ""
 
-#: seed.py:97
+#: seed.py:90
 msgid "Sports"
 msgstr ""
 
-#: seed.py:98
-msgid "Sports Romance"
-msgstr ""
-
-#: seed.py:99
-msgid "Steampunk"
-msgstr ""
-
-#: seed.py:100
-msgid "Suspense"
-msgstr ""
-
-#: seed.py:101
+#: seed.py:91
 msgid "Technology"
 msgstr ""
 
-#: seed.py:102
+#: seed.py:92
 msgid "Thriller"
 msgstr ""
 
-#: seed.py:103
+#: seed.py:93
 msgid "Travel"
 msgstr ""
 
-#: seed.py:104
+#: seed.py:94
 msgid "Travel Guide"
 msgstr ""
 
-#: seed.py:105
+#: seed.py:95
 msgid "True Crime"
 msgstr ""
 
-#: seed.py:106
+#: seed.py:96
 msgid "True Story"
 msgstr ""
 
-#: seed.py:107
-msgid "Urban Fantasy"
-msgstr ""
-
-#: seed.py:108
+#: seed.py:97
 msgid "War"
 msgstr ""
 
-#: seed.py:109
+#: seed.py:98
 msgid "Western"
 msgstr ""
 
-#: seed.py:110
+#: seed.py:99
 msgid "Young Adult"
 msgstr ""
 
-#: app/forms.py:12 app/templates/book_detail.html:17
+#: app/forms.py:13 app/templates/book_detail.html:17
 #: app/templates/index.html:28 app/templates/index.html:64
 msgid "Title"
 msgstr ""
 
-#: app/forms.py:13
+#: app/forms.py:14
 msgid "Author(s) (comma-separated)"
 msgstr ""
 
-#: app/forms.py:15 app/templates/book_detail.html:23
-#: app/templates/index.html:43 app/templates/index.html:66
-msgid "Genre"
+#: app/forms.py:17 app/templates/book_detail.html:24
+msgid "Genres"
 msgstr ""
 
-#: app/forms.py:18 app/templates/book_detail.html:24
+#: app/forms.py:22 app/templates/book_detail.html:33
 #: app/templates/index.html:67
 msgid "Year"
 msgstr ""
 
-#: app/forms.py:20
+#: app/forms.py:24
 msgid "Field 'Year' is required."
 msgstr ""
 
-#: app/forms.py:22
+#: app/forms.py:26
 msgid "Please enter a valid year (e.g. 1999)."
 msgstr ""
 
-#: app/forms.py:25 app/templates/index.html:63
+#: app/forms.py:29 app/templates/index.html:63
 msgid "Cover"
 msgstr ""
 
-#: app/forms.py:26
+#: app/forms.py:30
 msgid "Only image files (jpg, png, jpeg) are allowed!"
 msgstr ""
 
-#: app/forms.py:28 app/forms.py:51 app/forms.py:67 app/forms.py:75
+#: app/forms.py:31 app/forms.py:59 app/forms.py:75 app/forms.py:83
 msgid "Submit"
 msgstr ""
 
-#: app/forms.py:38 app/forms.py:48 app/templates/users.html:22
+#: app/forms.py:46 app/forms.py:56 app/templates/users.html:22
 msgid "Username"
 msgstr ""
 
-#: app/forms.py:39 app/forms.py:49 app/forms.py:56 app/templates/users.html:23
+#: app/forms.py:47 app/forms.py:57 app/forms.py:64 app/templates/users.html:23
 msgid "Email"
 msgstr ""
 
-#: app/forms.py:40
+#: app/forms.py:48
 msgid "user@example.com"
 msgstr ""
 
-#: app/forms.py:41
+#: app/forms.py:49
 msgid "Password"
 msgstr ""
 
-#: app/forms.py:42
+#: app/forms.py:50
 msgid "Confirm Password"
 msgstr ""
 
-#: app/forms.py:44
+#: app/forms.py:52
 msgid "Add User"
 msgstr ""
 
-#: app/forms.py:50
+#: app/forms.py:58
 msgid "Administrator privileges"
 msgstr ""
 
-#: app/forms.py:57
+#: app/forms.py:65
 msgid "Update Profile Picture"
 msgstr ""
 
-#: app/forms.py:58
+#: app/forms.py:66
 msgid "Images only!"
 msgstr ""
 
-#: app/forms.py:60
+#: app/forms.py:68
 msgid "File size must be less than 2MB."
 msgstr ""
 
-#: app/forms.py:62
+#: app/forms.py:70
 msgid "New Password"
 msgstr ""
 
-#: app/forms.py:64
+#: app/forms.py:72
 msgid "Confirm New Password"
 msgstr ""
 
-#: app/forms.py:65
+#: app/forms.py:73
 msgid "Passwords must match."
 msgstr ""
 
-#: app/forms.py:72
+#: app/forms.py:80
 msgid "Book"
 msgstr ""
 
-#: app/forms.py:73 app/templates/loans.html:39 app/templates/loans.html:60
+#: app/forms.py:81 app/templates/loans.html:39 app/templates/loans.html:60
 #: app/templates/login.html:45 app/templates/users.html:34
 msgid "User"
 msgstr ""
 
-#: app/routes.py:40
+#: app/routes.py:41
 msgid "You do not have administrative privileges to access this page."
 msgstr ""
 
@@ -529,231 +484,227 @@ msgstr ""
 msgid "You have been logged out."
 msgstr ""
 
-#: app/routes.py:185
+#: app/routes.py:184
 #, python-format
 msgid "User '%(username)s' updated successfully!"
 msgstr ""
 
-#: app/routes.py:231
+#: app/routes.py:230
 msgid "No user found to edit settings."
 msgstr ""
 
-#: app/routes.py:251
+#: app/routes.py:250
 msgid "Your settings have been updated."
 msgstr ""
 
-#: app/routes.py:280
-msgid "Invalid genre."
-msgstr ""
-
-#: app/routes.py:326
+#: app/routes.py:314
 #, python-format
 msgid "Could not download cover image: '%(e)s'"
 msgstr ""
 
-#: app/routes.py:330
+#: app/routes.py:318
 msgid "Book added successfully!"
 msgstr ""
 
-#: app/routes.py:345
+#: app/routes.py:332
 #, python-format
 msgid ""
 "Cannot delete \"%(title)s\" because it is currently \"%(status)s\". "
 "Consider marking it as inactive instead."
 msgstr ""
 
-#: app/routes.py:351
+#: app/routes.py:338
 msgid "Book deleted successfully!"
 msgstr ""
 
-#: app/routes.py:396
+#: app/routes.py:389
 msgid "Book updated successfully!"
 msgstr ""
 
-#: app/routes.py:409
+#: app/routes.py:404
 msgid "Book is already in favorites."
 msgstr ""
 
-#: app/routes.py:413
+#: app/routes.py:408
 msgid "Book added to favorites."
 msgstr ""
 
-#: app/routes.py:426
+#: app/routes.py:420
 msgid "Book removed from favorites."
 msgstr ""
 
-#: app/routes.py:428
+#: app/routes.py:422
 msgid "Book is not in favorites."
 msgstr ""
 
-#: app/routes.py:448
+#: app/routes.py:441
 msgid "Invalid user ID provided for filtering."
 msgstr ""
 
-#: app/routes.py:467 app/templates/layout.html:133
+#: app/routes.py:460 app/templates/layout.html:133
 msgid "Loans"
 msgstr ""
 
-#: app/routes.py:486
+#: app/routes.py:479
 msgid "You already have an active or pending reservation for this book."
 msgstr ""
 
-#: app/routes.py:499
+#: app/routes.py:492
 #, python-format
 msgid "%(username)s has requested to reserve \"%(title)s\"."
 msgstr ""
 
-#: app/routes.py:504
+#: app/routes.py:497
 msgid "Book has been reserved successfully! An admin will approve it shortly."
 msgstr ""
 
-#: app/routes.py:506
+#: app/routes.py:499
 msgid "This book is already reserved by another user."
 msgstr ""
 
-#: app/routes.py:508
+#: app/routes.py:501
 msgid "This book is currently on loan."
 msgstr ""
 
-#: app/routes.py:522
+#: app/routes.py:516
 msgid "Book borrowed successfully!"
 msgstr ""
 
-#: app/routes.py:524
-msgid "This book is already on loan."
+#: app/routes.py:518
+msgid "This book is not available for direct loan."
 msgstr ""
 
-#: app/routes.py:536
+#: app/routes.py:531
 msgid "Book returned successfully!"
 msgstr ""
 
-#: app/routes.py:538
-msgid "This book is not currently on loan."
+#: app/routes.py:533
+msgid "This book is not currently on loan or is already returned."
 msgstr ""
 
-#: app/routes.py:558
+#: app/routes.py:553
 #, python-format
 msgid "Your reservation for \"%(title)s\" has been approved!"
 msgstr ""
 
-#: app/routes.py:562
+#: app/routes.py:557
 #, python-format
 msgid "Loan for \"%(title)s\" to %(username)s has been approved!"
 msgstr ""
 
-#: app/routes.py:565
+#: app/routes.py:560
 msgid ""
 "Cannot approve loan: Book status is not \"reserved\". It might have been "
 "cancelled or loaned differently."
 msgstr ""
 
-#: app/routes.py:567
+#: app/routes.py:562
 msgid "Loan is not in \"pending\" status and cannot be approved."
 msgstr ""
 
-#: app/routes.py:585
+#: app/routes.py:580
 #, python-format
 msgid "Your reservation for \"%(title)s\" has been cancelled by an administrator."
 msgstr ""
 
-#: app/routes.py:590
+#: app/routes.py:585
 #, python-format
 msgid "Reservation for \"%(title)s\" by %(username)s has been cancelled."
 msgstr ""
 
-#: app/routes.py:593
+#: app/routes.py:588
 msgid "Cannot cancel loan: It is not in \"pending\" status."
 msgstr ""
 
-#: app/routes.py:609
+#: app/routes.py:604
 #, python-format
 msgid "The book \"%(title)s\" that you loaned has been marked as returned."
 msgstr ""
 
-#: app/routes.py:614
+#: app/routes.py:609
 #, python-format
 msgid "Book \"%(title)s\" has been returned."
 msgstr ""
 
-#: app/routes.py:617
+#: app/routes.py:612
 msgid "This loan is not active or has already been returned."
 msgstr ""
 
-#: app/routes.py:655
+#: app/routes.py:650
 #, python-format
 msgid ""
 "A loan for \"%(title)s\" has been directly issued to you by an "
 "administrator."
 msgstr ""
 
-#: app/routes.py:660
+#: app/routes.py:655
 msgid "Loan added successfully!"
 msgstr ""
 
-#: app/routes.py:663
+#: app/routes.py:658
 msgid "This book is currently on loan or reserved."
 msgstr ""
 
-#: app/routes.py:665
+#: app/routes.py:660
 msgid "Invalid book or user."
 msgstr ""
 
-#: app/routes.py:676
+#: app/routes.py:670
 msgid "You can only cancel your own reservations."
 msgstr ""
 
-#: app/routes.py:689
+#: app/routes.py:681
 #, python-format
 msgid "%(username)s has cancelled their reservation for \"%(title)s\"."
 msgstr ""
 
-#: app/routes.py:694
+#: app/routes.py:686
 #, python-format
 msgid "Your reservation for '%(title)s' has been cancelled."
 msgstr ""
 
-#: app/routes.py:698
+#: app/routes.py:689
 msgid "This reservation cannot be cancelled as it is not in 'pending' status."
 msgstr ""
 
-#: app/routes.py:712
+#: app/routes.py:703
 #, python-format
 msgid "Language changed to %(lang)s."
 msgstr ""
 
-#: app/routes.py:714
+#: app/routes.py:705
 msgid "Unsupported language."
 msgstr ""
 
-#: app/routes.py:734 app/templates/notifications.html:5
+#: app/routes.py:725 app/templates/notifications.html:5
 msgid "Your Notifications"
 msgstr ""
 
-#: app/routes.py:744
+#: app/routes.py:735
 msgid "You do not have permission to mark this notification as read."
 msgstr ""
 
-#: app/routes.py:749
+#: app/routes.py:740
 msgid "Notification marked as read."
 msgstr ""
 
-#: app/routes.py:763
+#: app/routes.py:754
 msgid "All notifications marked as read."
 msgstr ""
 
-#: app/routes.py:774
+#: app/routes.py:765
 #, python-format
 msgid ""
 "Reminder: Your loan for \"%(title)s\" is overdue. Please return it as "
 "soon as possible."
 msgstr ""
 
-#: app/routes.py:778
+#: app/routes.py:769
 #, python-format
 msgid "Overdue reminder sent to %(username)s for book \"%(title)s\"."
 msgstr ""
 
-#: app/routes.py:782
+#: app/routes.py:773
 msgid "Cannot send overdue reminder. Loan is not active or not overdue."
 msgstr ""
 
@@ -765,7 +716,7 @@ msgstr ""
 msgid "Enter ISBN to get data from Open Library"
 msgstr ""
 
-#: app/templates/book_add.html:24 app/templates/book_add.html:120
+#: app/templates/book_add.html:24 app/templates/book_add.html:121
 msgid "Search"
 msgstr ""
 
@@ -777,29 +728,33 @@ msgstr ""
 msgid "e.g. J.R.R. Tolkien"
 msgstr ""
 
-#: app/templates/book_add.html:49 app/templates/book_edit.html:56
+#: app/templates/book_add.html:45 app/templates/book_edit.html:45
+msgid "Hold Ctrl (or Cmd on Mac) to select multiple genres."
+msgstr ""
+
+#: app/templates/book_add.html:50 app/templates/book_edit.html:50
 msgid "e.g. 1954"
 msgstr ""
 
-#: app/templates/book_add.html:63 app/templates/book_edit.html:69
+#: app/templates/book_add.html:64 app/templates/book_edit.html:63
 #: app/templates/loan_add.html:30 app/templates/user_add.html:39
 #: app/templates/user_edit.html:35 app/templates/user_settings.html:50
 msgid "Cancel"
 msgstr ""
 
-#: app/templates/book_add.html:83
+#: app/templates/book_add.html:84
 msgid "Please enter an ISBN."
 msgstr ""
 
-#: app/templates/book_add.html:90
+#: app/templates/book_add.html:91
 msgid "Searching..."
 msgstr ""
 
-#: app/templates/book_add.html:105
+#: app/templates/book_add.html:106
 msgid "Open Library Cover:"
 msgstr ""
 
-#: app/templates/book_add.html:116
+#: app/templates/book_add.html:117
 #, python-format
 msgid ""
 "Could not find data for ISBN %(isbn_num)s. Please check the number and "
@@ -810,46 +765,50 @@ msgstr ""
 msgid "Author(s)"
 msgstr ""
 
-#: app/templates/book_detail.html:25
+#: app/templates/book_detail.html:30
+msgid "No genres assigned"
+msgstr ""
+
+#: app/templates/book_detail.html:34
 msgid "ISBN"
 msgstr ""
 
-#: app/templates/book_detail.html:26 app/templates/index.html:33
+#: app/templates/book_detail.html:35 app/templates/index.html:33
 #: app/templates/index.html:68 app/templates/loans.html:64
 #: app/templates/user_profile.html:50 app/templates/user_profile.html:115
 msgid "Status"
 msgstr ""
 
-#: app/templates/book_detail.html:28 app/templates/index.html:37
-#: app/templates/index.html:90
+#: app/templates/book_detail.html:37 app/templates/index.html:37
+#: app/templates/index.html:98
 msgid "Available"
 msgstr ""
 
-#: app/templates/book_detail.html:30 app/templates/index.html:92
+#: app/templates/book_detail.html:39 app/templates/index.html:100
 msgid "Reserved"
 msgstr ""
 
-#: app/templates/book_detail.html:32 app/templates/index.html:94
+#: app/templates/book_detail.html:41 app/templates/index.html:102
 msgid "On Loan"
 msgstr ""
 
-#: app/templates/book_detail.html:42 app/templates/index.html:111
+#: app/templates/book_detail.html:51 app/templates/index.html:119
 msgid "Request Reservation"
 msgstr ""
 
-#: app/templates/book_detail.html:46 app/templates/index.html:114
+#: app/templates/book_detail.html:55 app/templates/index.html:122
 msgid "Book not available for reservation"
 msgstr ""
 
-#: app/templates/book_detail.html:51
+#: app/templates/book_detail.html:60
 msgid "Back to List"
 msgstr ""
 
-#: app/templates/book_detail.html:58 app/templates/index.html:120
+#: app/templates/book_detail.html:67 app/templates/index.html:128
 msgid "Edit Book"
 msgstr ""
 
-#: app/templates/book_detail.html:62 app/templates/index.html:123
+#: app/templates/book_detail.html:71 app/templates/index.html:131
 msgid "Delete Book"
 msgstr ""
 
@@ -870,11 +829,7 @@ msgstr ""
 msgid "Enter ISBN"
 msgstr ""
 
-#: app/templates/book_edit.html:44
-msgid "e.g. Fantasy"
-msgstr ""
-
-#: app/templates/book_edit.html:61
+#: app/templates/book_edit.html:55
 msgid "Upload a new cover to replace the current one."
 msgstr ""
 
@@ -894,7 +849,7 @@ msgid "Enter title to search"
 msgstr ""
 
 #: app/templates/index.html:35 app/templates/index.html:45
-#: app/templates/loans.html:29 app/templates/loans.html:41
+#: app/templates/loans.html:29
 msgid "All"
 msgstr ""
 
@@ -902,6 +857,10 @@ msgstr ""
 msgid ""
 "On\n"
 "                        Loan/Reserved"
+msgstr ""
+
+#: app/templates/index.html:43 app/templates/index.html:66
+msgid "Genre"
 msgstr ""
 
 #: app/templates/index.html:54 app/templates/loans.html:50
@@ -927,11 +886,15 @@ msgstr ""
 msgid "Book cover %(title)s"
 msgstr ""
 
-#: app/templates/index.html:104
+#: app/templates/index.html:92
+msgid "No genres"
+msgstr ""
+
+#: app/templates/index.html:112
 msgid "Add to favorites"
 msgstr ""
 
-#: app/templates/index.html:132
+#: app/templates/index.html:140
 msgid "Add book"
 msgstr ""
 
@@ -1010,6 +973,10 @@ msgstr ""
 #: app/templates/loans.html:35 app/templates/loans.html:96
 #: app/templates/user_profile.html:141
 msgid "Cancelled"
+msgstr ""
+
+#: app/templates/loans.html:41
+msgid "All Users"
 msgstr ""
 
 #: app/templates/loans.html:59 app/templates/user_profile.html:48

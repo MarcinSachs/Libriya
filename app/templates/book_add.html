@@ -40,10 +40,11 @@
         </div>
 
         <div class="form-group mb-3">
-            {{ form.genre.label(class="form-label") }}
-            {{ form.genre(class="form-control") }}
-            {% for error in form.genre.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
+    {{ form.genres.label(class="form-label") }}
+    {{ form.genres(class="form-control", size=10) }}
+    <small class="form-text text-muted">{{ _('Hold Ctrl (or Cmd on Mac) to select multiple genres.') }}</small>
+    {% for error in form.genres.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+</div>
         <div class="form-group mb-3">
             {{ form.year.label(class="form-label") }}
             {{ form.year(class="form-control", placeholder=_("e.g. 1954")) }}

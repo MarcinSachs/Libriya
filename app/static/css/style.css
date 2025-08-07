@@ -831,3 +831,7 @@ input[type=password] {
 .buttons-container .btn {
     margin-top: 1.5em;
 }
+select.form-control[multiple] {
+    height: auto;
+    min-height: 200px; /* lub inna preferowana wysokość */
+}

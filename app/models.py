@@ -11,6 +11,13 @@ book_authors = db.Table('book_authors',
                         db.Column('author_id', db.Integer, db.ForeignKey(
                             'author.id'), primary_key=True)
                         )
+# Define the association table for book-genre relationship (NEW)
+book_genres = db.Table('book_genres',
+                        db.Column('book_id', db.Integer, db.ForeignKey(
+                            'book.id'), primary_key=True),
+                        db.Column('genre_id', db.Integer, db.ForeignKey(
+                            'genre.id'), primary_key=True)
+                        )
 
 # Define the association table for favorites
 favorites = db.Table('favorites',
@@ -27,8 +34,11 @@ class Book(db.Model):
     title = db.Column(db.String(200), nullable=False, index=True)
     authors = db.relationship(
         'Author', secondary=book_authors, lazy='subquery', back_populates='books')
-    genre_id = db.Column(db.Integer, db.ForeignKey(
-        'genre.id'), nullable=False)
+    
+    #Relationship for multiple genres
+    genres = db.relationship(
+        'Genre', secondary=book_genres, lazy='subquery', back_populates='books')
+    
     year = db.Column(db.Integer, nullable=False)
     cover = db.Column(db.String(200))
     # 'available', 'reserved', 'on_loan'
@@ -36,7 +46,8 @@ class Book(db.Model):
 
     def __str__(self):
         author_names = ", ".join([author.name for author in self.authors])
-        return f"{self.title} by {author_names} ({self.year})"
+        genre_names = ", ".join([genre.name for genre in self.genres])
+        return f"{self.title} by {author_names} ({self.year}) - Genres: {genre_names}"
 
 
 class Author(db.Model):
@@ -52,7 +63,8 @@ class Author(db.Model):
 class Genre(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, index=True)
-    books = db.relationship('Book', backref='genre', lazy=True)
+    books = db.relationship('Book', secondary=book_genres,
+                            lazy='subquery', back_populates='genres')
 
     def __str__(self):
         return self.name

@@ -1,10 +1,11 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, IntegerField, PasswordField, SelectField, BooleanField
+from wtforms import StringField, SubmitField, IntegerField, PasswordField, SelectField, BooleanField, SelectMultipleField
 from flask_wtf.file import FileField, FileAllowed, FileSize
 from wtforms.validators import DataRequired, NumberRange, Email, EqualTo, Optional
 from datetime import datetime
-from flask_babel import lazy_gettext as _
+from flask_babel import lazy_gettext as _, gettext as _real
 from app.models import Genre
+from wtforms_sqlalchemy.fields import QuerySelectMultipleField
 
 
 class BookForm(FlaskForm):
@@ -12,8 +13,11 @@ class BookForm(FlaskForm):
     title = StringField(_('Title'), validators=[DataRequired()])
     author = StringField(_('Author(s) (comma-separated)'),
                          validators=[DataRequired()])
-    genre = SelectField(_('Genre'), coerce=int, validators=[
-                        DataRequired()])
+    genres = SelectMultipleField( # <--- ZMIANA TYPU POLA
+        _('Genres'),
+        coerce=int,
+        validators=[DataRequired()] 
+    )
     year = IntegerField(
         _('Year'),
         validators=[
@@ -24,16 +28,18 @@ class BookForm(FlaskForm):
     )
     cover = FileField(_('Cover'), validators=[
         FileAllowed(['jpg', 'png', 'jpeg'], _('Only image files (jpg, png, jpeg) are allowed!'))])
-    # Added btn-primary class
     submit = SubmitField(_('Submit'), render_kw={"class": "btn btn-primary"})
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        genres = Genre.query.all()
+        all_genres = Genre.query.all()
 
-        translated_genres = [(g.id, _(g.name)) for g in genres]
-        sorted_genres = sorted(translated_genres, key=lambda x: x[1])
-        self.genre.choices = sorted_genres
+        translated_genres = [(g.id, _real(g.name)) for g in all_genres] # Używamy _real!
+        sorted_translated_genres = sorted(translated_genres, key=lambda x: x[1])
+        
+        self.genres.choices = sorted_translated_genres
+        if 'obj' in kwargs and kwargs['obj'] is not None:
+            self.genres.data = [g.id for g in kwargs['obj'].genres]
 
 
 class UserForm(FlaskForm):

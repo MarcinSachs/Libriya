@@ -8,3 +8,4 @@ requests
 flask-login
 Flask-Babel
 flask-session
+wtforms-sqlalchemy
