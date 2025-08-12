@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="container">
+<div class="container-xl">
     <div class="d-flex align-items-center mb-4">
         <img class="rounded-circle" src="{{ url_for('static', filename='uploads/' + user.image_file) }}"
             style="width: 64px; height: 64px; object-fit: cover;">
@@ -42,6 +42,7 @@
     <!-- Pending Reservations -->
     <h3 class="mt-5">{{ _('Pending Reservations') }}</h3>
     {% if pending_loans %}
+    <div class="table-responsive">
     <table class="table table-hover">
         <thead>
             <tr>
@@ -59,18 +60,19 @@
                 <td><span class="badge bg-info">{{ _('Pending Approval') }}</span></td>
                 <td>
                     <form action="{{ url_for('main.user_cancel_reservation', loan_id=loan.id) }}" method="POST"
-                        style="display: inline;">
+                        style="display: inline-block; margin-bottom: 0.25rem;">
                         <button type="submit" class="btn btn-outline-danger btn-sm" data-bs-toggle="tooltip"
                             data-bs-placement="top" title="{{ _('Cancel My Reservation') }}">
                             <i class="bx bx-x-circle"></i>
                         </button>
                     </form>
-                    <span class="text-muted ms-2">{{ _('Waiting for admin approval') }}</span>
+                    <span class="text-muted ms-2" style="display: inline-block; vertical-align: middle;">{{ _('Waiting for admin approval') }}</span>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    </div>
     {% else %}
     <p>{{ _('No pending reservations.') }}</p>
     {% endif %}
@@ -78,6 +80,7 @@
     <!-- Currently On Loan -->
     <h3 class="mt-5">{{ _('Currently On Loan') }}</h3>
     {% if active_loans %}
+    <div class="table-responsive">
     <table class="table table-hover">
         <thead>
             <tr>
@@ -98,6 +101,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
     {% else %}
     <p>{{ _('No books are currently on loan.') }}</p>
     {% endif %}
@@ -105,6 +109,7 @@
     <!-- Loan History -->
     <h3 class="mt-5">{{ _('Loan History') }}</h3>
     {% if loan_history %}
+    <div class="table-responsive">
     <table class="table table-hover">
         <thead>
             <tr>
@@ -147,6 +152,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
     {% else %}
     <p>{{ _('No loan history.') }}</p>
     {% endif %}
@@ -156,7 +162,7 @@
     {% if user.favorites %}
     <div class="row">
         {% for book in user.favorites %}
-        <div class="col-md-4 mb-3">
+        <div class="col-md-4 col-lg-3 mb-3">
             <form action="{{ url_for('main.book_detail', book_id=book.id) }}" method="GET" class="card h-100 card-link">
                 <button type="submit" class="card-button">
                     {% if book.cover %}

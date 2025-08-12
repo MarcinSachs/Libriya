@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="container">
+<div class="container-xl">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>{{ title }}</h2>
         {% if current_user and current_user.is_admin %}
@@ -31,8 +31,10 @@
                         _('Pending Approval') }}</option>
                     <option value="active" {% if request.args.get('status')=='active' %}selected{% endif %}>{{ _('Active
                         Loan') }}</option>
-                    <option value="returned" {% if request.args.get('status')=='returned' %}selected{% endif %}>{{ _('Returned') }}</option>
-                    <option value="cancelled" {% if request.args.get('status')=='cancelled' %}selected{% endif %}>{{ _('Cancelled') }}</option>
+                    <option value="returned" {% if request.args.get('status')=='returned' %}selected{% endif %}>{{
+                        _('Returned') }}</option>
+                    <option value="cancelled" {% if request.args.get('status')=='cancelled' %}selected{% endif %}>{{
+                        _('Cancelled') }}</option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -40,100 +42,101 @@
                 <select class="form-select" id="user" name="user">
                     <option value="">{{ _('All Users') }}</option>
                     {% for user in users %}
-                    <option value="{{ user.id }}" {% if request.args.get('user')==user.id|string %}selected{% endif
-                        %}>{{ user.username }}</option>
+                    <option value="{{ user.id }}" {% if request.args.get('user')==user.id|string %}selected{% endif %}>
+                        {{ user.username }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="col-md-3 d-flex align-items-center buttons-container">
-                <div style="height: 100%; width: 0; visibility: hidden;"></div>
                 <button type="submit" class="btn btn-primary me-2">{{ _('Filter') }}</button>
                 <a href="{{ url_for('main.loans') }}" class="btn btn-secondary">{{ _('Reset') }}</a>
             </div>
         </div>
     </form>
-    
-    <table class="table table-hover table-striped">
-        <thead>
-            <tr>
-                <th>{{ _('Book Title') }}</th>
-                <th>{{ _('User') }}</th>
-                <th>{{ _('Reservation Date') }}</th>
-                <th>{{ _('Issue Date') }}</th>
-                <th>{{ _('Return Date') }}</th>
-                <th>{{ _('Status') }}</th>
-                <th>{{ _('Actions') }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for loan in loans %}
-            <tr>
-                <td>{{ loan.book.title }}</td>
-                <td>{{ loan.user.username }}</td>
-                <td>{{ loan.reservation_date.strftime('%Y-%m-%d %H:%M') }}</td>
-                <td>
-                    {% if loan.issue_date %}
-                    {{ loan.issue_date.strftime('%Y-%m-%d %H:%M') }}
-                    {% else %}
-                    <span class="text-muted">{{ _('Not issued yet') }}</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if loan.return_date %}
-                    {{ loan.return_date.strftime('%Y-%m-%d %H:%M') }}
-                    {% else %}
-                    <span class="text-muted">{{ _('Not returned yet') }}</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if loan.status == 'pending' %}
+
+    <div class="table-responsive">
+        <table class="table table-hover table-striped">
+            <thead>
+                <tr>
+                    <th>{{ _('Book Title') }}</th>
+                    <th>{{ _('User') }}</th>
+                    <th>{{ _('Reservation Date') }}</th>
+                    <th>{{ _('Issue Date') }}</th>
+                    <th>{{ _('Return Date') }}</th>
+                    <th>{{ _('Status') }}</th>
+                    <th>{{ _('Actions') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for loan in loans %}
+                <tr>
+                    <td>{{ loan.book.title }}</td>
+                    <td>{{ loan.user.username }}</td>
+                    <td>{{ loan.reservation_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        {% if loan.issue_date %}
+                        {{ loan.issue_date.strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                        <span class="text-muted">{{ _('Not issued yet') }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if loan.return_date %}
+                        {{ loan.return_date.strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                        <span class="text-muted">{{ _('Not returned yet') }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if loan.status == 'pending' %}
                         <span class="badge bg-info">{{ _('Pending Approval') }}</span>
-                    {% elif loan.status == 'active' %}
+                        {% elif loan.status == 'active' %}
                         <span class="badge bg-success">{{ _('Active Loan') }}</span>
-                    {% elif loan.status == 'returned' %}
+                        {% elif loan.status == 'returned' %}
                         <span class="badge bg-secondary">{{ _('Returned') }}</span>
-                    {% elif loan.status == 'cancelled' %}
+                        {% elif loan.status == 'cancelled' %}
                         <span class="badge bg-danger">{{ _('Cancelled') }}</span>
-                    {% else %}
+                        {% else %}
                         <span class="badge bg-light text-dark">{{ loan.status.replace('_', ' ').title() }}</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if current_user and current_user.is_admin %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if current_user and current_user.is_admin %}
                         {% if loan.status == 'pending' %}
                         <form action="{{ url_for('main.approve_loan', loan_id=loan.id) }}" method="POST"
-                            style="display: inline;">
+                            style="display: inline-block; margin-bottom: 0.25rem;">
                             <button type="submit" class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip"
                                 data-bs-placement="top" title="{{ _('Approve Loan') }}"><i
                                     class="bx bx-check-circle"></i></button>
                         </form>
                         <form action="{{ url_for('main.cancel_loan', loan_id=loan.id) }}" method="POST"
-                            style="display: inline;">
+                            style="display: inline-block; margin-bottom: 0.25rem;">
                             <button type="submit" class="btn btn-outline-danger btn-sm" data-bs-toggle="tooltip"
                                 data-bs-placement="top" title="{{ _('Cancel Reservation') }}"><i
                                     class="bx bx-x-circle"></i></button>
                         </form>
                         {% elif loan.status == 'active' %}
                         <form action="{{ url_for('main.return_loan', loan_id=loan.id) }}" method="POST"
-                            style="display: inline;">
+                            style="display: inline-block; margin-bottom: 0.25rem;">
                             <button type="submit" class="btn btn-outline-warning btn-sm" data-bs-toggle="tooltip"
                                 data-bs-placement="top" title="{{ _('Return Book') }}"><i
                                     class="bx bx-log-out-circle"></i></button>
                         </form>
                         {% if loan.issue_date and (now - loan.issue_date).days > 14 %}
                         <form action="{{ url_for('main.send_overdue_reminder', loan_id=loan.id) }}" method="POST"
-                            style="display: inline;">
+                            style="display: inline-block; margin-bottom: 0.25rem;">
                             <button type="submit" class="btn btn-outline-danger btn-sm" data-bs-toggle="tooltip"
                                 data-bs-placement="top" title="{{ _('Send Overdue Reminder') }}"><i
                                     class="bx bx-alarm"></i></button>
                         </form>
                         {% endif %}
                         {% endif %}
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

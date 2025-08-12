@@ -29,6 +29,7 @@
             <a class="navbar-brand title-text d-flex align-items-center" href="/">
                 <img src="{{ url_for('static', filename='/images/logo.svg') }}" alt="Libriya" class="me-2"> Libriya
             </a>
+            <!-- Hamburger button for mobile -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                 aria-label="{{ _('Toggle navigation') }}">
@@ -93,6 +94,31 @@
                                         class="fi fi-pl me-2"></span> Polski</a></li>
                         </ul>
                     </li>
+                    <!-- Sidebar content moved to navbar -->
+                    {% if not login_page %}
+                    <li class="nav-item d-lg-none">
+                        <a class="nav-link {% if active_page == 'books' %}active text-white{% else %}text-white{% endif %}"
+                            href="{{ url_for('main.home') }}">
+                            <i class='bx bxs-book align-middle me-2'></i>
+                            <span class="align-middle">{{ _('Books') }}</span>
+                        </a>
+                    </li>
+                    {% if current_user and current_user.is_admin %}
+                    <li class="nav-item dropdown d-lg-none">
+                        <a class="nav-link dropdown-toggle text-white" href="#" id="adminDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class='bx bxs-dashboard align-middle me-2'></i>
+                            <span class="align-middle">{{ _('Administration') }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
+                            <li><a class="dropdown-item text-dark" href="{{ url_for('main.users') }}"><i
+                                        class='bx bxs-user align-middle me-2'></i>{{ _('Users') }}</a></li>
+                            <li><a class="dropdown-item text-dark" href="{{ url_for('main.loans') }}"><i
+                                        class='bx bxs-credit-card align-middle me-2'></i>{{ _('Loans') }}</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -100,10 +126,8 @@
 
     <div class="container-fluid">
         <div class="row">
-
             {% if not login_page %}
-
-            <nav id="sidebarMenu" class="col-md-2 d-none d-md-block bg-light sidebar border-end pt-5">
+            <nav id="sidebarMenu" class="col-md-2 d-none d-lg-block bg-light sidebar border-end pt-5">
                 <div class="position-sticky pt-3">
                     <ul class="nav nav-pills flex-column">
                         <li class="nav-item mb-1">
@@ -151,7 +175,6 @@
             </main>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Bootstrap tooltips initialization

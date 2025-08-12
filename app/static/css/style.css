@@ -34,7 +34,7 @@ body.login-background {
     padding-top: 0;
     /* No top padding for full background on login page */
     display: flex;
-    /* Make body a flex container to push content below fixed navbar */
+    /* Make body a flex container */
     flex-direction: column;
     /* Stack children vertically */
 }
@@ -246,9 +246,9 @@ h2 {
     box-shadow: 0 2px 4px rgba(0, 0, 0, .08);
 }
 
+/* Increased placeholder icon size for better visibility in table cells */
 .table i.bx-image {
-    font-size: 36px !important;
-    /* Larger placeholder icon */
+    font-size: 40px !important;
     color: #a0a0a0 !important;
 }
 
@@ -258,8 +258,8 @@ h2 {
     /* Spacing between buttons */
     margin-bottom: .25rem;
     /* For wrapping on smaller screens */
-    white-space: nowrap;
-    /* Prevents text/icon breaking */
+    /* Removed: white-space: nowrap; */
+    /* Allows text/icon breaking if needed */
     padding: .375rem .5rem;
     /* Adjusting padding for btn-sm with icons */
 }
@@ -369,29 +369,74 @@ input[type="reset"].btn {
     margin: 0;
 }
 
-
 /* Responsiveness adjustments */
 @media (max-width: 768px) {
-    .sidebar {
-        position: relative;
-        height: auto;
-        padding-top: 0;
-        border-right: none;
-        border-bottom: 1px solid #e2e2e2;
-    }
-
     .main-content {
         padding-top: 1.5rem;
         /* Reset padding-top after removing sticky sidebar */
         margin-left: 0 !important;
         /* Remove margin-left for small screens */
     }
+}
 
-    .table td.text-nowrap {
-        white-space: normal;
-        /* Allow buttons to wrap on small screens */
+/* Responsive adjustments for filter buttons container */
+@media (max-width: 767.98px) {
+
+    /* Bootstrap's MD breakpoint for columns */
+    .buttons-container {
+        display: flex;
+        flex-wrap: wrap;
+        /* Allow buttons to wrap to the next line */
+        gap: .5rem;
+        /* Small gap between wrapped buttons */
+        margin-top: 1rem;
+        /* Add some space above buttons on small screens */
+    }
+
+    .buttons-container .btn {
+        margin-top: 0;
+        /* Remove top margin inherited from previous rule */
+        flex-grow: 1;
+        /* Allow buttons to grow to fill space */
     }
 }
+
+/* Scaling for very large screens (e.g., 4K monitors) */
+@media (min-width: 1400px) {
+
+    /* Corresponds to Bootstrap's XXL breakpoint */
+    body {
+        font-size: 1.05rem;
+        /* Slightly larger base font size for better readability */
+    }
+
+    h2 {
+        font-size: 2.25rem;
+        /* Slightly larger headings */
+    }
+
+    /* Increase padding for containers on very large screens to avoid content looking too wide */
+    .container-xl,
+    .container-xxl {
+        padding-left: 3rem;
+        padding-right: 3rem;
+    }
+}
+
+/* Hide the sidebar on smaller screens */
+@media (max-width: 991.98px) {
+    .sidebar {
+        display: none;
+    }
+}
+
+/* Show the sidebar on larger screens */
+@media (min-width: 992px) {
+    .sidebar {
+        display: block;
+    }
+}
+
 
 .form-group {
     margin-bottom: 1.5rem;
@@ -637,8 +682,8 @@ input[type=password] {
     /* Specific color for login button */
     border: none;
     color: white;
-    padding: 15px 80px;
-    /* Specific padding for login button */
+    padding: 15px 40px;
+    /* Adjusted padding for better responsiveness */
     text-align: center;
     text-decoration: none;
     display: inline-block;
@@ -833,14 +878,9 @@ textarea.comment-input {
     margin-top: 0.0rem;
 }
 
-.buttons-container .btn {
-    margin-top: 1.5em;
-}
-
 select.form-control[multiple] {
     height: auto;
     min-height: 200px;
-    /* lub inna preferowana wysokość */
 }
 
 .libriya-title {
