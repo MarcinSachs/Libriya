@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="container">
+<div class="container-xl">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>{{ _('Your Notifications') }}</h2>
         {% if unread_notifications_count > 0 %}
@@ -25,7 +25,7 @@
     <ul class="list-group">
         {% for notification in notifications %}
         <li class="list-group-item d-flex justify-content-between align-items-center
-            {% if not notification.is_read %} list-group-item-primary {% endif %}">
+            {% if not notification.is_read %} list-group-item-primary {% endif %} flex-wrap">
             <div>
                 <small class="text-muted">{{ notification.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
                 <p class="mb-0">{{ notification.message }}</p>
@@ -39,14 +39,14 @@
             </div>
             {% if not notification.is_read %}
             <form action="{{ url_for('main.mark_notification_as_read', notification_id=notification.id) }}" method="POST"
-                style="display: inline;">
+                style="display: inline-block; margin-top: 0.5rem;">
                 <button type="submit" class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip"
                     data-bs-placement="top" title="{{ _('Mark as Read') }}">
                     <i class='bx bx-check'></i>
                 </button>
             </form>
             {% else %}
-            <span class="badge bg-secondary">{{ _('Read') }}</span>
+            <span class="badge bg-secondary" style="margin-top: 0.5rem;">{{ _('Read') }}</span>
             {% endif %}
         </li>
         {% endfor %}

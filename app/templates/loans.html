@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="container">
+<div class="container-xl">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>{{ title }}</h2>
         {% if current_user and current_user.is_admin %}
@@ -46,13 +46,14 @@
                 </select>
             </div>
             <div class="col-md-3 d-flex align-items-center buttons-container">
-                <div style="height: 100%; width: 0; visibility: hidden;"></div>
+                {# Usunięto: <div style="height: 100%; width: 0; visibility: hidden;"></div> #}
                 <button type="submit" class="btn btn-primary me-2">{{ _('Filter') }}</button>
                 <a href="{{ url_for('main.loans') }}" class="btn btn-secondary">{{ _('Reset') }}</a>
             </div>
         </div>
     </form>
     
+    <div class="table-responsive">
     <table class="table table-hover table-striped">
         <thead>
             <tr>
@@ -102,27 +103,27 @@
                     {% if current_user and current_user.is_admin %}
                         {% if loan.status == 'pending' %}
                         <form action="{{ url_for('main.approve_loan', loan_id=loan.id) }}" method="POST"
-                            style="display: inline;">
+                            style="display: inline-block; margin-bottom: 0.25rem;">
                             <button type="submit" class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip"
                                 data-bs-placement="top" title="{{ _('Approve Loan') }}"><i
                                     class="bx bx-check-circle"></i></button>
                         </form>
                         <form action="{{ url_for('main.cancel_loan', loan_id=loan.id) }}" method="POST"
-                            style="display: inline;">
+                            style="display: inline-block; margin-bottom: 0.25rem;">
                             <button type="submit" class="btn btn-outline-danger btn-sm" data-bs-toggle="tooltip"
                                 data-bs-placement="top" title="{{ _('Cancel Reservation') }}"><i
                                     class="bx bx-x-circle"></i></button>
                         </form>
                         {% elif loan.status == 'active' %}
                         <form action="{{ url_for('main.return_loan', loan_id=loan.id) }}" method="POST"
-                            style="display: inline;">
+                            style="display: inline-block; margin-bottom: 0.25rem;">
                             <button type="submit" class="btn btn-outline-warning btn-sm" data-bs-toggle="tooltip"
                                 data-bs-placement="top" title="{{ _('Return Book') }}"><i
                                     class="bx bx-log-out-circle"></i></button>
                         </form>
                         {% if loan.issue_date and (now - loan.issue_date).days > 14 %}
                         <form action="{{ url_for('main.send_overdue_reminder', loan_id=loan.id) }}" method="POST"
-                            style="display: inline;">
+                            style="display: inline-block; margin-bottom: 0.25rem;">
                             <button type="submit" class="btn btn-outline-danger btn-sm" data-bs-toggle="tooltip"
                                 data-bs-placement="top" title="{{ _('Send Overdue Reminder') }}"><i
                                     class="bx bx-alarm"></i></button>
@@ -135,5 +136,6 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 </div>
 {% endblock %}
