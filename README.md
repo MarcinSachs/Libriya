@@ -77,9 +77,7 @@ Libriya is a web application for managing a library, built with Flask, SQLAlchem
     *   Implement more robust language switching.
 
 *   **Improve User Interface:**
-    *   Implement a more modern and responsive design.
     *   Add better error handling and user feedback.
-    *   Improve the user experience on mobile devices.
 
 *   **Add Advanced Features:**
     *   Implement a system for managing fines.
