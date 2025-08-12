@@ -60,7 +60,7 @@
                 <td><span class="badge bg-info">{{ _('Pending Approval') }}</span></td>
                 <td>
                     <form action="{{ url_for('main.user_cancel_reservation', loan_id=loan.id) }}" method="POST"
-                        style="display: inline-block; margin-bottom: 0.25rem;"> {# Dodano inline-block i margin #}
+                        style="display: inline-block; margin-bottom: 0.25rem;">
                         <button type="submit" class="btn btn-outline-danger btn-sm" data-bs-toggle="tooltip"
                             data-bs-placement="top" title="{{ _('Cancel My Reservation') }}">
                             <i class="bx bx-x-circle"></i>

@@ -246,7 +246,7 @@ h2 {
     box-shadow: 0 2px 4px rgba(0, 0, 0, .08);
 }
 
-/* Adjusted placeholder icon size */
+/* Increased placeholder icon size for better visibility in table cells */
 .table i.bx-image {
     font-size: 40px !important;
     color: #a0a0a0 !important;
