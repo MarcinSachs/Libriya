@@ -4,7 +4,7 @@
 Libriya is a web application for managing a library, built with Flask, SQLAlchemy, and other Python packages.
 
 **Please Note: This project is still under development and is not yet feature-complete.**
-
+[Live Demo](https://bae8b742-ca8f-4249-8a24-ad40b99f3a2d-00-3ayyupb06lsqm.spock.replit.dev/)
 ## Features (Implemented/Planned)
 
 *   **Book Management:** Add, edit, and delete books from the library.
