@@ -610,9 +610,21 @@ def library_delete(library_id):
 
 @bp.route("/loans/")
 @login_required
-@role_required('admin')
+@role_required('admin', 'manager')
 def loans():
     loan_query = Loan.query.join(Book).join(User)
+
+    # --- LIBRARY BASED FILTERING FOR MANAGERS ---
+    if current_user.role == 'manager':
+        manager_lib_ids = [lib.id for lib in current_user.libraries]
+        if not manager_lib_ids:
+            # If manager has no libraries, show no loans
+            loan_query = loan_query.filter(Book.id == -1)
+        else:
+            loan_query = loan_query.filter(
+                Book.library_id.in_(manager_lib_ids))
+    # --- END OF FILTERING ---
+
     # Apply user filter
     user_filter_id = request.args.get('user')
     if user_filter_id:
@@ -633,8 +645,16 @@ def loans():
     # Execute the final query to get filtered loans
     filtered_loans = loan_query.all()
 
-    # Get all users for the user filter dropdown (always need all for the selection)
-    all_users = User.query.order_by(User.username).all()
+    # Get users for the user filter dropdown
+    if current_user.role == 'admin':
+        all_users = User.query.order_by(User.username).all()
+    else:  # manager
+        manager_lib_ids = [lib.id for lib in current_user.libraries]
+        if not manager_lib_ids:
+            all_users = []
+        else:
+            all_users = db.session.query(User).join(User.libraries).filter(
+                Library.id.in_(manager_lib_ids)).order_by(User.username).distinct().all()
 
     unread_notifications_count = Notification.query.filter_by(
         recipient=current_user, is_read=False

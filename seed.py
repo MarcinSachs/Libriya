@@ -129,6 +129,38 @@ def seed_database():
         else:
             print("Admin user already exists.")
 
+        # --- Seed Manager User ---
+        if db.session.query(User).filter_by(username='manager').count() == 0:
+            manager_user = User(
+                username='manager',
+                email='manager@example.com',
+                role='manager'
+            )
+            manager_user.set_password('manager')
+            # Add manager to the default library
+            manager_user.libraries.append(default_library)
+            db.session.add(manager_user)
+            db.session.commit()
+            print("Manager user created and assigned to the default library.")
+        else:
+            print("Manager user already exists.")
+
+        # --- Seed Regular User ---
+        if db.session.query(User).filter_by(username='user').count() == 0:
+            regular_user = User(
+                username='user',
+                email='user@example.com',
+                role='user'
+            )
+            regular_user.set_password('user')
+            # Add user to the default library
+            regular_user.libraries.append(default_library)
+            db.session.add(regular_user)
+            db.session.commit()
+            print("Regular user created and assigned to the default library.")
+        else:
+            print("Regular user already exists.")
+
         # --- Seed Genres ---
         # Usuń wszystkie istniejące gatunki, aby uniknąć duplikatów
         db.session.query(Genre).delete()
@@ -137,7 +169,8 @@ def seed_database():
 
         # Dodaj nowe gatunki z listy
         for genre_name in genres:
-            genre = Genre(name=str(genre_name)) # Użyj str(), aby rozwiązać proxy z Babela
+            # Użyj str(), aby rozwiązać proxy z Babela
+            genre = Genre(name=str(genre_name))
             db.session.add(genre)
         db.session.commit()
         print("Genres added to the database.")
