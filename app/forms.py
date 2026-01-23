@@ -13,6 +13,7 @@ class BookForm(FlaskForm):
     title = StringField(_('Title'), validators=[DataRequired()])
     author = StringField(_('Author(s) (comma-separated)'),
                          validators=[DataRequired()])
+    library = SelectField(_('Library'), coerce=int, validators=[DataRequired()])
     genres = SelectMultipleField(
         _('Genres'),
         coerce=int,
@@ -59,7 +60,11 @@ class UserForm(FlaskForm):
 class UserEditForm(FlaskForm):
     username = StringField(_('Username'), render_kw={'readonly': True})
     email = StringField(_('Email'), validators=[DataRequired(), Email()])
-    is_admin = BooleanField(_('Administrator privileges'))
+    role = SelectField(_('Role'), choices=[
+        ('user', 'User'),
+        ('manager', 'Manager'),
+        ('admin', 'Admin')
+    ], validators=[DataRequired()])
     submit = SubmitField(_('Submit'), render_kw={
                          "class": "btn btn-primary"})
 
@@ -78,6 +83,11 @@ class UserSettingsForm(FlaskForm):
     )
     submit = SubmitField(_('Submit'), render_kw={
                          "class": "btn btn-primary"})
+
+
+class LibraryForm(FlaskForm):
+    name = StringField(_('Library Name'), validators=[DataRequired()])
+    submit = SubmitField(_('Submit'), render_kw={"class": "btn btn-primary"})
 
 
 class LoanForm(FlaskForm):

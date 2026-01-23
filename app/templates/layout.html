@@ -103,7 +103,7 @@
                             <span class="align-middle">{{ _('Books') }}</span>
                         </a>
                     </li>
-                    {% if current_user and current_user.is_admin %}
+                    {% if current_user and current_user.role in ['admin', 'manager'] %}
                     <li class="nav-item dropdown d-lg-none">
                         <a class="nav-link dropdown-toggle text-white" href="#" id="adminDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
@@ -111,6 +111,10 @@
                             <span class="align-middle">{{ _('Administration') }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
+                            {% if current_user.role == 'admin' %}
+                            <li><a class="dropdown-item text-dark" href="{{ url_for('main.libraries') }}"><i
+                                        class='bx bxs-institution align-middle me-2'></i>{{ _('Libraries') }}</a></li>
+                            {% endif %}
                             <li><a class="dropdown-item text-dark" href="{{ url_for('main.users') }}"><i
                                         class='bx bxs-user align-middle me-2'></i>{{ _('Users') }}</a></li>
                             <li><a class="dropdown-item text-dark" href="{{ url_for('main.loans') }}"><i
@@ -138,7 +142,7 @@
                             </a>
                         </li>
 
-                        {% if current_user and current_user.is_admin %}
+                        {% if current_user and current_user.role in ['admin', 'manager'] %}
                         <li class="nav-item mb-1">
                             <a class="nav-link d-flex justify-content-between align-items-center {% if parent_page != 'admin' %}collapsed{% endif %} {% if parent_page == 'admin' %}active{% else %}text-dark{% endif %}"
                                 data-bs-toggle="collapse" href="#adminMenu" role="button"
@@ -152,6 +156,12 @@
                             </a>
                             <div class="collapse {% if parent_page == 'admin' %}show{% endif %}" id="adminMenu">
                                 <ul class="nav flex-column ms-3">
+                                    {% if current_user.role == 'admin' %}
+                                    <li class="nav-item">
+                                        <a class="nav-link {% if active_page == 'libraries' %}active{% else %}text-dark{% endif %}"
+                                            href="{{ url_for('main.libraries') }}">{{ _('Libraries') }}</a>
+                                    </li>
+                                    {% endif %}
                                     <li class="nav-item">
                                         <a class="nav-link {% if active_page == 'users' %}active{% else %}text-dark{% endif %}"
                                             href="{{ url_for('main.users') }}">{{ _('Users') }}</a>

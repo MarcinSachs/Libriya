@@ -49,9 +49,12 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-3 d-flex align-items-center buttons-container">
-                <button type="submit" class="btn btn-primary me-2">{{ _('Filter') }}</button>
-                <a href="{{ url_for('main.home') }}" class="btn btn-secondary">{{ _('Reset') }}</a>
+            <div class="col-md-3 d-flex flex-column justify-content-center buttons-container">
+                <div class="form-label mb-2" style="visibility: hidden;"></div> <!-- Dummy for alignment -->
+                <div>
+                    <button type="submit" class="btn btn-primary me-2">{{ _('Filter') }}</button>
+                    <a href="{{ url_for('main.home') }}" class="btn btn-secondary">{{ _('Reset') }}</a>
+                </div>
             </div>
         </div>
     </form>
@@ -124,7 +127,7 @@
                             style="margin-bottom: 0.25rem;"><i class="bx bx-block"></i></button>
                         {% endif %}
 
-                        {% if current_user and current_user.is_admin %}
+                        {% if current_user and current_user.role == 'admin' %}
                         <a href="{{ url_for('main.book_edit', book_id=book.id)}}" class="btn btn-outline-primary btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Edit Book') }}"
                             style="margin-bottom: 0.25rem;"><i class="bx bx-edit"></i></a>
@@ -139,7 +142,7 @@
             </tbody>
         </table>
     </div>
-    {% if current_user and current_user.is_admin %}
+    {% if current_user and (current_user.role == 'admin' or current_user.role == 'manager') %}
     <a href="{{ url_for('main.book_add') }}" class="btn btn-primary add-book-btn">{{ _('Add book') }}
     </a>
     {% endif %}

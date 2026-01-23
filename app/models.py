@@ -27,9 +27,26 @@ favorites = db.Table('favorites',
                          'book.id'), primary_key=True)
                      )
 
+# Define the association table for user-library relationship
+user_libraries = db.Table('user_libraries',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('library_id', db.Integer, db.ForeignKey('library.id'), primary_key=True)
+)
+
+class Library(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    books = db.relationship('Book', back_populates='library', lazy=True)
+    users = db.relationship('User', secondary=user_libraries, lazy='subquery',
+                            back_populates='libraries')
+
+    def __str__(self):
+        return self.name
+
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    library_id = db.Column(db.Integer, db.ForeignKey('library.id'), nullable=False)
     isbn = db.Column(db.String(13), unique=True, nullable=False, index=True)
     title = db.Column(db.String(200), nullable=False, index=True)
     authors = db.relationship(
@@ -38,6 +55,8 @@ class Book(db.Model):
     #Relationship for multiple genres
     genres = db.relationship(
         'Genre', secondary=book_genres, lazy='subquery', back_populates='books')
+    
+    library = db.relationship('Library', back_populates='books')
     
     year = db.Column(db.Integer, nullable=False)
     cover = db.Column(db.String(200))
@@ -81,7 +100,18 @@ class User(UserMixin, db.Model):
     image_file = db.Column(db.String(20), nullable=False,
                            default='default.jpg')
     loans = db.relationship('Loan', back_populates='user', lazy=True)
-    is_admin = db.Column(db.Boolean, default=False)
+    role = db.Column(db.String(20), nullable=False, default='user')  # 'user', 'manager', 'admin'
+
+    @property
+    def is_admin(self):
+        return self.role == 'admin'
+
+    @property
+    def is_manager(self):
+        return self.role == 'manager'
+
+    libraries = db.relationship('Library', secondary='user_libraries', lazy='subquery',
+                                back_populates='users')
     favorites = db.relationship('Book', secondary=favorites, lazy='subquery',
                                 backref=db.backref('favorited_by', lazy=True))
     # Add relation to notifications
@@ -142,6 +172,21 @@ class Notification(db.Model):
 
     def __str__(self):
         return f"Notification for {self.recipient.username}: {self.message[:50]}..."
+
+
+class LibraryAccessRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    library_id = db.Column(db.Integer, db.ForeignKey('library.id'), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='pending')  # 'pending', 'approved', 'rejected'
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+    user = db.relationship('User', backref='access_requests')
+    library = db.relationship('Library', backref='access_requests')
+
+    def __str__(self):
+        return f"Request from {self.user.username} for {self.library.name} - Status: {self.status}"
+
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -23,8 +23,8 @@ from flask import (
 from werkzeug.utils import secure_filename
 
 from app import db
-from app.forms import BookForm, LoanForm, UserEditForm, UserForm, UserSettingsForm, CommentForm
-from app.models import Author, Book, Genre, Loan, User, Notification, Comment
+from app.forms import BookForm, LoanForm, UserEditForm, UserForm, UserSettingsForm, CommentForm, LibraryForm
+from app.models import Author, Book, Genre, Loan, User, Notification, Comment, Library
 from flask_login import login_user, login_required, current_user, logout_user
 
 from flask_babel import _, ngettext
@@ -32,16 +32,16 @@ from flask_babel import _, ngettext
 bp = Blueprint("main", __name__)
 
 
-# Decorator to check if user is admin
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_admin:
-            flash(
-                _("You do not have administrative privileges to access this page."), "danger")
-            return redirect(url_for('main.home'))
-        return f(*args, **kwargs)
-    return decorated_function
+def role_required(*roles):
+    def wrapper(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not current_user.is_authenticated or current_user.role not in roles:
+                flash(_("You do not have the required privileges to access this page."), "danger")
+                return redirect(url_for('main.home'))
+            return f(*args, **kwargs)
+        return decorated_function
+    return wrapper
 
 # Function to check notifications
 
@@ -75,6 +75,16 @@ def home():
     title_filter = request.args.get('title')
 
     query = Book.query
+
+    # --- LOCATION BASED FILTERING ---
+    if current_user.role != 'admin':
+        user_library_ids = [lib.id for lib in current_user.libraries]
+        if not user_library_ids:
+            # If user is not in any library, show no books
+            query = query.filter(Book.id == -1) # a trick to return no results
+        else:
+            query = query.filter(Book.library_id.in_(user_library_ids))
+    # --- END OF FILTERING ---
 
     if title_filter: 
         query = query.filter(Book.title.ilike(f"%{title_filter}%"))
@@ -138,15 +148,23 @@ def logout():
 
 @bp.route("/users/")
 @login_required
-@admin_required
+@role_required('admin', 'manager')
 def users():
-    all_users = db.session.query(User).distinct().all()
+    if current_user.role == 'admin':
+        all_users = db.session.query(User).distinct().all()
+    else:  # manager
+        manager_library_ids = [lib.id for lib in current_user.libraries]
+        if not manager_library_ids:
+            all_users = [current_user] # Show only self if not managing any library
+        else:
+            all_users = db.session.query(User).join(User.libraries).filter(Library.id.in_(manager_library_ids)).distinct().all()
+
     return render_template("users.html", users=all_users, active_page="users", parent_page="admin")
 
 
 @bp.route("/users/add/", methods=["GET", "POST"])
 @login_required
-@admin_required
+@role_required('admin')
 def user_add():
     form = UserForm()
     if form.validate_on_submit():
@@ -167,31 +185,84 @@ def user_add():
 
 @bp.route("/users/edit/<int:user_id>", methods=["GET", "POST"])
 @login_required
+@role_required('admin', 'manager')
 def user_edit(user_id):
-    user = User.query.get_or_404(user_id)
-    form = UserEditForm(obj=user)
+    user_to_edit = User.query.get_or_404(user_id)
+
+    # --- Authorization Checks ---
+    if current_user.role == 'manager':
+        # Managers cannot edit admins or other managers unless editing themselves
+        if user_to_edit.role in ['admin', 'manager'] and user_to_edit.id != current_user.id:
+            flash(_("You do not have permission to edit this user's role."), "danger")
+            return redirect(url_for('main.users'))
+
+        # Check if the user is in one of the manager's libraries (unless editing self)
+        manager_libs_ids = {lib.id for lib in current_user.libraries}
+        user_libs_ids = {lib.id for lib in user_to_edit.libraries}
+        if not manager_libs_ids.intersection(user_libs_ids) and user_to_edit.id != current_user.id:
+            flash(_("You can only edit users within your libraries."), "danger")
+            return redirect(url_for('main.users'))
+
+    form = UserEditForm(obj=user_to_edit)
+
+    # Determine which libraries can be managed
+    if current_user.role == 'admin':
+        manageable_libraries = Library.query.order_by('name').all()
+    else:  # manager
+        manageable_libraries = current_user.libraries
+
+    # A manager should not be able to elevate a user to admin
+    if current_user.role == 'manager':
+        form.role.choices = [
+            ('user', 'User'),
+            ('manager', 'Manager')
+        ]
 
     if form.validate_on_submit():
+        # Prevent the last admin from being demoted
+        if user_to_edit.role == 'admin' and form.role.data != 'admin' and User.query.filter_by(role='admin').count() <= 1:
+            flash(_("You cannot revoke the last administrator's privileges."), "danger")
+            return redirect(url_for('main.user_edit', user_id=user_to_edit.id))
 
-        # Prevent the last admin from revoking their own privileges
-        if user.is_admin and not form.is_admin.data and User.query.filter_by(is_admin=True).count() == 1:
-            flash("You cannot revoke the last administrator's privileges.", "danger")
-            return redirect(url_for('main.user_edit', user_id=user.id))
+        # Prevent a manager from making someone an admin
+        if current_user.role == 'manager' and form.role.data == 'admin':
+            flash(_("You do not have permission to create administrators."), "danger")
+            return redirect(url_for('main.user_edit', user_id=user_to_edit.id))
 
-        user.email = form.email.data
-        user.is_admin = form.is_admin.data
+        user_to_edit.email = form.email.data
+        user_to_edit.role = form.role.data
+
+        # --- Update Library Memberships ---
+        submitted_ids = {int(id) for id in request.form.getlist('libraries')}
+        manageable_ids = {lib.id for lib in manageable_libraries}
+        
+        # Add new memberships
+        for lib_id in submitted_ids:
+            if lib_id in manageable_ids:
+                library = Library.query.get(lib_id)
+                if library not in user_to_edit.libraries:
+                    user_to_edit.libraries.append(library)
+        
+        # Remove old memberships
+        for lib_id in manageable_ids:
+            if lib_id not in submitted_ids:
+                library = Library.query.get(lib_id)
+                if library in user_to_edit.libraries:
+                    user_to_edit.libraries.remove(library)
+
         db.session.commit()
         flash(_("User '%(username)s' updated successfully!",
-              username=user.username), "success")
+              username=user_to_edit.username), "success")
         return redirect(url_for("main.users"))
 
     return render_template(
         "user_edit.html",
         form=form,
-        user=user,
+        user=user_to_edit,
+        all_libraries=manageable_libraries,
         parent_page="admin",
         active_page="users",
-        title=f"Edit User: {user.username}"
+        title=_("Edit User: %(username)s", username=user_to_edit.username)
     )
 
 
@@ -292,15 +363,23 @@ def book_detail(book_id):
 
 @bp.route("/books/add/", methods=["GET", "POST"])
 @login_required
-@admin_required
+@role_required('admin', 'manager')
 def book_add():
     form = BookForm()
+
+    # --- Populate Library Choices ---
+    if current_user.role == 'admin':
+        form.library.choices = [(l.id, l.name)
+                                for l in Library.query.order_by('name').all()]
+    else:  # manager
+        form.library.choices = [(l.id, l.name) for l in current_user.libraries]
 
     if form.validate_on_submit():
         new_book = Book(
             isbn=form.isbn.data,
             title=form.title.data,
             year=form.year.data,
+            library_id=form.library.data,  # Assign library
             status='available'
         )
 
@@ -338,7 +417,8 @@ def book_add():
                         f.write(response.content)
                     new_book.cover = cover_filename
             except requests.exceptions.RequestException as e:
-                flash(_("Could not download cover image: '%(e)s'", e=e), "danger")
+                flash(
+                    _("Could not download cover image: '%(e)s'", e=e), "danger")
 
         db.session.add(new_book)
         db.session.commit()
@@ -350,7 +430,7 @@ def book_add():
 
 @bp.route("/book_delete/<int:book_id>", methods=["POST"])
 @login_required
-@admin_required
+@role_required('admin')
 def book_delete(book_id):
     book = Book.query.get_or_404(book_id)
 
@@ -368,23 +448,38 @@ def book_delete(book_id):
 
 @bp.route("/book_edit/<int:book_id>", methods=["GET", "POST"])
 @login_required
-@admin_required
+@role_required('admin', 'manager')
 def book_edit(book_id):
     book = Book.query.get_or_404(book_id)
-    author_string = ", ".join([author.name for author in book.authors])
-    
+
+    # --- Authorization ---
+    if current_user.role == 'manager':
+        user_libs_ids = [lib.id for lib in current_user.libraries]
+        if book.library_id not in user_libs_ids:
+            flash(_("You can only edit books within your libraries."), "danger")
+            return redirect(url_for('main.home'))
+
+    # The form needs to be instantiated before it can be populated
+    form = BookForm(obj=book)
+
+    # --- Populate Library Choices ---
+    if current_user.role == 'admin':
+        form.library.choices = [(l.id, l.name)
+                                for l in Library.query.order_by('name').all()]
+    else:  # manager
+        form.library.choices = [(l.id, l.name) for l in current_user.libraries]
+
     if request.method == 'GET':
-
-        form = BookForm(obj=book, author=author_string, genres=book.genres)
-    else: # POST request
-        form = BookForm()
-
+        # Pre-fill form data for fields not handled by obj=book
+        form.author.data = ", ".join([author.name for author in book.authors])
+        form.library.data = book.library_id
 
     if form.validate_on_submit():
         # Update book fields from form data
         book.isbn = form.isbn.data
         book.title = form.title.data
         book.year = form.year.data
+        book.library_id = form.library.data  # Update library
 
         # Handle multiple authors
         book.authors.clear()
@@ -398,11 +493,10 @@ def book_edit(book_id):
             book.authors.append(author)
 
         book.genres.clear()
-        selected_genre_ids = form.genres.data
-        selected_genres = [Genre.query.get(genre_id) for genre_id in selected_genre_ids]
+        selected_genres = form.genres.data
         book.genres.extend(selected_genres)
 
-        # Handle cover update (niezmieniona)
+        # Handle cover update
         if form.cover.data:
             if isinstance(form.cover.data, FileStorage):
                 f = form.cover.data
@@ -414,9 +508,9 @@ def book_edit(book_id):
         db.session.commit()
         flash(_("Book updated successfully!"), "success")
         return redirect(url_for("main.home"))
-    
+
     # Render template for GET request or form validation error
-    return render_template("book_edit.html", form=form, book=book, active_page="books", title="Edit Book") # Usunięto genres=genres, nie jest już potrzebne
+    return render_template("book_edit.html", form=form, book=book, active_page="books", title=_("Edit Book"))
 
 # Favorites
 
@@ -448,12 +542,68 @@ def remove_favorite(book_id):
         flash(_('Book is not in favorites.'), 'info')
     return redirect(url_for('main.book_detail', book_id=book.id))
 
+
+# Libraries CRUD
+@bp.route("/libraries/")
+@login_required
+@role_required('admin')
+def libraries():
+    all_libraries = Library.query.order_by(Library.name).all()
+    return render_template("libraries.html", libraries=all_libraries, active_page="libraries", parent_page="admin", title=_("Libraries"))
+
+
+@bp.route("/libraries/add", methods=['GET', 'POST'])
+@login_required
+@role_required('admin')
+def library_add():
+    form = LibraryForm()
+    if form.validate_on_submit():
+        new_library = Library(name=form.name.data)
+        db.session.add(new_library)
+        db.session.commit()
+        flash(_("Library '%(name)s' created successfully!",
+              name=new_library.name), "success")
+        return redirect(url_for('main.libraries'))
+    return render_template('library_form.html', form=form, title=_('Add Library'), active_page="libraries", parent_page="admin")
+
+
+@bp.route("/libraries/edit/<int:library_id>", methods=['GET', 'POST'])
+@login_required
+@role_required('admin')
+def library_edit(library_id):
+    library = Library.query.get_or_404(library_id)
+    form = LibraryForm(obj=library)
+    if form.validate_on_submit():
+        library.name = form.name.data
+        db.session.commit()
+        flash(_("Library '%(name)s' updated successfully!",
+              name=library.name), "success")
+        return redirect(url_for('main.libraries'))
+    return render_template('library_form.html', form=form, title=_('Edit Library'), active_page="libraries", parent_page="admin")
+
+
+@bp.route("/libraries/delete/<int:library_id>", methods=['POST'])
+@login_required
+@role_required('admin')
+def library_delete(library_id):
+    library = Library.query.get_or_404(library_id)
+    if library.books:
+        flash(_("Cannot delete a library that has books associated with it."), "danger")
+        return redirect(url_for('main.libraries'))
+    # Also check if users are assigned to this library
+    if library.users:
+        flash(_("Cannot delete a library that has users assigned to it."), "danger")
+        return redirect(url_for('main.libraries'))
+    db.session.delete(library)
+    db.session.commit()
+    flash(_("Library '%(name)s' deleted successfully.", name=library.name), "success")
+    return redirect(url_for('main.libraries'))
 # Loans
 
 
 @bp.route("/loans/")
 @login_required
-@admin_required
+@role_required('admin')
 def loans():
     loan_query = Loan.query.join(Book).join(User)
     # Apply user filter
@@ -562,7 +712,7 @@ def return_book(book_id):
 
 @bp.route('/loans/approve/<int:loan_id>', methods=['POST'])
 @login_required
-@admin_required
+@role_required('admin')
 def approve_loan(loan_id):
     loan = Loan.query.get_or_404(loan_id)
 
@@ -591,7 +741,7 @@ def approve_loan(loan_id):
 
 @bp.route('/loans/cancel/<int:loan_id>', methods=['POST'])
 @login_required
-@admin_required
+@role_required('admin')
 def cancel_loan(loan_id):
     loan = Loan.query.get_or_404(loan_id)
 
@@ -617,7 +767,7 @@ def cancel_loan(loan_id):
 
 @bp.route('/loans/return/<int:loan_id>', methods=['POST'])
 @login_required
-@admin_required
+@role_required('admin')
 def return_loan(loan_id):
     loan = Loan.query.get_or_404(loan_id)
     if loan.status == 'active':
@@ -650,7 +800,7 @@ def user_loans(user_id):
 
 @bp.route("/loans/add/", methods=["GET", "POST"])
 @login_required
-@admin_required
+@role_required('admin')
 def loan_add():
     form = LoanForm()
     # Populate choices for books and users
@@ -783,7 +933,7 @@ def mark_all_notifications_as_read():
 
 @bp.route("/admin/send_overdue_reminder/<int:loan_id>", methods=['POST'])
 @login_required
-@admin_required
+@role_required('admin')
 def send_overdue_reminder(loan_id):
     loan = Loan.query.get_or_404(loan_id)
 

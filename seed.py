@@ -1,4 +1,4 @@
-from app.models import Genre
+from app.models import Genre, Library, User
 from app import create_app, db
 import sys
 import os
@@ -103,19 +103,45 @@ genres = [
 def seed_database():
     app = create_app()  # Utwórz instancję aplikacji
     with app.app_context():
-        # Usuń wszystkie istniejące gatunki
+        # --- Seed Library ---
+        if db.session.query(Library).count() == 0:
+            default_library = Library(name="Główna Biblioteka")
+            db.session.add(default_library)
+            db.session.commit()
+            print("Default library created.")
+        else:
+            default_library = db.session.query(Library).first()
+            print("Default library already exists.")
+
+        # --- Seed Admin User ---
+        if db.session.query(User).filter_by(username='admin').count() == 0:
+            admin_user = User(
+                username='admin',
+                email='admin@example.com',
+                role='admin'
+            )
+            admin_user.set_password('admin')
+            # Add user to the default library
+            admin_user.libraries.append(default_library)
+            db.session.add(admin_user)
+            db.session.commit()
+            print("Admin user created and assigned to the default library.")
+        else:
+            print("Admin user already exists.")
+
+        # --- Seed Genres ---
+        # Usuń wszystkie istniejące gatunki, aby uniknąć duplikatów
         db.session.query(Genre).delete()
         db.session.commit()
         print("Genre table cleared.")
 
         # Dodaj nowe gatunki z listy
         for genre_name in genres:
-            genre = Genre(name=genre_name)
+            genre = Genre(name=str(genre_name)) # Użyj str(), aby rozwiązać proxy z Babela
             db.session.add(genre)
         db.session.commit()
         print("Genres added to the database.")
 
 
 if __name__ == '__main__':
-    # from app import app # Usunięto
     seed_database()
