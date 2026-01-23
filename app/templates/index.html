@@ -49,12 +49,9 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-3 d-flex flex-column justify-content-center buttons-container">
-                <div class="form-label mb-2" style="visibility: hidden;"></div> <!-- Dummy for alignment -->
-                <div>
-                    <button type="submit" class="btn btn-primary me-2">{{ _('Filter') }}</button>
-                    <a href="{{ url_for('main.home') }}" class="btn btn-secondary">{{ _('Reset') }}</a>
-                </div>
+            <div class="col-md-3 buttons-container">
+                <button type="submit" class="btn btn-primary me-2">{{ _('Filter') }}</button>
+                <a href="{{ url_for('main.home') }}" class="btn btn-secondary">{{ _('Reset') }}</a>
             </div>
         </div>
     </form>

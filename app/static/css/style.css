@@ -401,6 +401,35 @@ input[type="reset"].btn {
     }
 }
 
+/* Vertical alignment for filter buttons */
+.buttons-container {
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0.5rem;
+}
+
+/* Set fixed height for form controls and buttons */
+.row.g-2 {
+    align-items: flex-end;
+}
+
+/* Adjust form control container height for vertical alignment */
+.row.g-2>div:not(.buttons-container) {
+    margin-bottom: 0;
+}
+
+/* Set fixed height for buttons - match form control height */
+.buttons-container .btn {
+    margin-right: 0;
+    height: 40px;
+    padding: 0.375rem 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
 /* Scaling for very large screens (e.g., 4K monitors) */
 @media (min-width: 1400px) {
 
@@ -863,6 +892,7 @@ input[type=password] {
 .form-select {
     padding-top: 0.7rem;
     padding-bottom: 0.7rem;
+    height: 40px;
 }
 
 .form-control {
