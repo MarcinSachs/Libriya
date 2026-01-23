@@ -37,7 +37,8 @@ def role_required(*roles):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated or current_user.role not in roles:
-                flash(_("You do not have the required privileges to access this page."), "danger")
+                flash(
+                    _("You do not have the required privileges to access this page."), "danger")
                 return redirect(url_for('main.home'))
             return f(*args, **kwargs)
         return decorated_function
@@ -67,6 +68,8 @@ def favicon():
     return current_app.send_static_file("favicon.ico")
 
 # Home Page
+
+
 @bp.route("/")
 @login_required
 def home():
@@ -81,12 +84,12 @@ def home():
         user_library_ids = [lib.id for lib in current_user.libraries]
         if not user_library_ids:
             # If user is not in any library, show no books
-            query = query.filter(Book.id == -1) # a trick to return no results
+            query = query.filter(Book.id == -1)  # a trick to return no results
         else:
             query = query.filter(Book.library_id.in_(user_library_ids))
     # --- END OF FILTERING ---
 
-    if title_filter: 
+    if title_filter:
         query = query.filter(Book.title.ilike(f"%{title_filter}%"))
 
     if status_filter:
@@ -102,7 +105,7 @@ def home():
     books = query.all()
     genres = Genre.query.all()
     genres = sorted(genres, key=lambda g: _(g.name))
-    
+
     # Numbers of unread notifications to layout
     unread_notifications_count = Notification.query.filter_by(
         recipient=current_user, is_read=False
@@ -155,9 +158,11 @@ def users():
     else:  # manager
         manager_library_ids = [lib.id for lib in current_user.libraries]
         if not manager_library_ids:
-            all_users = [current_user] # Show only self if not managing any library
+            # Show only self if not managing any library
+            all_users = [current_user]
         else:
-            all_users = db.session.query(User).join(User.libraries).filter(Library.id.in_(manager_library_ids)).distinct().all()
+            all_users = db.session.query(User).join(User.libraries).filter(
+                Library.id.in_(manager_library_ids)).distinct().all()
 
     return render_template("users.html", users=all_users, active_page="users", parent_page="admin")
 
@@ -235,14 +240,14 @@ def user_edit(user_id):
         # --- Update Library Memberships ---
         submitted_ids = {int(id) for id in request.form.getlist('libraries')}
         manageable_ids = {lib.id for lib in manageable_libraries}
-        
+
         # Add new memberships
         for lib_id in submitted_ids:
             if lib_id in manageable_ids:
                 library = Library.query.get(lib_id)
                 if library not in user_to_edit.libraries:
                     user_to_edit.libraries.append(library)
-        
+
         # Remove old memberships
         for lib_id in manageable_ids:
             if lib_id not in submitted_ids:
@@ -353,11 +358,10 @@ def book_detail(book_id):
             db.session.add(new_comment)
             db.session.commit()
             flash(_('Your comment has been added!'), 'success')
-        
+
         return redirect(url_for('main.book_detail', book_id=book.id))
 
-
-    return render_template("book_detail.html", book=book, active_page="books", 
+    return render_template("book_detail.html", book=book, active_page="books",
                            user_comment=user_comment, comment_form=comment_form)
 
 
@@ -373,6 +377,9 @@ def book_add():
                                 for l in Library.query.order_by('name').all()]
     else:  # manager
         form.library.choices = [(l.id, l.name) for l in current_user.libraries]
+        # If manager has only one library, set it as default
+        if len(current_user.libraries) == 1:
+            form.library.data = current_user.libraries[0].id
 
     if form.validate_on_submit():
         new_book = Book(
@@ -691,7 +698,8 @@ def borrow_book(book_id, user_id):
         db.session.commit()
         flash(_("Book borrowed successfully!"), "success")
     else:
-        flash(_("This book is not available for direct loan."), "danger") # ZMIANA KOMUNIKATU
+        flash(_("This book is not available for direct loan."),
+              "danger")  # ZMIANA KOMUNIKATU
     return redirect(url_for("main.home"))
 
 
@@ -706,7 +714,8 @@ def return_book(book_id):
         db.session.commit()
         flash(_("Book returned successfully!"), "success")
     else:
-        flash(_("This book is not currently on loan or is already returned."), "danger") # ZMIANA KOMUNIKATU
+        # ZMIANA KOMUNIKATU
+        flash(_("This book is not currently on loan or is already returned."), "danger")
     return redirect(url_for("main.home"))
 
 

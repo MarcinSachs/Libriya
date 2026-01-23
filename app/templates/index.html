@@ -65,6 +65,7 @@
                     <th>{{ _('Author') }}</th>
                     <th>{{ _('Genre') }}</th>
                     <th>{{ _('Year') }}</th>
+                    <th>{{ _('Library') }}</th>
                     <th>{{ _('Status') }}</th>
                     <th>{{ _('Actions') }}</th>
                 </tr>
@@ -93,6 +94,7 @@
                         {% endif %}
                     </td>
                     <td>{{ book.year }}</td>
+                    <td>{{ book.library.name }}</td>
                     <td>
                         {% if book.status == 'available' %}
                         <span class="badge bg-success">{{ _('Available') }}</span>

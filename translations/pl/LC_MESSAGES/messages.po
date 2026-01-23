@@ -381,7 +381,7 @@ msgid "Author(s) (comma-separated)"
 msgstr "Autor(zy) (oddzieleni przecinkami)"
 
 #: app/forms.py:16
-#, fuzzy
+#: app/forms.py:16
 msgid "Library"
 msgstr "Biblioteka"
 
