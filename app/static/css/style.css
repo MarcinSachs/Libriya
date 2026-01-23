@@ -896,7 +896,7 @@ input[type=password] {
 }
 
 .form-control {
-    height: 3rem;
+    height: 40px;
 }
 
 textarea.comment-input {
