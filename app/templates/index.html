@@ -24,12 +24,12 @@
     <!-- Filtering form -->
     <form method="GET" action="{{ url_for('main.home') }}" class="mb-3">
         <div class="row g-2">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="title" class="form-label">{{ _('Title') }}</label>
                 <input type="text" class="form-control" id="title" name="title"
                     value="{{ request.args.get('title', '') }}" placeholder="{{ _('Enter title to search') }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="status" class="form-label">{{ _('Status') }}</label>
                 <select class="form-select" id="status" name="status">
                     <option value="">{{ _('All') }}</option>
@@ -39,7 +39,7 @@
                         Loan/Reserved') }}</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="genre" class="form-label">{{ _('Genre') }}</label>
                 <select class="form-select" id="genre" name="genre">
                     <option value="">{{ _('All') }}</option>
@@ -49,7 +49,19 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-3 buttons-container">
+            <div class="col-md-2">
+                <label for="sort_by" class="form-label">{{ _('Sort by') }}</label>
+                <select class="form-select" id="sort_by" name="sort_by">
+                    <option value="title" {% if request.args.get('sort_by','title')=='title' %}selected{% endif %}>{{
+                        _('Title A-Z') }}</option>
+                    <option value="title_desc" {% if request.args.get('sort_by')=='title_desc' %}selected{% endif %}>{{
+                        _('Title Z-A') }}</option>
+                    <option value="year" {% if request.args.get('sort_by')=='year' %}selected{% endif %}>{{ _('Year (Oldest)') }}</option>
+                    <option value="year_desc" {% if request.args.get('sort_by')=='year_desc' %}selected{% endif %}>{{
+                        _('Year (Newest)') }}</option>
+                </select>
+            </div>
+            <div class="col-md-4 buttons-container">
                 <button type="submit" class="btn btn-primary me-2">{{ _('Filter') }}</button>
                 <a href="{{ url_for('main.home') }}" class="btn btn-secondary">{{ _('Reset') }}</a>
             </div>
