@@ -1372,6 +1372,14 @@ msgstr "Admin"
 msgid "Edit User"
 msgstr "Edytuj użytkownika"
 
+#: app/templates/users.html:43
+msgid "Delete User"
+msgstr "Usuń użytkownika"
+
+#: app/templates/users.html:44
+msgid "Are you sure you want to delete this user?"
+msgstr "Czy na pewno chcesz usunąć tego użytkownika?"
+
 #: app/templates/users.html:47
 msgid "Add user"
 msgstr "Dodaj użytkownika"

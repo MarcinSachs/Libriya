@@ -182,7 +182,7 @@ def users():
 
 @bp.route("/users/add/", methods=["GET", "POST"])
 @login_required
-@role_required('admin')
+@role_required('admin', 'manager')
 def user_add():
     form = UserForm()
     if form.validate_on_submit():
@@ -193,10 +193,27 @@ def user_add():
         # Create a new user and set their password
         user = User(username=username, email=email)
         user.set_password(password)
+
+        # If manager is adding user, assign to manager's library
+        if current_user.role == 'manager':
+            if not current_user.libraries:
+                flash(_("You do not manage any library. Cannot add user."), "danger")
+                return render_template("user_add.html", form=form, parent_page="admin", active_page="users")
+            # Add user to all libraries managed by this manager
+            for library in current_user.libraries:
+                user.libraries.append(library)
+
         # Add the user to the database
         db.session.add(user)
         db.session.commit()
-        flash(f"User '{user.username}' added successfully!", "success")
+
+        # Provide detailed success message
+        if current_user.role == 'manager':
+            library_names = ', '.join([lib.name for lib in current_user.libraries])
+            flash(_("User '%(username)s' added successfully and assigned to: %(libraries)s",
+                  username=user.username, libraries=library_names), "success")
+        else:
+            flash(f"User '{user.username}' added successfully!", "success")
         return redirect(url_for("main.users"))
     return render_template("user_add.html", form=form, parent_page="admin", active_page="users")
 
@@ -282,6 +299,38 @@ def user_edit(user_id):
         active_page="users",
         title=_("Edit User: %(username)s", username=user_to_edit.username)
     )
+
+
+@bp.route("/users/delete/<int:user_id>", methods=['POST'])
+@login_required
+@role_required('admin', 'manager')
+def user_delete(user_id):
+    user_to_delete = User.query.get_or_404(user_id)
+
+    # --- Authorization Checks ---
+    # Cannot delete yourself
+    if user_to_delete.id == current_user.id:
+        flash(_("You cannot delete your own account."), "danger")
+        return redirect(url_for('main.users'))
+
+    # Cannot delete admin users
+    if user_to_delete.role == 'admin':
+        flash(_("You cannot delete an administrator."), "danger")
+        return redirect(url_for('main.users'))
+
+    if current_user.role == 'manager':
+        # Manager can only delete users in their libraries
+        manager_libs_ids = {lib.id for lib in current_user.libraries}
+        user_libs_ids = {lib.id for lib in user_to_delete.libraries}
+        if not manager_libs_ids.intersection(user_libs_ids):
+            flash(_("You can only delete users from your libraries."), "danger")
+            return redirect(url_for('main.users'))
+
+    username = user_to_delete.username
+    db.session.delete(user_to_delete)
+    db.session.commit()
+    flash(_("User '%(username)s' deleted successfully!", username=username), "success")
+    return redirect(url_for('main.users'))
 
 
 @bp.route("/user/profile/<int:user_id>")
