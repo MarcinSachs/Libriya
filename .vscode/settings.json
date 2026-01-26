@@ -1,0 +1,23 @@
+{
+    "python.linting.enabled": true,
+    "python.formatting.provider": "autopep8",
+    "python.formatting.autopep8Args": [
+        "--max-line-length=120"
+    ],
+    "[html]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": null
+    },
+    "[jinja]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": null
+    },
+    "[jinja-html]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": null
+    },
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/.*": true
+    }
+}

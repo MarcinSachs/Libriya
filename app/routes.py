@@ -76,6 +76,7 @@ def home():
     status_filter = request.args.get('status')
     genre_filter_id = request.args.get('genre', type=int)
     title_filter = request.args.get('title')
+    sort_by = request.args.get('sort_by', 'title')  # Default sort by title
 
     query = Book.query
 
@@ -101,6 +102,18 @@ def home():
 
     if genre_filter_id:
         query = query.join(Book.genres).filter(Genre.id == genre_filter_id)
+
+    # Apply sorting
+    if sort_by == 'title':
+        query = query.order_by(Book.title.asc())
+    elif sort_by == 'title_desc':
+        query = query.order_by(Book.title.desc())
+    elif sort_by == 'year':
+        query = query.order_by(Book.year.asc())
+    elif sort_by == 'year_desc':
+        query = query.order_by(Book.year.desc())
+    else:
+        query = query.order_by(Book.title.asc())
 
     books = query.all()
     genres = Genre.query.all()
