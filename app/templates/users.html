@@ -34,10 +34,10 @@
                 <td>{% if user.is_admin %}<span class="badge bg-info">{{ _('Admin') }}</span>{% else %}<span
                         class="badge bg-secondary">{{ _('User') }}</span>{% endif %}</td> 
                 <td>
-                    <a href="{{ url_for('main.user_edit', user_id=user.id) }}" class="btn btn-outline-primary btn-sm"
+                    <a href="{{ url_for('users.user_edit', user_id=user.id) }}" class="btn btn-outline-primary btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Edit User') }}"><i
                             class="bx bx-edit"></i></a>
-                    <form method="POST" action="{{ url_for('main.user_delete', user_id=user.id) }}" style="display: inline;">
+                    <form method="POST" action="{{ url_for('users.user_delete', user_id=user.id) }}" style="display: inline;">
                         <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('{{ _('Are you sure you want to delete this user?') }}')"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Delete User') }}"><i
                             class="bx bx-trash"></i></button>
@@ -48,7 +48,7 @@
         </tbody>
     </table>
     </div>
-    <a href="{{ url_for('main.user_add') }}" class="btn btn-primary add-book-btn">{{ _('Add user') }}
+    <a href="{{ url_for('users.user_add') }}" class="btn btn-primary add-book-btn">{{ _('Add user') }}
     </a> 
 </div>
 {% endblock %}

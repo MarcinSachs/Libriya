@@ -1,0 +1,18 @@
+from functools import wraps
+from flask import flash, redirect, url_for
+from flask_login import current_user
+from flask_babel import _
+
+
+def role_required(*roles):
+    """Decorator to require specific user roles for a route."""
+    def wrapper(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not current_user.is_authenticated or current_user.role not in roles:
+                flash(
+                    _("You do not have the required privileges to access this page."), "danger")
+                return redirect(url_for('main.home'))
+            return f(*args, **kwargs)
+        return decorated_function
+    return wrapper

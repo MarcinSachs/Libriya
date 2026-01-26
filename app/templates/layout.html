@@ -68,18 +68,18 @@
                                 {% endif %}
                             </a>
                             <a class="dropdown-item"
-                                href="{{ url_for('main.user_profile', user_id=current_user.id) }}"><i
+                                href="{{ url_for('users.user_profile', user_id=current_user.id) }}"><i
                                     class='bx bx-user-circle align-middle me-2'></i>{{ _('Profile & Loans') }}</a>
-                            <a class="dropdown-item" href="{{ url_for('main.user_settings') }}"><i
+                            <a class="dropdown-item" href="{{ url_for('users.user_settings') }}"><i
                                     class='bx bx-cog align-middle me-2'></i>{{ _('Settings') }}</a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="{{ url_for('main.logout') }}"><i
+                            <a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i
                                     class='bx bx-log-out align-middle me-2'></i>{{ _('Logout') }}</a>
                         </div>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="{{ url_for('main.login') }}">{{ _('Log In') }}</a>
+                        <a class="nav-link text-white" href="{{ url_for('auth.login') }}">{{ _('Log In') }}</a>
                     </li>
                     {% endif %}
                     <li class="nav-item dropdown ms-3">
@@ -112,12 +112,12 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
                             {% if current_user.role == 'admin' %}
-                            <li><a class="dropdown-item text-dark" href="{{ url_for('main.libraries') }}"><i
+                            <li><a class="dropdown-item text-dark" href="{{ url_for('libraries.libraries') }}"><i
                                         class='bx bxs-institution align-middle me-2'></i>{{ _('Libraries') }}</a></li>
                             {% endif %}
-                            <li><a class="dropdown-item text-dark" href="{{ url_for('main.users') }}"><i
+                            <li><a class="dropdown-item text-dark" href="{{ url_for('users.users') }}"><i
                                         class='bx bxs-user align-middle me-2'></i>{{ _('Users') }}</a></li>
-                            <li><a class="dropdown-item text-dark" href="{{ url_for('main.loans') }}"><i
+                            <li><a class="dropdown-item text-dark" href="{{ url_for('loans.loans') }}"><i
                                         class='bx bxs-credit-card align-middle me-2'></i>{{ _('Loans') }}</a></li>
                         </ul>
                     </li>
@@ -159,16 +159,16 @@
                                     {% if current_user.role == 'admin' %}
                                     <li class="nav-item">
                                         <a class="nav-link {% if active_page == 'libraries' %}active{% else %}text-dark{% endif %}"
-                                            href="{{ url_for('main.libraries') }}">{{ _('Libraries') }}</a>
+                                            href="{{ url_for('libraries.libraries') }}">{{ _('Libraries') }}</a>
                                     </li>
                                     {% endif %}
                                     <li class="nav-item">
                                         <a class="nav-link {% if active_page == 'users' %}active{% else %}text-dark{% endif %}"
-                                            href="{{ url_for('main.users') }}">{{ _('Users') }}</a>
+                                            href="{{ url_for('users.users') }}">{{ _('Users') }}</a>
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link {% if active_page == 'loans' %}active{% else %}text-dark{% endif %}"
-                                            href="{{ url_for('main.loans') }}">{{ _('Loans') }}</a>
+                                            href="{{ url_for('loans.loans') }}">{{ _('Loans') }}</a>
                                     </li>
                                 </ul>
                             </div>

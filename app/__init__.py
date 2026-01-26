@@ -9,7 +9,7 @@ from flask import current_app, session, request
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
-login_manager.login_view = 'main.login'
+login_manager.login_view = 'auth.login'
 babel = Babel()
 
 
@@ -46,8 +46,9 @@ def create_app(config_class=Config):
 
     babel.init_app(app, locale_selector=get_locale)
 
-    from app.routes import bp as main_blueprint
-    app.register_blueprint(main_blueprint)
+    # Register all blueprints
+    from app.routes import register_blueprints
+    register_blueprints(app)
 
     from app import models
 

@@ -46,7 +46,7 @@
         </div>
         <div class="mt-4 d-flex align-items-center gap-2"> 
             {{ form.submit(class="btn btn-primary") }} 
-            <a href="{{ url_for('main.user_profile', user_id=current_user.id) }}" class="btn btn-secondary">
+            <a href="{{ url_for('users.user_profile', user_id=current_user.id) }}" class="btn btn-secondary">
                 </i> {{ _('Cancel') }} 
             </a> 
         </div>

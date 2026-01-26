@@ -31,7 +31,7 @@
                 <p class="mb-0">{{ notification.message }}</p>
                 {% if notification.loan %}
                     <small class="text-muted">
-                        {{ _('Related to loan:') }} <a href="{{ url_for('main.loans') }}?user={{ notification.loan.user_id }}&status={{ notification.loan.status }}" class="text-decoration-none">
+                        {{ _('Related to loan:') }} <a href="{{ url_for('loans.loans') }}?user={{ notification.loan.user_id }}&status={{ notification.loan.status }}" class="text-decoration-none">
                             "{{ notification.loan.book.title }}" {{ _('by') }} {{ notification.loan.user.username }}
                         </a>
                     </small>

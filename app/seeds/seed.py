@@ -1,11 +1,13 @@
-from app.models import Genre, Library, User
+from flask_babel import _
 from app import create_app, db
+from app.models import Genre, Library, User
 import sys
 import os
-from flask_babel import _
 
 # Dodaj ścieżkę do katalogu projektu do sys.path
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 
 genres = [
