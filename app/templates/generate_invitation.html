@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h3 class="mb-4">{{ _('Generate Invitation Code') }}</h3>
+                    
+                    <form method="POST" novalidate>
+                        <div class="mb-3">
+                            <label for="library_id" class="form-label">{{ _('Library') }}</label>
+                            <select class="form-select" id="library_id" name="library_id" required>
+                                <option value="">{{ _('Select a library') }}</option>
+                                {% for library in libraries %}
+                                    <option value="{{ library.id }}">{{ library.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="days_valid" class="form-label">{{ _('Valid for (days)') }}</label>
+                            <input type="number" class="form-control" id="days_valid" name="days_valid" 
+                                   value="7" min="1" max="365" required>
+                            <small class="form-text text-muted">{{ _('Code will expire after this many days') }}</small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class='bx bx-info-circle'></i>
+                            {{ _('This code will be valid for ONE registration only. Once used, it cannot be reused.') }}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class='bx bx-plus'></i> {{ _('Generate Code') }}
+                            </button>
+                            <a href="{{ url_for('invitations.invitation_codes_list') }}" class="btn btn-outline-secondary">
+                                {{ _('Cancel') }}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

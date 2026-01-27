@@ -159,3 +159,53 @@ class CommentForm(FlaskForm):
         render_kw={"rows": 8}
     )
     submit = SubmitField(_('Add Comment'))
+
+
+class RegistrationForm(FlaskForm):
+    invitation_code = StringField(
+        _('Invitation Code'),
+        validators=[DataRequired(), Length(min=8, max=8)]
+    )
+    email = StringField(
+        _('Email'),
+        validators=[DataRequired(), Email()]
+    )
+    username = StringField(
+        _('Username'),
+        validators=[DataRequired(), Length(min=3, max=50)]
+    )
+    first_name = StringField(
+        _('First Name'),
+        validators=[DataRequired(), Length(min=2, max=50)]
+    )
+    last_name = StringField(
+        _('Last Name'),
+        validators=[DataRequired(), Length(min=2, max=50)]
+    )
+    password = PasswordField(
+        _('Password'),
+        validators=[DataRequired(), Length(min=8)]
+    )
+    password_confirm = PasswordField(
+        _('Confirm Password'),
+        validators=[DataRequired(), EqualTo('password')]
+    )
+    submit = SubmitField(_('Register'))
+
+    def validate_invitation_code(self, field):
+        from app.models import InvitationCode
+        code = InvitationCode.query.filter_by(code=field.data).first()
+        if not code:
+            raise ValidationError(_('Invalid invitation code'))
+        if not code.is_valid():
+            raise ValidationError(_('Invitation code has expired or has already been used'))
+
+    def validate_email(self, field):
+        user = User.query.filter_by(email=field.data).first()
+        if user:
+            raise ValidationError(_('Email already registered'))
+
+    def validate_username(self, field):
+        user = User.query.filter_by(username=field.data).first()
+        if user:
+            raise ValidationError(_('Username already taken'))

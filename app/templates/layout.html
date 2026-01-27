@@ -119,6 +119,9 @@
                                         class='bx bxs-user align-middle me-2'></i>{{ _('Users') }}</a></li>
                             <li><a class="dropdown-item text-dark" href="{{ url_for('loans.loans') }}"><i
                                         class='bx bxs-credit-card align-middle me-2'></i>{{ _('Loans') }}</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-dark" href="{{ url_for('invitations.invitation_codes_list') }}"><i
+                                        class='bx bxs-badge align-middle me-2'></i>{{ _('Invitation Codes') }}</a></li>
                         </ul>
                     </li>
                     {% endif %}
@@ -169,6 +172,10 @@
                                     <li class="nav-item">
                                         <a class="nav-link {% if active_page == 'loans' %}active{% else %}text-dark{% endif %}"
                                             href="{{ url_for('loans.loans') }}">{{ _('Loans') }}</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {% if active_page == 'invitations' %}active{% else %}text-dark{% endif %}"
+                                            href="{{ url_for('invitations.invitation_codes_list') }}">{{ _('Invitation Codes') }}</a>
                                     </li>
                                 </ul>
                             </div>

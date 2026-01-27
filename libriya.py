@@ -1,7 +1,12 @@
-import os
-from flask import session
-from app import create_app, db
 from app.models import Genre, Book, Author
+from app import create_app, db
+from flask import session
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file BEFORE importing app
+load_dotenv()
+
 
 app = create_app()
 

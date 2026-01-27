@@ -157,3 +157,36 @@ def log_library_operation(operation: str, library_id: int,
         library_id,
         {'library_name': library_name}
     )
+
+
+def log_invitation_code_generated(code: str, library_id: int,
+                                  library_name: str, days_valid: int):
+    """Log invitation code generation."""
+    log_audit_event(
+        'INVITATION_CODE_GENERATED',
+        f"Invitation code generated for {library_name}, valid for {days_valid} days",
+        library_id,
+        {'code': code, 'days_valid': days_valid}
+    )
+
+
+def log_invitation_code_used(code: str, user_id: int, username: str,
+                             library_name: str):
+    """Log invitation code usage (user registration)."""
+    log_audit_event(
+        'INVITATION_CODE_USED',
+        f"Invitation code used for registration: {username} -> {library_name}",
+        user_id,
+        {'code': code, 'username': username, 'library': library_name}
+    )
+
+
+def log_invitation_code_deactivated(code: str, library_name: str):
+    """Log invitation code deactivation."""
+    log_audit_event(
+        'INVITATION_CODE_DEACTIVATED',
+        f"Invitation code deactivated for {library_name}",
+        None,
+        {'code': code, 'library': library_name},
+        severity='WARNING'
+    )

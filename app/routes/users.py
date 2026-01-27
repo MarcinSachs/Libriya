@@ -71,7 +71,7 @@ def user_add():
         else:
             flash(f"User '{user.username}' added successfully!", "success")
         return redirect(url_for("users.users"))
-    return render_template("users/user_add.html", form=form, parent_page="admin", active_page="users")
+    return render_template("user_add.html", form=form, parent_page="admin", active_page="users")
 
 
 @bp.route("/users/edit/<int:user_id>", methods=["GET", "POST"])

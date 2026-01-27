@@ -4,6 +4,7 @@ from app.routes.users import bp as users_bp
 from app.routes.books import bp as books_bp
 from app.routes.libraries import bp as libraries_bp
 from app.routes.loans import bp as loans_bp
+from app.routes.invitations import bp as invitations_bp
 
 
 def register_blueprints(app):
@@ -14,3 +15,4 @@ def register_blueprints(app):
     app.register_blueprint(books_bp)
     app.register_blueprint(libraries_bp)
     app.register_blueprint(loans_bp)
+    app.register_blueprint(invitations_bp)

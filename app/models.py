@@ -13,11 +13,11 @@ book_authors = db.Table('book_authors',
                         )
 # Define the association table for book-genre relationship (NEW)
 book_genres = db.Table('book_genres',
-                        db.Column('book_id', db.Integer, db.ForeignKey(
-                            'book.id'), primary_key=True),
-                        db.Column('genre_id', db.Integer, db.ForeignKey(
-                            'genre.id'), primary_key=True)
-                        )
+                       db.Column('book_id', db.Integer, db.ForeignKey(
+                           'book.id'), primary_key=True),
+                       db.Column('genre_id', db.Integer, db.ForeignKey(
+                           'genre.id'), primary_key=True)
+                       )
 
 # Define the association table for favorites
 favorites = db.Table('favorites',
@@ -29,9 +29,10 @@ favorites = db.Table('favorites',
 
 # Define the association table for user-library relationship
 user_libraries = db.Table('user_libraries',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('library_id', db.Integer, db.ForeignKey('library.id'), primary_key=True)
-)
+                          db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+                          db.Column('library_id', db.Integer, db.ForeignKey('library.id'), primary_key=True)
+                          )
+
 
 class Library(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,13 +52,13 @@ class Book(db.Model):
     title = db.Column(db.String(200), nullable=False, index=True)
     authors = db.relationship(
         'Author', secondary=book_authors, lazy='subquery', back_populates='books')
-    
-    #Relationship for multiple genres
+
+    # Relationship for multiple genres
     genres = db.relationship(
         'Genre', secondary=book_genres, lazy='subquery', back_populates='books')
-    
+
     library = db.relationship('Library', back_populates='books')
-    
+
     year = db.Column(db.Integer, nullable=False)
     cover = db.Column(db.String(200))
     # 'available', 'reserved', 'on_loan'
@@ -99,6 +100,8 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     image_file = db.Column(db.String(20), nullable=False,
                            default='default.jpg')
+    first_name = db.Column(db.String(50), nullable=True)
+    last_name = db.Column(db.String(50), nullable=True)
     loans = db.relationship('Loan', back_populates='user', lazy=True)
     role = db.Column(db.String(20), nullable=False, default='user')  # 'user', 'manager', 'admin'
 
@@ -192,7 +195,7 @@ class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
-    
+
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
 
@@ -201,3 +204,41 @@ class Comment(db.Model):
 
     def __str__(self):
         return f"Comment by {self.user.username} on {self.book.title} at {self.timestamp}"
+
+
+class InvitationCode(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(8), unique=True, nullable=False, index=True)
+
+    # Kto wygenerował
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_by = db.relationship('User', foreign_keys=[created_by_id],
+                                 backref='generated_invitations')
+
+    # Do której biblioteki
+    library_id = db.Column(db.Integer, db.ForeignKey('library.id'), nullable=False)
+    library = db.relationship('Library', backref='invitation_codes')
+
+    # Śledzenie użycia
+    used_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    used_by = db.relationship('User', foreign_keys=[used_by_id],
+                              backref='registered_via_invitation')
+
+    # Czasowe
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    expires_at = db.Column(db.DateTime)
+    used_at = db.Column(db.DateTime, nullable=True)
+
+    def is_valid(self):
+        """Sprawdza czy kod jest jeszcze ważny i nieużyty"""
+        return (self.used_by_id is None and
+                self.expires_at > datetime.datetime.utcnow())
+
+    def mark_as_used(self, user_id):
+        """Oznacz kod jako użyty"""
+        self.used_by_id = user_id
+        self.used_at = datetime.datetime.utcnow()
+        db.session.commit()
+
+    def __str__(self):
+        return f"Code {self.code} for {self.library.name} - {'Active' if self.is_valid() else 'Inactive'}"
