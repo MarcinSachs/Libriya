@@ -11,6 +11,13 @@ from app.utils import role_required
 from app.utils.audit_log import (
     log_user_created, log_user_deleted, log_user_role_changed
 )
+from app.utils.messages import (
+    USER_ADDED, USER_UPDATED, USER_DELETED, USER_CANNOT_DELETE_SELF,
+    USER_CANNOT_DELETE_ADMIN, USER_NO_PERMISSION_EDIT, USER_NOT_IN_LIBRARY,
+    USERS_NO_LIBRARY_MANAGED, USERS_NO_PERMISSION_EDIT_ROLE, USERS_ONLY_EDIT_OWN_LIBRARIES,
+    USERS_CANNOT_REVOKE_LAST_ADMIN, USERS_NO_PERMISSION_CREATE_ADMIN, USERS_ONLY_DELETE_OWN_LIBRARIES,
+    USERS_SETTINGS_NO_USER, USERS_SETTINGS_UPDATED, ERROR_PERMISSION_DENIED
+)
 
 bp = Blueprint("users", __name__)
 
@@ -50,7 +57,7 @@ def user_add():
         # If manager is adding user, assign to manager's library
         if current_user.role == 'manager':
             if not current_user.libraries:
-                flash(_("You do not manage any library. Cannot add user."), "danger")
+                flash(USERS_NO_LIBRARY_MANAGED, "danger")
                 return render_template("user_add.html", form=form, parent_page="admin", active_page="users")
             # Add user to all libraries managed by this manager
             for library in current_user.libraries:
@@ -66,10 +73,9 @@ def user_add():
         # Provide detailed success message
         if current_user.role == 'manager':
             library_names = ', '.join([lib.name for lib in current_user.libraries])
-            flash(_("User '%(username)s' added successfully and assigned to: %(libraries)s",
-                  username=user.username, libraries=library_names), "success")
+            flash(USER_ADDED % {'username': user.username}, "success")
         else:
-            flash(f"User '{user.username}' added successfully!", "success")
+            flash(USER_ADDED % {'username': user.username}, "success")
         return redirect(url_for("users.users"))
     return render_template("user_add.html", form=form, parent_page="admin", active_page="users")
 
@@ -84,14 +90,14 @@ def user_edit(user_id):
     if current_user.role == 'manager':
         # Managers cannot edit admins or other managers unless editing themselves
         if user_to_edit.role in ['admin', 'manager'] and user_to_edit.id != current_user.id:
-            flash(_("You do not have permission to edit this user's role."), "danger")
+            flash(USERS_NO_PERMISSION_EDIT_ROLE, "danger")
             return redirect(url_for('users.users'))
 
         # Check if the user is in one of the manager's libraries (unless editing self)
         manager_libs_ids = {lib.id for lib in current_user.libraries}
         user_libs_ids = {lib.id for lib in user_to_edit.libraries}
         if not manager_libs_ids.intersection(user_libs_ids) and user_to_edit.id != current_user.id:
-            flash(_("You can only edit users within your libraries."), "danger")
+            flash(USERS_ONLY_EDIT_OWN_LIBRARIES, "danger")
             return redirect(url_for('users.users'))
 
     form = UserEditForm(obj=user_to_edit)
@@ -117,15 +123,13 @@ def user_edit(user_id):
             User.query.filter_by(role='admin').count() <= 1
         )
         if last_admin:
-            flash(_("You cannot revoke the last administrator's "
-                    "privileges."), "danger")
+            flash(USERS_CANNOT_REVOKE_LAST_ADMIN, "danger")
             return redirect(url_for('users.user_edit',
                                     user_id=user_to_edit.id))
 
         # Prevent a manager from making someone an admin
         if current_user.role == 'manager' and form.role.data == 'admin':
-            flash(_("You do not have permission to create "
-                    "administrators."), "danger")
+            flash(USERS_NO_PERMISSION_CREATE_ADMIN, "danger")
             return redirect(url_for('users.user_edit',
                                     user_id=user_to_edit.id))
 
@@ -157,8 +161,7 @@ def user_edit(user_id):
                     user_to_edit.libraries.remove(library)
 
         db.session.commit()
-        flash(_("User '%(username)s' updated successfully!",
-              username=user_to_edit.username), "success")
+        flash(USER_UPDATED % {'username': user_to_edit.username}, "success")
         return redirect(url_for("users.users"))
 
     return render_template(
@@ -181,12 +184,12 @@ def user_delete(user_id):
     # --- Authorization Checks ---
     # Cannot delete yourself
     if user_to_delete.id == current_user.id:
-        flash(_("You cannot delete your own account."), "danger")
+        flash(USER_CANNOT_DELETE_SELF, "danger")
         return redirect(url_for('users.users'))
 
     # Cannot delete admin users
     if user_to_delete.role == 'admin':
-        flash(_("You cannot delete an administrator."), "danger")
+        flash(USER_CANNOT_DELETE_ADMIN, "danger")
         return redirect(url_for('users.users'))
 
     if current_user.role == 'manager':
@@ -194,7 +197,7 @@ def user_delete(user_id):
         manager_libs_ids = {lib.id for lib in current_user.libraries}
         user_libs_ids = {lib.id for lib in user_to_delete.libraries}
         if not manager_libs_ids.intersection(user_libs_ids):
-            flash(_("You can only delete users from your libraries."), "danger")
+            flash(USERS_ONLY_DELETE_OWN_LIBRARIES, "danger")
             return redirect(url_for('users.users'))
 
     username = user_to_delete.username
@@ -204,7 +207,7 @@ def user_delete(user_id):
     # Log user deletion
     log_user_deleted(user_to_delete.id, username)
 
-    flash(_("User '%(username)s' deleted successfully!", username=username), "success")
+    flash(USER_DELETED % {'username': username}, "success")
     return redirect(url_for('users.users'))
 
 
@@ -243,7 +246,7 @@ def user_settings():
     from flask_babel import _
     user = current_user
     if not user:
-        flash(_("No user found to edit settings."), "danger")
+        flash(USERS_SETTINGS_NO_USER, "danger")
         return redirect(url_for('main.home'))
 
     form = UserSettingsForm(obj=user)
@@ -266,7 +269,7 @@ def user_settings():
             from app.utils.audit_log import log_password_changed
             log_password_changed(user.id, user.username)
         db.session.commit()
-        flash(_("Your settings have been updated."), "success")
+        flash(USERS_SETTINGS_UPDATED, "success")
         return redirect(url_for('users.user_profile', user_id=user.id))
 
     image_file_url = url_for(

@@ -1,29 +1,31 @@
 import os
+from pydantic_settings import BaseSettings
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+DEFAULT_DB_URI = f'sqlite:///{os.path.join(BASE_DIR, "libriya.db")}'
 
 
-class Config:
-    # SECRET_KEY must be set via environment variable for security
-    SECRET_KEY = os.environ.get('SECRET_KEY')
-    if not SECRET_KEY:
-        raise ValueError(
-            "CRITICAL: SECRET_KEY environment variable is not set! "
-            "Set it before running the application: export SECRET_KEY='your-secret-key'"
-        )
-
-    SQLALCHEMY_DATABASE_URI = (
-        os.environ.get('DATABASE_URL') or
-        ('sqlite:///' + os.path.join(BASE_DIR, 'libriya.db'))
-    )
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-
+class Config(BaseSettings):
     # Security configuration
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max request size
-    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'app/static/uploads')
+    SECRET_KEY: str
+
+    # Database
+    DATABASE_URL: str = DEFAULT_DB_URI
+    SQLALCHEMY_DATABASE_URI: str = DEFAULT_DB_URI
+    SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
+
+    # File upload
+    MAX_CONTENT_LENGTH: int = 16 * 1024 * 1024  # 16MB max request size
+    UPLOAD_FOLDER: str = os.path.join(BASE_DIR, 'app/static/uploads')
 
     # Internationalization
-    LANGUAGES = ['en', 'pl']
-    BABEL_DEFAULT_LOCALE = 'pl'
-    BABEL_DEFAULT_TIMEZONE = 'UTC'
-    BABEL_TRANSLATION_DIRECTORIES = os.path.join(BASE_DIR, 'translations')
+    LANGUAGES: list = ['en', 'pl']
+    BABEL_DEFAULT_LOCALE: str = 'en'
+    BABEL_DEFAULT_TIMEZONE: str = 'UTC'
+    BABEL_TRANSLATION_DIRECTORIES: str = os.path.join(BASE_DIR, 'translations')
+
+    class Config:
+        env_file = '.env'
+        env_file_encoding = 'utf-8'
+        case_sensitive = False
+        extra = 'ignore'  # Ignore extra fields from .env

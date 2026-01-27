@@ -8,6 +8,17 @@ from app import db
 from app.forms import LoanForm
 from app.models import Book, Loan, User, Library, Notification
 from app.utils import role_required, create_notification
+from app.utils.messages import (
+    LOAN_CREATED, LOAN_UPDATED, LOAN_COMPLETED, BOOK_RESERVED,
+    BOOK_ALREADY_RESERVED, ERROR_PERMISSION_DENIED,
+    LOAN_FILTER_INVALID_USER, LOANS_BOOK_RESERVED, LOANS_BOOK_ALREADY_RESERVED,
+    LOANS_BOOK_ON_LOAN, LOANS_BORROWED_SUCCESS, LOANS_BOOK_NOT_AVAILABLE,
+    LOANS_RETURNED_SUCCESS, LOANS_BOOK_NOT_ON_LOAN, LOANS_APPROVED,
+    LOANS_CANNOT_APPROVE_STATUS, LOANS_NOT_PENDING, LOANS_RESERVATION_CANCELLED,
+    LOANS_CANCEL_NOT_PENDING, LOANS_ADMIN_RETURNED, LOANS_NOT_ACTIVE,
+    LOANS_ADDED_SUCCESS, LOANS_BOOK_UNAVAILABLE, LOANS_INVALID_BOOK_USER,
+    LOANS_CAN_ONLY_CANCEL_OWN, LOANS_USER_RESERVATION_CANCELLED, LOANS_CANNOT_CANCEL_NOT_PENDING
+)
 
 bp = Blueprint("loans", __name__)
 
@@ -37,7 +48,7 @@ def loans():
             loan_query = loan_query.filter(Loan.user_id == user_filter_id)
         except ValueError:
             # Handle case where user_filter_id is not a valid integer
-            flash(_("Invalid user ID provided for filtering."), "danger")
+            flash(LOAN_FILTER_INVALID_USER, "danger")
      # Apply status filter
     status_filter = request.args.get('status')
     if status_filter:
@@ -101,11 +112,11 @@ def request_reservation(book_id, user_id):
         create_notification(admins, current_user, message,
                             'reservation_request', loan=new_loan)
 
-        flash(_("Book has been reserved successfully! An admin will approve it shortly."), "success")
+        flash(LOANS_BOOK_RESERVED, "success")
     elif book.status == 'reserved':
-        flash(_("This book is already reserved by another user."), "danger")
+        flash(LOANS_BOOK_ALREADY_RESERVED, "danger")
     elif book.status == 'on_loan':
-        flash(_("This book is currently on loan."), "danger")
+        flash(LOANS_BOOK_ON_LOAN, "danger")
     return redirect(url_for("main.home"))
 
 
@@ -120,10 +131,9 @@ def borrow_book(book_id, user_id):
         new_loan = Loan(book=book, user=user)
         db.session.add(new_loan)
         db.session.commit()
-        flash(_("Book borrowed successfully!"), "success")
+        flash(LOANS_BORROWED_SUCCESS, "success")
     else:
-        flash(_("This book is not available for direct loan."),
-              "danger")  # ZMIANA KOMUNIKATU
+        flash(LOANS_BOOK_NOT_AVAILABLE, "danger")
     return redirect(url_for("main.home"))
 
 
@@ -136,16 +146,16 @@ def return_book(book_id):
         loan.return_date = datetime.utcnow()
         loan.status = 'returned'
         db.session.commit()
-        flash(_("Book returned successfully!"), "success")
+        flash(LOANS_RETURNED_SUCCESS, "success")
     else:
         # ZMIANA KOMUNIKATU
-        flash(_("This book is not currently on loan or is already returned."), "danger")
+        flash(LOANS_BOOK_NOT_ON_LOAN, "danger")
     return redirect(url_for("main.home"))
 
 
 @bp.route('/loans/approve/<int:loan_id>', methods=['POST'])
 @login_required
-@role_required('admin')
+@role_required('admin', 'manager')
 def approve_loan(loan_id):
     loan = Loan.query.get_or_404(loan_id)
 
@@ -163,18 +173,17 @@ def approve_loan(loan_id):
             create_notification(loan.user, current_user,
                                 message, 'loan_approved', loan=loan)
 
-            flash(_('Loan for "%(title)s" to %(username)s has been approved!',
-                    title=loan.book.title, username=loan.user.username), 'success')
+            flash(LOANS_APPROVED % {'title': loan.book.title, 'username': loan.user.username}, 'success')
         else:
-            flash(_('Cannot approve loan: Book status is not "reserved". It might have been cancelled or loaned differently.'), 'danger')
+            flash(LOANS_CANNOT_APPROVE_STATUS, 'danger')
     else:
-        flash(_('Loan is not in "pending" status and cannot be approved.'), 'info')
+        flash(LOANS_NOT_PENDING, 'info')
     return redirect(url_for('loans.loans'))
 
 
 @bp.route('/loans/cancel/<int:loan_id>', methods=['POST'])
 @login_required
-@role_required('admin')
+@role_required('admin', 'manager')
 def cancel_loan(loan_id):
     loan = Loan.query.get_or_404(loan_id)
 
@@ -191,16 +200,15 @@ def cancel_loan(loan_id):
         create_notification(loan.user, current_user,
                             message, 'loan_cancelled', loan=loan)
 
-        flash(_('Reservation for "%(title)s" by %(username)s has been cancelled.',
-                title=loan.book.title, username=loan.user.username), 'info')
+        flash(LOANS_RESERVATION_CANCELLED % {'title': loan.book.title, 'username': loan.user.username}, 'info')
     else:
-        flash(_('Cannot cancel loan: It is not in "pending" status.'), 'danger')
+        flash(LOANS_CANCEL_NOT_PENDING, 'danger')
     return redirect(url_for('loans.loans'))
 
 
 @bp.route('/loans/return/<int:loan_id>', methods=['POST'])
 @login_required
-@role_required('admin')
+@role_required('admin', 'manager')
 def return_loan(loan_id):
     loan = Loan.query.get_or_404(loan_id)
     if loan.status == 'active':
@@ -215,10 +223,9 @@ def return_loan(loan_id):
         create_notification(loan.user, current_user,
                             message, 'loan_returned', loan=loan)
 
-        flash(_('Book "%(title)s" has been returned.',
-              title=loan.book.title), 'success')
+        flash(LOANS_ADMIN_RETURNED % {'title': loan.book.title}, 'success')
     else:
-        flash(_('This loan is not active or has already been returned.'), 'info')
+        flash(LOANS_NOT_ACTIVE, 'info')
     return redirect(url_for('loans.loans'))
 
 
@@ -233,7 +240,7 @@ def user_loans(user_id):
 
 @bp.route("/loans/add/", methods=["GET", "POST"])
 @login_required
-@role_required('admin')
+@role_required('admin', 'manager')
 def loan_add():
     form = LoanForm()
     # Populate choices for books and users
@@ -261,12 +268,12 @@ def loan_add():
             create_notification(user, current_user, message,
                                 'admin_issued_loan', loan=new_loan)
 
-            flash(_("Loan added successfully!"), "success")
+            flash(LOANS_ADDED_SUCCESS, "success")
             return redirect(url_for("loans.loans"))
         elif book and (book.status == 'on_loan' or book.status == 'reserved'):
-            flash(_("This book is currently on loan or reserved."), "danger")
+            flash(LOANS_BOOK_UNAVAILABLE, "danger")
         else:
-            flash(_("Invalid book or user."), "danger")
+            flash(LOANS_INVALID_BOOK_USER, "danger")
     return render_template("loan_add.html", form=form, active_page="loans", parent_page="admin", title="Add Loan")
 
 
@@ -276,7 +283,7 @@ def user_cancel_reservation(loan_id):
     loan = Loan.query.get_or_404(loan_id)
 
     if loan.user_id != current_user.id:
-        flash(_("You can only cancel your own reservations."), "danger")
+        flash(LOANS_CAN_ONLY_CANCEL_OWN, "danger")
         return redirect(url_for('users.user_profile', user_id=current_user.id))
 
     if loan.status == 'pending':
@@ -292,10 +299,9 @@ def user_cancel_reservation(loan_id):
         create_notification(admins, current_user, message,
                             'user_cancelled_reservation', loan=loan)
 
-        flash(_("Your reservation for '%(title)s' has been cancelled.",
-              title=loan.book.title), 'success')
+        flash(LOANS_USER_RESERVATION_CANCELLED % {'title': loan.book.title}, 'success')
     else:
-        flash(_("This reservation cannot be cancelled as it is not in 'pending' status."), 'danger')
+        flash(LOANS_CANNOT_CANCEL_NOT_PENDING, 'danger')
 
     return redirect(url_for('users.user_profile', user_id=current_user.id))
 

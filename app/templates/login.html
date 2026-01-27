@@ -15,14 +15,7 @@
       <!-- Login Form -->
     </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }}">{{ message }}</div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
-
+    {{ macros.display_flashes() }}
 
     <form method="POST" action="/login">
       <input type="text" id="username" class="fadeIn second" name="username" placeholder="{{ _('username') }}">

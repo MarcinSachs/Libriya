@@ -4,41 +4,15 @@
     <h2>{{ _('Add a new user') }}</h2>
     <hr>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }}">{{ message }}</div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
+    {{ macros.display_flashes() }}
 
     <form method="POST" action="" enctype="multipart/form-data" novalidate>
         {{ form.hidden_tag() }}
-        <div class="form-group mb-3">
-            {{ form.username.label(class="form-label") }}
-            {{ form.username(class="form-control", placeholder="") }}
-        </div>
-        <div class="form-group mb-3">
-            {{ form.email.label(class="form-label") }}
-            {{ form.email(class="form-control", placeholder=form.email.render_kw.placeholder) }}
-            {% for error in form.email.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
-        <div class="form-group mb-3">
-            {{ form.password.label(class="form-label") }}
-            {{ form.password(class="form-control", placeholder="") }}
-            {% for error in form.password.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
-        <div class="form-group mb-3">
-            {{ form.confirm_password.label(class="form-label") }}
-            {{ form.confirm_password(class="form-control", placeholder="") }}
-            {% for error in form.confirm_password.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
-        <div class="mt-4 d-flex align-items-center gap-2">
-            {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('users.users') }}" class="btn btn-secondary">
-                {{ _('Cancel') }}
-            </a>
-        </div>
+        {{ macros.form_field(form.username, field_type='text', icon='bx-user', placeholder=form.username.render_kw.placeholder if form.username.render_kw and 'placeholder' in form.username.render_kw else None) }}
+        {{ macros.form_field(form.email, field_type='email', icon='bx-mail-send', placeholder=form.email.render_kw.placeholder if form.email.render_kw and 'placeholder' in form.email.render_kw else None) }}
+        {{ macros.form_field(form.password, field_type='password', icon='bx-lock-alt', placeholder=form.password.render_kw.placeholder if form.password.render_kw and 'placeholder' in form.password.render_kw else None) }}
+        {{ macros.form_field(form.confirm_password, field_type='password', icon='bx-lock-alt', placeholder=form.confirm_password.render_kw.placeholder if form.confirm_password.render_kw and 'placeholder' in form.confirm_password.render_kw else None) }}
+        {{ macros.form_submit(form.submit.label.text, cancel_url=url_for('users.users')) }}
     </form>
 </div>
 {% endblock %}

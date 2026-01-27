@@ -4,32 +4,13 @@
     <h2>{{ _('Loan a Book') }}</h2>
     <hr>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }}">{{ message }}</div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
+    {{ macros.display_flashes() }}
 
     <form method="POST" action="" novalidate>
         {{ form.hidden_tag() }}
-        <div class="form-group mb-3">
-            {{ form.book_id.label(class="form-label") }}
-            {{ form.book_id(class="form-select") }}
-            {% for error in form.book_id.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
-        <div class="form-group mb-3">
-            {{ form.user_id.label(class="form-label") }}
-            {{ form.user_id(class="form-select") }}
-            {% for error in form.user_id.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
-        <div class="mt-4 d-flex align-items-center gap-2">
-            {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('loans.loans') }}" class="btn btn-secondary">
-                {{ _('Cancel') }}
-            </a>
-        </div>
+        {{ macros.form_field(form.book_id, field_type='select', icon='bx-book') }}
+        {{ macros.form_field(form.user_id, field_type='select', icon='bx-user') }}
+        {{ macros.form_submit(form.submit.label.text, cancel_url=url_for('loans.loans')) }}
     </form>
 </div>
 {% endblock %}

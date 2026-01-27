@@ -10,6 +10,12 @@ from app.utils import role_required
 from app.utils.audit_log import (
     log_invitation_code_generated, log_invitation_code_deactivated
 )
+from app.utils.messages import (
+    INVITATION_CODE_GENERATED, INVITATION_CODE_DEACTIVATED,
+    INVITATIONS_SELECT_LIBRARY, INVITATIONS_ONLY_OWN_LIBRARIES,
+    INVITATIONS_CODE_GENERATED, INVITATIONS_NO_PERMISSION_DEACTIVATE,
+    INVITATIONS_CANNOT_DEACTIVATE_USED, INVITATIONS_CODE_DEACTIVATED
+)
 
 bp = Blueprint("invitations", __name__, url_prefix='/invitation-codes')
 
@@ -49,7 +55,7 @@ def generate_code():
 
         # Validate library selection
         if not library_id:
-            flash(_('Please select a library'), 'danger')
+            flash(INVITATIONS_SELECT_LIBRARY, 'danger')
             if current_user.role == 'admin':
                 libraries = Library.query.all()
             else:
@@ -62,7 +68,7 @@ def generate_code():
         if current_user.role == 'manager':
             # Manager can only generate codes for their libraries
             if library_id not in [lib.id for lib in current_user.libraries]:
-                flash(_('You can only generate codes for your libraries'), 'danger')
+                flash(INVITATIONS_ONLY_OWN_LIBRARIES, 'danger')
                 return redirect(url_for('invitations.invitation_codes_list'))
 
         # Generate code
@@ -82,7 +88,7 @@ def generate_code():
         # Audit log
         log_invitation_code_generated(code, library.id, library.name, days_valid)
 
-        flash(_('Invitation code generated: %(code)s', code=code), 'success')
+        flash(INVITATIONS_CODE_GENERATED % {'code': code}, 'success')
         return redirect(url_for('invitations.invitation_codes_list'))
 
     # GET request
@@ -104,12 +110,12 @@ def deactivate_code(code_id):
     # Verify access
     if current_user.role == 'manager':
         if code.library_id not in [lib.id for lib in current_user.libraries]:
-            flash(_('You do not have permission to deactivate this code'), 'danger')
+            flash(INVITATIONS_NO_PERMISSION_DEACTIVATE, 'danger')
             return redirect(url_for('invitations.invitation_codes_list'))
 
     # Can't deactivate already used codes
     if code.used_by_id is not None:
-        flash(_('Cannot deactivate an already-used code'), 'warning')
+        flash(INVITATIONS_CANNOT_DEACTIVATE_USED, 'warning')
         return redirect(url_for('invitations.invitation_codes_list'))
 
     # Audit log
@@ -118,7 +124,7 @@ def deactivate_code(code_id):
     db.session.delete(code)
     db.session.commit()
 
-    flash(_('Invitation code deactivated'), 'info')
+    flash(INVITATIONS_CODE_DEACTIVATED, 'info')
     return redirect(url_for('invitations.invitation_codes_list'))
 
 
