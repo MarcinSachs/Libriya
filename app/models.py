@@ -58,6 +58,7 @@ class Book(db.Model):
         'Genre', secondary=book_genres, lazy='subquery', back_populates='books')
 
     library = db.relationship('Library', back_populates='books')
+    location = db.relationship('Location', back_populates='book', uselist=False, cascade='all, delete-orphan')
 
     year = db.Column(db.Integer, nullable=False)
     cover = db.Column(db.String(200))
@@ -70,6 +71,30 @@ class Book(db.Model):
         author_names = ", ".join([author.name for author in self.authors])
         genre_names = ", ".join([genre.name for genre in self.genres])
         return f"{self.title} by {author_names} ({self.year}) - Genres: {genre_names}"
+
+
+class Location(db.Model):
+    """Book location information (shelf, section, room, etc.)"""
+    id = db.Column(db.Integer, primary_key=True)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False, unique=True)
+    shelf = db.Column(db.String(50), nullable=True)  # e.g., "A", "B-1"
+    section = db.Column(db.String(100), nullable=True)  # e.g., "Fiction", "Science"
+    room = db.Column(db.String(100), nullable=True)  # e.g., "Main Hall", "Room 2"
+    notes = db.Column(db.String(255), nullable=True)  # Additional info
+
+    book = db.relationship('Book', back_populates='location')
+
+    def __str__(self):
+        parts = []
+        if self.room:
+            parts.append(self.room)
+        if self.section:
+            parts.append(self.section)
+        if self.shelf:
+            parts.append(f"Shelf {self.shelf}")
+        if self.notes:
+            parts.append(f"({self.notes})")
+        return ", ".join(parts) if parts else "No location"
 
 
 class Author(db.Model):

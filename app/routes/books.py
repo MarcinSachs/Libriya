@@ -11,7 +11,7 @@ from werkzeug.datastructures import FileStorage
 
 from app import db
 from app.forms import BookForm
-from app.models import Book, Author, Library
+from app.models import Book, Author, Library, Location
 from app.utils import role_required
 from app.utils.audit_log import log_book_deleted
 
@@ -163,6 +163,19 @@ def book_add():
 
         db.session.add(new_book)
         db.session.commit()
+
+        # Add location if any location field is provided
+        if any([form.shelf.data, form.section.data, form.room.data, form.location_notes.data]):
+            location = Location(
+                book_id=new_book.id,
+                shelf=form.shelf.data or None,
+                section=form.section.data or None,
+                room=form.room.data or None,
+                notes=form.location_notes.data or None
+            )
+            db.session.add(location)
+            db.session.commit()
+
         flash(_("Book added successfully!"), "success")
         return redirect(url_for("main.home"))
 
@@ -223,6 +236,13 @@ def book_edit(book_id):
         form.author.data = ", ".join([author.name for author in book.authors])
         form.library.data = book.library_id
 
+        # Pre-fill location data if it exists
+        if book.location:
+            form.shelf.data = book.location.shelf
+            form.section.data = book.location.section
+            form.room.data = book.location.room
+            form.location_notes.data = book.location.notes
+
     if form.validate_on_submit():
         # Update book fields from form data
         book.isbn = form.isbn.data
@@ -253,6 +273,28 @@ def book_edit(book_id):
                 f.save(os.path.join(
                     current_app.config["UPLOAD_FOLDER"], cover_filename))
                 book.cover = cover_filename
+
+        # Handle location update
+        if any([form.shelf.data, form.section.data, form.room.data, form.location_notes.data]):
+            if book.location:
+                # Update existing location
+                book.location.shelf = form.shelf.data or None
+                book.location.section = form.section.data or None
+                book.location.room = form.room.data or None
+                book.location.notes = form.location_notes.data or None
+            else:
+                # Create new location
+                location = Location(
+                    book_id=book.id,
+                    shelf=form.shelf.data or None,
+                    section=form.section.data or None,
+                    room=form.room.data or None,
+                    notes=form.location_notes.data or None
+                )
+                db.session.add(location)
+        elif book.location:
+            # Delete location if all fields are empty
+            db.session.delete(book.location)
 
         db.session.commit()
         flash(_("Book updated successfully!"), "success")

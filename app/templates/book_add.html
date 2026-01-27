@@ -64,6 +64,39 @@
             {% for error in form.cover.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
 
+        <!-- Location Section (Optional) -->
+        <div class="card mt-4 mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">{{ _('Location Information') }} <small class="text-muted">({{ _('Optional') }})</small></h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ _('Shelf') }}</label>
+                        {{ form.shelf(class="form-control w-100") }}
+                        <small class="form-text text-muted d-block mt-1">{{ _('e.g., A, B-1') }}</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ _('Section') }}</label>
+                        {{ form.section(class="form-control w-100") }}
+                        <small class="form-text text-muted d-block mt-1">{{ _('e.g., Fiction, Science') }}</small>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ _('Room') }}</label>
+                        {{ form.room(class="form-control w-100") }}
+                        <small class="form-text text-muted d-block mt-1">{{ _('e.g., Main Hall, Room 2') }}</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ _('Location Notes') }}</label>
+                        {{ form.location_notes(class="form-control w-100") }}
+                        <small class="form-text text-muted d-block mt-1">{{ _('e.g., Top shelf, Near window') }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="mt-4 d-flex align-items-center gap-2">
             {{ form.submit(class="btn btn-primary") }}
             <a href="{{ url_for('main.home') }}" class="btn btn-secondary">

@@ -75,6 +75,12 @@ class BookForm(FlaskForm):
         ]
     )
 
+    # Location fields (optional)
+    shelf = StringField(_('Shelf'), validators=[Optional(), Length(max=50)])
+    section = StringField(_('Section'), validators=[Optional(), Length(max=100)])
+    room = StringField(_('Room'), validators=[Optional(), Length(max=100)])
+    location_notes = StringField(_('Location Notes'), validators=[Optional(), Length(max=255)])
+
     submit = SubmitField(_('Submit'), render_kw={"class": "btn btn-primary"})
 
     def __init__(self, *args, **kwargs):
