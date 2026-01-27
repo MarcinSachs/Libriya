@@ -10,17 +10,19 @@ Libriya is a web application for managing a library, built with Flask, SQLAlchem
 ## Features (Implemented/Planned)
 
 *   **Book Management:** Add, edit, and delete books from the library.
+*   **Book Location Tracking:** Store structured location information (shelf, section, room, notes) for each book.
 *   **Author and Genre Management:** Automatically create and manage authors and genres associated with books.
-*   **User Authentication:** User login, and logout.
-*   **Admin Privileges:** Admin users can manage users and books.
+*   **User Authentication:** User login, registration with invitation codes, and logout.
+*   **Admin Privileges:** Admin users can manage users, books, and generate invitation codes.
 *   **Book Loans:** Track which books are currently borrowed and by whom.
 *   **User Profiles:** Users can view their loan history.
 *   **User Settings:** Users can edit their profile and settings.
-*   **Internationalization (i18n):** Basic support for multiple languages (currently English and Polish).
+*   **Internationalization (i18n):** Full support for multiple languages (currently English and Polish).
 *   **ISBN Lookup:** Integration with OpenLibrary API to fetch book data by ISBN.
 *   **Comments:** Users can add comments to books.
 *   **Favorites:** Users can add books to their favorites list.
 *   **Notifications:**  Users and administrators receive notifications about loan requests, approvals, cancellations, and overdue reminders.
+*   **Audit Logging:** Administrative actions are logged for security and compliance.
 
 ## Setup
 
