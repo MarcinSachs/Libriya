@@ -3,7 +3,7 @@ from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
-from flask_babel import Babel
+from flask_babel import _, Babel, lazy_gettext as _l
 from flask import session, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -26,6 +26,8 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    # Ustaw komunikat logowania z tłumaczeniem dynamicznym
+    login_manager.login_message = _l("Please log in to access this page.")
     limiter.init_app(app)
 
     def get_locale():

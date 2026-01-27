@@ -1768,6 +1768,10 @@ msgstr "Kod zaproszenia dezaktywowany"
 msgid "Unsupported language."
 msgstr "Nieobsługiwany język."
 
+#: flask_login
+msgid "Please log in to access this page."
+msgstr "Zaloguj się, aby uzyskać dostęp do tej strony."
+
 #~ msgid "Save Changes"
 #~ msgstr "Zapisz zmiany"
 
