@@ -42,8 +42,23 @@
                     <span class="badge bg-secondary">{{ book.status.replace('_', ' ').title() }}</span>
                 {% endif %}
             </p>
-
+            
+            {% if book.location %}
+            <p><strong>{{ _('Location') }}:</strong> {{ book.location }}</p>
+            </div>
+            <div class="mt-2">
+                <small class="text-muted">
+                    {% if book.location.room %}<i class='bx bx-home'></i> {{ book.location.room }}{% endif %}
+                    {% if book.location.section %}<i class='bx bx-category'></i> {{ book.location.section }}{% endif %}
+                    {% if book.location.shelf %}<i class='bx bx-layer'></i> {{ _('Shelf') }} {{ book.location.shelf }}{% endif %}
+                    {% if book.location.notes %}<i class='bx bx-note'></i> {{ book.location.notes }}{% endif %}
+                </small>
+            </div>
             <div class="mt-4 d-flex flex-wrap align-items-center gap-2">
+            {% else %}
+            </p>
+            <div class="mt-4 d-flex flex-wrap align-items-center gap-2">
+            {% endif %}
                 {% if book.status == 'available' %}
                 <a href="{{ url_for('loans.request_reservation', book_id=book.id, user_id=current_user.id) }}"
                     class="btn btn-success">
