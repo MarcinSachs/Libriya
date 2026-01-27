@@ -1028,3 +1028,19 @@ i.bx {
     white-space: nowrap;
     flex-shrink: 0;
 }
+/* Barcode Scanner Styles */
+#interactive {
+    background: #000;
+}
+
+#interactive video {
+    width: 100% !important;
+    height: auto !important;
+    display: block;
+    border-radius: 8px;
+}
+
+#interactive canvas {
+    display: none !important;
+}
+

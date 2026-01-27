@@ -15,12 +15,17 @@
                 <h5 class="mb-0"><i class='bx bx-barcode'></i> {{ _('Quick Book Search') }}</h5>
             </div>
             <div class="card-body">
-                <!-- ISBN Scanner Button (Mobile Only) -->
-                <div id="scanner-button-container" style="display: none;" class="mb-3">
+                <!-- ISBN Scanner Button -->
+                <div id="scanner-button-container" class="mb-3">
+                    <div id="scanner-status" class="alert alert-info" style="display:none; font-size:12px;"></div>
                     <button type="button" id="start-scanner" class="btn btn-info w-100 mb-2">
                         <i class='bx bx-camera'></i> {{ _('Scan ISBN/Barcode') }}
                     </button>
-                    <div id="reader" style="display:none; width:100%; margin-bottom:15px;"></div>
+                    <!-- Live video viewport - Html5Qrcode creates video element here -->
+                    <div id="interactive" style="display:none; width:100%; max-width:500px; margin:10px auto; border-radius:8px; overflow:hidden;"></div>
+                    <div class="mt-2" style="text-align:center;">
+                        <small class="text-muted">{{ _('Live barcode scanner - just point at the barcode') }}</small>
+                    </div>
                 </div>
 
                 <!-- ISBN Input -->
@@ -132,86 +137,168 @@
         </div>
     </form>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.4/dist/html5-qrcode.min.js"></script>
+<!-- Html5-Qrcode - Local copy with better mobile support -->
+<script src="{{ url_for('static', filename='js/vendor/html5-qrcode.min.js') }}"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Check if mobile and show scanner button
-        if (isMobile()) {
-            document.getElementById('scanner-button-container').style.display = 'block';
+    // Live video barcode scanner using Html5Qrcode (local copy)
+    var html5QrCode = null;
+    var scannerActive = false;
+    
+    function showStatus(message, type) {
+        var statusDiv = document.getElementById('scanner-status');
+        if (statusDiv) {
+            statusDiv.textContent = message;
+            statusDiv.className = 'alert alert-' + (type || 'info');
+            statusDiv.style.display = 'block';
         }
-
-        // ===== ISBN SCANNER =====
-        let scanner = null;
-        let isScannerActive = false;
-
-        const startScannerBtn = document.getElementById('start-scanner');
-        const reader = document.getElementById('reader');
-
-        if (startScannerBtn) {
-            startScannerBtn.addEventListener('click', function () {
-                if (!isScannerActive) {
-                    Html5Qrcode.getCameras().then(devices => {
-                        if (devices && devices.length) {
-                            scanner = new Html5Qrcode("reader");
-                            scanner.start(
-                                devices[0].id,
-                                { fps: 10, qrbox: 250 },
-                                onScanSuccess,
-                                onScanError
-                            );
-                            isScannerActive = true;
-                            startScannerBtn.innerHTML = '<i class="bx bx-stop-circle"></i> {{ _('Stop Scanner') }}';
-                            startScannerBtn.classList.remove('btn-info');
-                            startScannerBtn.classList.add('btn-danger');
-                            reader.style.display = 'block';
+        console.log('STATUS:', message);
+    }
+    
+    function hideStatus() {
+        var statusDiv = document.getElementById('scanner-status');
+        if (statusDiv) {
+            statusDiv.style.display = 'none';
+        }
+    }
+    
+    function startScanner() {
+        if (scannerActive) return;
+        
+        showStatus('⏳ Uruchamianie kamery...', 'info');
+        
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("interactive");
+        }
+        
+        var config = {
+            fps: 10,
+            qrbox: { width: 250, height: 150 },
+            aspectRatio: 1.777778
+        };
+        
+        html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            function(decodedText, decodedResult) {
+                console.log('Barcode detected:', decodedText);
+                
+                // Clean and validate ISBN
+                var cleanCode = decodedText.replace(/[^0-9X]/gi, '');
+                if (cleanCode.length === 10 || cleanCode.length === 13) {
+                    showStatus('✓ Znaleziono ISBN: ' + cleanCode, 'success');
+                    
+                    var isbnInput = document.getElementById('isbn');
+                    if (isbnInput) {
+                        isbnInput.value = cleanCode;
+                    }
+                    
+                    // Stop scanner
+                    stopScanner();
+                    
+                    // Auto-search
+                    setTimeout(function() {
+                        var findBtn = document.getElementById('find-by-isbn');
+                        if (findBtn) {
+                            findBtn.click();
                         }
-                    }).catch(err => {
-                        alert("{{ _('Camera access denied or unavailable.') }}");
-                        console.error(err);
-                    });
+                    }, 500);
+                }
+            },
+            function(errorMessage) {
+                // Ignore decode errors (expected when no barcode visible)
+            }
+        ).then(function() {
+            scannerActive = true;
+            showStatus('✓ Skaner aktywny - przyłóż kod kreskowy', 'success');
+            
+            var interactive = document.getElementById('interactive');
+            if (interactive) {
+                interactive.style.display = 'block';
+            }
+            
+            var startBtn = document.getElementById('start-scanner');
+            if (startBtn) {
+                startBtn.innerHTML = '<i class="bx bx-stop"></i> Zatrzymaj';
+                startBtn.classList.remove('btn-info');
+                startBtn.classList.add('btn-danger');
+            }
+        }).catch(function(err) {
+            console.error('Camera error:', err);
+            var errorMsg = 'Nie można uruchomić kamery';
+            
+            if (err.toString().indexOf('NotAllowedError') > -1) {
+                errorMsg = 'Brak uprawnień do kamery - zezwól w ustawieniach przeglądarki';
+            } else if (err.toString().indexOf('NotFoundError') > -1) {
+                errorMsg = 'Nie znaleziono kamery';
+            } else if (err.toString().indexOf('NotReadableError') > -1) {
+                errorMsg = 'Kamera zajęta przez inną aplikację';
+            } else if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                errorMsg = 'Kamera wymaga HTTPS - użyj localhost lub HTTPS';
+            }
+            
+            showStatus('❌ ' + errorMsg, 'danger');
+        });
+    }
+    
+    function stopScanner() {
+        if (!scannerActive || !html5QrCode) return;
+        
+        html5QrCode.stop().then(function() {
+            scannerActive = false;
+            hideStatus();
+            
+            var interactive = document.getElementById('interactive');
+            if (interactive) {
+                interactive.style.display = 'none';
+            }
+            
+            var startBtn = document.getElementById('start-scanner');
+            if (startBtn) {
+                startBtn.innerHTML = '<i class="bx bx-camera"></i> Skanuj ISBN/Kod kreskowy';
+                startBtn.classList.remove('btn-danger');
+                startBtn.classList.add('btn-info');
+            }
+        }).catch(function(err) {
+            console.error('Stop error:', err);
+        });
+    }
+
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, Html5Qrcode available:', typeof Html5Qrcode !== 'undefined');
+        
+        var startBtn = document.getElementById('start-scanner');
+        if (startBtn) {
+            startBtn.addEventListener('click', function() {
+                if (!scannerActive) {
+                    startScanner();
                 } else {
-                    scanner.stop().then(() => {
-                        isScannerActive = false;
-                        startScannerBtn.innerHTML = '<i class="bx bx-camera"></i> {{ _('Scan ISBN/Barcode') }}';
-                        startScannerBtn.classList.remove('btn-danger');
-                        startScannerBtn.classList.add('btn-info');
-                        reader.style.display = 'none';
-                    });
+                    stopScanner();
                 }
             });
         }
-
-        function onScanSuccess(decodedText) {
-            document.getElementById('isbn').value = decodedText.trim();
-            if (scanner) {
-                scanner.stop().then(() => {
-                    isScannerActive = false;
-                    startScannerBtn.innerHTML = '<i class="bx bx-camera"></i> {{ _('Scan ISBN/Barcode') }}';
-                    startScannerBtn.classList.remove('btn-danger');
-                    startScannerBtn.classList.add('btn-info');
-                    reader.style.display = 'none';
-                    // Auto-search after scan
-                    document.getElementById('find-by-isbn').click();
-                });
-            }
-        }
-
-        function onScanError(error) {
-            console.log("Scan error: " + error);
+        
+        if (typeof Html5Qrcode !== 'undefined') {
+            showStatus('✓ Skaner gotowy', 'success');
+            setTimeout(hideStatus, 2000);
+        } else {
+            showStatus('❌ Biblioteka skanera nie załadowała się', 'danger');
         }
 
         // ===== ISBN SEARCH =====
-        const findBtn = document.getElementById('find-by-isbn');
-        const isbnInput = document.getElementById('isbn');
-        const titleInput = document.getElementById('title');
-        const authorInput = document.getElementById('author');
-        const yearInput = document.getElementById('year');
-        const errorDiv = document.getElementById('isbn-error');
-        const coverPreview = document.getElementById('cover-preview');
+        var findBtn = document.getElementById('find-by-isbn');
+        var isbnInput = document.getElementById('isbn');
+        var titleInput = document.getElementById('title');
+        var authorInput = document.getElementById('author');
+        var yearInput = document.getElementById('year');
+        var errorDiv = document.getElementById('isbn-error');
+        var coverPreview = document.getElementById('cover-preview');
 
         if (findBtn) {
             findBtn.addEventListener('click', function () {
-                const isbn = isbnInput.value.trim().replace(/-/g, '');
+                var isbn = isbnInput.value.trim().replace(/-/g, '');
+                console.log('ISBN Search clicked, value:', isbn);
+                
                 if (!isbn) {
                     alert("{{ _('Please enter an ISBN.') }}");
                     return;
@@ -224,22 +311,27 @@
 
                 fetch(`/api/v1/isbn/${isbn}`)
                     .then(response => {
+                        console.log('API Response status:', response.status);
                         if (!response.ok) {
                             return response.json().then(err => { throw new Error(err.error || 'Error fetching data.') });
                         }
                         return response.json();
                     })
                     .then(data => {
+                        console.log('API Data received:', data);
                         if (data.title) titleInput.value = data.title;
                         if (data.author) authorInput.value = data.author;
                         if (data.year) yearInput.value = data.year;
                         if (data.cover_image) {
+                            console.log('Setting cover image:', data.cover_image);
                             coverPreview.innerHTML = `<p class="form-label">{{ _('Open Library Cover:') }}</p><img src="${data.cover_image}" style="max-width: 150px; border-radius: 4px;">`;
                             const hiddenInput = document.createElement('input');
                             hiddenInput.type = 'hidden';
                             hiddenInput.name = 'cover_url';
                             hiddenInput.value = data.cover_image;
                             document.querySelector('form').appendChild(hiddenInput);
+                        } else {
+                            console.log('No cover image in response');
                         }
                     })
                     .catch(error => {
@@ -254,14 +346,14 @@
         }
 
         // ===== TITLE SEARCH =====
-        const titleSearchInput = document.getElementById('title-search');
-        const searchByTitleBtn = document.getElementById('search-by-title');
-        const searchResultsDiv = document.getElementById('search-results');
-        const titleErrorDiv = document.getElementById('title-error');
+        var titleSearchInput = document.getElementById('title-search');
+        var searchByTitleBtn = document.getElementById('search-by-title');
+        var searchResultsDiv = document.getElementById('search-results');
+        var titleErrorDiv = document.getElementById('title-error');
 
         if (searchByTitleBtn) {
             searchByTitleBtn.addEventListener('click', function () {
-                const query = titleSearchInput.value.trim();
+                var query = titleSearchInput.value.trim();
                 if (!query || query.length < 3) {
                     titleErrorDiv.textContent = "{{ _('Please enter at least 3 characters.') }}";
                     return;
@@ -361,11 +453,6 @@
                     searchByTitleBtn.click();
                 }
             });
-        }
-
-        // ===== UTILITY FUNCTIONS =====
-        function isMobile() {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         }
     });
 </script>

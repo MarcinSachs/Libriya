@@ -759,6 +759,24 @@ msgstr "Zatrzymaj skaner"
 msgid "Camera access denied or unavailable."
 msgstr "Dostęp do kamery został odmówiony lub kamera jest niedostępna."
 
+msgid "Camera access denied. Please allow camera access in your browser settings."
+msgstr "Dostęp do kamery został odmówiony. Proszę zezwolić na dostęp do kamery w ustawieniach przeglądarki."
+
+msgid "No camera found on this device."
+msgstr "Nie znaleziono kamery na tym urządzeniu."
+
+msgid "Starting..."
+msgstr "Uruchamianie..."
+
+msgid "Camera requires HTTPS connection."
+msgstr "Kamera wymaga połączenia HTTPS."
+
+msgid "Scanner library not loaded. Please check your internet connection and refresh."
+msgstr "Biblioteka skanera nie została załadowana. Sprawdź połączenie internetowe i odśwież stronę."
+
+msgid "Tip: Works with barcodes and printed ISBN numbers"
+msgstr "Wskazówka: Działa z kodami kreskowymi i drukowanymi numerami ISBN"
+
 #: app/templates/book_add.html:216
 msgid "Please enter an ISBN."
 msgstr "Proszę wprowadzić numer ISBN."

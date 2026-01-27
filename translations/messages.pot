@@ -745,6 +745,21 @@ msgstr ""
 msgid "Camera access denied or unavailable."
 msgstr ""
 
+msgid "Camera access denied. Please allow camera access in your browser settings."
+msgstr ""
+
+msgid "No camera found on this device."
+msgstr ""
+
+msgid "Starting..."
+msgstr ""
+
+msgid "Camera requires HTTPS connection."
+msgstr ""
+
+msgid "Scanner library not loaded. Please check your internet connection and refresh."
+msgstr ""
+
 #: app/templates/book_add.html:216
 msgid "Please enter an ISBN."
 msgstr ""

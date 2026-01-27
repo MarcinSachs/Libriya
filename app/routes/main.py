@@ -1,7 +1,7 @@
 import re
 import requests
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, make_response, jsonify, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, make_response, jsonify, session, Response
 from flask_login import login_required, current_user
 from flask_babel import _, ngettext
 from sqlalchemy import or_
@@ -171,7 +171,7 @@ def get_book_by_isbn(isbn):
         book_info = {
             "title": book_data.get("title"),
             "author": ", ".join(author["name"] for author in book_data.get("authors", [])),
-            "cover_image": book_data.get("cover", {}).get("large"),
+            "cover_image": f"https://covers.openlibrary.org/b/isbn/{isbn}-L.jpg"
         }
 
         publish_date_str = book_data.get("publish_date", "")
