@@ -1,6 +1,5 @@
 import os
 import secrets
-from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from flask_babel import _
@@ -9,6 +8,9 @@ from app import db
 from app.forms import UserForm, UserEditForm, UserSettingsForm
 from app.models import User, Library
 from app.utils import role_required
+from app.utils.audit_log import (
+    log_user_created, log_user_deleted, log_user_role_changed
+)
 
 bp = Blueprint("users", __name__)
 
@@ -58,6 +60,9 @@ def user_add():
         db.session.add(user)
         db.session.commit()
 
+        # Log user creation
+        log_user_created(user.id, user.username, user.email)
+
         # Provide detailed success message
         if current_user.role == 'manager':
             library_names = ', '.join([lib.name for lib in current_user.libraries])
@@ -106,17 +111,32 @@ def user_edit(user_id):
 
     if form.validate_on_submit():
         # Prevent the last admin from being demoted
-        if user_to_edit.role == 'admin' and form.role.data != 'admin' and User.query.filter_by(role='admin').count() <= 1:
-            flash(_("You cannot revoke the last administrator's privileges."), "danger")
-            return redirect(url_for('users.user_edit', user_id=user_to_edit.id))
+        last_admin = (
+            user_to_edit.role == 'admin' and
+            form.role.data != 'admin' and
+            User.query.filter_by(role='admin').count() <= 1
+        )
+        if last_admin:
+            flash(_("You cannot revoke the last administrator's "
+                    "privileges."), "danger")
+            return redirect(url_for('users.user_edit',
+                                    user_id=user_to_edit.id))
 
         # Prevent a manager from making someone an admin
         if current_user.role == 'manager' and form.role.data == 'admin':
-            flash(_("You do not have permission to create administrators."), "danger")
-            return redirect(url_for('users.user_edit', user_id=user_to_edit.id))
+            flash(_("You do not have permission to create "
+                    "administrators."), "danger")
+            return redirect(url_for('users.user_edit',
+                                    user_id=user_to_edit.id))
 
+        # Track role changes for audit log
+        old_role = user_to_edit.role
         user_to_edit.email = form.email.data
         user_to_edit.role = form.role.data
+
+        # Log role change if it occurred
+        if old_role != user_to_edit.role:
+            log_user_role_changed(user_to_edit.id, user_to_edit.username, old_role, user_to_edit.role)
 
         # --- Update Library Memberships ---
         submitted_ids = {int(id) for id in request.form.getlist('libraries')}
@@ -180,6 +200,10 @@ def user_delete(user_id):
     username = user_to_delete.username
     db.session.delete(user_to_delete)
     db.session.commit()
+
+    # Log user deletion
+    log_user_deleted(user_to_delete.id, username)
+
     flash(_("User '%(username)s' deleted successfully!", username=username), "success")
     return redirect(url_for('users.users'))
 
@@ -192,8 +216,10 @@ def user_profile(user_id):
     all_loans = sorted(
         user.loans, key=lambda x: x.reservation_date, reverse=True)
     active_loans = [loan for loan in all_loans if loan.status == 'active']
-    loan_history = [loan for loan in all_loans if loan.status ==
-                    'returned' or loan.status == 'cancelled']
+    loan_history = [
+        loan for loan in all_loans
+        if loan.status == 'returned' or loan.status == 'cancelled'
+    ]
     pending_loans = [loan for loan in all_loans if loan.status == 'pending']
 
     # Access favorites
@@ -214,6 +240,7 @@ def user_profile(user_id):
 @bp.route("/user/settings", methods=["GET", "POST"])
 @login_required
 def user_settings():
+    from flask_babel import _
     user = current_user
     if not user:
         flash(_("No user found to edit settings."), "danger")
@@ -235,9 +262,21 @@ def user_settings():
         user.email = form.email.data
         if form.password.data:
             user.set_password(form.password.data)
+            # Log password change
+            from app.utils.audit_log import log_password_changed
+            log_password_changed(user.id, user.username)
         db.session.commit()
         flash(_("Your settings have been updated."), "success")
         return redirect(url_for('users.user_profile', user_id=user.id))
 
-    image_file_url = url_for('static', filename='uploads/' + user.image_file)
-    return render_template("user_settings.html", form=form, title="My Settings", image_file_url=image_file_url, user=user)
+    image_file_url = url_for(
+        'static',
+        filename='uploads/' + user.image_file
+    )
+    return render_template(
+        "user_settings.html",
+        form=form,
+        title="My Settings",
+        image_file_url=image_file_url,
+        user=user
+    )

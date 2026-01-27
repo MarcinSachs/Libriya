@@ -1,6 +1,5 @@
 import os
 import secrets
-import re
 import requests
 from urllib.parse import urlparse
 from datetime import datetime
@@ -12,8 +11,9 @@ from werkzeug.datastructures import FileStorage
 
 from app import db
 from app.forms import BookForm
-from app.models import Book, Author, Genre, Library, Notification
+from app.models import Book, Author, Library
 from app.utils import role_required
+from app.utils.audit_log import log_book_deleted
 
 bp = Blueprint("books", __name__)
 
@@ -62,10 +62,14 @@ def book_add():
 
     # --- Populate Library Choices ---
     if current_user.role == 'admin':
-        form.library.choices = [(l.id, l.name)
-                                for l in Library.query.order_by('name').all()]
+        form.library.choices = [
+            (lib.id, lib.name)
+            for lib in Library.query.order_by('name').all()
+        ]
     else:  # manager
-        form.library.choices = [(l.id, l.name) for l in current_user.libraries]
+        form.library.choices = [
+            (lib.id, lib.name) for lib in current_user.libraries
+        ]
         # If manager has only one library, set it as default
         if len(current_user.libraries) == 1:
             form.library.data = current_user.libraries[0].id
@@ -100,21 +104,62 @@ def book_add():
         elif 'cover_url' in request.form and request.form['cover_url']:
             cover_url = request.form['cover_url']
             try:
+                # SECURITY: Validate URL to prevent SSRF attacks
+                parsed_url = urlparse(cover_url)
+
+                # Only allow http and https protocols
+                if parsed_url.scheme not in ['http', 'https']:
+                    raise ValueError("Invalid URL scheme. Only HTTP(S) allowed.")
+
+                # Prevent localhost and private IPs
+                blocked_hosts = ['localhost', '127.0.0.1', '0.0.0.0']
+                if parsed_url.netloc in blocked_hosts:
+                    raise ValueError("Cannot access local network addresses.")
+
+                # Check for private IP ranges
+                import ipaddress
+                try:
+                    ip = ipaddress.ip_address(parsed_url.hostname)
+                    if ip.is_private or ip.is_loopback:
+                        raise ValueError("Cannot access private IP addresses.")
+                except (ValueError, TypeError):
+                    # If hostname is not an IP, it's likely a domain name (OK)
+                    pass
+
+                # Fetch the image with timeout and size limits
                 response = requests.get(cover_url, stream=True, timeout=10)
+                response.raise_for_status()
+
                 if response.status_code == 200:
+                    # Check content-length before downloading
+                    content_length = response.headers.get('content-length')
+                    max_size = 5 * 1024 * 1024  # 5MB limit
+                    if content_length and int(content_length) > max_size:
+                        raise ValueError("File too large. Maximum 5MB allowed.")
+
+                    # Check actual downloaded size
+                    downloaded_size = 0
+                    content = b''
+                    for chunk in response.iter_content(chunk_size=1024):
+                        downloaded_size += len(chunk)
+                        if downloaded_size > max_size:
+                            raise ValueError("File too large. Maximum 5MB allowed.")
+                        content += chunk
+
+                    # Validate file extension
                     random_hex = secrets.token_hex(8)
                     _, f_ext = os.path.splitext(urlparse(cover_url).path)
-                    if not f_ext:
+                    if not f_ext or f_ext.lower() not in ['.jpg', '.jpeg', '.png', '.gif']:
                         f_ext = '.jpg'
                     cover_filename = random_hex + f_ext
                     picture_path = os.path.join(
                         current_app.config["UPLOAD_FOLDER"], cover_filename)
                     with open(picture_path, 'wb') as f:
-                        f.write(response.content)
+                        f.write(content)
                     new_book.cover = cover_filename
-            except requests.exceptions.RequestException as e:
+            except (requests.exceptions.RequestException, ValueError) as e:
                 flash(
-                    _("Could not download cover image: '%(e)s'", e=e), "danger")
+                    _("Could not download cover image: %(error)s", error=str(e)), "danger")
 
         db.session.add(new_book)
         db.session.commit()
@@ -132,9 +177,13 @@ def book_delete(book_id):
 
     # Prevent deletion if the book has any associated loans (active or past)
     if book.status != 'available':
-        flash(_('Cannot delete "%(title)s" because it is currently "%(status)s". Consider marking it as inactive instead.',
+        flash(_('Cannot delete "%(title)s" because it is currently '
+                '"%(status)s". Consider marking it as inactive instead.',
               title=book.title, status=book.status), "danger")
         return redirect(url_for("main.home"))
+
+    # Log book deletion before removing it
+    log_book_deleted(book.id, book.title)
 
     db.session.delete(book)
     db.session.commit()
@@ -160,10 +209,14 @@ def book_edit(book_id):
 
     # --- Populate Library Choices ---
     if current_user.role == 'admin':
-        form.library.choices = [(l.id, l.name)
-                                for l in Library.query.order_by('name').all()]
+        form.library.choices = [
+            (lib.id, lib.name)
+            for lib in Library.query.order_by('name').all()
+        ]
     else:  # manager
-        form.library.choices = [(l.id, l.name) for l in current_user.libraries]
+        form.library.choices = [
+            (lib.id, lib.name) for lib in current_user.libraries
+        ]
 
     if request.method == 'GET':
         # Pre-fill form data for fields not handled by obj=book

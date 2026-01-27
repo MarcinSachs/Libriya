@@ -9,3 +9,5 @@ flask-login
 Flask-Babel
 flask-session
 wtforms-sqlalchemy
+flask-limiter
+isbnlib

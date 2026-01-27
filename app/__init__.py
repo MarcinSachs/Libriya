@@ -4,13 +4,16 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_babel import Babel
-from flask import current_app, session, request
+from flask import session, request
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 babel = Babel()
+limiter = Limiter(key_func=get_remote_address)
 
 
 def create_app(config_class=Config):
@@ -20,26 +23,27 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    limiter.init_app(app)
 
     def get_locale():
         # 1. Check for language in cookie first
         lang = request.cookies.get("language")
         if lang and lang in app.config["LANGUAGES"]:
-            current_app.logger.debug(
+            app.logger.debug(
                 f"Locale selector: found language in cookie: {lang}")
             return lang
 
         # 2. Check session for backward compatibility (can be removed later)
         lang = session.get("language")
         if lang and lang in app.config["LANGUAGES"]:
-            current_app.logger.debug(
+            app.logger.debug(
                 f"Locale selector: found language in session: {lang}")
             return lang
 
         # 3. Fallback to browser's preferred language
         browser_lang = request.accept_languages.best_match(
             app.config["LANGUAGES"])
-        current_app.logger.debug(
+        app.logger.debug(
             f"Locale selector: falling back to browser language: {browser_lang}"
         )
         return browser_lang
@@ -50,7 +54,24 @@ def create_app(config_class=Config):
     from app.routes import register_blueprints
     register_blueprints(app)
 
-    from app import models
+    # Add security headers
+    @app.after_request
+    def set_security_headers(response):
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        response.headers['Strict-Transport-Security'] = (
+            'max-age=31536000; includeSubDomains'
+        )
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self'; script-src 'self' 'unsafe-inline' "
+            "https://cdn.jsdelivr.net https://fonts.googleapis.com; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net "
+            "https://fonts.googleapis.com https://unpkg.com; "
+            "font-src 'self' https://fonts.gstatic.com https://unpkg.com; "
+            "img-src 'self' data:"
+        )
+        return response
 
     return app
 

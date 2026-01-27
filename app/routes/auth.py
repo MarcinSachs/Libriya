@@ -3,6 +3,7 @@ from flask_login import login_user, login_required, logout_user
 from flask_babel import _
 
 from app.models import User
+from app import limiter
 
 bp = Blueprint("auth", __name__)
 
@@ -16,6 +17,7 @@ def login():
 
 
 @bp.route("/login/", methods=['POST'])
+@limiter.limit("5 per minute")
 def login_post():
     username = request.form.get('username')
     password = request.form.get('password')

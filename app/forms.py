@@ -1,47 +1,92 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, IntegerField, PasswordField, SelectField, BooleanField, SelectMultipleField, TextAreaField
+from wtforms import (
+    StringField, SubmitField, IntegerField, PasswordField,
+    SelectField, SelectMultipleField, TextAreaField
+)
 from flask_wtf.file import FileField, FileAllowed, FileSize
-from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional, ValidationError, NumberRange
+from wtforms.validators import (
+    DataRequired, Email, Length, EqualTo, Optional, ValidationError, NumberRange
+)
 from datetime import datetime
 from flask_babel import lazy_gettext as _, gettext as _real
 from app.models import Genre
-from wtforms_sqlalchemy.fields import QuerySelectMultipleField
+
+
+class ISBNValidator:
+    """Validator for ISBN-10 and ISBN-13 formats."""
+
+    def __init__(self, message=None):
+        self.message = (
+            message or _('Invalid ISBN format. Must be 10 or 13 digits.')
+        )
+
+    def __call__(self, form, field):
+        if field.data:
+            # Remove hyphens and spaces
+            isbn = field.data.replace('-', '').replace(' ', '')
+
+            # Check if it's all digits
+            if not isbn.isdigit():
+                raise ValidationError(self.message)
+
+            # Check length (ISBN-10 or ISBN-13)
+            if len(isbn) not in [10, 13]:
+                raise ValidationError(self.message)
 
 
 class BookForm(FlaskForm):
-    isbn = StringField('ISBN')
+    isbn = StringField(
+        _('ISBN'),
+        validators=[Optional(), ISBNValidator()]
+    )
     title = StringField(_('Title'), validators=[DataRequired()])
-    author = StringField(_('Author(s) (comma-separated)'),
-                         validators=[DataRequired()])
-    library = SelectField(_('Library'), coerce=int, validators=[DataRequired()])
+    author = StringField(
+        _('Author(s) (comma-separated)'),
+        validators=[DataRequired()]
+    )
+    library = SelectField(
+        _('Library'),
+        coerce=int,
+        validators=[DataRequired()]
+    )
     genres = SelectMultipleField(
         _('Genres'),
         coerce=int,
-        validators=[DataRequired()] 
+        validators=[DataRequired()]
     )
     year = IntegerField(
         _('Year'),
         validators=[
             DataRequired(message=_("Field 'Year' is required.")),
-            NumberRange(min=0, max=datetime.now().year,
-                        message=_("Please enter a valid year (e.g. 1999)."))
+            NumberRange(
+                min=0,
+                max=datetime.now().year,
+                message=_("Please enter a valid year (e.g. 1999).")
+            )
         ]
     )
-    cover = FileField(_('Cover'), validators=[
-        FileAllowed(['jpg', 'png', 'jpeg'], _('Only image files (jpg, png, jpeg) are allowed!'))])
-    
+    cover = FileField(
+        _('Cover'),
+        validators=[
+            FileAllowed(
+                ['jpg', 'png', 'jpeg'],
+                _('Only image files (jpg, png, jpeg) are allowed!')
+            )
+        ]
+    )
 
     submit = SubmitField(_('Submit'), render_kw={"class": "btn btn-primary"})
-
-
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         all_genres = Genre.query.all()
 
         translated_genres = [(g.id, _real(g.name)) for g in all_genres]
-        sorted_translated_genres = sorted(translated_genres, key=lambda x: x[1])
-        
+        sorted_translated_genres = sorted(
+            translated_genres,
+            key=lambda x: x[1]
+        )
+
         self.genres.choices = sorted_translated_genres
         if 'obj' in kwargs and kwargs['obj'] is not None:
             self.genres.data = [g.id for g in kwargs['obj'].genres]
@@ -91,11 +136,26 @@ class LibraryForm(FlaskForm):
 
 
 class LoanForm(FlaskForm):
-    book_id = SelectField(_('Book'), coerce=int, validators=[DataRequired()])
-    user_id = SelectField(_('User'), coerce=int, validators=[DataRequired()])
-    # Added btn-primary class
-    submit = SubmitField(_('Submit'), render_kw={
-                         "class": "btn btn-primary"})
+    book_id = SelectField(
+        _('Book'),
+        coerce=int,
+        validators=[DataRequired()]
+    )
+    user_id = SelectField(
+        _('User'),
+        coerce=int,
+        validators=[DataRequired()]
+    )
+    submit = SubmitField(
+        _('Submit'),
+        render_kw={"class": "btn btn-primary"}
+    )
+
+
 class CommentForm(FlaskForm):
-    text = TextAreaField(_('Your Comment'), validators=[DataRequired(), Length(min=1, max=500)], render_kw={"rows": 8})
+    text = TextAreaField(
+        _('Your Comment'),
+        validators=[DataRequired(), Length(min=1, max=500)],
+        render_kw={"rows": 8}
+    )
     submit = SubmitField(_('Add Comment'))

@@ -922,3 +922,58 @@ select.form-control[multiple] {
     margin-bottom: 1.0rem;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
+
+/* Boxicons styling */
+.bx {
+    display: inline-block;
+    font-size: 1.25rem;
+    vertical-align: middle;
+    margin-right: 0.25rem;
+}
+
+/* Icons in buttons */
+button .bx,
+a .bx {
+    font-size: 1rem;
+}
+
+/* Icons in navigation */
+.navbar-nav .bx {
+    font-size: 1.25rem;
+}
+
+/* Icons in action buttons */
+.btn-group .bx,
+.btn .bx {
+    font-size: 1rem;
+}
+
+/* Spinning animation for loading icons */
+.bx-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Heart icon styling */
+.bx-heart {
+    color: #dc3545;
+}
+
+.bx-heart:hover {
+    transform: scale(1.2);
+}
+
+/* Ensure icons have proper sizing */
+i.bx {
+    font-weight: 400;
+    font-style: normal;
+}
