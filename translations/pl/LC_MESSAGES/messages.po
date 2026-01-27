@@ -1,9 +1,3 @@
-#: app/templates/loan_add.html:4
-msgid "Loan a Book"
-msgstr "Wypożycz książkę"
-#: app/templates/user_add.html:4
-msgid "Add a new user"
-msgstr "Dodaj nowego użytkownika"
 # Polish translations for PROJECT.
 # Copyright (C) 2026 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
@@ -13,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-27 17:34+0100\n"
+"POT-Creation-Date: 2026-01-27 20:39+0100\n"
 "PO-Revision-Date: 2026-01-27 18:00+0100\n"
 "Last-Translator: Marcin <marcin@libriya.com>\n"
 "Language: pl\n"
@@ -43,7 +37,7 @@ msgid "Author(s) (comma-separated)"
 msgstr "Autor(zy) (oddzieleni przecinkami)"
 
 #: app/forms.py:48 app/templates/generate_invitation.html:13
-#: app/templates/index.html:74 app/templates/invitation_codes.html:26
+#: app/templates/index.html:74 app/templates/invitation_codes.html:37
 msgid "Library"
 msgstr "Biblioteka"
 
@@ -94,12 +88,12 @@ msgid "Submit"
 msgstr "Zatwierdź"
 
 #: app/forms.py:102 app/forms.py:112 app/forms.py:180
-#: app/templates/users.html:17
+#: app/templates/users.html:22
 msgid "Username"
 msgstr "Nazwa użytkownika"
 
 #: app/forms.py:103 app/forms.py:113 app/forms.py:124 app/forms.py:176
-#: app/templates/users.html:18
+#: app/templates/users.html:23
 msgid "Email"
 msgstr "Email"
 
@@ -119,7 +113,7 @@ msgstr "Potwierdź hasło"
 msgid "Add User"
 msgstr "Dodaj użytkownika"
 
-#: app/forms.py:114 app/templates/users.html:19
+#: app/forms.py:114 app/templates/users.html:24
 msgid "Role"
 msgstr "Rola"
 
@@ -156,7 +150,6 @@ msgid "Book"
 msgstr "Książka"
 
 #: app/forms.py:151 app/templates/loans.html:34 app/templates/loans.html:55
-#: app/templates/users.html:29
 msgid "User"
 msgstr "Użytkownik"
 
@@ -201,7 +194,7 @@ msgstr "Email jest już zarejestrowany"
 msgid "Username already taken"
 msgstr "Nazwa użytkownika jest już zajęta"
 
-#: app/routes/books.py:169 app/utils/messages.py:76
+#: app/routes/books.py:169 app/utils/messages.py:77
 #, fuzzy, python-format
 msgid "Could not download cover image: %(error)s"
 msgstr "Nie można pobrać zdjęcia okładki: %(error)s"
@@ -295,11 +288,11 @@ msgstr ""
 msgid "Your Notifications"
 msgstr "Twoje powiadomienia"
 
-#: app/routes/main.py:201
+#: app/routes/main.py:203
 msgid "Search query must be at least 3 characters"
 msgstr ""
 
-#: app/routes/main.py:268 app/templates/book_add.html:4
+#: app/routes/main.py:270 app/templates/book_add.html:4
 msgid "Add a new book"
 msgstr "Dodaj nową książkę"
 
@@ -719,6 +712,7 @@ msgstr "Okładka książki"
 #: app/templates/book_add.html:89
 msgid "Supported formats: JPG, PNG, JPEG (Max 5MB)"
 msgstr "Obsługiwane formaty: JPG, PNG, JPEG (Max 5MB)"
+
 #: app/templates/book_add.html:96 app/templates/book_edit.html:41
 msgid "Location Information"
 msgstr "Informacje o lokalizacji"
@@ -753,7 +747,7 @@ msgid "Add Book"
 msgstr "Dodaj książkę"
 
 #: app/templates/book_add.html:128 app/templates/generate_invitation.html:39
-#: app/templates/user_settings.html:43
+#: app/templates/macros.html:82 app/templates/user_settings.html:43
 msgid "Cancel"
 msgstr "Anuluj"
 
@@ -776,13 +770,6 @@ msgstr "Wyszukiwanie..."
 #: app/templates/book_add.html:237 app/templates/book_add.html:332
 msgid "Open Library Cover:"
 msgstr "Okładka z Open Library:"
-
-#: app/templates/book_add.html:247
-#, fuzzy, python-format
-msgid "Could not find data for ISBN. Please check the number and try again."
-msgstr ""
-"Nie można znaleźć danych dla ISBN %(isbn_num)s. Sprawdź numer i spróbuj "
-"ponownie."
 
 #: app/templates/book_add.html:266
 #, fuzzy
@@ -812,7 +799,7 @@ msgid "No genres assigned"
 msgstr "Nie przypisano gatunków"
 
 #: app/templates/book_detail.html:34 app/templates/index.html:27
-#: app/templates/index.html:75 app/templates/invitation_codes.html:30
+#: app/templates/index.html:75 app/templates/invitation_codes.html:41
 #: app/templates/loans.html:59 app/templates/user_profile.html:51
 #: app/templates/user_profile.html:120
 msgid "Status"
@@ -983,9 +970,9 @@ msgstr "Resetuj"
 msgid "Author"
 msgstr "Autor"
 
-#: app/templates/index.html:76 app/templates/invitation_codes.html:32
+#: app/templates/index.html:76 app/templates/invitation_codes.html:43
 #: app/templates/loans.html:60 app/templates/user_profile.html:52
-#: app/templates/user_profile.html:89 app/templates/users.html:20
+#: app/templates/user_profile.html:89 app/templates/users.html:25
 msgid "Actions"
 msgstr "Akcje"
 
@@ -1006,65 +993,64 @@ msgstr "Dodaj do ulubionych"
 msgid "Add book"
 msgstr "Dodaj książkę"
 
-#: app/templates/invitation_codes.html:7 app/templates/layout.html:137
+#: app/templates/invitation_codes.html:16
+msgid "No invitation codes yet."
+msgstr "Brak kodów zaproszenia."
+
+#: app/templates/invitation_codes.html:22 app/templates/layout.html:137
 #: app/templates/layout.html:191
 msgid "Invitation Codes"
 msgstr "Kody zaproszenia"
 
-#: app/templates/invitation_codes.html:11
-msgid "Generate New Code"
-msgstr "Wygeneruj nowy kod"
+#: app/templates/invitation_codes.html:26
+msgid "Add code"
+msgstr "Dodaj kod"
 
-#: app/templates/invitation_codes.html:18
-msgid "No invitation codes yet."
-msgstr "Brak kodów zaproszenia."
-
-#: app/templates/invitation_codes.html:25
+#: app/templates/invitation_codes.html:36
 msgid "Code"
 msgstr "Kod"
 
-#: app/templates/invitation_codes.html:27
+#: app/templates/invitation_codes.html:38
 msgid "Created By"
 msgstr "Utworzone przez"
 
-#: app/templates/invitation_codes.html:28
+#: app/templates/invitation_codes.html:39
 msgid "Created"
 msgstr "Utworzono"
 
-#: app/templates/invitation_codes.html:29
+#: app/templates/invitation_codes.html:40
 msgid "Expires"
 msgstr "Wygasa"
 
-#: app/templates/invitation_codes.html:31
+#: app/templates/invitation_codes.html:42
 msgid "Used By"
 msgstr "Użyte przez"
 
-#: app/templates/invitation_codes.html:49
-#: app/templates/invitation_codes.html:59
+#: app/templates/invitation_codes.html:60
 msgid "Expired"
 msgstr "Wygasły"
 
-#: app/templates/invitation_codes.html:54
+#: app/templates/invitation_codes.html:65
 msgid "Active"
 msgstr "Aktywny"
 
-#: app/templates/invitation_codes.html:57
+#: app/templates/invitation_codes.html:68
 msgid "Used"
 msgstr "Używany"
 
-#: app/templates/invitation_codes.html:76
+#: app/templates/invitation_codes.html:83
 msgid "Copy code to clipboard"
 msgstr "Skopiuj kod do schowka"
 
-#: app/templates/invitation_codes.html:77
+#: app/templates/invitation_codes.html:84
 msgid "Copy"
 msgstr "Kopiuj"
 
-#: app/templates/invitation_codes.html:82
+#: app/templates/invitation_codes.html:89
 msgid "Deactivate this code?"
 msgstr "Dezaktywować ten kod?"
 
-#: app/templates/invitation_codes.html:107
+#: app/templates/invitation_codes.html:114
 msgid "Copied"
 msgstr "Skopiowano"
 
@@ -1109,7 +1095,7 @@ msgid "Administration"
 msgstr "Administracja"
 
 #: app/templates/layout.html:132 app/templates/layout.html:183
-#: app/templates/users.html:11
+#: app/templates/users.html:17
 msgid "Users"
 msgstr "Użytkownicy"
 
@@ -1137,6 +1123,10 @@ msgstr "Nie znaleziono żadnych bibliotek."
 #, fuzzy
 msgid "Enter library name"
 msgstr "Nazwa biblioteki"
+
+#: app/templates/loan_add.html:4
+msgid "Loan a Book"
+msgstr "Wypożycz książkę"
 
 #: app/templates/loans.html:7
 msgid "Add Loan"
@@ -1267,6 +1257,10 @@ msgstr "Masz już konto?"
 msgid "Log in here"
 msgstr "Zaloguj się tutaj"
 
+#: app/templates/user_add.html:4
+msgid "Add a new user"
+msgstr "Dodaj nowego użytkownika"
+
 #: app/templates/user_profile.html:19
 msgid "Total Loans"
 msgstr "Wszystkie wypożyczenia"
@@ -1343,7 +1337,7 @@ msgstr "Aktualne zdjęcie profilowe"
 msgid "Leave the password fields blank if you don't want to change your password."
 msgstr "Pozostaw pola hasła puste, jeśli nie chcesz zmieniać swojego hasła."
 
-#: app/templates/users.html:9
+#: app/templates/users.html:15
 #, python-format
 msgid "Library currently has %(n)s user."
 msgid_plural "Library currently has %(n)s users."
@@ -1351,23 +1345,19 @@ msgstr[0] "Biblioteka aktualnie ma %(n)s użytkownika."
 msgstr[1] "Biblioteka aktualnie ma %(n)s użytkowników."
 msgstr[2] "Biblioteka aktualnie ma %(n)s użytkowników."
 
-#: app/templates/users.html:28
-msgid "Admin"
-msgstr "Admin"
-
-#: app/templates/users.html:32
+#: app/templates/users.html:35
 msgid "Edit User"
 msgstr "Edytuj użytkownika"
 
-#: app/templates/users.html:35
-msgid "Are you sure you want to delete this user?"
-msgstr "Czy na pewno chcesz usunąć tego użytkownika?"
-
-#: app/templates/users.html:36
+#: app/templates/users.html:39
 msgid "Delete User"
 msgstr "Usuń użytkownika"
 
-#: app/templates/users.html:45
+#: app/templates/users.html:39
+msgid "Are you sure you want to delete this user?"
+msgstr "Czy na pewno chcesz usunąć tego użytkownika?"
+
+#: app/templates/users.html:51
 msgid "Add user"
 msgstr "Dodaj użytkownika"
 
@@ -1465,7 +1455,7 @@ msgstr ""
 "Książka została pomyślnie zarezerwowana! Administrator wkrótce ją "
 "zatwierdzi."
 
-#: app/utils/messages.py:37 app/utils/messages.py:93
+#: app/utils/messages.py:37 app/utils/messages.py:94
 msgid "This book is already reserved by another user."
 msgstr "Ta książka jest już zarezerwowana przez innego użytkownika."
 
@@ -1484,11 +1474,11 @@ msgstr "Użytkownik '%(username)s' zaktualizowany pomyślnie!"
 msgid "User '%(username)s' has been deleted successfully."
 msgstr "Użytkownik '%(username)s' zaktualizowany pomyślnie!"
 
-#: app/utils/messages.py:42 app/utils/messages.py:84
+#: app/utils/messages.py:42 app/utils/messages.py:85
 msgid "You cannot delete your own account."
 msgstr ""
 
-#: app/utils/messages.py:43 app/utils/messages.py:85
+#: app/utils/messages.py:43 app/utils/messages.py:86
 #, fuzzy
 msgid "You cannot delete an administrator."
 msgstr "Nie możesz odebrać uprawnień ostatniemu administratorowi."
@@ -1504,17 +1494,17 @@ msgid "You can only manage users from your libraries."
 msgstr "Możesz edytować tylko użytkowników z Twoich bibliotek."
 
 #: app/utils/messages.py:47
-#, fuzzy, python-format
+#, fuzzy
 msgid "Library has been created successfully."
 msgstr "Biblioteka '%(name)s' została utworzona pomyślnie!"
 
 #: app/utils/messages.py:48
-#, fuzzy, python-format
+#, fuzzy
 msgid "Library has been updated successfully."
 msgstr "Biblioteka '%(name)s' została zaktualizowana pomyślnie!"
 
 #: app/utils/messages.py:49
-#, fuzzy, python-format
+#, fuzzy
 msgid "Library has been deleted successfully."
 msgstr "Biblioteka '%(name)s' została usunięta pomyślnie."
 
@@ -1580,19 +1570,19 @@ msgstr "Twój komentarz został zaktualizowany!"
 msgid "Book is already in favorites."
 msgstr "Ta książka jest już w ulubionych."
 
-#: app/utils/messages.py:71 app/utils/messages.py:123
+#: app/utils/messages.py:71
 msgid "Book added to favorites."
 msgstr "Książka została dodana do ulubionych."
 
-#: app/utils/messages.py:72 app/utils/messages.py:124
+#: app/utils/messages.py:72
 msgid "Book removed from favorites."
 msgstr "Książka została usunięta z ulubionych."
 
-#: app/utils/messages.py:73 app/utils/messages.py:125
+#: app/utils/messages.py:73
 msgid "Book is not in favorites."
 msgstr "Książka nie jest w ulubionych."
 
-#: app/utils/messages.py:74
+#: app/utils/messages.py:75
 #, python-format
 msgid ""
 "Cannot delete \"%(title)s\" because it is currently \"%(status)s\". "
@@ -1601,84 +1591,84 @@ msgstr ""
 "Nie można usunąć „%(title)s”, ponieważ ma aktualnie status „%(status)s”. "
 "Rozważ oznaczenie jej jako nieaktywna."
 
-#: app/utils/messages.py:75
+#: app/utils/messages.py:76
 msgid "You can only edit books within your libraries."
 msgstr "Możesz edytować tylko książki z Twoich bibliotek."
 
-#: app/utils/messages.py:79
+#: app/utils/messages.py:80
 msgid "You do not manage any library. Cannot add user."
 msgstr "Nie zarządzasz żadną biblioteką. Nie można dodać użytkownika."
 
-#: app/utils/messages.py:80
+#: app/utils/messages.py:81
 #, fuzzy
 msgid "You do not have permission to edit this user's role."
 msgstr "Nie masz uprawnień do edycji roli tego użytkownika."
 
-#: app/utils/messages.py:81
+#: app/utils/messages.py:82
 msgid "You can only edit users within your libraries."
 msgstr "Możesz edytować tylko użytkowników z Twoich bibliotek."
 
-#: app/utils/messages.py:82
+#: app/utils/messages.py:83
 #, fuzzy
 msgid "You cannot revoke the last administrator's role."
 msgstr "Nie możesz odebrać uprawnień ostatniemu administratorowi."
 
-#: app/utils/messages.py:83
+#: app/utils/messages.py:84
 #, fuzzy
 msgid "You do not have permission to create administrators."
 msgstr "Nie masz uprawnień do tworzenia administratorów."
 
-#: app/utils/messages.py:86
+#: app/utils/messages.py:87
 #, fuzzy
 msgid "You can only delete users from your libraries."
 msgstr "Możesz edytować tylko użytkowników z Twoich bibliotek."
 
-#: app/utils/messages.py:87
+#: app/utils/messages.py:88
 msgid "No user found to edit settings."
 msgstr "Nie znaleziono użytkownika do edycji ustawień."
 
-#: app/utils/messages.py:88 app/utils/messages.py:126
+#: app/utils/messages.py:89
 msgid "Your settings have been updated."
 msgstr "Twoje ustawienia zostały zaktualizowane."
 
-#: app/utils/messages.py:91
+#: app/utils/messages.py:92
 msgid "Invalid user ID provided for filtering."
 msgstr "Nieprawidłowy ID użytkownika podany do filtrowania."
 
-#: app/utils/messages.py:92
+#: app/utils/messages.py:93
 msgid "Book has been reserved successfully! An admin will approve it shortly."
 msgstr ""
 "Książka została pomyślnie zarezerwowana! Administrator wkrótce ją "
 "zatwierdzi."
 
-#: app/utils/messages.py:94
+#: app/utils/messages.py:95
 msgid "This book is currently on loan."
 msgstr "Ta książka jest aktualnie wypożyczona."
 
-#: app/utils/messages.py:95
+#: app/utils/messages.py:96
 msgid "Book borrowed successfully!"
 msgstr "Książka wypożyczona pomyślnie!"
 
-#: app/utils/messages.py:96
+#: app/utils/messages.py:97
 msgid "This book is not available for direct loan."
 msgstr "Ta książka nie jest dostępna do bezpośredniego wypożyczenia."
 
-#: app/utils/messages.py:97
+#: app/utils/messages.py:98
 msgid "Book returned successfully!"
 msgstr "Książka zwrócona pomyślnie!"
 
-#: app/utils/messages.py:98
+#: app/utils/messages.py:99
 msgid "This book is not currently on loan or is already returned."
 msgstr "Ta książka nie jest aktualnie wypożyczona lub została już zwrócona."
 
-#: app/utils/messages.py:99
+#: app/utils/messages.py:100
 #, python-format
 msgid "Loan for \"%(title)s\" to %(username)s has been approved!"
 msgstr ""
 "Wypożyczenie książki „%(title)s” użytkownikowi %(username)s zostało "
 "zatwierdzone!"
 
-#: app/utils/messages.py:100
+#: app/utils/messages.py:102
 msgid ""
 "Cannot approve loan: Book status is not \"reserved\". It might have been "
 "cancelled or loaned differently."
@@ -1686,115 +1676,95 @@ msgstr ""
 "Nie można zatwierdzić wypożyczenia: status książki nie jest "
 "„zarezerwowana”. Mogła zostać anulowana lub wypożyczona w inny sposób."
 
-#: app/utils/messages.py:101
+#: app/utils/messages.py:103
 msgid "Loan is not in \"pending\" status and cannot be approved."
 msgstr ""
 "Wypożyczenie nie ma statusu „oczekujące na zatwierdzenie” i nie może "
 "zostać zatwierdzone."
 
-#: app/utils/messages.py:102
+#: app/utils/messages.py:104
 #, python-format
 msgid "Reservation for \"%(title)s\" by %(username)s has been cancelled."
 msgstr ""
 "Rezerwacja książki „%(title)s” przez użytkownika %(username)s została "
 "anulowana."
 
-#: app/utils/messages.py:103
+#: app/utils/messages.py:105
 msgid "Cannot cancel loan: It is not in \"pending\" status."
 msgstr ""
 "Nie można anulować wypożyczenia: nie ma ono statusu „oczekujące na "
 "zatwierdzenie”."
 
-#: app/utils/messages.py:104
+#: app/utils/messages.py:106
 #, python-format
 msgid "Book \"%(title)s\" has been returned."
 msgstr "Książka „%(title)s” została zwrócona."
 
-#: app/utils/messages.py:105
+#: app/utils/messages.py:107
 msgid "This loan is not active or has already been returned."
 msgstr "To wypożyczenie nie jest aktywne lub zostało już zwrócone."
 
-#: app/utils/messages.py:106
+#: app/utils/messages.py:108
 msgid "Loan added successfully!"
 msgstr "Wypożyczenie dodane pomyślnie!"
 
-#: app/utils/messages.py:107
+#: app/utils/messages.py:109
 msgid "This book is currently on loan or reserved."
 msgstr "Ta książka jest aktualnie wypożyczona lub zarezerwowana."
 
-#: app/utils/messages.py:108
+#: app/utils/messages.py:110
 msgid "Invalid book or user."
 msgstr "Nieprawidłowa książka lub użytkownik."
 
-#: app/utils/messages.py:109
+#: app/utils/messages.py:111
 msgid "You can only cancel your own reservations."
 msgstr "Możesz anulować tylko swoje rezerwacje."
 
-#: app/utils/messages.py:110
+#: app/utils/messages.py:112
 #, python-format
 msgid "Your reservation for '%(title)s' has been cancelled."
 msgstr "Twoja rezerwacja książki „%(title)s” została anulowana."
 
-#: app/utils/messages.py:111
+#: app/utils/messages.py:113
 msgid "This reservation cannot be cancelled as it is not in 'pending' status."
 msgstr ""
 "Tej rezerwacji nie można anulować, ponieważ nie ma statusu „oczekujące na"
 " zatwierdzenie”."
 
-#: app/utils/messages.py:114
+#: app/utils/messages.py:116
 msgid "Cannot delete a library that has books associated with it."
 msgstr "Nie można usunąć biblioteki, która ma przypisane książki."
 
-#: app/utils/messages.py:115
+#: app/utils/messages.py:117
 msgid "Cannot delete a library that has users assigned to it."
 msgstr "Nie można usunąć biblioteki, która ma przypisanych użytkowników."
 
-#: app/utils/messages.py:118
+#: app/utils/messages.py:120
 msgid "Please select a library"
 msgstr "Proszę wybrać bibliotekę"
 
-#: app/utils/messages.py:119
+#: app/utils/messages.py:121
 msgid "You can only generate codes for your libraries"
 msgstr "Możesz generować kody tylko dla swoich bibliotek"
 
-#: app/utils/messages.py:120
+#: app/utils/messages.py:122
 #, python-format
 msgid "Invitation code generated: %(code)s"
 msgstr "Kod zaproszenia wygenerowany: %(code)s"
 
-#: app/utils/messages.py:121
+#: app/utils/messages.py:123
 msgid "You do not have permission to deactivate this code"
 msgstr "Nie masz uprawnień do dezaktywacji tego kodu"
 
-#: app/utils/messages.py:122
+#: app/utils/messages.py:124
 msgid "Cannot deactivate an already-used code"
 msgstr "Nie można dezaktywować już używanego kodu"
 
-#: app/utils/messages.py:123
+#: app/utils/messages.py:125
 msgid "Invitation code deactivated"
 msgstr "Kod zaproszenia dezaktywowany"
 
-#: app/utils/messages.py:129
-#, fuzzy
-msgid "You do not manage any library."
-msgstr "Nie zarządzasz żadną biblioteką. Nie można dodać użytkownika."
-
-#: app/utils/messages.py:130
-#, fuzzy
-msgid "Please select a library."
-msgstr "Proszę wybrać bibliotekę"
-
-#: app/utils/messages.py:131
-#, fuzzy
-msgid "Invalid user ID provided."
-msgstr "Podano nieprawidłowy ID użytkownika."
-
-#: app/utils/messages.py:132
-#, fuzzy
-msgid "You cannot revoke the last administrator."
-msgstr "Nie możesz odebrać uprawnień ostatniemu administratorowi."
-
-#: app/utils/messages.py:133
+#: app/utils/messages.py:128
 msgid "Unsupported language."
 msgstr "Nieobsługiwany język."
 
@@ -1913,4 +1883,28 @@ msgstr "Nieobsługiwany język."
 
 #~ msgid "No libraries available to assign."
 #~ msgstr "Brak dostępnych bibliotek do przypisania."
+
+#~ msgid "Could not find data for ISBN. Please check the number and try again."
+#~ msgstr ""
+#~ "Nie można znaleźć danych dla ISBN "
+#~ "%(isbn_num)s. Sprawdź numer i spróbuj "
+#~ "ponownie."
+
+#~ msgid "Generate New Code"
+#~ msgstr "Wygeneruj nowy kod"
+
+#~ msgid "Admin"
+#~ msgstr "Admin"
+
+#~ msgid "You do not manage any library."
+#~ msgstr "Nie zarządzasz żadną biblioteką. Nie można dodać użytkownika."
+
+#~ msgid "Please select a library."
+#~ msgstr "Proszę wybrać bibliotekę"
+
+#~ msgid "Invalid user ID provided."
+#~ msgstr "Podano nieprawidłowy ID użytkownika."
+
+#~ msgid "You cannot revoke the last administrator."
+#~ msgstr "Nie możesz odebrać uprawnień ostatniemu administratorowi."
 

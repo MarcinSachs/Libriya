@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-27 17:34+0100\n"
+"POT-Creation-Date: 2026-01-27 20:39+0100\n"
 "PO-Revision-Date: 2026-01-27 17:35+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -36,7 +36,7 @@ msgid "Author(s) (comma-separated)"
 msgstr ""
 
 #: app/forms.py:48 app/templates/generate_invitation.html:13
-#: app/templates/index.html:74 app/templates/invitation_codes.html:26
+#: app/templates/index.html:74 app/templates/invitation_codes.html:37
 msgid "Library"
 msgstr ""
 
@@ -87,12 +87,12 @@ msgid "Submit"
 msgstr ""
 
 #: app/forms.py:102 app/forms.py:112 app/forms.py:180
-#: app/templates/users.html:17
+#: app/templates/users.html:22
 msgid "Username"
 msgstr ""
 
 #: app/forms.py:103 app/forms.py:113 app/forms.py:124 app/forms.py:176
-#: app/templates/users.html:18
+#: app/templates/users.html:23
 msgid "Email"
 msgstr ""
 
@@ -112,7 +112,7 @@ msgstr ""
 msgid "Add User"
 msgstr ""
 
-#: app/forms.py:114 app/templates/users.html:19
+#: app/forms.py:114 app/templates/users.html:24
 msgid "Role"
 msgstr ""
 
@@ -149,7 +149,6 @@ msgid "Book"
 msgstr ""
 
 #: app/forms.py:151 app/templates/loans.html:34 app/templates/loans.html:55
-#: app/templates/users.html:29
 msgid "User"
 msgstr ""
 
@@ -194,7 +193,7 @@ msgstr ""
 msgid "Username already taken"
 msgstr ""
 
-#: app/routes/books.py:169 app/utils/messages.py:76
+#: app/routes/books.py:169 app/utils/messages.py:77
 #, python-format
 msgid "Could not download cover image: %(error)s"
 msgstr ""
@@ -278,11 +277,11 @@ msgstr ""
 msgid "Your Notifications"
 msgstr ""
 
-#: app/routes/main.py:201
+#: app/routes/main.py:203
 msgid "Search query must be at least 3 characters"
 msgstr ""
 
-#: app/routes/main.py:268 app/templates/book_add.html:4
+#: app/routes/main.py:270 app/templates/book_add.html:4
 msgid "Add a new book"
 msgstr ""
 
@@ -735,7 +734,7 @@ msgid "Add Book"
 msgstr ""
 
 #: app/templates/book_add.html:128 app/templates/generate_invitation.html:39
-#: app/templates/user_settings.html:43
+#: app/templates/macros.html:82 app/templates/user_settings.html:43
 msgid "Cancel"
 msgstr ""
 
@@ -757,10 +756,6 @@ msgstr ""
 
 #: app/templates/book_add.html:237 app/templates/book_add.html:332
 msgid "Open Library Cover:"
-msgstr ""
-
-#: app/templates/book_add.html:247
-msgid "Could not find data for ISBN. Please check the number and try again."
 msgstr ""
 
 #: app/templates/book_add.html:266
@@ -788,7 +783,7 @@ msgid "No genres assigned"
 msgstr ""
 
 #: app/templates/book_detail.html:34 app/templates/index.html:27
-#: app/templates/index.html:75 app/templates/invitation_codes.html:30
+#: app/templates/index.html:75 app/templates/invitation_codes.html:41
 #: app/templates/loans.html:59 app/templates/user_profile.html:51
 #: app/templates/user_profile.html:120
 msgid "Status"
@@ -956,9 +951,9 @@ msgstr ""
 msgid "Author"
 msgstr ""
 
-#: app/templates/index.html:76 app/templates/invitation_codes.html:32
+#: app/templates/index.html:76 app/templates/invitation_codes.html:43
 #: app/templates/loans.html:60 app/templates/user_profile.html:52
-#: app/templates/user_profile.html:89 app/templates/users.html:20
+#: app/templates/user_profile.html:89 app/templates/users.html:25
 msgid "Actions"
 msgstr ""
 
@@ -979,65 +974,64 @@ msgstr ""
 msgid "Add book"
 msgstr ""
 
-#: app/templates/invitation_codes.html:7 app/templates/layout.html:137
+#: app/templates/invitation_codes.html:16
+msgid "No invitation codes yet."
+msgstr ""
+
+#: app/templates/invitation_codes.html:22 app/templates/layout.html:137
 #: app/templates/layout.html:191
 msgid "Invitation Codes"
 msgstr ""
 
-#: app/templates/invitation_codes.html:11
-msgid "Generate New Code"
+#: app/templates/invitation_codes.html:26
+msgid "Add code"
 msgstr ""
 
-#: app/templates/invitation_codes.html:18
-msgid "No invitation codes yet."
-msgstr ""
-
-#: app/templates/invitation_codes.html:25
+#: app/templates/invitation_codes.html:36
 msgid "Code"
 msgstr ""
 
-#: app/templates/invitation_codes.html:27
+#: app/templates/invitation_codes.html:38
 msgid "Created By"
 msgstr ""
 
-#: app/templates/invitation_codes.html:28
+#: app/templates/invitation_codes.html:39
 msgid "Created"
 msgstr ""
 
-#: app/templates/invitation_codes.html:29
+#: app/templates/invitation_codes.html:40
 msgid "Expires"
 msgstr ""
 
-#: app/templates/invitation_codes.html:31
+#: app/templates/invitation_codes.html:42
 msgid "Used By"
 msgstr ""
 
-#: app/templates/invitation_codes.html:49
-#: app/templates/invitation_codes.html:59
+#: app/templates/invitation_codes.html:60
 msgid "Expired"
 msgstr ""
 
-#: app/templates/invitation_codes.html:54
+#: app/templates/invitation_codes.html:65
 msgid "Active"
 msgstr ""
 
-#: app/templates/invitation_codes.html:57
+#: app/templates/invitation_codes.html:68
 msgid "Used"
 msgstr ""
 
-#: app/templates/invitation_codes.html:76
+#: app/templates/invitation_codes.html:83
 msgid "Copy code to clipboard"
 msgstr ""
 
-#: app/templates/invitation_codes.html:77
+#: app/templates/invitation_codes.html:84
 msgid "Copy"
 msgstr ""
 
-#: app/templates/invitation_codes.html:82
+#: app/templates/invitation_codes.html:89
 msgid "Deactivate this code?"
 msgstr ""
 
-#: app/templates/invitation_codes.html:107
+#: app/templates/invitation_codes.html:114
 msgid "Copied"
 msgstr ""
 
@@ -1082,7 +1076,7 @@ msgid "Administration"
 msgstr ""
 
 #: app/templates/layout.html:132 app/templates/layout.html:183
-#: app/templates/users.html:11
+#: app/templates/users.html:17
 msgid "Users"
 msgstr ""
 
@@ -1108,6 +1102,10 @@ msgstr ""
 
 #: app/templates/library_form.html:14
 msgid "Enter library name"
+msgstr ""
+
+#: app/templates/loan_add.html:4
+msgid "Loan a Book"
 msgstr ""
 
 #: app/templates/loans.html:7
@@ -1238,6 +1236,10 @@ msgstr ""
 msgid "Log in here"
 msgstr ""
 
+#: app/templates/user_add.html:4
+msgid "Add a new user"
+msgstr ""
+
 #: app/templates/user_profile.html:19
 msgid "Total Loans"
 msgstr ""
@@ -1314,30 +1316,26 @@ msgstr ""
 msgid "Leave the password fields blank if you don't want to change your password."
 msgstr ""
 
-#: app/templates/users.html:9
+#: app/templates/users.html:15
 #, python-format
 msgid "Library currently has %(n)s user."
 msgid_plural "Library currently has %(n)s users."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app/templates/users.html:28
-msgid "Admin"
-msgstr ""
-
-#: app/templates/users.html:32
+#: app/templates/users.html:35
 msgid "Edit User"
 msgstr ""
 
-#: app/templates/users.html:35
-msgid "Are you sure you want to delete this user?"
-msgstr ""
-
-#: app/templates/users.html:36
+#: app/templates/users.html:39
 msgid "Delete User"
 msgstr ""
 
-#: app/templates/users.html:45
+#: app/templates/users.html:39
+msgid "Are you sure you want to delete this user?"
+msgstr ""
+
+#: app/templates/users.html:51
 msgid "Add user"
 msgstr ""
 
@@ -1427,7 +1425,7 @@ msgstr ""
 msgid "Book has been reserved successfully. An admin will approve it shortly."
 msgstr ""
 
-#: app/utils/messages.py:37 app/utils/messages.py:93
+#: app/utils/messages.py:37 app/utils/messages.py:94
 msgid "This book is already reserved by another user."
 msgstr ""
 
@@ -1446,11 +1444,11 @@ msgstr ""
 msgid "User '%(username)s' has been deleted successfully."
 msgstr ""
 
-#: app/utils/messages.py:42 app/utils/messages.py:84
+#: app/utils/messages.py:42 app/utils/messages.py:85
 msgid "You cannot delete your own account."
 msgstr ""
 
-#: app/utils/messages.py:43 app/utils/messages.py:85
+#: app/utils/messages.py:43 app/utils/messages.py:86
 msgid "You cannot delete an administrator."
 msgstr ""
 
@@ -1531,197 +1529,202 @@ msgstr ""
 msgid "Book is already in favorites."
 msgstr ""
 
-#: app/utils/messages.py:71 app/utils/messages.py:123
+#: app/utils/messages.py:71
 msgid "Book added to favorites."
 msgstr ""
 
-#: app/utils/messages.py:72 app/utils/messages.py:124
+#: app/utils/messages.py:72
 msgid "Book removed from favorites."
 msgstr ""
 
-#: app/utils/messages.py:73 app/utils/messages.py:125
+#: app/utils/messages.py:73
 msgid "Book is not in favorites."
 msgstr ""
 
-#: app/utils/messages.py:74
+#: app/utils/messages.py:75
 #, python-format
 msgid ""
 "Cannot delete \"%(title)s\" because it is currently \"%(status)s\". "
 "Consider marking it as inactive instead."
 msgstr ""
 
-#: app/utils/messages.py:75
+#: app/utils/messages.py:76
 msgid "You can only edit books within your libraries."
 msgstr ""
 
-#: app/utils/messages.py:79
+#: app/utils/messages.py:80
 msgid "You do not manage any library. Cannot add user."
 msgstr ""
 
-#: app/utils/messages.py:80
+#: app/utils/messages.py:81
 msgid "You do not have permission to edit this user's role."
 msgstr ""
 
-#: app/utils/messages.py:81
+#: app/utils/messages.py:82
 msgid "You can only edit users within your libraries."
 msgstr ""
 
-#: app/utils/messages.py:82
+#: app/utils/messages.py:83
 msgid "You cannot revoke the last administrator's role."
 msgstr ""
 
-#: app/utils/messages.py:83
+#: app/utils/messages.py:84
 msgid "You do not have permission to create administrators."
 msgstr ""
 
-#: app/utils/messages.py:86
+#: app/utils/messages.py:87
 msgid "You can only delete users from your libraries."
 msgstr ""
 
-#: app/utils/messages.py:87
+#: app/utils/messages.py:88
 msgid "No user found to edit settings."
 msgstr ""
 
-#: app/utils/messages.py:88 app/utils/messages.py:126
+#: app/utils/messages.py:89
 msgid "Your settings have been updated."
 msgstr ""
 
-#: app/utils/messages.py:91
+#: app/utils/messages.py:92
 msgid "Invalid user ID provided for filtering."
 msgstr ""
 
-#: app/utils/messages.py:92
+#: app/utils/messages.py:93
 msgid "Book has been reserved successfully! An admin will approve it shortly."
 msgstr ""
 
-#: app/utils/messages.py:94
+#: app/utils/messages.py:95
 msgid "This book is currently on loan."
 msgstr ""
 
-#: app/utils/messages.py:95
+#: app/utils/messages.py:96
 msgid "Book borrowed successfully!"
 msgstr ""
 
-#: app/utils/messages.py:96
+#: app/utils/messages.py:97
 msgid "This book is not available for direct loan."
 msgstr ""
 
-#: app/utils/messages.py:97
+#: app/utils/messages.py:98
 msgid "Book returned successfully!"
 msgstr ""
 
-#: app/utils/messages.py:98
+#: app/utils/messages.py:99
 msgid "This book is not currently on loan or is already returned."
 msgstr ""
 
-#: app/utils/messages.py:99
+#: app/utils/messages.py:100
 #, python-format
 msgid "Loan for \"%(title)s\" to %(username)s has been approved!"
 msgstr ""
 
-#: app/utils/messages.py:100
+#: app/utils/messages.py:102
 msgid ""
 "Cannot approve loan: Book status is not \"reserved\". It might have been "
 "cancelled or loaned differently."
 msgstr ""
 
-#: app/utils/messages.py:101
-msgid "Loan is not in \"pending\" status and cannot be approved."
-msgstr ""
-
-#: app/utils/messages.py:102
-#, python-format
-msgid "Reservation for \"%(title)s\" by %(username)s has been cancelled."
-msgstr ""
-
 #: app/utils/messages.py:103
-msgid "Cannot cancel loan: It is not in \"pending\" status."
+msgid "Loan is not in \"pending\" status and cannot be approved."
 msgstr ""
 
 #: app/utils/messages.py:104
 #, python-format
-msgid "Book \"%(title)s\" has been returned."
+msgid "Reservation for \"%(title)s\" by %(username)s has been cancelled."
 msgstr ""
 
 #: app/utils/messages.py:105
-msgid "This loan is not active or has already been returned."
+msgid "Cannot cancel loan: It is not in \"pending\" status."
 msgstr ""
 
 #: app/utils/messages.py:106
-msgid "Loan added successfully!"
+#, python-format
+msgid "Book \"%(title)s\" has been returned."
 msgstr ""
 
 #: app/utils/messages.py:107
-msgid "This book is currently on loan or reserved."
+msgid "This loan is not active or has already been returned."
 msgstr ""
 
 #: app/utils/messages.py:108
-msgid "Invalid book or user."
+msgid "Loan added successfully!"
 msgstr ""
 
 #: app/utils/messages.py:109
-msgid "You can only cancel your own reservations."
+msgid "This book is currently on loan or reserved."
 msgstr ""
 
 #: app/utils/messages.py:110
+msgid "Invalid book or user."
+msgstr ""
+
+#: app/utils/messages.py:111
+msgid "You can only cancel your own reservations."
+msgstr ""
+
+#: app/utils/messages.py:112
 #, python-format
 msgid "Your reservation for '%(title)s' has been cancelled."
 msgstr ""
 
-#: app/utils/messages.py:111
+#: app/utils/messages.py:113
 msgid "This reservation cannot be cancelled as it is not in 'pending' status."
 msgstr ""
 
-#: app/utils/messages.py:114
+#: app/utils/messages.py:116
 msgid "Cannot delete a library that has books associated with it."
 msgstr ""
 
-#: app/utils/messages.py:115
+#: app/utils/messages.py:117
 msgid "Cannot delete a library that has users assigned to it."
 msgstr ""
 
-#: app/utils/messages.py:118
+#: app/utils/messages.py:120
 msgid "Please select a library"
 msgstr ""
 
-#: app/utils/messages.py:119
+#: app/utils/messages.py:121
 msgid "You can only generate codes for your libraries"
 msgstr ""
 
-#: app/utils/messages.py:120
+#: app/utils/messages.py:122
 #, python-format
 msgid "Invitation code generated: %(code)s"
 msgstr ""
 
-#: app/utils/messages.py:121
+#: app/utils/messages.py:123
 msgid "You do not have permission to deactivate this code"
 msgstr ""
 
-#: app/utils/messages.py:122
+#: app/utils/messages.py:124
 msgid "Cannot deactivate an already-used code"
 msgstr ""
 
-#: app/utils/messages.py:123
+#: app/utils/messages.py:125
 msgid "Invitation code deactivated"
 msgstr ""
 
-#: app/utils/messages.py:129
-msgid "You do not manage any library."
-msgstr ""
-
-#: app/utils/messages.py:130
-msgid "Please select a library."
-msgstr ""
-
-#: app/utils/messages.py:131
-msgid "Invalid user ID provided."
-msgstr ""
-
-#: app/utils/messages.py:132
-msgid "You cannot revoke the last administrator."
-msgstr ""
-
-#: app/utils/messages.py:133
+#: app/utils/messages.py:128
 msgid "Unsupported language."
 msgstr ""
+
+#~ msgid "Could not find data for ISBN. Please check the number and try again."
+#~ msgstr ""
+
+#~ msgid "Generate New Code"
+#~ msgstr ""
+
+#~ msgid "Admin"
+#~ msgstr ""
+
+#~ msgid "You do not manage any library."
+#~ msgstr ""
+
+#~ msgid "Please select a library."
+#~ msgstr ""
+
+#~ msgid "Invalid user ID provided."
+#~ msgstr ""
+
+#~ msgid "You cannot revoke the last administrator."
+#~ msgstr ""
 

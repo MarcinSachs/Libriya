@@ -2,23 +2,33 @@
 
 {% block content %}
 <div class="container-fluid mt-5">
-    <div class="row mb-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {% if not codes %}
+    <div class="alert alert-info d-flex align-items-center mb-4">
+        <i class='bx bxs-info-circle me-2'></i>
+        <span>{{ _('No invitation codes yet.') }}</span>
+    </div>
+    {% endif %}
+
+    <div class="row mb-4 align-items-center">
         <div class="col-md-8">
             <h2>{{ _('Invitation Codes') }}</h2>
         </div>
         <div class="col-md-4 text-end">
-            <a href="{{ url_for('invitations.generate_code') }}" class="btn btn-primary">
-                <i class='bx bx-plus'></i> {{ _('Generate New Code') }}
+            <a href="{{ url_for('invitations.generate_code') }}" class="btn btn-primary add-book-btn d-inline-flex align-items-center">
+                {{ _('Add code') }}
             </a>
         </div>
     </div>
 
-    {% if not codes %}
-    <div class="alert alert-info">
-        <i class='bx bx-info-circle me-2'></i>
-        {{ _('No invitation codes yet.') }}
-    </div>
-    {% else %}
+    {% if codes %}
     <div class="table-responsive">
         <table class="table table-hover">
             <thead class="table-dark">
@@ -57,17 +67,13 @@
                             {% if code.used_by_id %}
                                 <span class="badge bg-info">{{ _('Used') }}</span>
                             {% else %}
-                                <span class="badge bg-danger">{{ _('Expired') }}</span>
+                                <span class="badge bg-secondary">-</span>
                             {% endif %}
                         {% endif %}
                     </td>
                     <td>
-                        {% if code.used_by %}
-                            <a href="{{ url_for('users.user_profile', user_id=code.used_by.id) }}">
-                                {{ code.used_by.username }}
-                            </a>
-                            <br>
-                            <small class="text-muted">{{ code.used_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        {% if code.used_by_id %}
+                            {{ code.used_by.username }}
                         {% else %}
                             <span class="text-muted">-</span>
                         {% endif %}
