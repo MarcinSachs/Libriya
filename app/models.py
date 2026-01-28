@@ -48,7 +48,7 @@ class Library(db.Model):
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     library_id = db.Column(db.Integer, db.ForeignKey('library.id'), nullable=False)
-    isbn = db.Column(db.String(13), unique=True, nullable=False, index=True)
+    isbn = db.Column(db.String(13), unique=True, nullable=True, index=True)
     title = db.Column(db.String(200), nullable=False, index=True)
     authors = db.relationship(
         'Author', secondary=book_authors, lazy='subquery', back_populates='books')

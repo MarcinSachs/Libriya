@@ -6,6 +6,10 @@ from app.models import User, InvitationCode
 from app import db, limiter
 from app.forms import RegistrationForm
 from app.utils.audit_log import log_invitation_code_used
+from app.utils.messages import (
+    AUTH_LOGIN_SUCCESS, AUTH_INVALID_CREDENTIALS, AUTH_LOGOUT_SUCCESS,
+    AUTH_REGISTRATION_SUCCESS
+)
 from datetime import datetime
 
 bp = Blueprint("auth", __name__)
@@ -28,10 +32,10 @@ def login_post():
 
     if user and user.check_password(password):
         login_user(user)
-        flash(_('Login successful!'), 'success')
+        flash(AUTH_LOGIN_SUCCESS, 'success')
         return redirect(url_for('main.home'))
     else:
-        flash(_('Invalid username or password. Please try again.'), 'danger')
+        flash(AUTH_INVALID_CREDENTIALS, 'danger')
         return redirect(url_for('auth.login'))
 
 
@@ -39,7 +43,7 @@ def login_post():
 @login_required
 def logout():
     logout_user()
-    flash(_('You have been logged out.'), 'info')
+    flash(AUTH_LOGOUT_SUCCESS, 'info')
     return redirect(url_for('auth.login'))
 
 
@@ -70,7 +74,6 @@ def register():
 
         # Mark code as used
         code.mark_as_used(user.id)
-
         db.session.commit()
 
         # Audit log
@@ -81,7 +84,7 @@ def register():
             code.library.name
         )
 
-        flash(_('Registration successful! You can now log in.'), 'success')
+        flash(AUTH_REGISTRATION_SUCCESS, 'success')
         return redirect(url_for('auth.login'))
 
     return render_template('register.html', form=form)

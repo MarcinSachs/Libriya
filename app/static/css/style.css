@@ -1,3 +1,7 @@
+.input-group-text .bx-book-open {
+    margin-top: -5px;
+}
+
 /* CSS variable definitions for color and shadow consistency */
 :root {
     --primary-color: #1a535c;
@@ -563,16 +567,11 @@ h2.active {
 
 input[type=text],
 input[type=password] {
+    /* background-color, border, color, font-size, etc. can stay if needed, but REMOVE margin/padding/width for form alignment */
     background-color: #f6f6f6;
     border: none;
     color: #0d0d0d;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
     font-size: 16px;
-    margin: 5px;
-    width: 85%;
     border: 2px solid #f6f6f6;
     -webkit-transition: all 0.5s ease-in-out;
     -moz-transition: all 0.5s ease-in-out;
@@ -976,4 +975,72 @@ a .bx {
 i.bx {
     font-weight: 400;
     font-style: normal;
+    font-size: 1.25rem;
+    line-height: 1;
+    vertical-align: middle;
 }
+
+/* Fix input-group alignment for select fields */
+.input-group {
+    display: flex;
+    align-items: center;
+}
+
+.input-group .input-group-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 1rem;
+    border: 1px solid #dee2e6;
+    min-width: 2.5rem;
+    width: auto;
+    flex-shrink: 0;
+    background: #f8f9fa;
+    box-sizing: border-box;
+}
+
+.input-group .input-group-text i.bx {
+    font-size: 1.7rem;
+    line-height: 1;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    color: inherit;
+    visibility: visible !important;
+}
+
+.input-group .form-select {
+    height: auto;
+    padding: 0.375rem 0.75rem;
+    min-height: 2.5rem;
+}
+
+.input-group .form-control {
+    height: 40px;
+    padding: 0.375rem 0.75rem;
+    min-height: 40px;
+    box-sizing: border-box;
+}
+
+.input-group .btn {
+    min-width: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+/* Barcode Scanner Styles */
+#interactive {
+    background: #000;
+}
+
+#interactive video {
+    width: 100% !important;
+    height: auto !important;
+    display: block;
+    border-radius: 8px;
+}
+
+#interactive canvas {
+    display: none !important;
+}
+

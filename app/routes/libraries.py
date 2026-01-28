@@ -6,6 +6,10 @@ from app import db
 from app.forms import LibraryForm
 from app.models import Library
 from app.utils import role_required
+from app.utils.messages import (
+    LIBRARY_ADDED, LIBRARY_UPDATED, LIBRARY_DELETED,
+    LIBRARIES_CANNOT_DELETE_WITH_BOOKS, LIBRARIES_CANNOT_DELETE_WITH_USERS
+)
 
 bp = Blueprint("libraries", __name__)
 
@@ -27,8 +31,7 @@ def library_add():
         new_library = Library(name=form.name.data)
         db.session.add(new_library)
         db.session.commit()
-        flash(_("Library '%(name)s' created successfully!",
-              name=new_library.name), "success")
+        flash(LIBRARY_ADDED, "success")
         return redirect(url_for('libraries.libraries'))
     return render_template('library_form.html', form=form, title=_('Add Library'), active_page="libraries", parent_page="admin")
 
@@ -42,8 +45,7 @@ def library_edit(library_id):
     if form.validate_on_submit():
         library.name = form.name.data
         db.session.commit()
-        flash(_("Library '%(name)s' updated successfully!",
-              name=library.name), "success")
+        flash(LIBRARY_UPDATED, "success")
         return redirect(url_for('libraries.libraries'))
     return render_template('library_form.html', form=form, title=_('Edit Library'), active_page="libraries", parent_page="admin")
 
@@ -54,13 +56,13 @@ def library_edit(library_id):
 def library_delete(library_id):
     library = Library.query.get_or_404(library_id)
     if library.books:
-        flash(_("Cannot delete a library that has books associated with it."), "danger")
+        flash(LIBRARIES_CANNOT_DELETE_WITH_BOOKS, "danger")
         return redirect(url_for('libraries.libraries'))
     # Also check if users are assigned to this library
     if library.users:
-        flash(_("Cannot delete a library that has users assigned to it."), "danger")
+        flash(LIBRARIES_CANNOT_DELETE_WITH_USERS, "danger")
         return redirect(url_for('libraries.libraries'))
     db.session.delete(library)
     db.session.commit()
-    flash(_("Library '%(name)s' deleted successfully.", name=library.name), "success")
+    flash(LIBRARY_DELETED, "success")
     return redirect(url_for('libraries.libraries'))

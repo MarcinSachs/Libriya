@@ -4,121 +4,254 @@
     <h2>{{ _('Add a new book') }}</h2>
     <hr>
 
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }}">{{ message }}</div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
+    {{ macros.display_flashes() }}
 
     <form method="POST" action="" enctype="multipart/form-data" novalidate>
         {{ form.hidden_tag() }}
 
-        <div class="form-group mb-3">
-            {{ form.isbn.label(class="form-label") }}
-            <div class="input-with-button d-flex align-items-center">
-                {{ form.isbn(class="form-control", placeholder=_("Enter ISBN to get data from Open Library")) }}
-                <button type="button" id="find-by-isbn" class="btn btn-secondary flex-shrink-0 ms-2">
-                    <i class='bx bx-search-alt'></i> {{ _('Search') }}
-                </button>
+        <!-- Scanner & ISBN Search Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class='bx bx-barcode'></i> {{ _('Quick Book Search') }}</h5>
             </div>
-            <div id="isbn-error" class="form-text text-danger mt-1"></div>
-            {% for error in form.isbn.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+            <div class="card-body">
+                <!-- ISBN Scanner Button -->
+                <div id="scanner-button-container" class="mb-3">
+                    <button type="button" id="start-scanner" class="btn btn-info w-100 mb-2">
+                        <i class='bx bx-camera'></i> {{ _('Scan ISBN/Barcode') }}
+                    </button>
+                    <!-- Live video viewport - Html5Qrcode creates video element here -->
+                    <div id="interactive" style="display:none; width:100%; max-width:500px; margin:10px auto; border-radius:8px; overflow:hidden;"></div>
+                </div>
+
+                <!-- ISBN Input -->
+                <div class="form-group mb-3">
+                    {{ form.isbn.label(class="form-label") }}
+                    <div class="input-with-button d-flex align-items-center gap-2">
+                        {{ form.isbn(class="form-control", placeholder=_("Enter ISBN or scan...")) }}
+                        <button type="button" id="find-by-isbn" class="btn btn-secondary flex-shrink-0">
+                            <i class='bx bx-search-alt'></i> {{ _('Search') }}
+                        </button>
+                    </div>
+                    <div id="isbn-error" class="form-text text-danger mt-1"></div>
+                    {% for error in form.isbn.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+                </div>
+
+                <!-- Or divider -->
+                <div class="text-center mb-3">
+                    <span class="badge bg-secondary">{{ _('OR') }}</span>
+                </div>
+
+                <!-- Title Search -->
+                <div class="form-group">
+                    <label class="form-label"><i class='bx bx-search'></i> {{ _('Search by Title') }}</label>
+                    <div class="input-with-button d-flex align-items-center gap-2">
+                        <input type="text" id="title-search" class="form-control" placeholder="{{ _('Enter book title...') }}">
+                        <button type="button" id="search-by-title" class="btn btn-secondary flex-shrink-0">
+                            <i class='bx bx-search-alt'></i> {{ _('Search') }}
+                        </button>
+                    </div>
+                    <div id="title-error" class="form-text text-danger mt-1"></div>
+                    <div id="search-results" class="mt-3"></div>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group mb-3">
-            {{ form.title.label(class="form-label") }}
-            {{ form.title(class="form-control", placeholder=_("e.g. The Lord of the Rings")) }}
-            {% for error in form.title.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
-        <div class="form-group mb-3">
-            {{ form.author.label(class="form-label") }}
-            {{ form.author(class="form-control", placeholder=_("e.g. J.R.R. Tolkien")) }}
-            {% for error in form.author.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+        <!-- Manual Entry Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class='bx bx-edit'></i> {{ _('Book Information') }}</h5>
+            </div>
+            <div class="card-body">
+                {{ macros.form_field(form.title, field_type='text', icon='bx-book-open', placeholder=_("e.g. The Lord of the Rings")) }}
+
+                {{ macros.form_field(form.author, field_type='text', icon='bx-user', placeholder=_("e.g. J.R.R. Tolkien")) }}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ macros.form_field(form.year, field_type='number', icon='bx-calendar', placeholder=_("e.g. 1954")) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ macros.form_field(form.library, field_type='select', icon='bx-building') }}
+                    </div>
+                </div>
+
+                {{ macros.form_field(form.genres, field_type='select', icon='bx-tag', help_text=_('Hold Ctrl (or Cmd on Mac) to select multiple genres.'), size=8) }}
+            </div>
         </div>
 
-        <div class="form-group mb-3">
-            {{ form.library.label(class="form-label") }}
-            {{ form.library(class="form-control") }}
-            {% for error in form.library.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
-
-        <div class="form-group mb-3">
-            {{ form.genres.label(class="form-label") }}
-            {{ form.genres(class="form-control", size=10) }}
-            <small class="form-text text-muted">{{ _('Hold Ctrl (or Cmd on Mac) to select multiple genres.') }}</small>
-            {% for error in form.genres.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
-        <div class="form-group mb-3">
-            {{ form.year.label(class="form-label") }}
-            {{ form.year(class="form-control", placeholder=_("e.g. 1954")) }}
-            {% for error in form.year.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
-
-        <div class="form-group mb-3">
-            {{ form.cover.label(class="form-label") }}
-            <div id="cover-preview" class="mt-2"></div>
-            {{ form.cover(class="form-control") }}
-            {% for error in form.cover.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+        <!-- Cover Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class='bx bx-image'></i> {{ _('Book Cover') }}</h5>
+            </div>
+            <div class="card-body">
+                <div id="cover-preview" class="mb-3"></div>
+                {{ macros.form_field(form.cover, field_type='file', icon='bx-cloud-upload', help_text=_('Supported formats: JPG, PNG, JPEG (Max 5MB)')) }}
+            </div>
         </div>
 
         <!-- Location Section (Optional) -->
-        <div class="card mt-4 mb-4">
+        <div class="card mb-4">
             <div class="card-header bg-light">
-                <h5 class="mb-0">{{ _('Location Information') }} <small class="text-muted">({{ _('Optional') }})</small></h5>
+                <h5 class="mb-0"><i class='bx bx-map'></i> {{ _('Location Information') }} <small class="text-muted">({{ _('Optional') }})</small></h5>
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">{{ _('Shelf') }}</label>
-                        {{ form.shelf(class="form-control w-100") }}
-                        <small class="form-text text-muted d-block mt-1">{{ _('e.g., A, B-1') }}</small>
+                    <div class="col-md-6">
+                        {{ macros.form_field(form.shelf, field_type='text', icon='bx-layer', placeholder=_("e.g., A, B-1")) }}
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">{{ _('Section') }}</label>
-                        {{ form.section(class="form-control w-100") }}
-                        <small class="form-text text-muted d-block mt-1">{{ _('e.g., Fiction, Science') }}</small>
+                    <div class="col-md-6">
+                        {{ macros.form_field(form.section, field_type='text', icon='bx-grid', placeholder=_("e.g., Fiction, Science")) }}
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">{{ _('Room') }}</label>
-                        {{ form.room(class="form-control w-100") }}
-                        <small class="form-text text-muted d-block mt-1">{{ _('e.g., Main Hall, Room 2') }}</small>
+                    <div class="col-md-6">
+                        {{ macros.form_field(form.room, field_type='text', icon='bx-door-open', placeholder=_("e.g., Main Hall, Room 2")) }}
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">{{ _('Location Notes') }}</label>
-                        {{ form.location_notes(class="form-control w-100") }}
-                        <small class="form-text text-muted d-block mt-1">{{ _('e.g., Top shelf, Near window') }}</small>
+                    <div class="col-md-6">
+                        {{ macros.form_field(form.location_notes, field_type='text', icon='bx-notepad', placeholder=_("e.g., Top shelf, Near window")) }}
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="mt-4 d-flex align-items-center gap-2">
-            {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('main.home') }}" class="btn btn-secondary">
-                {{ _('Cancel') }}
-            </a>
+        <!-- Actions Section -->
+        <div class="card mb-4 border-success">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class='bx bx-save'></i> {{ _('Save') }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-2">
+                <div class="d-grid gap-2 d-md-flex">
+                    {{ macros.form_submit(_('Add Book'), 'success', 'bx-check') }}
+                    <a href="{{ url_for('main.home') }}" class="btn btn-outline-secondary">
+                        <i class='bx bx-x me-1'></i> {{ _('Cancel') }}
+                    </a>
+                </div>
+            </div>
         </div>
     </form>
 </div>
+<!-- Html5-Qrcode - Local copy with better mobile support -->
+<script src="{{ url_for('static', filename='js/vendor/html5-qrcode.min.js') }}"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    // Live video barcode scanner using Html5Qrcode (local copy)
+    var html5QrCode = null;
+    var scannerActive = false;
+    
+    function startScanner() {
+        if (scannerActive) return;
+        
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("interactive");
+        }
+        
+        var config = {
+            fps: 10,
+            qrbox: { width: 250, height: 150 },
+            aspectRatio: 1.777778
+        };
+        
+        html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            function(decodedText, decodedResult) {
+                console.log('Barcode detected:', decodedText);
+                
+                // Clean and validate ISBN
+                var cleanCode = decodedText.replace(/[^0-9X]/gi, '');
+                if (cleanCode.length === 10 || cleanCode.length === 13) {
+                    var isbnInput = document.getElementById('isbn');
+                    if (isbnInput) {
+                        isbnInput.value = cleanCode;
+                    }
+                    
+                    // Stop scanner
+                    stopScanner();
+                    
+                    // Auto-search
+                    setTimeout(function() {
+                        var findBtn = document.getElementById('find-by-isbn');
+                        if (findBtn) {
+                            findBtn.click();
+                        }
+                    }, 500);
+                }
+            },
+            function(errorMessage) {
+                // Ignore decode errors (expected when no barcode visible)
+            }
+        ).then(function() {
+            scannerActive = true;
+            
+            var interactive = document.getElementById('interactive');
+            if (interactive) {
+                interactive.style.display = 'block';
+            }
+            
+            var startBtn = document.getElementById('start-scanner');
+            if (startBtn) {
+                startBtn.innerHTML = '<i class="bx bx-stop"></i> Zatrzymaj';
+                startBtn.classList.remove('btn-info');
+                startBtn.classList.add('btn-danger');
+            }
+        }).catch(function(err) {
+            console.error('Camera error:', err);
+        });
+    }
+    
+    function stopScanner() {
+        if (!scannerActive || !html5QrCode) return;
+        
+        html5QrCode.stop().then(function() {
+            scannerActive = false;
+            
+            var interactive = document.getElementById('interactive');
+            if (interactive) {
+                interactive.style.display = 'none';
+            }
+            
+            var startBtn = document.getElementById('start-scanner');
+            if (startBtn) {
+                startBtn.innerHTML = '<i class="bx bx-camera"></i> Skanuj ISBN/Kod kreskowy';
+                startBtn.classList.remove('btn-danger');
+                startBtn.classList.add('btn-info');
+            }
+        }).catch(function(err) {
+            console.error('Stop error:', err);
+        });
+    }
 
-        const findBtn = document.getElementById('find-by-isbn');
-        const isbnInput = document.getElementById('isbn');
-        const titleInput = document.getElementById('title');
-        const authorInput = document.getElementById('author');
-        const yearInput = document.getElementById('year');
-        const errorDiv = document.getElementById('isbn-error');
-        const coverPreview = document.getElementById('cover-preview');
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, Html5Qrcode available:', typeof Html5Qrcode !== 'undefined');
+        
+        var startBtn = document.getElementById('start-scanner');
+        if (startBtn) {
+            startBtn.addEventListener('click', function() {
+                if (!scannerActive) {
+                    startScanner();
+                } else {
+                    stopScanner();
+                }
+            });
+        }
+
+        // ===== ISBN SEARCH =====
+        var findBtn = document.getElementById('find-by-isbn');
+        var isbnInput = document.getElementById('isbn');
+        var titleInput = document.getElementById('title');
+        var authorInput = document.getElementById('author');
+        var yearInput = document.getElementById('year');
+        var errorDiv = document.getElementById('isbn-error');
+        var coverPreview = document.getElementById('cover-preview');
 
         if (findBtn) {
             findBtn.addEventListener('click', function () {
-                const isbn = isbnInput.value.trim().replace(/-/g, '');
+                var isbn = isbnInput.value.trim().replace(/-/g, '');
+                console.log('ISBN Search clicked, value:', isbn);
+                
                 if (!isbn) {
                     alert("{{ _('Please enter an ISBN.') }}");
                     return;
@@ -129,37 +262,150 @@
                 findBtn.disabled = true;
                 findBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> {{ _('Searching...') }}';
 
-            fetch(`/api/v1/isbn/${isbn}`)
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => { throw new Error(err.error || 'Error fetching data.') });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.title) titleInput.value = data.title;
-                    if (data.author) authorInput.value = data.author;
-                    if (data.year) yearInput.value = data.year;
-                    if (data.cover_image) {
+                fetch(`/api/v1/isbn/${isbn}`)
+                    .then(response => {
+                        console.log('API Response status:', response.status);
+                        if (!response.ok) {
+                            return response.json().then(err => { throw new Error(err.error || 'Error fetching data.') });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('API Data received:', data);
+                        if (data.title) titleInput.value = data.title;
+                        if (data.author) authorInput.value = data.author;
+                        if (data.year) yearInput.value = data.year;
+                        if (data.cover_image) {
+                            console.log('Setting cover image:', data.cover_image);
+                            coverPreview.innerHTML = `<p class="form-label">{{ _('Open Library Cover:') }}</p><img src="${data.cover_image}" style="max-width: 150px; border-radius: 4px;">`;
+                            const hiddenInput = document.createElement('input');
+                            hiddenInput.type = 'hidden';
+                            hiddenInput.name = 'cover_url';
+                            hiddenInput.value = data.cover_image;
+                            document.querySelector('form').appendChild(hiddenInput);
+                        } else {
+                            console.log('No cover image in response');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching data by ISBN:', error);
+                        errorDiv.textContent = "Could not find data for ISBN. Please check the number and try again.";
+                    })
+                    .finally(() => {
+                        findBtn.disabled = false;
+                        findBtn.innerHTML = '<i class="bx bx-search-alt"></i> {{ _('Search') }}';
+                    });
+            });
+        }
 
-                        coverPreview.innerHTML = `<p class="form-label">{{ _('Open Library Cover:') }}</p><img src="${data.cover_image}" style="max-width: 150px; border-radius: 4px;">`;
+        // ===== TITLE SEARCH =====
+        var titleSearchInput = document.getElementById('title-search');
+        var searchByTitleBtn = document.getElementById('search-by-title');
+        var searchResultsDiv = document.getElementById('search-results');
+        var titleErrorDiv = document.getElementById('title-error');
 
-                        const hiddenInput = document.createElement('input');
-                        hiddenInput.type = 'hidden';
-                        hiddenInput.name = 'cover_url';
-                        hiddenInput.value = data.cover_image;
-                        document.querySelector('form').appendChild(hiddenInput);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching data by ISBN:', error);
-                    errorDiv.textContent = "{{ _('Could not find data for ISBN %(isbn_num)s. Please check the number and try again.', isbn_num=isbn) }}";
-                })
-                .finally(() => {
-                    findBtn.disabled = false;
-                    findBtn.innerHTML = '<i class="bx bx-search-alt"></i> {{ _('Search') }}';
-                });
-        });
+        if (searchByTitleBtn) {
+            searchByTitleBtn.addEventListener('click', function () {
+                var query = titleSearchInput.value.trim();
+                if (!query || query.length < 3) {
+                    titleErrorDiv.textContent = "{{ _('Please enter at least 3 characters.') }}";
+                    return;
+                }
+
+                titleErrorDiv.textContent = '';
+                searchResultsDiv.innerHTML = '<div class="text-center"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> {{ _('Searching...') }}</div>';
+                searchByTitleBtn.disabled = true;
+
+                fetch(`/api/v1/search/title?q=${encodeURIComponent(query)}&limit=10`)
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => { throw new Error(err.error || 'Error searching.') });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.results.length === 0) {
+                            searchResultsDiv.innerHTML = '<div class="alert alert-info"><i class="bx bx-info-circle me-2"></i>{{ _('No books found.') }}</div>';
+                            return;
+                        }
+
+                        let html = '<div class="list-group">';
+                        data.results.forEach(book => {
+                            const coverImg = book.cover_id 
+                                ? `<img src="https://covers.openlibrary.org/b/id/${book.cover_id}-S.jpg" alt="cover" style="height: 60px; margin-right: 10px;">`
+                                : '';
+                            const authors = book.authors ? book.authors.join(', ') : '{{ _('Unknown') }}';
+                            html += `
+                                <a href="#" class="list-group-item list-group-item-action book-result-item" 
+                                   data-title="${book.title}" 
+                                   data-author="${authors}" 
+                                   data-isbn="${book.isbn}"
+                                   data-year="${book.year || ''}"
+                                   data-cover-id="${book.cover_id || ''}">
+                                    <div class="d-flex w-100">
+                                        ${coverImg}
+                                        <div>
+                                            <h6 class="mb-1">${book.title}</h6>
+                                            <p class="mb-1 text-muted"><small>${authors}</small></p>
+                                            <p class="mb-0 text-muted"><small>ISBN: ${book.isbn}</small></p>
+                                        </div>
+                                    </div>
+                                </a>
+                            `;
+                        });
+                        html += '</div>';
+                        searchResultsDiv.innerHTML = html;
+
+                        // Add click handlers to book results
+                        document.querySelectorAll('.book-result-item').forEach(item => {
+                            item.addEventListener('click', function (e) {
+                                e.preventDefault();
+                                const title = this.dataset.title;
+                                const author = this.dataset.author;
+                                const isbn = this.dataset.isbn;
+                                const year = this.dataset.year;
+                                const coverId = this.dataset.coverId;
+
+                                titleInput.value = title;
+                                authorInput.value = author;
+                                isbnInput.value = isbn;
+                                if (year) yearInput.value = year;
+
+                                // Load cover image if available
+                                if (coverId) {
+                                    const coverUrl = `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
+                                    coverPreview.innerHTML = `<p class="form-label">{{ _('Open Library Cover:') }}</p><img src="${coverUrl}" style="max-width: 150px; border-radius: 4px;">`;
+                                    const hiddenInput = document.createElement('input');
+                                    hiddenInput.type = 'hidden';
+                                    hiddenInput.name = 'cover_url';
+                                    hiddenInput.value = coverUrl;
+                                    document.querySelector('form').appendChild(hiddenInput);
+                                }
+
+                                searchResultsDiv.innerHTML = '';
+                                titleSearchInput.value = '';
+                                // Scroll to form
+                                titleInput.scrollIntoView({ behavior: 'smooth' });
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error searching by title:', error);
+                        titleErrorDiv.textContent = "{{ _('Error during search. Please try again.') }}";
+                        searchResultsDiv.innerHTML = '';
+                    })
+                    .finally(() => {
+                        searchByTitleBtn.disabled = false;
+                    });
+            });
+
+            // Allow Enter key to search
+            titleSearchInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchByTitleBtn.click();
+                }
+            });
         }
     });
 </script>

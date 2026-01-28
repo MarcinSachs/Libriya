@@ -1,0 +1,115 @@
+{# Unified Alert Messages #}
+{% macro alert(message, category='info', dismissible=True) %}
+<div class="alert alert-{{ 'danger' if category == 'error' else category }}{% if dismissible %} alert-dismissible fade show{% endif %}" role="alert">
+    {% if category == 'success' %}
+    <i class='bx bx-check-circle me-2'></i>
+    {% elif category == 'danger' %}
+    <i class='bx bx-error-circle me-2'></i>
+    {% elif category == 'warning' %}
+    <i class='bx bx-alert-triangle me-2'></i>
+    {% else %}
+    <i class='bx bx-info-circle me-2'></i>
+    {% endif %}
+    <span>{{ message }}</span>
+    {% if dismissible %}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# Unified Flash Messages Display #}
+{% macro display_flashes() %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="alert-container mb-4">
+    {% for category, message in messages %}
+    {{ alert(message, category, True) }}
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+{% endmacro %}
+
+{# Unified Form Field with Errors #}
+{% macro form_field(field, field_type='text', icon=None, label_icon=None, placeholder=None, help_text=None, class='mb-3', size=None) %}
+<div class="{{ class }}">
+    {% if field.type != 'HiddenField' %}
+    <label class="form-label" for="{{ field.id }}">
+        {{ field.label.text }}
+        {% if field.flags.required %}
+        <span class="text-danger">*</span>
+        {% endif %}
+    </label>
+    {% endif %}
+
+    <div class="input-group">
+        {% if icon %}
+        <span class="input-group-text d-flex align-items-center justify-content-center">
+            <i class='bx {{ icon }}'></i>
+        </span>
+        {% endif %}
+        {% if field_type == 'textarea' %}
+        {{ field(class='form-control' + (' is-invalid' if field.errors else ''), placeholder=placeholder or '', rows='4') }}
+        {% elif field_type == 'select' %}
+        {{ field(class='form-select' + (' is-invalid' if field.errors else ''), size=size or 1) }}
+        {% else %}
+        {{ field(class='form-control' + (' is-invalid' if field.errors else ''), placeholder=placeholder or '', type=field_type) }}
+        {% endif %}
+    </div>
+    
+    {% if field.errors %}
+    <div class="invalid-feedback d-block">
+        {% for error in field.errors %}
+        <i class='bx bx-error-circle'></i> {{ error }}<br>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% if help_text %}
+    <small class="form-text text-muted d-block mt-1">{{ help_text }}</small>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# Unified Form Submit Button #}
+{% macro form_submit(button_text, color='primary', icon='bx-check', full_width=False, cancel_url=None) %}
+<div class="d-grid gap-2{% if not full_width %} d-md-flex{% endif %} gap-3">
+    <button type="submit" class="btn btn-{{ color }}{% if full_width %} w-100{% endif %}">
+        <i class='bx {{ icon }} me-1'></i>{{ button_text }}
+    </button>
+    {% if cancel_url %}
+    <a href="{{ cancel_url }}" class="btn btn-secondary{% if full_width %} w-100{% endif %}" role="button">
+        <i class='bx bx-x me-1'></i>{{ _('Cancel') }}
+    </a>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# Unified Action Button #}
+{% macro action_button(url, text, color='primary', icon='bx-pencil', size='sm', full_width=False) %}
+<a href="{{ url }}" class="btn btn-{{ color }} btn-{{ size }}{% if full_width %} w-100{% endif %}" title="{{ text }}">
+    <i class='bx {{ icon }} me-1'></i>{{ text }}
+</a>
+{% endmacro %}
+
+{# Unified Card Header #}
+{% macro card_header(title, icon=None, color='light') %}
+<div class="card-header bg-{{ color }}">
+    <h5 class="mb-0">
+        {% if icon %}
+        <i class='bx {{ icon }} me-2'></i>
+        {% endif %}
+        {{ title }}
+    </h5>
+</div>
+{% endmacro %}
+
+{# Unified Section Card #}
+{% macro section_card(title, icon=None, color='light') %}
+<div class="card mb-4">
+    {{ card_header(title, icon, color) }}
+    <div class="card-body">
+        {{ caller() }}
+    </div>
+</div>
+{% endmacro %}

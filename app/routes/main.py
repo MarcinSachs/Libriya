@@ -1,13 +1,18 @@
 import re
 import requests
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, make_response, jsonify, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, make_response, jsonify, session, Response
 from flask_login import login_required, current_user
 from flask_babel import _, ngettext
 from sqlalchemy import or_
 
 from app import db
 from app.models import Book, Genre, Notification, User
+from app.utils.messages import (
+    INFO_LANGUAGE_CHANGED_EN, INFO_LANGUAGE_CHANGED_PL,
+    ERROR_UNSUPPORTED_LANGUAGE, ERROR_PERMISSION_DENIED, NOTIFICATION_MARKED_READ,
+    NOTIFICATION_ALL_MARKED_READ
+)
 
 bp = Blueprint("main", __name__)
 
@@ -99,12 +104,12 @@ def mark_notification_as_read(notification_id):
     notification = Notification.query.get_or_404(notification_id)
 
     if notification.recipient_id != current_user.id and not current_user.is_admin:
-        flash(_("You do not have permission to mark this notification as read."), "danger")
+        flash(ERROR_PERMISSION_DENIED, "danger")
         return redirect(url_for('main.view_notifications'))
 
     notification.is_read = True
     db.session.commit()
-    flash(_("Notification marked as read."), "success")
+    flash(NOTIFICATION_MARKED_READ, "success")
     return redirect(url_for('main.view_notifications'))
 
 
@@ -118,21 +123,26 @@ def mark_all_notifications_as_read():
     for notification in notifications_to_mark:
         notification.is_read = True
     db.session.commit()
-    flash(_("All notifications marked as read."), "success")
+    flash(NOTIFICATION_ALL_MARKED_READ, "success")
     return redirect(url_for('main.view_notifications'))
 
 
 @bp.route('/set_language/<lang>')
 def set_language(lang):
     if lang in current_app.config['LANGUAGES']:
-        # Create a response object from the redirect to set a cookie
+        # Flash message BEFORE creating response (so it's in session)
+        message = INFO_LANGUAGE_CHANGED_PL if lang == 'pl' else INFO_LANGUAGE_CHANGED_EN
+        flash(message, 'info')
+
+        # Create a response object from the redirect
         response = make_response(
             redirect(request.referrer or url_for('main.home')))
-        # Set cookie for 2 years
-        response.set_cookie('language', lang, max_age=60*60*24*365*2)
-        flash(_('Language changed to %(lang)s.', lang=lang), 'info')
+
+        # Set cookie for 2 years with explicit path
+        response.set_cookie('language', lang, max_age=60*60*24*365*2, path='/')
+
         return response
-    flash(_('Unsupported language.'), 'danger')
+    flash(ERROR_UNSUPPORTED_LANGUAGE, 'danger')
     return redirect(request.referrer or url_for('main.home'))
 
 
@@ -161,7 +171,7 @@ def get_book_by_isbn(isbn):
         book_info = {
             "title": book_data.get("title"),
             "author": ", ".join(author["name"] for author in book_data.get("authors", [])),
-            "cover_image": book_data.get("cover", {}).get("large"),
+            "cover_image": f"https://covers.openlibrary.org/b/isbn/{isbn}-L.jpg"
         }
 
         publish_date_str = book_data.get("publish_date", "")
@@ -179,6 +189,50 @@ def get_book_by_isbn(isbn):
         return jsonify({"error": str(e)}), 500
 
 
+@bp.route("/api/v1/search/title", methods=["GET"])
+@login_required
+def search_book_by_title():
+    """
+    API endpoint to search for books on OpenLibrary by title.
+    Query params: q (search query), limit (default 10)
+    """
+    query = request.args.get('q', '').strip()
+    limit = request.args.get('limit', 10, type=int)
+
+    if not query or len(query) < 3:
+        return jsonify({"error": _("Search query must be at least 3 characters")}), 400
+
+    try:
+        url = "https://openlibrary.org/search.json"
+        params = {
+            "title": query,
+            "limit": min(limit, 20),  # Cap at 20
+            "fields": "title,author_name,first_publish_year,isbn,cover_i"
+        }
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+
+        # Format results
+        results = []
+        for doc in data.get("docs", []):
+            isbn_list = doc.get("isbn", [])
+            if isbn_list:  # Only return books with ISBN
+                results.append({
+                    "title": doc.get("title"),
+                    "authors": doc.get("author_name", []),
+                    "isbn": isbn_list[0],  # Get first ISBN
+                    "year": doc.get("first_publish_year"),
+                    "cover_id": doc.get("cover_i")
+                })
+
+        return jsonify({"results": results, "total": len(results)})
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"Network error connecting to Open Library: {e}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @bp.context_processor
 def inject_unread_notifications_count():
     if current_user.is_authenticated:
@@ -186,3 +240,32 @@ def inject_unread_notifications_count():
             recipient=current_user, is_read=False).count()
         return {'unread_notifications_count': unread_count}
     return {'unread_notifications_count': 0}
+
+
+@bp.route('/debug/locale')
+@login_required
+def debug_locale():
+    """Debug endpoint to check current locale and translations"""
+    from flask_babel import get_locale
+    from babel.core import Locale
+    import os
+
+    current_locale = get_locale()
+    locale_name = str(current_locale)
+
+    # Try to verify if messages catalog exists
+    base_dir = current_app.root_path
+    locale_path = os.path.join(base_dir, '../translations', locale_name, 'LC_MESSAGES', 'messages.mo')
+    mo_exists = os.path.exists(locale_path)
+    po_exists = os.path.exists(locale_path.replace('.mo', '.po'))
+
+    return jsonify({
+        "current_locale": locale_name,
+        "current_locale_obj": str(current_locale),
+        "cookie": request.cookies.get('language'),
+        "session": session.get('language'),
+        "accept_languages": str(request.accept_languages),
+        "messages_mo_exists": mo_exists,
+        "messages_po_exists": po_exists,
+        "test_translation": _("Add a new book")
+    })

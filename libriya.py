@@ -1,12 +1,7 @@
+from flask import session
 from app.models import Genre, Book, Author
 from app import create_app, db
-from flask import session
 import os
-from dotenv import load_dotenv
-
-# Load environment variables from .env file BEFORE importing app
-load_dotenv()
-
 
 app = create_app()
 
@@ -24,4 +19,7 @@ def make_shell_context():
 
 if __name__ == '__main__':
     debug_mode = os.environ.get('FLASK_ENV') == 'development'
-    app.run(debug=debug_mode)
+
+    # Enable HTTPS for camera access on mobile devices
+    # Using adhoc SSL context (self-signed certificate)
+    app.run(host="0.0.0.0", port=5000, debug=debug_mode, ssl_context='adhoc')

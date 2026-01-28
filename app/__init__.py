@@ -3,7 +3,7 @@ from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
-from flask_babel import Babel
+from flask_babel import _, Babel, lazy_gettext as _l
 from flask import session, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -18,35 +18,32 @@ limiter = Limiter(key_func=get_remote_address)
 
 def create_app(config_class=Config):
     app = Flask(__name__)
-    app.config.from_object(config_class)
+
+    # Initialize Pydantic Settings instance and update Flask config
+    config = config_class()
+    app.config.update(config.model_dump())
 
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    # Ustaw komunikat logowania z tłumaczeniem dynamicznym
+    login_manager.login_message = _l("Please log in to access this page.")
     limiter.init_app(app)
 
     def get_locale():
         # 1. Check for language in cookie first
         lang = request.cookies.get("language")
         if lang and lang in app.config["LANGUAGES"]:
-            app.logger.debug(
-                f"Locale selector: found language in cookie: {lang}")
             return lang
 
-        # 2. Check session for backward compatibility (can be removed later)
+        # 2. Check session for backward compatibility
         lang = session.get("language")
         if lang and lang in app.config["LANGUAGES"]:
-            app.logger.debug(
-                f"Locale selector: found language in session: {lang}")
             return lang
 
         # 3. Fallback to browser's preferred language
-        browser_lang = request.accept_languages.best_match(
-            app.config["LANGUAGES"])
-        app.logger.debug(
-            f"Locale selector: falling back to browser language: {browser_lang}"
-        )
-        return browser_lang
+        best_lang = request.accept_languages.best_match(app.config["LANGUAGES"])
+        return best_lang or app.config["BABEL_DEFAULT_LOCALE"]
 
     babel.init_app(app, locale_selector=get_locale)
 
@@ -65,11 +62,11 @@ def create_app(config_class=Config):
         )
         response.headers['Content-Security-Policy'] = (
             "default-src 'self'; script-src 'self' 'unsafe-inline' "
-            "https://cdn.jsdelivr.net https://fonts.googleapis.com; "
+            "https://cdn.jsdelivr.net https://fonts.googleapis.com https://unpkg.com; "
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net "
             "https://fonts.googleapis.com https://unpkg.com; "
             "font-src 'self' https://fonts.gstatic.com https://unpkg.com; "
-            "img-src 'self' data:"
+            "img-src 'self' data: https:;"
         )
         return response
 

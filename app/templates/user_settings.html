@@ -4,14 +4,7 @@
     <h2>{{ _('My Settings') }}</h2> 
     <hr>
 
-    
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }}">{{ message }}</div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
+    {{ macros.display_flashes() }}
 
     <form method="POST" action="" enctype="multipart/form-data">
         {{ form.hidden_tag() }}

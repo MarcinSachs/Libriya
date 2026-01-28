@@ -14,6 +14,13 @@ from app.forms import BookForm
 from app.models import Book, Author, Library, Location
 from app.utils import role_required
 from app.utils.audit_log import log_book_deleted
+from app.utils.messages import (
+    SUCCESS_CREATED, SUCCESS_UPDATED, SUCCESS_DELETED, ERROR_PERMISSION_DENIED,
+    BOOK_ADDED, BOOK_UPDATED, BOOK_DELETED, ERROR_NOT_FOUND,
+    COMMENT_ADDED, COMMENT_UPDATED, BOOK_ALREADY_IN_FAVORITES, BOOK_ADDED_TO_FAVORITES,
+    BOOK_REMOVED_FROM_FAVORITES, BOOK_NOT_IN_FAVORITES, BOOK_CANNOT_DELETE_NOT_AVAILABLE,
+    BOOKS_ONLY_EDIT_OWN_LIBRARIES, COVER_IMAGE_ERROR
+)
 
 bp = Blueprint("books", __name__)
 
@@ -37,7 +44,7 @@ def book_detail(book_id):
             user_comment.text = comment_form.text.data
             user_comment.timestamp = datetime.utcnow()
             db.session.commit()
-            flash(_('Your comment has been updated!'), 'success')
+            flash(COMMENT_UPDATED, 'success')
         else:
             new_comment = Comment(
                 text=comment_form.text.data,
@@ -46,7 +53,7 @@ def book_detail(book_id):
             )
             db.session.add(new_comment)
             db.session.commit()
-            flash(_('Your comment has been added!'), 'success')
+            flash(COMMENT_ADDED, 'success')
 
         return redirect(url_for('books.book_detail', book_id=book.id))
 
@@ -176,7 +183,7 @@ def book_add():
             db.session.add(location)
             db.session.commit()
 
-        flash(_("Book added successfully!"), "success")
+        flash(BOOK_ADDED, "success")
         return redirect(url_for("main.home"))
 
     return render_template("book_add.html", form=form)
@@ -190,9 +197,7 @@ def book_delete(book_id):
 
     # Prevent deletion if the book has any associated loans (active or past)
     if book.status != 'available':
-        flash(_('Cannot delete "%(title)s" because it is currently '
-                '"%(status)s". Consider marking it as inactive instead.',
-              title=book.title, status=book.status), "danger")
+        flash(BOOK_CANNOT_DELETE_NOT_AVAILABLE % {'title': book.title, 'status': book.status}, "danger")
         return redirect(url_for("main.home"))
 
     # Log book deletion before removing it
@@ -200,7 +205,7 @@ def book_delete(book_id):
 
     db.session.delete(book)
     db.session.commit()
-    flash(_("Book deleted successfully!"), "success")
+    flash(BOOK_DELETED, "success")
     return redirect(url_for("main.home"))
 
 
@@ -214,7 +219,7 @@ def book_edit(book_id):
     if current_user.role == 'manager':
         user_libs_ids = [lib.id for lib in current_user.libraries]
         if book.library_id not in user_libs_ids:
-            flash(_("You can only edit books within your libraries."), "danger")
+            flash(BOOKS_ONLY_EDIT_OWN_LIBRARIES, "danger")
             return redirect(url_for('main.home'))
 
     # The form needs to be instantiated before it can be populated
@@ -297,7 +302,7 @@ def book_edit(book_id):
             db.session.delete(book.location)
 
         db.session.commit()
-        flash(_("Book updated successfully!"), "success")
+        flash(BOOK_UPDATED, "success")
         return redirect(url_for("main.home"))
 
     # Render template for GET request or form validation error
@@ -310,11 +315,11 @@ def add_favorite(book_id):
     user = current_user
     book = Book.query.get_or_404(book_id)
     if book in user.favorites:
-        flash(_('Book is already in favorites.'), 'info')
+        flash(BOOK_ALREADY_IN_FAVORITES, 'info')
     else:
         user.favorites.append(book)
         db.session.commit()
-        flash(_('Book added to favorites.'), 'success')
+        flash(BOOK_ADDED_TO_FAVORITES, 'success')
     return redirect(url_for('main.home'))
 
 
@@ -326,7 +331,7 @@ def remove_favorite(book_id):
     if book in user.favorites:
         user.favorites.remove(book)
         db.session.commit()
-        flash(_('Book removed from favorites.'), 'success')
+        flash(BOOK_REMOVED_FROM_FAVORITES, 'success')
     else:
-        flash(_('Book is not in favorites.'), 'info')
+        flash(BOOK_NOT_IN_FAVORITES, 'info')
     return redirect(url_for('books.book_detail', book_id=book.id))

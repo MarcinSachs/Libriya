@@ -2,13 +2,7 @@
 {% block content %}
 <div class="container">
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }}">{{ message }}</div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
+    {{ macros.display_flashes() }}
     <h2>{{ _('Edit Book:') }} <span class="text-muted">{{ book.title }}</span></h2>
     <hr>
 
@@ -24,36 +18,12 @@
         </div>
         {% endif %}
 
-        <div class="form-group mb-3">
-            {{ form.isbn.label(class="form-label") }}
-            {{ form.isbn(class="form-control", placeholder=_("Enter ISBN")) }}
-            {% for error in form.isbn.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
-        <div class="form-group mb-3">
-            {{ form.title.label(class="form-label") }}
-            {{ form.title(class="form-control", placeholder=_("e.g. The Lord of the Rings")) }}
-            {% for error in form.title.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
-        <div class="form-group mb-3">
-            {{ form.author.label(class="form-label") }}
-            {{ form.author(class="form-control", placeholder=_("e.g. J.R.R. Tolkien")) }}
-            {% for error in form.author.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
-
-        <div class="form-group mb-3">
-            {{ form.library.label(class="form-label") }}
-            {{ form.library(class="form-control") }}
-            {% for error in form.library.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
-
-        <div class="form-group mb-3">
-            {{ form.genres.label(class="form-label") }}
-            {{ form.genres(class="form-control", size=10) }}
-            <small class="form-text text-muted">{{ _('Hold Ctrl (or Cmd on Mac) to select multiple genres.') }}</small>
-            {% for error in form.genres.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
-        <div class="form-group mb-3">
-            {{ form.year.label(class="form-label") }}
+        {{ macros.form_field(form.isbn, field_type='text', icon='bx-barcode', placeholder=_("Enter ISBN")) }}
+        {{ macros.form_field(form.title, field_type='text', icon='bx-file-alt', placeholder=_("e.g. The Lord of the Rings")) }}
+        {{ macros.form_field(form.author, field_type='text', icon='bx-user', placeholder=_("e.g. J.R.R. Tolkien")) }}
+        {{ macros.form_field(form.library, field_type='select', icon='bx-building') }}
+        {{ macros.form_field(form.genres, field_type='select', icon='bx-tag', help_text=_('Hold Ctrl (or Cmd on Mac) to select multiple genres.')) }}
+        {{ macros.form_field(form.year, field_type='number', icon='bx-calendar', placeholder=_("e.g. 1954")) }}
             {{ form.year(class="form-control", placeholder=_("e.g. 1954")) }}
             {% for error in form.year.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
@@ -72,38 +42,25 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">{{ _('Shelf') }}</label>
-                        {{ form.shelf(class="form-control w-100") }}
-                        <small class="form-text text-muted d-block mt-1">{{ _('e.g., A, B-1') }}</small>
+                    <div class="col-md-6">
+                        {{ macros.form_field(form.shelf, field_type='text', icon='bx-list-ul', placeholder=_("e.g., A, B-1")) }}
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">{{ _('Section') }}</label>
-                        {{ form.section(class="form-control w-100") }}
-                        <small class="form-text text-muted d-block mt-1">{{ _('e.g., Fiction, Science') }}</small>
+                    <div class="col-md-6">
+                        {{ macros.form_field(form.section, field_type='text', icon='bx-layer', placeholder=_("e.g., Fiction, Science")) }}
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">{{ _('Room') }}</label>
-                        {{ form.room(class="form-control w-100") }}
-                        <small class="form-text text-muted d-block mt-1">{{ _('e.g., Main Hall, Room 2') }}</small>
+                    <div class="col-md-6">
+                        {{ macros.form_field(form.room, field_type='text', icon='bx-door-open', placeholder=_("e.g., Main Hall, Room 2")) }}
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">{{ _('Location Notes') }}</label>
-                        {{ form.location_notes(class="form-control w-100") }}
-                        <small class="form-text text-muted d-block mt-1">{{ _('e.g., Top shelf, Near window') }}</small>
+                    <div class="col-md-6">
+                        {{ macros.form_field(form.location_notes, field_type='textarea', icon='bx-note', placeholder=_("e.g., Top shelf, Near window")) }}
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="mt-4 d-flex align-items-center gap-2">
-            {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('main.home') }}" class="btn btn-secondary">
-                {{ _('Cancel') }}
-            </a>
-        </div>
+        {{ macros.form_submit(form.submit.label.text, cancel_url=url_for('main.home')) }}
     </form>
 </div>
 {% endblock %}
