@@ -18,7 +18,13 @@ Libriya is a web application for managing a library, built with Flask, SQLAlchem
 *   **User Profiles:** Users can view their loan history.
 *   **User Settings:** Users can edit their profile and settings.
 *   **Internationalization (i18n):** Full support for multiple languages (currently English and Polish).
-*   **ISBN Lookup:** Integration with OpenLibrary API to fetch book data by ISBN.
+*   **ISBN Lookup:** Integration with Biblioteka Narodowa (BN) and OpenLibrary APIs to fetch book data by ISBN.
+*   **Book Cover Management:** Automatic cover retrieval with intelligent fallback system:
+    - Biblioteka Narodowa (Polish National Library) - primary source for Polish books
+    - Open Library - fallback when primary source lacks cover images
+    - Bookcover API (Goodreads) - secondary fallback
+    - Local caching of external cover images
+*   **MARC Record Support:** Extraction of book metadata from MARC records when top-level fields are incomplete.
 *   **Comments:** Users can add comments to books.
 *   **Favorites:** Users can add books to their favorites list.
 *   **Notifications:**  Users and administrators receive notifications about loan requests, approvals, cancellations, and overdue reminders.
@@ -73,35 +79,104 @@ Libriya is a web application for managing a library, built with Flask, SQLAlchem
     flask run
     ```
 
-## To Do
+## Recent Improvements (v2.0)
 
-*   **Enhance Internationalization:**
-    *   Add more languages.
-    *   Complete translations for existing languages.
-    *   Implement more robust language switching.
+### ISBN Search & Cover Retrieval Enhancement
+- **Dual API Integration:** Searches Biblioteka Narodowa first, then falls back to Open Library
+- **Intelligent Cover Management:** 
+  - Prioritizes covers from data source (Open Library)
+  - Falls back to Open Library by ISBN when primary source lacks cover
+  - Attempts Bookcover API (Goodreads) as secondary fallback
+  - Uses local default image if no cover found
+- **MARC Record Extraction:** Extracts metadata (title, author, publisher, year) from MARC records when top-level fields are empty or incomplete
+- **Newest Record Selection:** Automatically selects the most recently created record when multiple editions exist for the same ISBN
+- **Title Cleanup:** Removes trailing punctuation and whitespace for cleaner metadata
 
-*   **Improve User Interface:**
-    *   Add better error handling and user feedback.
+### UI/UX Improvements
+- **File Input Localization:** Proper translation of file input controls ("Browse...", "No file selected")
+- **Temporary File Cleanup:** Automatic cleanup of cover images when users cancel book addition
+- **Enhanced Form Styling:** Custom styled file input with proper internationalization support
 
-*   **Add Advanced Features:**
-    *   Implement a system for managing fines.
-    *   Add a book recommendation system.
-    *   Implement an "archive" feature for books with loan history instead of deleting them
+## Testing
 
-*   **Testing:**
-    *   Write unit tests and integration tests to ensure code quality.
+The application includes comprehensive testing:
+- Unit tests for ISBN validation and book search services
+- Integration tests for API endpoints
+- Test coverage for MARC record parsing
+- Cover retrieval fallback chain testing
 
-*   **Deployment:**
-    *   Prepare the application for deployment to a production environment.
+Run tests with:
+```bash
+pytest tests/
+```
 
-*   **Code Refactoring:**
-    *   Review and refactor the code for better maintainability and performance.
-    *   Improve documentation.
+## Architecture
+
+### Book Search Pipeline
+1. **ISBN Input** → Validation
+2. **Biblioteka Narodowa Search** → MARC extraction if needed
+3. **Open Library Fallback** → If BN search fails
+4. **Cover Retrieval** → Multi-source with intelligent fallbacks
+5. **Result Caching** → Store book data with cover images locally
+
+### Database Structure
+- **Books:** Title, ISBN, author, publisher, year, location tracking
+- **Authors:** Auto-managed from book data
+- **Genres:** Category management
+- **Loans:** Tracking borrowed books with status workflow
+- **Users:** User management with roles (user, librarian, admin)
+- **Notifications:** System notifications for loans and requests
+- **Audit Logs:** Administrative action tracking
+
+## API Endpoints
+
+### Book Search
+- `GET /api/v1/isbn/<isbn>` - Search book by ISBN (includes cover data)
+- `GET /api/v1/search/title` - Search books by title
+
+### Book Management
+- `GET /api/books` - List all books (with location filtering)
+- `POST /api/books` - Add new book
+- `GET /api/books/<id>` - Get book details
+- `PUT /api/books/<id>` - Update book
+- `DELETE /api/books/<id>` - Delete book
+
+## Configuration
+
+See `config.py` for available configuration options:
+- `DATABASE_URL` - Database connection string
+- `SECRET_KEY` - Flask secret key
+- `UPLOAD_FOLDER` - Location for uploaded cover images
+- `MAX_COVER_SIZE` - Maximum cover image size (default: 5MB)
+- `LANGUAGES` - Supported languages (default: ['en', 'pl'])
 
 ## Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request with your changes.
 
+### Development Setup
+1. Install development dependencies: `pip install -r requirements.txt`
+2. Set up pre-commit hooks for code quality
+3. Write tests for new features
+4. Ensure all tests pass before submitting PR
+
+## Known Issues & Limitations
+
+- Some Polish National Library records may have incomplete metadata
+- Cover images depend on external API availability
+- Demo instance may have rate limiting on external APIs
+
+## Roadmap
+
+- [ ] Advanced search filters (date range, author, publisher)
+- [ ] Book recommendation system
+- [ ] Fine management system
+- [ ] Book archive feature (preserve history instead of deletion)
+- [ ] Mobile app / Progressive Web App (PWA)
+- [ ] Extended language support
+- [ ] Performance optimization for large libraries
+
 ## License
 
 MIT License
+

@@ -214,3 +214,6 @@ __marimo__/
 
 # Database
 .db
+
+# Covers
+app/static/uploads/*

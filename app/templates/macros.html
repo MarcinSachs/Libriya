@@ -42,6 +42,36 @@
     </label>
     {% endif %}
 
+    {% if field_type == 'file' %}
+    <!-- Custom file input styling -->
+    <div class="input-group">
+        {% if icon %}
+        <span class="input-group-text d-flex align-items-center justify-content-center">
+            <i class='bx {{ icon }}'></i>
+        </span>
+        {% endif %}
+        {{ field(class='form-control' + (' is-invalid' if field.errors else ''), accept='image/*', style='display:none;') }}
+        <label class="input-group-text" for="{{ field.id }}" style="cursor:pointer; margin:0; flex-shrink:0;">
+            {{ _('Browse...') }}
+        </label>
+    </div>
+    <small class="form-text text-muted d-block mt-1" id="{{ field.id }}-status">{{ _('No file selected') }}</small>
+    <script>
+        (function() {
+            let fileInput = document.getElementById('{{ field.id }}');
+            let statusLabel = document.getElementById('{{ field.id }}-status');
+            let noFileText = "{{ _('No file selected') }}";
+            
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    statusLabel.textContent = this.files[0].name;
+                } else {
+                    statusLabel.textContent = noFileText;
+                }
+            });
+        })();
+    </script>
+    {% else %}
     <div class="input-group">
         {% if icon %}
         <span class="input-group-text d-flex align-items-center justify-content-center">
@@ -56,6 +86,7 @@
         {{ field(class='form-control' + (' is-invalid' if field.errors else ''), placeholder=placeholder or '', type=field_type) }}
         {% endif %}
     </div>
+    {% endif %}
     
     {% if field.errors %}
     <div class="invalid-feedback d-block">
