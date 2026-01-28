@@ -17,15 +17,11 @@
             <div class="card-body">
                 <!-- ISBN Scanner Button -->
                 <div id="scanner-button-container" class="mb-3">
-                    <div id="scanner-status" class="alert alert-info" style="display:none; font-size:12px;"></div>
                     <button type="button" id="start-scanner" class="btn btn-info w-100 mb-2">
                         <i class='bx bx-camera'></i> {{ _('Scan ISBN/Barcode') }}
                     </button>
                     <!-- Live video viewport - Html5Qrcode creates video element here -->
                     <div id="interactive" style="display:none; width:100%; max-width:500px; margin:10px auto; border-radius:8px; overflow:hidden;"></div>
-                    <div class="mt-2" style="text-align:center;">
-                        <small class="text-muted">{{ _('Live barcode scanner - just point at the barcode') }}</small>
-                    </div>
                 </div>
 
                 <!-- ISBN Input -->
@@ -144,27 +140,8 @@
     var html5QrCode = null;
     var scannerActive = false;
     
-    function showStatus(message, type) {
-        var statusDiv = document.getElementById('scanner-status');
-        if (statusDiv) {
-            statusDiv.textContent = message;
-            statusDiv.className = 'alert alert-' + (type || 'info');
-            statusDiv.style.display = 'block';
-        }
-        console.log('STATUS:', message);
-    }
-    
-    function hideStatus() {
-        var statusDiv = document.getElementById('scanner-status');
-        if (statusDiv) {
-            statusDiv.style.display = 'none';
-        }
-    }
-    
     function startScanner() {
         if (scannerActive) return;
-        
-        showStatus('⏳ Uruchamianie kamery...', 'info');
         
         if (!html5QrCode) {
             html5QrCode = new Html5Qrcode("interactive");
@@ -185,8 +162,6 @@
                 // Clean and validate ISBN
                 var cleanCode = decodedText.replace(/[^0-9X]/gi, '');
                 if (cleanCode.length === 10 || cleanCode.length === 13) {
-                    showStatus('✓ Znaleziono ISBN: ' + cleanCode, 'success');
-                    
                     var isbnInput = document.getElementById('isbn');
                     if (isbnInput) {
                         isbnInput.value = cleanCode;
@@ -209,7 +184,6 @@
             }
         ).then(function() {
             scannerActive = true;
-            showStatus('✓ Skaner aktywny - przyłóż kod kreskowy', 'success');
             
             var interactive = document.getElementById('interactive');
             if (interactive) {
@@ -224,19 +198,6 @@
             }
         }).catch(function(err) {
             console.error('Camera error:', err);
-            var errorMsg = 'Nie można uruchomić kamery';
-            
-            if (err.toString().indexOf('NotAllowedError') > -1) {
-                errorMsg = 'Brak uprawnień do kamery - zezwól w ustawieniach przeglądarki';
-            } else if (err.toString().indexOf('NotFoundError') > -1) {
-                errorMsg = 'Nie znaleziono kamery';
-            } else if (err.toString().indexOf('NotReadableError') > -1) {
-                errorMsg = 'Kamera zajęta przez inną aplikację';
-            } else if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-                errorMsg = 'Kamera wymaga HTTPS - użyj localhost lub HTTPS';
-            }
-            
-            showStatus('❌ ' + errorMsg, 'danger');
         });
     }
     
@@ -245,7 +206,6 @@
         
         html5QrCode.stop().then(function() {
             scannerActive = false;
-            hideStatus();
             
             var interactive = document.getElementById('interactive');
             if (interactive) {
@@ -276,13 +236,6 @@
                     stopScanner();
                 }
             });
-        }
-        
-        if (typeof Html5Qrcode !== 'undefined') {
-            showStatus('✓ Skaner gotowy', 'success');
-            setTimeout(hideStatus, 2000);
-        } else {
-            showStatus('❌ Biblioteka skanera nie załadowała się', 'danger');
         }
 
         // ===== ISBN SEARCH =====
