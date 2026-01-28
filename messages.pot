@@ -1739,3 +1739,42 @@ msgstr ""
 msgid "Unsupported language."
 msgstr ""
 
+#: app/templates/book_add.html (new translations for BN API integration)
+msgid "Polish National Library - Combined Catalogs"
+msgstr ""
+
+msgid "Polish National Library"
+msgstr ""
+
+msgid "Open Library"
+msgstr ""
+
+msgid "Data from:"
+msgstr ""
+
+msgid "Cover:"
+msgstr ""
+
+msgid "Local Default"
+msgstr ""
+
+msgid "Book Cover:"
+msgstr ""
+
+msgid "No data found for this ISBN. Please check the number and try again."
+msgstr ""
+
+msgid "Could not find data for ISBN. Please check the number and try again."
+msgstr ""
+
+msgid "Error during search. Please try again."
+msgstr ""
+
+msgid "Search query must be at least 3 characters"
+msgstr ""
+
+msgid "Browse..."
+msgstr ""
+
+msgid "No file selected"
+msgstr ""

@@ -335,3 +335,49 @@ def remove_favorite(book_id):
     else:
         flash(BOOK_NOT_IN_FAVORITES, 'info')
     return redirect(url_for('books.book_detail', book_id=book.id))
+
+
+@bp.route("/api/cleanup-cover", methods=["POST"])
+@login_required
+def cleanup_cover():
+    """
+    Remove temporary cover file when user cancels adding/editing a book.
+
+    Expected JSON: {"cover_url": "filename or URL"}
+    """
+    try:
+        data = request.get_json()
+        cover_url = data.get('cover_url', '').strip()
+
+        if not cover_url:
+            return {'success': False, 'error': 'No cover URL provided'}, 400
+
+        # Only delete local files, not external URLs
+        # Extract filename from path if it's a local file
+        if '/' in cover_url:
+            filename = cover_url.split('/')[-1]
+        else:
+            filename = cover_url
+
+        # Security: only allow alphanumeric and common image extensions
+        if not all(c.isalnum() or c in '._-' for c in filename):
+            return {'success': False, 'error': 'Invalid filename'}, 400
+
+        file_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+
+        # Extra security: ensure path is within UPLOAD_FOLDER
+        real_upload_folder = os.path.realpath(current_app.config["UPLOAD_FOLDER"])
+        real_file_path = os.path.realpath(file_path)
+        if not real_file_path.startswith(real_upload_folder):
+            return {'success': False, 'error': 'Invalid file path'}, 403
+
+        # Delete the file if it exists
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            os.remove(file_path)
+            return {'success': True, 'message': 'Cover file deleted'}
+
+        return {'success': True, 'message': 'File does not exist (already deleted)'}
+
+    except Exception as e:
+        current_app.logger.error(f"Error cleaning up cover: {e}")
+        return {'success': False, 'error': str(e)}, 500

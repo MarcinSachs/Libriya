@@ -8,6 +8,8 @@ from sqlalchemy import or_
 
 from app import db
 from app.models import Book, Genre, Notification, User
+from app.services.book_service import BookSearchService
+from app.services.cover_service import CoverService
 from app.utils.messages import (
     INFO_LANGUAGE_CHANGED_EN, INFO_LANGUAGE_CHANGED_PL,
     ERROR_UNSUPPORTED_LANGUAGE, ERROR_PERMISSION_DENIED, NOTIFICATION_MARKED_READ,
@@ -150,87 +152,165 @@ def set_language(lang):
 @login_required
 def get_book_by_isbn(isbn):
     """
-    API endpoint to fetch book data from OpenLibrary based on ISBN.
+    API endpoint to fetch book data by ISBN.
+
+    Searches in this priority:
+    1. Biblioteka Narodowa (Polish National Library) - networks catalog
+    2. Open Library API
+    3. Enriches with cover from best available source
+
+    Query params:
+        - include_bn (bool): Include BN search (default: true)
     """
-    url = "https://openlibrary.org/api/books"
-    params = {
-        "bibkeys": f"ISBN:{isbn}",
-        "jscmd": "data",
-        "format": "json"
-    }
     try:
-        response = requests.get(url, params=params, timeout=10)
-        response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
-        data = response.json()
-        book_data = data.get(f"ISBN:{isbn}")
+        current_app.logger.info(f"API /api/v1/isbn/ called with: {isbn}")
+        use_bn = request.args.get('include_bn', 'true').lower() != 'false'
+
+        book_data = BookSearchService.search_by_isbn(
+            isbn=isbn,
+            use_bn=use_bn,
+            use_openlibrary=True
+        )
 
         if not book_data:
-            return jsonify({"error": "No data found for this ISBN."}), 404
+            return jsonify({"error": _("No data found for this ISBN. Please check the number and try again.")}), 404
 
-        # Extract relevant fields
-        book_info = {
+        # Format response for frontend
+        response_data = {
             "title": book_data.get("title"),
-            "author": ", ".join(author["name"] for author in book_data.get("authors", [])),
-            "cover_image": f"https://covers.openlibrary.org/b/isbn/{isbn}-L.jpg"
+            "author": ", ".join(book_data.get("authors", [])) if book_data.get("authors") else "",
+            "year": book_data.get("year"),
+            "isbn": book_data.get("isbn"),
+            "publisher": book_data.get("publisher"),
+            "source": book_data.get("source"),
         }
 
-        publish_date_str = book_data.get("publish_date", "")
-        if publish_date_str:
-            match = re.search(r'\d{4}', publish_date_str)
-            if match:
-                book_info["year"] = match.group(0)
+        # Add cover info with local caching for external URLs
+        cover_info = book_data.get("cover", {})
+        cover_url = None
+        cover_source = "local_default"
 
-        return jsonify(book_info)
-    except requests.exceptions.RequestException as e:
-        # Handle network errors, timeouts, etc.
-        return jsonify({"error": f"Network error connecting to Open Library: {e}"}), 500
+        if isinstance(cover_info, dict):
+            cover_url = cover_info.get("url")
+            cover_source = cover_info.get("source", "local_default")
+        else:
+            cover_url = cover_info
+            cover_source = "open_library"
+
+        # Download and cache external cover URLs locally
+        if cover_url and cover_source != "local_default" and cover_url.startswith(("http://", "https://")):
+            try:
+                uploaded_filename = CoverService.download_and_save_cover(
+                    cover_url,
+                    current_app.config['UPLOAD_FOLDER']
+                )
+                if uploaded_filename:
+                    # Use local cached URL
+                    response_data["cover_image"] = f"/static/uploads/{uploaded_filename}"
+                    current_app.logger.info(f"Cached cover locally: {uploaded_filename}")
+                else:
+                    # Keep external URL as fallback
+                    response_data["cover_image"] = cover_url
+            except Exception as e:
+                current_app.logger.warning(f"Failed to cache cover: {e}")
+                response_data["cover_image"] = cover_url
+        else:
+            response_data["cover_image"] = cover_url
+
+        response_data["cover_source"] = cover_source
+
+        return jsonify(response_data)
+
     except Exception as e:
-        # Handle other potential errors (e.g., JSON decoding)
-        return jsonify({"error": str(e)}), 500
+        current_app.logger.error(f"ISBN search error: {e}")
+        return jsonify({"error": _("Error during search. Please try again.")}), 500
 
 
 @bp.route("/api/v1/search/title", methods=["GET"])
 @login_required
 def search_book_by_title():
     """
-    API endpoint to search for books on OpenLibrary by title.
-    Query params: q (search query), limit (default 10)
+    API endpoint to search for books by title.
+
+    Searches in this priority:
+    1. Biblioteka Narodowa (Polish National Library)
+    2. Open Library API
+    3. Merges results and enriches with covers
+
+    Query params:
+        - q (required): Search query (min 3 characters)
+        - limit (optional): Max results (default: 10, max: 20)
+        - author (optional): Filter by author
+        - include_bn (bool): Include BN search (default: true)
     """
     query = request.args.get('q', '').strip()
+    author = request.args.get('author', '').strip()
     limit = request.args.get('limit', 10, type=int)
+    use_bn = request.args.get('include_bn', 'true').lower() != 'false'
 
     if not query or len(query) < 3:
         return jsonify({"error": _("Search query must be at least 3 characters")}), 400
 
     try:
-        url = "https://openlibrary.org/search.json"
-        params = {
-            "title": query,
-            "limit": min(limit, 20),  # Cap at 20
-            "fields": "title,author_name,first_publish_year,isbn,cover_i"
-        }
-        response = requests.get(url, params=params, timeout=10)
-        response.raise_for_status()
-        data = response.json()
+        results = BookSearchService.search_by_title(
+            title=query,
+            author=author or None,
+            limit=min(limit, 20),
+            use_bn=use_bn,
+            use_openlibrary=True
+        )
 
-        # Format results
-        results = []
-        for doc in data.get("docs", []):
-            isbn_list = doc.get("isbn", [])
-            if isbn_list:  # Only return books with ISBN
-                results.append({
-                    "title": doc.get("title"),
-                    "authors": doc.get("author_name", []),
-                    "isbn": isbn_list[0],  # Get first ISBN
-                    "year": doc.get("first_publish_year"),
-                    "cover_id": doc.get("cover_i")
-                })
+        # Format for frontend
+        formatted_results = []
+        for book in results:
+            formatted_book = {
+                "title": book.get("title"),
+                "authors": book.get("authors", []),
+                "isbn": book.get("isbn"),
+                "year": book.get("year"),
+                "source": book.get("source"),
+            }
 
-        return jsonify({"results": results, "total": len(results)})
-    except requests.exceptions.RequestException as e:
-        return jsonify({"error": f"Network error connecting to Open Library: {e}"}), 500
+            # Add cover info with local caching for external URLs
+            cover_info = book.get("cover", {})
+            cover_url = None
+            cover_source = "local_default"
+
+            if isinstance(cover_info, dict):
+                cover_url = cover_info.get("url")
+                cover_source = cover_info.get("source", "local_default")
+            else:
+                cover_url = cover_info
+                cover_source = "open_library"
+
+            # Download and cache external cover URLs locally
+            if cover_url and cover_source != "local_default" and cover_url.startswith(("http://", "https://")):
+                try:
+                    uploaded_filename = CoverService.download_and_save_cover(
+                        cover_url,
+                        current_app.config['UPLOAD_FOLDER']
+                    )
+                    if uploaded_filename:
+                        # Use local cached URL
+                        formatted_book["cover_id"] = f"/static/uploads/{uploaded_filename}"
+                        current_app.logger.debug(f"Cached cover locally: {uploaded_filename}")
+                    else:
+                        # Keep external URL as fallback
+                        formatted_book["cover_id"] = cover_url
+                except Exception as e:
+                    current_app.logger.warning(f"Failed to cache cover: {e}")
+                    formatted_book["cover_id"] = cover_url
+            else:
+                formatted_book["cover_id"] = cover_url
+
+            formatted_book["cover_source"] = cover_source
+            formatted_results.append(formatted_book)
+
+        return jsonify({"results": formatted_results, "total": len(formatted_results)})
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        current_app.logger.error(f"Title search error: {e}")
+        return jsonify({"error": _("Error during search. Please try again.")}), 500
 
 
 @bp.context_processor

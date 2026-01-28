@@ -125,9 +125,9 @@
                 <div class="d-flex align-items-center gap-2">
                 <div class="d-grid gap-2 d-md-flex">
                     {{ macros.form_submit(_('Add Book'), 'success', 'bx-check') }}
-                    <a href="{{ url_for('main.home') }}" class="btn btn-outline-secondary">
+                    <button type="button" class="btn btn-outline-secondary" id="cancel-btn" onclick="handleCancel()">
                         <i class='bx bx-x me-1'></i> {{ _('Cancel') }}
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -223,6 +223,40 @@
         });
     }
 
+    // Handle Cancel button - cleanup temporary cover files
+    function handleCancel() {
+        const coverUrlInput = Array.from(document.querySelectorAll('input[name="cover_url"]')).pop();
+        
+        if (coverUrlInput && coverUrlInput.value) {
+            const coverUrl = coverUrlInput.value;
+            
+            // Only cleanup local files (containing /uploads/)
+            if (coverUrl.includes('/uploads/')) {
+                fetch('/api/cleanup-cover', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ cover_url: coverUrl })
+                })
+                .then(response => response.json())
+                .catch(error => {
+                    console.error('Error cleaning up cover:', error);
+                    // Continue anyway, don't block user from leaving
+                })
+                .finally(() => {
+                    window.location.href = "{{ url_for('main.home') }}";
+                });
+            } else {
+                // External URL, no cleanup needed
+                window.location.href = "{{ url_for('main.home') }}";
+            }
+        } else {
+            // No cover URL, redirect immediately
+            window.location.href = "{{ url_for('main.home') }}";
+        }
+    }
+
     // Initialize when DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM loaded, Html5Qrcode available:', typeof Html5Qrcode !== 'undefined');
@@ -262,7 +296,7 @@
                 findBtn.disabled = true;
                 findBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> {{ _('Searching...') }}';
 
-                fetch(`/api/v1/isbn/${isbn}`)
+                fetch(`/api/v1/isbn/${isbn}?include_bn=true`)
                     .then(response => {
                         console.log('API Response status:', response.status);
                         if (!response.ok) {
@@ -275,21 +309,40 @@
                         if (data.title) titleInput.value = data.title;
                         if (data.author) authorInput.value = data.author;
                         if (data.year) yearInput.value = data.year;
+                        
+                        // Show data source
+                        var sourceMap = {
+                            'bn_networks': '{{ _('Polish National Library - Combined Catalogs') }}',
+                            'bn_direct': '{{ _('Polish National Library') }}',
+                            'open_library': '{{ _('Open Library') }}'
+                        };
+                        var sourceLabel = sourceMap[data.source] || data.source || '{{ _('Unknown Source') }}';
+                        
+                        var sourceInfo = document.getElementById('data-source-info');
+                        if (!sourceInfo) {
+                            sourceInfo = document.createElement('div');
+                            sourceInfo.id = 'data-source-info';
+                            sourceInfo.className = 'alert alert-info mt-3';
+                            document.querySelector('form').insertBefore(sourceInfo, document.querySelector('form').firstChild.nextSibling);
+                        }
+                        sourceInfo.innerHTML = `<small>ℹ️ {{ _('Data from:') }} <strong>${sourceLabel}</strong> | {{ _('Cover:') }} <strong>${data.cover_source || '{{ _('Local Default') }}'}</strong></small>`;
+                        
                         if (data.cover_image) {
                             console.log('Setting cover image:', data.cover_image);
-                            coverPreview.innerHTML = `<p class="form-label">{{ _('Open Library Cover:') }}</p><img src="${data.cover_image}" style="max-width: 150px; border-radius: 4px;">`;
+                            coverPreview.innerHTML = `<img src="${data.cover_image}" style="max-width: 150px; border-radius: 4px;" onerror="this.src='/static/images/default-book-cover.png'">`;
                             const hiddenInput = document.createElement('input');
                             hiddenInput.type = 'hidden';
                             hiddenInput.name = 'cover_url';
                             hiddenInput.value = data.cover_image;
                             document.querySelector('form').appendChild(hiddenInput);
                         } else {
-                            console.log('No cover image in response');
+                            console.log('No cover image in response, will use default');
+                            coverPreview.innerHTML = `<img src="/static/images/default-book-cover.png" style="max-width: 150px; border-radius: 4px;">`;
                         }
                     })
                     .catch(error => {
                         console.error('Error fetching data by ISBN:', error);
-                        errorDiv.textContent = "Could not find data for ISBN. Please check the number and try again.";
+                        errorDiv.textContent = "{{ _('Could not find data for ISBN. Please check the number and try again.') }}";
                     })
                     .finally(() => {
                         findBtn.disabled = false;
@@ -331,10 +384,19 @@
 
                         let html = '<div class="list-group">';
                         data.results.forEach(book => {
-                            const coverImg = book.cover_id 
-                                ? `<img src="https://covers.openlibrary.org/b/id/${book.cover_id}-S.jpg" alt="cover" style="height: 60px; margin-right: 10px;">`
-                                : '';
+                            // Handle both direct URL and cover_id format
+                            let coverImg = '';
+                            if (book.cover_id && book.cover_id.startsWith('http')) {
+                                // Direct URL from Bookcover API or OL
+                                coverImg = `<img src="${book.cover_id}" alt="cover" style="height: 60px; margin-right: 10px;" onerror="this.src='/static/images/default-book-cover.png'">`;
+                            } else if (book.cover_id) {
+                                // Open Library cover ID
+                                coverImg = `<img src="https://covers.openlibrary.org/b/id/${book.cover_id}-S.jpg" alt="cover" style="height: 60px; margin-right: 10px;" onerror="this.src='/static/images/default-book-cover.png'">`;
+                            }
+                            
                             const authors = book.authors ? book.authors.join(', ') : '{{ _('Unknown') }}';
+                            const sourceLabel = book.source === 'bn_networks' ? '🇵🇱 BN' : (book.source === 'bn_direct' ? '🇵🇱 BN' : '📚 OL');
+                            
                             html += `
                                 <a href="#" class="list-group-item list-group-item-action book-result-item" 
                                    data-title="${book.title}" 
@@ -344,8 +406,11 @@
                                    data-cover-id="${book.cover_id || ''}">
                                     <div class="d-flex w-100">
                                         ${coverImg}
-                                        <div>
-                                            <h6 class="mb-1">${book.title}</h6>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <h6 class="mb-1">${book.title}</h6>
+                                                <small class="badge bg-info">${sourceLabel}</small>
+                                            </div>
                                             <p class="mb-1 text-muted"><small>${authors}</small></p>
                                             <p class="mb-0 text-muted"><small>ISBN: ${book.isbn}</small></p>
                                         </div>
@@ -373,13 +438,20 @@
 
                                 // Load cover image if available
                                 if (coverId) {
-                                    const coverUrl = `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
-                                    coverPreview.innerHTML = `<p class="form-label">{{ _('Open Library Cover:') }}</p><img src="${coverUrl}" style="max-width: 150px; border-radius: 4px;">`;
+                                    let coverUrl;
+                                    if (coverId.startsWith('http')) {
+                                        coverUrl = coverId;
+                                    } else {
+                                        coverUrl = `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
+                                    }
+                                    coverPreview.innerHTML = `<img src="${coverUrl}" style="max-width: 150px; border-radius: 4px;" onerror="this.src='/static/images/default-book-cover.png'">`;
                                     const hiddenInput = document.createElement('input');
                                     hiddenInput.type = 'hidden';
                                     hiddenInput.name = 'cover_url';
                                     hiddenInput.value = coverUrl;
                                     document.querySelector('form').appendChild(hiddenInput);
+                                } else {
+                                    coverPreview.innerHTML = `<img src="/static/images/default-book-cover.png" style="max-width: 150px; border-radius: 4px;">`;
                                 }
 
                                 searchResultsDiv.innerHTML = '';
