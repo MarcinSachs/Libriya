@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'translations/**/*.po'
-      - 'translations/*.pot'
+      - 'messages.pot'
 
 jobs:
   lokalise-push:
@@ -22,7 +22,9 @@ jobs:
           project_id: ${{ secrets.LOKALISE_PROJECT_ID }}
           base_lang: en
           file_ext: po
-          translations_path: translations
+          translations_path: |
+            .
+            translations
           additional_params: >
             {
               "detect_icu_plurals": true,

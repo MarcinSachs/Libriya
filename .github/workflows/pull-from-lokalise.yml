@@ -8,6 +8,9 @@ on:
 jobs:
   lokalise-pull:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -19,7 +22,9 @@ jobs:
           project_id: ${{ secrets.LOKALISE_PROJECT_ID }}
           base_lang: en
           file_ext: po
-          translations_path: translations
+          translations_path: |
+            .
+            translations
           additional_params: >
             {
               "original_filenames": true,

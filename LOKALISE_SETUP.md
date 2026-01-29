@@ -16,10 +16,12 @@ You can upload your existing translation files to Lokalise:
 
 1. In your Lokalise project, go to "Upload"
 2. Upload the following files:
-   - `translations/messages.pot` (template)
+   - `messages.pot` (template file from root directory)
    - `translations/en/LC_MESSAGES/messages.po` (English)
    - `translations/pl/LC_MESSAGES/messages.po` (Polish)
 3. Ensure the files are mapped to the correct languages
+
+**Note:** The `messages.pot` file is typically generated in the root directory by pybabel.
 
 ## Step 3: Get Your Lokalise Credentials
 
@@ -37,7 +39,7 @@ You can upload your existing translation files to Lokalise:
 
 ## Step 4: Add GitHub Secrets
 
-1. Go to your GitHub repository: https://github.com/MarcinSachs/Libriya
+1. Go to your GitHub repository (Settings page)
 2. Navigate to Settings → Secrets and variables → Actions
 3. Click "New repository secret" and add:
    - Name: `LOKALISE_API_TOKEN`
@@ -64,8 +66,8 @@ You can upload your existing translation files to Lokalise:
 ## Workflow Details
 
 ### Push Workflow (`.github/workflows/push-to-lokalise.yml`)
-- **Triggers:** Automatically when `.po` or `.pot` files in `translations/` are changed on `main` branch
-- **Action:** Uploads translation files to Lokalise
+- **Triggers:** Automatically when `.po` or `.pot` files in `translations/` or root directory are changed on `main` branch
+- **Action:** Uploads translation template (.pot) and translation files (.po) to Lokalise
 - **Purpose:** Keep Lokalise synchronized with your source code
 
 ### Pull Workflow (`.github/workflows/pull-from-lokalise.yml`)
