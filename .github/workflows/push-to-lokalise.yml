@@ -1,0 +1,36 @@
+name: Push translations to Lokalise
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'translations/**/*.po'
+      - 'messages.pot'
+
+jobs:
+  lokalise-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Push translation files to Lokalise
+        uses: lokalise/lokalise-push-action@v4.1.0
+        with:
+          api_token: ${{ secrets.LOKALISE_API_TOKEN }}
+          project_id: ${{ secrets.LOKALISE_PROJECT_ID }}
+          base_lang: en
+          file_ext: po
+          translations_path: |
+            .
+            translations
+          additional_params: >
+            {
+              "detect_icu_plurals": true,
+              "convert_placeholders": true,
+              "replace_modified": true,
+              "cleanup_mode": false
+            }

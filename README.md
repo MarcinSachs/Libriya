@@ -150,6 +150,63 @@ See `config.py` for available configuration options:
 - `MAX_COVER_SIZE` - Maximum cover image size (default: 5MB)
 - `LANGUAGES` - Supported languages (default: ['en', 'pl'])
 
+## Lokalise Integration
+
+This project uses [Lokalise](https://lokalise.com/) for translation management with automated synchronization via GitHub Actions.
+
+**📖 See [LOKALISE_SETUP.md](LOKALISE_SETUP.md) for detailed setup instructions.**
+
+### Quick Setup Summary
+
+1. **Create a Lokalise account** and project at [app.lokalise.com](https://app.lokalise.com)
+
+2. **Get your credentials:**
+   - **API Token:** Generate in Lokalise under *User Settings → API Tokens* (requires read/write permissions)
+   - **Project ID:** Found in your project settings URL
+
+3. **Add GitHub Secrets:**
+   - Go to your repository *Settings → Secrets and variables → Actions*
+   - Add the following secrets:
+     - `LOKALISE_API_TOKEN` - Your Lokalise API token
+     - `LOKALISE_PROJECT_ID` - Your Lokalise project ID
+
+### Workflows
+
+Two GitHub Actions workflows handle translation synchronization:
+
+#### Push to Lokalise (`.github/workflows/push-to-lokalise.yml`)
+- **Trigger:** Automatically on push to `main` branch when translation files change
+- **Action:** Uploads `.pot` template and `.po` translation files to Lokalise
+- **Purpose:** Keep Lokalise up-to-date with source translation strings
+
+#### Pull from Lokalise (`.github/workflows/pull-from-lokalise.yml`)
+- **Trigger:** Manual (workflow_dispatch) or weekly on Monday at midnight UTC
+- **Action:** Downloads updated translations from Lokalise and creates a pull request
+- **Purpose:** Bring translated strings back into the repository
+
+### Working with Translations
+
+1. **Extract new strings:**
+   ```bash
+   pybabel extract -F babel.cfg -o messages.pot .
+   ```
+
+2. **Update existing translations:**
+   ```bash
+   pybabel update -i messages.pot -d translations
+   ```
+
+3. **Compile translations locally:**
+   ```bash
+   python compile_translations.py
+   # or
+   pybabel compile -d translations
+   ```
+
+4. **Push changes:** Commit and push to `main` - translations automatically sync to Lokalise
+
+5. **Get translations:** Manually trigger the "Pull translations from Lokalise" workflow or wait for the weekly sync
+
 ## Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request with your changes.
