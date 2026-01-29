@@ -20,7 +20,7 @@ on:
 jobs:
   lokalise-push:
     runs-on: ubuntu-latest
-    # Add a condition: only run if the LOKALISE_ENABLE_PUSH secret is set to 'true'
+    # Add a condition: only run if the LOKALISE_ENABLE_PUSH variable is NOT set to 'false'
     # This allows users on free plan to disable the workflow without deleting the file
     if: vars.LOKALISE_ENABLE_PUSH != 'false'
     permissions:
