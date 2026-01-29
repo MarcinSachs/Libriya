@@ -13,11 +13,11 @@ Crowdin is a cloud-based localization management platform that offers:
 
 ## Prerequisites
 
-You mentioned you've already:
+If you've already:
 - ✅ Created a Crowdin project
 - ✅ Set up GitHub integration
 
-Great! Let's complete the setup.
+Great! You can skip ahead to Step 3. Otherwise, follow all steps below.
 
 ## Step 1: Configure Crowdin Project Settings
 
@@ -65,11 +65,11 @@ Great! Let's complete the setup.
 
 ## Step 4: Configure GitHub Integration in Crowdin
 
-Since you mentioned you've already set up the GitHub integration, verify these settings:
+If you've already set up the GitHub integration, verify these settings. Otherwise, follow these steps to configure it:
 
 1. In Crowdin, go to **Integrations → GitHub**
-2. Click on your integration to configure it
-3. **Repository:** Should point to `MarcinSachs/Libriya`
+2. Click on your integration to configure it (or add a new integration if needed)
+3. **Repository:** Should point to your GitHub repository (e.g., `YourUsername/Libriya`)
 4. **Configuration file:** `crowdin.yml` (in the root directory)
 5. **Service branch:** `main` (or your default branch)
 
@@ -335,7 +335,7 @@ If you encounter issues:
 
 ## Migration from Lokalise
 
-You're migrating from Lokalise, so here are the key differences:
+If you're migrating from Lokalise, here are the key differences:
 
 | Feature | Lokalise | Crowdin |
 |---------|----------|---------|
