@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-01-27 17:34+0100\n"
-"PO-Revision-Date: 2026-01-29 14:35\n"
+"PO-Revision-Date: 2026-01-29 15:59\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -445,7 +445,7 @@ msgstr ""
 
 #: app/seeds/seed.py:53
 msgid "Home Improvement"
-msgstr ""
+msgstr "Majsterkowanie"
 
 #: app/seeds/seed.py:54
 msgid "Horror"
@@ -655,7 +655,7 @@ msgstr ""
 #: app/templates/book_add.html:32 app/templates/book_add.html:50
 #: app/templates/book_add.html:251
 msgid "Search"
-msgstr ""
+msgstr "Szukaj"
 
 #: app/templates/book_add.html:41
 msgid "OR"
