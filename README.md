@@ -154,6 +154,8 @@ See `config.py` for available configuration options:
 
 This project uses [Lokalise](https://lokalise.com/) for translation management with automated synchronization via GitHub Actions.
 
+**⚠️ IMPORTANT: The push workflow requires a paid Lokalise plan.** The file upload API is not available on the free plan. See [LOKALISE_SETUP.md](LOKALISE_SETUP.md) for details and alternatives.
+
 **📖 See [LOKALISE_SETUP.md](LOKALISE_SETUP.md) for detailed setup instructions.**
 
 ### Quick Setup Summary
@@ -175,11 +177,13 @@ This project uses [Lokalise](https://lokalise.com/) for translation management w
 Two GitHub Actions workflows handle translation synchronization:
 
 #### Push to Lokalise (`.github/workflows/push-to-lokalise.yml`)
+**⚠️ Requires paid Lokalise plan**
 - **Trigger:** 
   - Automatically on push to `main` branch when translation files change
   - Manual (workflow_dispatch) - can be run on-demand from GitHub Actions tab
 - **Action:** Uploads `.pot` template and `.po` translation files to Lokalise
 - **Purpose:** Keep Lokalise up-to-date with source translation strings
+- **Free plan alternative:** Manually upload files through Lokalise web interface
 
 #### Pull from Lokalise (`.github/workflows/pull-from-lokalise.yml`)
 - **Trigger:** Manual (workflow_dispatch) or weekly on Monday at midnight UTC
