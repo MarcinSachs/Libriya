@@ -2,6 +2,22 @@
 
 This guide will help you set up Lokalise integration with your Libriya project.
 
+## Important: Plan Requirements
+
+⚠️ **The automated GitHub Actions workflows for pushing files to Lokalise require a paid Lokalise plan.**
+
+The Lokalise file upload API endpoint (used by the `lokalise-push-action`) is **not available on the free plan**, even though the free plan includes some API access. You will receive the error:
+```
+API isn't available on your team's plan. Consider upgrading.
+```
+
+**Options:**
+1. **Upgrade to a paid Lokalise plan** (Team, Pro, or Enterprise) to use automated workflows
+2. **Use manual upload** through the Lokalise web interface (see Step 2 below)
+3. **Consider alternative platforms** with free API access (Crowdin, Weblate, POEditor)
+
+The pull workflow (downloading translations from Lokalise) should work on the free plan.
+
 ## Step 1: Create Lokalise Account and Project
 
 1. Go to [app.lokalise.com](https://app.lokalise.com) and create an account
@@ -48,9 +64,15 @@ You can upload your existing translation files to Lokalise:
    - Name: `LOKALISE_PROJECT_ID`
    - Value: Your Project ID from Step 3
 
+**Note for free plan users:** You can only use these secrets for the pull workflow (downloading translations from Lokalise). The push workflow requires a paid plan.
+
 ## Step 5: Test the Integration
 
 ### Test Push Workflow (GitHub → Lokalise)
+
+⚠️ **This requires a paid Lokalise plan.** On the free plan, you must upload files manually through the Lokalise web interface.
+
+**If you have a paid plan:**
 
 **Option 1: Manual Trigger (Recommended for first-time setup)**
 1. Go to GitHub Actions tab
@@ -108,6 +130,8 @@ pybabel compile -d translations
 ```
 
 ### Workflow
+
+**For paid plan users:**
 1. Add new translatable strings in your Flask app (using `gettext()` or `_()`)
 2. Extract strings: `pybabel extract -F babel.cfg -o messages.pot .`
 3. Update translations: `pybabel update -i messages.pot -d translations`
@@ -117,7 +141,34 @@ pybabel compile -d translations
 7. Review and merge the PR
 8. Compile translations: `python compile_translations.py`
 
+**For free plan users:**
+1. Add new translatable strings in your Flask app (using `gettext()` or `_()`)
+2. Extract strings: `pybabel extract -F babel.cfg -o messages.pot .`
+3. Update translations: `pybabel update -i messages.pot -d translations`
+4. **Manually upload** `messages.pot` and `.po` files to Lokalise web interface
+5. Translators work in Lokalise web interface
+6. Run "Pull translations from Lokalise" workflow → Creates PR with translations
+7. Review and merge the PR
+8. Compile translations: `python compile_translations.py`
+
 ## Troubleshooting
+
+### "API isn't available on your team's plan" Error
+**Cause:** The file upload API endpoint is not available on Lokalise free plan.
+
+**Solutions:**
+1. **Upgrade to a paid Lokalise plan** (Team, Pro, or Enterprise)
+2. **Disable the push workflow** if you're on the free plan:
+   - **Option A (Recommended):** Set a repository variable to disable the workflow:
+     - Go to your GitHub repository *Settings → Secrets and variables → Actions*
+     - Click on the "Variables" tab
+     - Click "New repository variable"
+     - Name: `LOKALISE_ENABLE_PUSH`
+     - Value: `false`
+     - The workflow will be skipped on future runs
+   - **Option B:** Delete or disable `.github/workflows/push-to-lokalise.yml`
+   - Upload translation files manually through the Lokalise web interface
+3. **Consider alternative platforms** like Crowdin, Weblate, or POEditor that offer free API access
 
 ### Workflow Fails with Authentication Error
 - Check that `LOKALISE_API_TOKEN` and `LOKALISE_PROJECT_ID` secrets are correctly set
