@@ -53,7 +53,7 @@ You can upload your existing translation files to Lokalise:
    - The Project ID is in the URL: `app.lokalise.com/project/<PROJECT_ID>`
    - Or find it in Project Settings → General
 
-## Step 4: Add GitHub Secrets (Required for Pull Workflow Only on Free Plan)
+## Step 4: Add GitHub Secrets
 
 1. Go to your GitHub repository (Settings page)
 2. Navigate to Settings → Secrets and variables → Actions
@@ -64,7 +64,7 @@ You can upload your existing translation files to Lokalise:
    - Name: `LOKALISE_PROJECT_ID`
    - Value: Your Project ID from Step 3
 
-**Note:** On the free plan, you can only use these secrets for the pull workflow (downloading translations from Lokalise).
+**Note for free plan users:** You can only use these secrets for the pull workflow (downloading translations from Lokalise). The push workflow requires a paid plan.
 
 ## Step 5: Test the Integration
 
