@@ -20,6 +20,5 @@ def make_shell_context():
 if __name__ == '__main__':
     debug_mode = os.environ.get('FLASK_ENV') == 'development'
 
-    # Enable HTTPS for camera access on mobile devices
-    # Using adhoc SSL context (self-signed certificate)
-    app.run(host="0.0.0.0", port=5000, debug=debug_mode, ssl_context='adhoc')
+    # Run on HTTP (use Ngrok for HTTPS in development)
+    app.run(host="0.0.0.0", port=5000, debug=debug_mode)

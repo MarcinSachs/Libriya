@@ -132,14 +132,14 @@
                             style="margin-bottom: 0.25rem;"><i class="bx bx-block"></i></button>
                         {% endif %}
 
-                        {% if current_user and current_user.role == 'admin' %}
+                        {% if current_user and (current_user.is_admin or current_user.is_manager) %}
                         <a href="{{ url_for('books.book_edit', book_id=book.id)}}" class="btn btn-outline-primary btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Edit Book') }}"
                             style="margin-bottom: 0.25rem;"><i class="bx bx-edit"></i></a>
-                        <a href="{{ url_for('books.book_delete', book_id=book.id)}}"
-                            class="btn btn-outline-danger btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                        <button type="button" class="btn btn-outline-danger btn-sm delete-btn" data-book-id="{{ book.id }}" data-book-title="{{ book.title }}"
+                            data-bs-toggle="tooltip" data-bs-placement="top"
                             title="{{ _('Delete Book') }}" style="margin-bottom: 0.25rem;"><i
-                                class="bx bx-trash"></i></a>
+                                class="bx bx-trash"></i></button>
                         {% endif %}
                     </td>
                 </tr>

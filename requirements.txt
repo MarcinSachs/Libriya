@@ -13,3 +13,4 @@ flask-limiter
 isbnlib
 opencv-python
 easyocr
+Pillow
