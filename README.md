@@ -154,7 +154,9 @@ See `config.py` for available configuration options:
 
 This project uses [Lokalise](https://lokalise.com/) for translation management with automated synchronization via GitHub Actions.
 
-### Setup
+**📖 See [LOKALISE_SETUP.md](LOKALISE_SETUP.md) for detailed setup instructions.**
+
+### Quick Setup Summary
 
 1. **Create a Lokalise account** and project at [app.lokalise.com](https://app.lokalise.com)
 
