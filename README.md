@@ -175,7 +175,9 @@ This project uses [Lokalise](https://lokalise.com/) for translation management w
 Two GitHub Actions workflows handle translation synchronization:
 
 #### Push to Lokalise (`.github/workflows/push-to-lokalise.yml`)
-- **Trigger:** Automatically on push to `main` branch when translation files change
+- **Trigger:** 
+  - Automatically on push to `main` branch when translation files change
+  - Manual (workflow_dispatch) - can be run on-demand from GitHub Actions tab
 - **Action:** Uploads `.pot` template and `.po` translation files to Lokalise
 - **Purpose:** Keep Lokalise up-to-date with source translation strings
 

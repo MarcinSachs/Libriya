@@ -51,10 +51,22 @@ You can upload your existing translation files to Lokalise:
 ## Step 5: Test the Integration
 
 ### Test Push Workflow (GitHub → Lokalise)
-1. Make a small change to any translation file (e.g., add a comment to `translations/pl/LC_MESSAGES/messages.po`)
+
+**Option 1: Manual Trigger (Recommended for first-time setup)**
+1. Go to GitHub Actions tab
+2. Click on "Push translations to Lokalise" workflow
+3. Click "Run workflow" button
+4. Select the `main` branch
+5. The workflow will run and upload your translation files to Lokalise
+6. Check your Lokalise project to see if the files were uploaded
+
+**Option 2: Automatic Trigger**
+1. Make a small change to any translation file (e.g., add a comment to `translations/pl/LC_MESSAGES/messages.po` or `messages.pot`)
 2. Commit and push to the `main` branch
 3. Go to Actions tab in GitHub and watch the "Push translations to Lokalise" workflow run
 4. Check your Lokalise project to see if the files were uploaded
+
+**Note:** If the workflow was added in the initial commit of your repository, you need to use Option 1 (manual trigger) or make a new change to trigger it, as workflows cannot run for the commit that creates them.
 
 ### Test Pull Workflow (Lokalise → GitHub)
 1. Make a change in Lokalise (edit a translation)
@@ -66,7 +78,9 @@ You can upload your existing translation files to Lokalise:
 ## Workflow Details
 
 ### Push Workflow (`.github/workflows/push-to-lokalise.yml`)
-- **Triggers:** Automatically when `.po` or `.pot` files in `translations/` or root directory are changed on `main` branch
+- **Triggers:** 
+  - Automatically when `.po` or `.pot` files in `translations/` or root directory are changed on `main` branch
+  - Manual trigger (workflow_dispatch) - can be run on-demand from GitHub Actions tab
 - **Action:** Uploads translation template (.pot) and translation files (.po) to Lokalise
 - **Purpose:** Keep Lokalise synchronized with your source code
 
