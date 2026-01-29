@@ -1,0 +1,34 @@
+# Crowdin Configuration for Libriya
+# This file defines how Crowdin handles translation files in this repository.
+# Crowdin will automatically sync with GitHub when properly configured.
+
+# Project ID - Your Crowdin project identifier
+# You can find this in your Crowdin project settings
+project_id_env: CROWDIN_PROJECT_ID
+
+# API token for authentication - stored as a GitHub secret for security
+api_token_env: CROWDIN_PERSONAL_TOKEN
+
+# Preserve hierarchy in Crowdin (keeps folder structure)
+preserve_hierarchy: true
+
+# Commit message when Crowdin pushes translations to GitHub
+commit_message: "[Crowdin] Update translations"
+
+# Files to synchronize
+files:
+  # Source translation template (POT file)
+  - source: /translations/messages.pot
+    translation: /translations/%two_letters_code%/LC_MESSAGES/messages.po
+    
+    # Update options
+    update_option: update_as_unapproved
+    
+    # Translation file configuration
+    type: gettext
+    
+    # Language mapping (optional - adjusts Crowdin language codes to match your structure)
+    languages_mapping:
+      two_letters_code:
+        en: en
+        pl: pl
