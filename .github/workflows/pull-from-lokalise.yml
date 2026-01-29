@@ -1,0 +1,33 @@
+name: Pull translations from Lokalise
+
+on:
+  workflow_dispatch:  # Manual trigger
+  schedule:
+    - cron: '0 0 * * 1'  # Weekly on Monday at midnight UTC
+
+jobs:
+  lokalise-pull:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Pull translations from Lokalise
+        uses: lokalise/lokalise-pull-action@v4.5.0
+        with:
+          api_token: ${{ secrets.LOKALISE_API_TOKEN }}
+          project_id: ${{ secrets.LOKALISE_PROJECT_ID }}
+          file_format: po
+          translations_path: |
+            messages.pot
+            translations/pl/LC_MESSAGES/messages.po
+          additional_params: >
+            {
+              "original_filenames": true,
+              "export_empty_as": "skip",
+              "export_sort": "first_added"
+            }
+          create_pr: true
+          pr_title: "[Lokalise] Update translations"
+          pr_body: "This PR updates translation files from Lokalise"
+          pr_branch: "lokalise/translations-update"
