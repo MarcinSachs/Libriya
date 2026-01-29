@@ -11,3 +11,5 @@ flask-session
 wtforms-sqlalchemy
 flask-limiter
 isbnlib
+opencv-python
+easyocr

@@ -19,6 +19,9 @@ Libriya is a web application for managing a library, built with Flask, SQLAlchem
 *   **User Settings:** Users can edit their profile and settings.
 *   **Internationalization (i18n):** Full support for multiple languages (currently English and Polish).
 *   **ISBN Lookup:** Integration with Biblioteka Narodowa (BN) and OpenLibrary APIs to fetch book data by ISBN.
+*   **ISBN Scanner with OCR:** Mobile camera-based scanner that reads:
+    - Traditional QR/barcode codes
+    - Printed ISBN numbers via optical character recognition (OCR)
 *   **Book Cover Management:** Automatic cover retrieval with intelligent fallback system:
     - Biblioteka Narodowa (Polish National Library) - primary source for Polish books
     - Open Library - fallback when primary source lacks cover images
@@ -81,6 +84,24 @@ Libriya is a web application for managing a library, built with Flask, SQLAlchem
 
 ## Recent Improvements (v2.0)
 
+### ISBN Scanner with OCR Recognition
+- **Dual-Mode Barcode Scanning:** 
+  - Traditional QR/barcode scanning (html5-qrcode library)
+  - **NEW:** OCR text recognition for printed ISBN numbers
+- **Backend OCR Processing:**
+  - Powered by EasyOCR (pure Python, no system dependencies)
+  - Works on Windows, Linux, and server environments
+  - Intelligent image preprocessing (contrast enhancement, thresholding)
+  - Multiple recognition strategies for reliability
+- **ISBN Extraction:**
+  - Detects both ISBN-10 (with/without dashes) and ISBN-13 formats
+  - Recognizes patterns like "83-225-0046-7"
+  - Optimized for fast detection (300ms frame interval)
+- **Seamless Integration:**
+  - Auto-searches for book when ISBN is detected
+  - Works on mobile devices with camera access
+  - Responsive visual feedback (green highlight on detection)
+
 ### ISBN Search & Cover Retrieval Enhancement
 - **Dual API Integration:** Searches Biblioteka Narodowa first, then falls back to Open Library
 - **Intelligent Cover Management:** 
@@ -133,6 +154,7 @@ pytest tests/
 ### Book Search
 - `GET /api/v1/isbn/<isbn>` - Search book by ISBN (includes cover data)
 - `GET /api/v1/search/title` - Search books by title
+- `POST /api/v1/ocr/isbn` - Extract ISBN from image via OCR (mobile scanner)
 
 ### Book Management
 - `GET /api/books` - List all books (with location filtering)
@@ -149,6 +171,15 @@ See `config.py` for available configuration options:
 - `UPLOAD_FOLDER` - Location for uploaded cover images
 - `MAX_COVER_SIZE` - Maximum cover image size (default: 5MB)
 - `LANGUAGES` - Supported languages (default: ['en', 'pl'])
+
+### OCR Configuration
+
+The ISBN scanner uses **EasyOCR** for optical character recognition:
+- **Pure Python implementation** - No system dependencies required (unlike Tesseract)
+- **Works everywhere:** Windows, Linux, macOS, and server environments
+- **First-time setup:** Downloads recognition model (~200MB) automatically on first use
+- **Subsequent runs:** Model cached locally for instant startup
+- **Performance:** Optimized for CPU-only systems with reduced thread usage
 
 ## Crowdin Integration
 
