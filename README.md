@@ -150,56 +150,52 @@ See `config.py` for available configuration options:
 - `MAX_COVER_SIZE` - Maximum cover image size (default: 5MB)
 - `LANGUAGES` - Supported languages (default: ['en', 'pl'])
 
-## Lokalise Integration
+## Crowdin Integration
 
-This project uses [Lokalise](https://lokalise.com/) for translation management with automated synchronization via GitHub Actions.
+This project uses [Crowdin](https://crowdin.com/) for translation management with automatic GitHub synchronization.
 
-**⚠️ IMPORTANT: The push workflow requires a paid Lokalise plan.** The file upload API is not available on the free plan. See [LOKALISE_SETUP.md](LOKALISE_SETUP.md) for details and alternatives.
+**✅ FREE PLAN INCLUDES FULL API ACCESS** - Unlike some alternatives, Crowdin's free plan provides complete API access and GitHub integration.
 
-**📖 See [LOKALISE_SETUP.md](LOKALISE_SETUP.md) for detailed setup instructions.**
+**📖 See [CROWDIN_SETUP.md](CROWDIN_SETUP.md) for detailed setup instructions.**
 
 ### Quick Setup Summary
 
-1. **Create a Lokalise account** and project at [app.lokalise.com](https://app.lokalise.com)
+1. **Create a Crowdin account** and project at [crowdin.com](https://crowdin.com)
 
 2. **Get your credentials:**
-   - **API Token:** Generate in Lokalise under *User Settings → API Tokens* (requires read/write permissions)
-   - **Project ID:** Found in your project settings URL
+   - **Personal Access Token:** Generate in Crowdin under *Settings → API*
+   - **Project ID:** Found in your project URL or settings
 
 3. **Add GitHub Secrets:**
    - Go to your repository *Settings → Secrets and variables → Actions*
    - Add the following secrets:
-     - `LOKALISE_API_TOKEN` - Your Lokalise API token
-     - `LOKALISE_PROJECT_ID` - Your Lokalise project ID
+     - `CROWDIN_PERSONAL_TOKEN` - Your Crowdin personal access token
+     - `CROWDIN_PROJECT_ID` - Your Crowdin project ID
 
-### Workflows
+4. **Configure GitHub Integration in Crowdin:**
+   - Go to *Integrations → GitHub* in your Crowdin project
+   - Connect your repository and configure the sync settings
+   - Point to the `crowdin.yml` configuration file in the repository root
 
-Two GitHub Actions workflows handle translation synchronization:
+### How It Works
 
-#### Push to Lokalise (`.github/workflows/push-to-lokalise.yml`)
-**⚠️ Requires paid Lokalise plan**
-- **Trigger:** 
-  - Automatically on push to `main` branch when translation files change
-  - Manual (workflow_dispatch) - can be run on-demand from GitHub Actions tab
-- **Action:** Uploads `.pot` template and `.po` translation files to Lokalise
-- **Purpose:** Keep Lokalise up-to-date with source translation strings
-- **Free plan alternative:** Manually upload files through Lokalise web interface
+Crowdin provides native GitHub integration with automatic bidirectional sync:
 
-#### Pull from Lokalise (`.github/workflows/pull-from-lokalise.yml`)
-- **Trigger:** Manual (workflow_dispatch) or weekly on Monday at midnight UTC
-- **Action:** Downloads updated translations from Lokalise and creates a pull request
-- **Purpose:** Bring translated strings back into the repository
+- **GitHub → Crowdin:** When you push changes to translation source files, Crowdin automatically imports them
+- **Crowdin → GitHub:** When translations are updated, Crowdin creates a pull request automatically
+
+No GitHub Actions workflows needed - everything is handled by Crowdin's integration!
 
 ### Working with Translations
 
 1. **Extract new strings:**
    ```bash
-   pybabel extract -F babel.cfg -o messages.pot .
+   pybabel extract -F babel.cfg -o translations/messages.pot .
    ```
 
 2. **Update existing translations:**
    ```bash
-   pybabel update -i messages.pot -d translations
+   pybabel update -i translations/messages.pot -d translations
    ```
 
 3. **Compile translations locally:**
@@ -209,9 +205,11 @@ Two GitHub Actions workflows handle translation synchronization:
    pybabel compile -d translations
    ```
 
-4. **Push changes:** Commit and push to `main` - translations automatically sync to Lokalise
+4. **Push changes:** Commit and push to `main` - Crowdin automatically syncs within minutes
 
-5. **Get translations:** Manually trigger the "Pull translations from Lokalise" workflow or wait for the weekly sync
+5. **Get translations:** Crowdin automatically creates a PR when translations are updated
+
+For more details, troubleshooting, and advanced configuration, see [CROWDIN_SETUP.md](CROWDIN_SETUP.md).
 
 ## Contributing
 
