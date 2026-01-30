@@ -44,5 +44,140 @@
             </a> 
         </div>
     </form>
+
+    <!-- Offline Mode Section -->
+    <hr class="my-4">
+    <h4><i class='bx bx-wifi-off'></i> {{ _('Offline Mode') }}</h4>
+    <p class="text-muted">{{ _('Download all your books and covers for offline access.') }}</p>
+    
+    <div class="card">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5 class="card-title mb-1">{{ _('Offline Library') }}</h5>
+                    <p class="text-muted small mb-2" id="offline-cache-status">{{ _('Loading status...') }}</p>
+                    <p class="small mb-0" id="offline-cache-progress"></p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <button type="button" class="btn btn-primary" id="download-offline-btn" onclick="downloadOfflineData()">
+                        <i class='bx bx-download'></i> {{ _('Download') }}
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm ms-2" id="clear-offline-btn" onclick="clearOfflineData()">
+                        <i class='bx bx-trash'></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Size estimation -->
+            <div class="mt-3 small">
+                <div class="d-flex justify-content-between text-muted">
+                    <span><i class='bx bx-data'></i> {{ _('Book data') }}:</span>
+                    <span id="data-size">~2 KB/{{ _('book') }}</span>
+                </div>
+                <div class="d-flex justify-content-between text-muted">
+                    <span><i class='bx bx-image'></i> {{ _('Micro covers') }}:</span>
+                    <span id="cover-size">~3 KB/{{ _('book') }}</span>
+                </div>
+                <div class="d-flex justify-content-between text-muted">
+                    <span><i class='bx bx-file'></i> {{ _('Detail pages') }}:</span>
+                    <span id="page-size">~15 KB/{{ _('book') }}</span>
+                </div>
+                <hr class="my-2">
+                <div class="d-flex justify-content-between fw-bold">
+                    <span>{{ _('Estimated total') }}:</span>
+                    <span id="total-size">~20 KB/{{ _('book') }}</span>
+                </div>
+                <div class="d-flex justify-content-between text-success fw-bold" id="actual-size-row" style="display: none;">
+                    <span><i class='bx bx-check-circle'></i> {{ _('Actual size') }}:</span>
+                    <span id="actual-size">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+// Update offline cache status on page load
+async function updateOfflineStatus() {
+    const statusEl = document.getElementById('offline-cache-status');
+    const progressEl = document.getElementById('offline-cache-progress');
+    
+    // Wait for pwaManager to be available
+    if (!window.pwaManager) {
+        progressEl.textContent = 'Oczekiwanie na PWA Manager...';
+        setTimeout(updateOfflineStatus, 500);
+        return;
+    }
+    
+    try {
+        progressEl.textContent = 'Pobieranie statusu cache...';
+        const status = await window.pwaManager.getOfflineCacheStatus();
+        progressEl.textContent = '';
+        
+        if (status.lastCache && status.lastCache.success) {
+            const date = new Date(status.lastCache.timestamp).toLocaleDateString();
+            statusEl.innerHTML = `<span class="text-success"><i class='bx bx-check-circle'></i> {{ _('Last download') }}: ${date}</span><br>` +
+                `📚 ${status.lastCache.booksCount} {{ _('books') }}, 🖼️ ${status.lastCache.coversCount} {{ _('covers') }}`;
+        } else {
+            statusEl.innerHTML = `<span class="text-warning"><i class='bx bx-info-circle'></i> {{ _('Not downloaded yet') }}</span>`;
+        }
+        
+        // Always show actual size
+        const actualSizeRow = document.getElementById('actual-size-row');
+        const actualSizeEl = document.getElementById('actual-size');
+        if (actualSizeRow && actualSizeEl) {
+            actualSizeRow.style.display = 'flex';
+            actualSizeEl.textContent = status.totalFormatted || '0 B';
+        }
+        
+    } catch (e) {
+        statusEl.innerHTML = `<span class="text-danger">{{ _('Error') }}: ${e.message}</span>`;
+        progressEl.textContent = '';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(updateOfflineStatus, 1000);
+});
+
+async function downloadOfflineData() {
+    const btn = document.getElementById('download-offline-btn');
+    const originalText = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> {{ _("Downloading...") }}';
+    
+    try {
+        const result = await window.pwaManager.preCacheOfflineData(true);
+        
+        if (result.success) {
+            const statusEl = document.getElementById('offline-cache-status');
+            statusEl.innerHTML = `<span class="text-success"><i class='bx bx-check-circle'></i> {{ _('Download complete!') }}</span><br>` +
+                `📚 ${result.booksCount} {{ _('books') }}, 🖼️ ${result.coversCount} {{ _('covers') }}`;
+            
+            // Update actual size after download
+            const status = await window.pwaManager.getOfflineCacheStatus();
+            if (status.totalBytes > 0) {
+                document.getElementById('actual-size-row').style.display = 'flex';
+                document.getElementById('actual-size').textContent = status.totalFormatted;
+            }
+        }
+    } catch (e) {
+        console.error('Download error:', e);
+    }
+    
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+}
+
+async function clearOfflineData() {
+    if (confirm('{{ _("Are you sure you want to clear offline data?") }}')) {
+        await window.pwaManager.clearOfflineData();
+        document.getElementById('offline-cache-status').innerHTML = 
+            `<span class="text-warning"><i class='bx bx-info-circle'></i> {{ _('Not downloaded yet') }}</span>`;
+        document.getElementById('offline-cache-progress').textContent = '{{ _("Cache cleared") }}';
+        document.getElementById('actual-size-row').style.display = 'none';
+    }
+}
+</script>
 {% endblock %}

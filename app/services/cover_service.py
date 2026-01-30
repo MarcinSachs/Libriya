@@ -257,7 +257,7 @@ class CoverService:
             for chunk in response.iter_content(chunk_size=1024):
                 content += chunk
                 if len(content) > CoverService.MAX_COVER_SIZE:
-                    logger.warning(f"CoverService: Downloaded content exceeds limit")
+                    logger.warning("CoverService: Downloaded content exceeds limit")
                     return None
 
             # Determine file extension
@@ -265,9 +265,10 @@ class CoverService:
             if not f_ext or f_ext.lower() not in CoverService.ALLOWED_EXTENSIONS:
                 f_ext = '.jpg'
 
-            # Save file
+            # Random filename
             random_hex = secrets.token_hex(8)
             filename = random_hex + f_ext
+
             filepath = os.path.join(upload_folder, filename)
 
             with open(filepath, 'wb') as f:

@@ -7,6 +7,7 @@ from flask_babel import _, Babel, lazy_gettext as _l
 from flask import session, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_wtf.csrf import CSRFProtect
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -14,6 +15,7 @@ login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 babel = Babel()
 limiter = Limiter(key_func=get_remote_address)
+csrf = CSRFProtect()
 
 
 def create_app(config_class=Config):
@@ -29,6 +31,7 @@ def create_app(config_class=Config):
     # Ustaw komunikat logowania z tłumaczeniem dynamicznym
     login_manager.login_message = _l("Please log in to access this page.")
     limiter.init_app(app)
+    csrf.init_app(app)
 
     def get_locale():
         # 1. Check for language in cookie first
@@ -68,6 +71,11 @@ def create_app(config_class=Config):
             "font-src 'self' https://fonts.gstatic.com https://unpkg.com; "
             "img-src 'self' data: https:;"
         )
+
+        # Allow Service Worker to control entire site from /static/ folder
+        if request.path.endswith('service-worker.js'):
+            response.headers['Service-Worker-Allowed'] = '/'
+
         return response
 
     return app

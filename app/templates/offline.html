@@ -1,0 +1,135 @@
+{% extends "layout.html" %}
+{% block content %}
+<style>
+    .link-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+    
+    .link-button {
+        padding: 0.75rem;
+        background: #f0f0f0;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #1a535c;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+    
+    .link-button:hover {
+        background: #1a535c;
+        color: white;
+        border-color: #1a535c;
+        text-decoration: none;
+    }
+    
+    .link-button i {
+        font-size: 1.3rem;
+    }
+</style>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body text-center p-5">
+                    <div class="offline-icon-large mb-4">
+                        <i class='bx bx-wifi-off' style="font-size: 4rem; color: #1a535c;"></i>
+                    </div>
+                    <h1 class="text-primary mb-3">{{ _('You are offline') }}</h1>
+                    <p class="text-muted mb-4">{{ _('But don\'t worry! Libriya still works') }}</p>
+                    
+                    <div class="alert alert-warning d-inline-block mb-4">
+                        <i class='bx bx-alert-circle'></i> {{ _('No internet connection') }}
+                    </div>
+                    
+                    <!-- Available Features -->
+                    <div class="text-start mb-4">
+                        <h5 class="text-success mb-3">
+                            <i class='bx bx-check-circle'></i> {{ _('What you can do:') }}
+                        </h5>
+                        <ul class="list-group">
+                            <li class="list-group-item list-group-item-success">
+                                📚 <strong>{{ _('Browse library') }}</strong> - {{ _('View all your books') }}
+                            </li>
+                            <li class="list-group-item list-group-item-success">
+                                📖 <strong>{{ _('Book details') }}</strong> - {{ _('Read information and metadata') }}
+                            </li>
+                            <li class="list-group-item list-group-item-success">
+                                🖼️ <strong>{{ _('Book covers') }}</strong> - {{ _('View cached thumbnails') }}
+                            </li>
+                            <li class="list-group-item list-group-item-success">
+                                📋 <strong>{{ _('Loans') }}</strong> - {{ _('Check loan history') }}
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Unavailable Features -->
+                    <div class="text-start mb-4">
+                        <h5 class="text-danger mb-3">
+                            <i class='bx bx-x-circle'></i> {{ _('Not available offline:') }}
+                        </h5>
+                        <ul class="list-group">
+                            <li class="list-group-item list-group-item-danger">
+                                🔍 <strong>{{ _('Search') }}</strong> - {{ _('Requires connection') }}
+                            </li>
+                            <li class="list-group-item list-group-item-danger">
+                                ➕ <strong>{{ _('Adding books') }}</strong> - {{ _('Requires connection') }}
+                            </li>
+                            <li class="list-group-item list-group-item-danger">
+                                💾 <strong>{{ _('Saving changes') }}</strong> - {{ _('Will sync when online') }}
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Quick Links -->
+                    <h5 class="mb-3">
+                        <i class='bx bx-lightning'></i> {{ _('Quick links') }}
+                    </h5>
+                    <div class="link-buttons mb-4">
+                        <a href="/" class="link-button">
+                            <i class='bx bx-home'></i>
+                            {{ _('Home') }}
+                        </a>
+                        <a href="/loans/" class="link-button">
+                            <i class='bx bx-time-five'></i>
+                            {{ _('Loans') }}
+                        </a>
+                        <a href="/libraries/" class="link-button">
+                            <i class='bx bx-library'></i>
+                            {{ _('Libraries') }}
+                        </a>
+                        <a href="/user/settings" class="link-button">
+                            <i class='bx bx-cog'></i>
+                            {{ _('Settings') }}
+                        </a>
+                    </div>
+                    
+                    <!-- Reconnect -->
+                    <div class="bg-primary text-white rounded p-4">
+                        <p class="mb-3">
+                            <i class='bx bx-info-circle'></i>
+                            {{ _('Connection will be restored automatically. You can also try below.') }}
+                        </p>
+                        <button class="btn btn-light" onclick="window.location.reload()">
+                            <i class='bx bx-refresh'></i> {{ _('Refresh page') }}
+                        </button>
+                    </div>
+                    
+                    <div class="mt-3 text-success small">
+                        <i class='bx bx-server'></i>
+                        {{ _('App data is cached. Uses minimal storage.') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

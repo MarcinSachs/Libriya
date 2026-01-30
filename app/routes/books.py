@@ -3,15 +3,17 @@ import secrets
 import requests
 from urllib.parse import urlparse
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file
 from flask_login import login_required, current_user
-from flask_babel import _
+from flask_babel import gettext as _
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
+from PIL import Image
+from io import BytesIO
 
 from app import db
 from app.forms import BookForm
-from app.models import Book, Author, Library, Location
+from app.models import Book, Author, Library, Location, Genre
 from app.utils import role_required
 from app.utils.audit_log import log_book_deleted
 from app.utils.messages import (
@@ -82,6 +84,7 @@ def book_add():
             form.library.data = current_user.libraries[0].id
 
     if form.validate_on_submit():
+
         new_book = Book(
             isbn=form.isbn.data,
             title=form.title.data,
@@ -99,76 +102,66 @@ def book_add():
                 db.session.add(author)
             new_book.authors.append(author)
 
-        selected_genres = form.genres.data
-        new_book.genres.extend(selected_genres)
-
-        if form.cover.data:
-            f = form.cover.data
-            cover_filename = secure_filename(f.filename)
-            f.save(os.path.join(
-                current_app.config["UPLOAD_FOLDER"], cover_filename))
-            new_book.cover = cover_filename
-        elif 'cover_url' in request.form and request.form['cover_url']:
-            cover_url = request.form['cover_url']
-            try:
-                # SECURITY: Validate URL to prevent SSRF attacks
-                parsed_url = urlparse(cover_url)
-
-                # Only allow http and https protocols
-                if parsed_url.scheme not in ['http', 'https']:
-                    raise ValueError("Invalid URL scheme. Only HTTP(S) allowed.")
-
-                # Prevent localhost and private IPs
-                blocked_hosts = ['localhost', '127.0.0.1', '0.0.0.0']
-                if parsed_url.netloc in blocked_hosts:
-                    raise ValueError("Cannot access local network addresses.")
-
-                # Check for private IP ranges
-                import ipaddress
-                try:
-                    ip = ipaddress.ip_address(parsed_url.hostname)
-                    if ip.is_private or ip.is_loopback:
-                        raise ValueError("Cannot access private IP addresses.")
-                except (ValueError, TypeError):
-                    # If hostname is not an IP, it's likely a domain name (OK)
-                    pass
-
-                # Fetch the image with timeout and size limits
-                response = requests.get(cover_url, stream=True, timeout=10)
-                response.raise_for_status()
-
-                if response.status_code == 200:
-                    # Check content-length before downloading
-                    content_length = response.headers.get('content-length')
-                    max_size = 5 * 1024 * 1024  # 5MB limit
-                    if content_length and int(content_length) > max_size:
-                        raise ValueError("File too large. Maximum 5MB allowed.")
-
-                    # Check actual downloaded size
-                    downloaded_size = 0
-                    content = b''
-                    for chunk in response.iter_content(chunk_size=1024):
-                        downloaded_size += len(chunk)
-                        if downloaded_size > max_size:
-                            raise ValueError("File too large. Maximum 5MB allowed.")
-                        content += chunk
-
-                    # Validate file extension
-                    random_hex = secrets.token_hex(8)
-                    _, f_ext = os.path.splitext(urlparse(cover_url).path)
-                    if not f_ext or f_ext.lower() not in ['.jpg', '.jpeg', '.png', '.gif']:
-                        f_ext = '.jpg'
-                    cover_filename = random_hex + f_ext
-                    picture_path = os.path.join(
-                        current_app.config["UPLOAD_FOLDER"], cover_filename)
-                    with open(picture_path, 'wb') as f:
-                        f.write(content)
-                    new_book.cover = cover_filename
-            except (requests.exceptions.RequestException, ValueError) as e:
-                flash(
-                    _("Could not download cover image: %(error)s", error=str(e)), "danger")
-
+        # Add book to session first to avoid SQLAlchemy warnings
         db.session.add(new_book)
+
+        selected_genres = form.genres.data
+        if selected_genres:
+            genres = Genre.query.filter(Genre.id.in_(selected_genres)).all()
+            new_book.genres.extend(genres)
+
+        # Handle cover image
+        if form.cover.data:
+            # User uploaded a file directly
+            f = form.cover.data
+            _, f_ext = os.path.splitext(f.filename)
+            cover_filename = secrets.token_hex(8) + f_ext
+            f.save(os.path.join(current_app.config["UPLOAD_FOLDER"], cover_filename))
+            new_book.cover = cover_filename
+        elif form.cover_url.data:
+            # Cover URL from API search (hidden field)
+            cover_url = form.cover_url.data.strip()
+
+            try:
+                if not cover_url:
+                    current_app.logger.info("Cover URL is empty")
+                # If cover_url is already cached locally (from API), just use the filename
+                elif '/static/uploads/' in cover_url:
+                    cover_filename = cover_url.split('/')[-1]
+                    current_app.logger.info(f"Local cover found: {cover_filename}")
+                    if cover_filename and cover_filename not in ['', '.', '..']:
+                        new_book.cover = cover_filename
+                        current_app.logger.info(f"Set book.cover to: {cover_filename}")
+                # If cover_url is just a number (cover_id), convert to Open Library URL
+                elif cover_url.isdigit():
+                    cover_url = f"https://covers.openlibrary.org/b/id/{cover_url}-M.jpg"
+                    current_app.logger.info(f"Converted cover_id to URL: {cover_url}")
+
+                # Download external URL
+                if cover_url and '/static/uploads/' not in cover_url and cover_url.startswith(('http://', 'https://')):
+                    current_app.logger.info(f"Downloading external cover: {cover_url}")
+                    response = requests.get(cover_url, stream=True, timeout=10)
+                    response.raise_for_status()
+
+                    if response.status_code == 200:
+                        content = b''
+                        for chunk in response.iter_content(chunk_size=1024):
+                            content += chunk
+                            if len(content) > 5 * 1024 * 1024:
+                                raise ValueError("File too large")
+
+                        _, f_ext = os.path.splitext(urlparse(cover_url).path)
+                        if not f_ext or f_ext.lower() not in ['.jpg', '.jpeg', '.png', '.gif']:
+                            f_ext = '.jpg'
+                        cover_filename = secrets.token_hex(8) + f_ext
+
+                        picture_path = os.path.join(current_app.config["UPLOAD_FOLDER"], cover_filename)
+                        with open(picture_path, 'wb') as f:
+                            f.write(content)
+                        new_book.cover = cover_filename
+                        current_app.logger.info(f"Downloaded and saved cover: {cover_filename}")
+            except Exception as e:
+                current_app.logger.warning(f"Could not download cover: {e}")
         db.session.commit()
 
         # Add location if any location field is provided
@@ -191,14 +184,31 @@ def book_add():
 
 @bp.route("/book_delete/<int:book_id>", methods=["POST"])
 @login_required
-@role_required('admin')
+@role_required('admin', 'manager')
 def book_delete(book_id):
     book = Book.query.get_or_404(book_id)
+
+    # --- Authorization ---
+    if current_user.role == 'manager':
+        user_libs_ids = [lib.id for lib in current_user.libraries]
+        if book.library_id not in user_libs_ids:
+            flash(BOOKS_ONLY_EDIT_OWN_LIBRARIES, "danger")
+            return redirect(url_for('main.home'))
 
     # Prevent deletion if the book has any associated loans (active or past)
     if book.status != 'available':
         flash(BOOK_CANNOT_DELETE_NOT_AVAILABLE % {'title': book.title, 'status': book.status}, "danger")
         return redirect(url_for("main.home"))
+
+    # Delete cover file if exists
+    if book.cover:
+        cover_path = os.path.join(current_app.config["UPLOAD_FOLDER"], book.cover)
+        if os.path.exists(cover_path) and os.path.isfile(cover_path):
+            try:
+                os.remove(cover_path)
+                current_app.logger.info(f"Deleted cover file: {book.cover}")
+            except OSError as e:
+                current_app.logger.warning(f"Could not delete cover file {book.cover}: {e}")
 
     # Log book deletion before removing it
     log_book_deleted(book.id, book.title)
@@ -268,7 +278,9 @@ def book_edit(book_id):
 
         book.genres.clear()
         selected_genres = form.genres.data
-        book.genres.extend(selected_genres)
+        if selected_genres:
+            genres = Genre.query.filter(Genre.id.in_(selected_genres)).all()
+            book.genres.extend(genres)
 
         # Handle cover update
         if form.cover.data:
@@ -380,4 +392,151 @@ def cleanup_cover():
 
     except Exception as e:
         current_app.logger.error(f"Error cleaning up cover: {e}")
+        return {'success': False, 'error': str(e)}, 500
+
+
+@bp.route("/api/books/<int:book_id>/cover/thumbnail")
+def get_cover_thumbnail(book_id):
+    """
+    Get thumbnail version of book cover for PWA offline caching.
+    Returns compressed 200x300px image (~40KB) instead of full-size (~200KB).
+    Useful for offline PWA to cache more cover images without excessive storage.
+    """
+    book = Book.query.get_or_404(book_id)
+
+    if not book.cover:
+        return {'error': 'No cover image'}, 404
+
+    try:
+        # Construct file path
+        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], secure_filename(book.cover))
+
+        if not os.path.exists(file_path):
+            current_app.logger.warning(f"Cover file not found: {file_path}")
+            return {'error': 'Cover file not found'}, 404
+
+        # Open and process image
+        img = Image.open(file_path)
+
+        # Convert RGBA to RGB if necessary
+        if img.mode in ('RGBA', 'LA', 'P'):
+            background = Image.new('RGB', img.size, (255, 255, 255))
+            background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+            img = background
+
+        # Create thumbnail: 200x300px (standard book cover ratio)
+        img.thumbnail((200, 300), Image.Resampling.LANCZOS)
+
+        # Compress to JPEG with quality 75 (40-50KB per image)
+        buffer = BytesIO()
+        img.save(buffer, format='JPEG', quality=75, optimize=True)
+        buffer.seek(0)
+
+        # Return with proper cache headers (1 day cache)
+        response = send_file(
+            buffer,
+            mimetype='image/jpeg',
+            as_attachment=False,
+            download_name=f'thumb_{book_id}.jpg'
+        )
+        response.headers['Cache-Control'] = 'public, max-age=86400'  # 24 hours
+        return response
+
+    except Exception as e:
+        current_app.logger.error(f"Error generating thumbnail for book {book_id}: {e}")
+        return {'error': 'Error generating thumbnail'}, 500
+
+
+@bp.route("/api/books/<int:book_id>/cover/micro")
+def get_cover_micro(book_id):
+    """
+    Get micro-thumbnail version of book cover for PWA offline bulk caching.
+    Returns highly compressed 50x75px image (~2-5KB) for minimal storage.
+    Used for offline mode where bandwidth/storage is critical.
+    """
+    book = Book.query.get_or_404(book_id)
+
+    if not book.cover:
+        return {'error': 'No cover image'}, 404
+
+    try:
+        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], secure_filename(book.cover))
+
+        if not os.path.exists(file_path):
+            current_app.logger.warning(f"Cover file not found: {file_path}")
+            return {'error': 'Cover file not found'}, 404
+
+        img = Image.open(file_path)
+
+        # Convert RGBA to RGB if necessary
+        if img.mode in ('RGBA', 'LA', 'P'):
+            background = Image.new('RGB', img.size, (255, 255, 255))
+            background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+            img = background
+
+        # Create micro thumbnail: 50x75px (very small for bulk caching)
+        img.thumbnail((50, 75), Image.Resampling.LANCZOS)
+
+        # High compression JPEG quality 60 (~2-5KB per image)
+        buffer = BytesIO()
+        img.save(buffer, format='JPEG', quality=60, optimize=True)
+        buffer.seek(0)
+
+        response = send_file(
+            buffer,
+            mimetype='image/jpeg',
+            as_attachment=False,
+            download_name=f'micro_{book_id}.jpg'
+        )
+        # Long cache - micro thumbnails rarely change
+        response.headers['Cache-Control'] = 'public, max-age=604800'  # 7 days
+        return response
+
+    except Exception as e:
+        current_app.logger.error(f"Error generating micro thumbnail for book {book_id}: {e}")
+        return {'error': 'Error generating micro thumbnail'}, 500
+
+
+@bp.route("/api/offline/books")
+@login_required
+def get_offline_books_data():
+    """
+    Get all books data for offline caching.
+    Returns JSON with book metadata and micro-thumbnail URLs.
+    Used by PWA to pre-cache all books for offline access.
+    """
+    try:
+        # Admin gets all books, others get only books from their libraries
+        if current_user.role == 'admin':
+            books = Book.query.all()
+        else:
+            user_library_ids = [lib.id for lib in current_user.libraries]
+            books = Book.query.filter(Book.library_id.in_(user_library_ids)).all()
+
+        books_data = []
+        for book in books:
+            book_data = {
+                'id': book.id,
+                'title': book.title,
+                'isbn': book.isbn,
+                'year': book.year,
+                'authors': [{'id': a.id, 'name': a.name} for a in book.authors],
+                'library_id': book.library_id,
+                'library_name': book.library.name if book.library else None,
+                'has_cover': bool(book.cover),
+                'cover_url': f'/static/uploads/{book.cover}' if book.cover else None,
+                'micro_cover_url': f'/api/books/{book.id}/cover/micro' if book.cover else None,
+                'detail_url': f'/book/{book.id}'
+            }
+            books_data.append(book_data)
+
+        return {
+            'success': True,
+            'count': len(books_data),
+            'books': books_data,
+            'timestamp': datetime.utcnow().isoformat()
+        }
+
+    except Exception as e:
+        current_app.logger.error(f"Error getting offline books data: {e}")
         return {'success': False, 'error': str(e)}, 500

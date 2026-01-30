@@ -7,7 +7,7 @@ from flask_babel import _, ngettext
 from sqlalchemy import or_
 import os
 
-from app import db
+from app import db, csrf
 from app.models import Book, Genre, Notification, User
 from app.services.book_service import BookSearchService
 from app.services.cover_service import CoverService
@@ -23,6 +23,12 @@ bp = Blueprint("main", __name__)
 @bp.route("/favicon.ico")
 def favicon():
     return current_app.send_static_file("favicon.ico")
+
+
+@bp.route("/offline")
+def offline():
+    """Offline page with translations"""
+    return render_template("offline.html", title=_("Offline"))
 
 
 @bp.route("/")
@@ -353,6 +359,7 @@ def debug_locale():
 
 
 @bp.route("/api/v1/ocr/isbn", methods=["POST"])
+@csrf.exempt
 @login_required
 def ocr_isbn_from_image():
     """
@@ -362,11 +369,22 @@ def ocr_isbn_from_image():
     """
     try:
         if 'image' not in request.files:
+            current_app.logger.debug(f"OCR: No 'image' in files. Keys: {list(request.files.keys())}")
             return jsonify({"success": False, "error": "No image provided"}), 400
 
         file = request.files['image']
         if file.filename == '':
+            current_app.logger.debug("OCR: Empty filename")
             return jsonify({"success": False, "error": "No image selected"}), 400
+
+        # Check file size
+        file.seek(0, 2)  # Seek to end
+        file_size = file.tell()
+        file.seek(0)  # Seek back to start
+
+        if file_size == 0:
+            current_app.logger.debug("OCR: Empty file (0 bytes)")
+            return jsonify({"success": False, "error": "Empty image file"}), 400
 
         # Import here to catch import errors
         try:
