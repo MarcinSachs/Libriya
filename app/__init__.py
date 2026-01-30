@@ -71,6 +71,11 @@ def create_app(config_class=Config):
             "font-src 'self' https://fonts.gstatic.com https://unpkg.com; "
             "img-src 'self' data: https:;"
         )
+
+        # Allow Service Worker to control entire site from /static/ folder
+        if request.path.endswith('service-worker.js'):
+            response.headers['Service-Worker-Allowed'] = '/'
+
         return response
 
     return app

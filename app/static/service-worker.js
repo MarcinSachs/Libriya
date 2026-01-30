@@ -1,33 +1,44 @@
-const CACHE_NAME = 'libriya-v4'; // Increment version to force cache update
+const CACHE_NAME = 'libriya-v13';
 const THUMBNAIL_CACHE = 'libriya-thumbnails-v1';
-const FULLSIZE_CACHE = 'libriya-covers-v1';
+const MICRO_CACHE = 'libriya-micro-v1';
+const DATA_CACHE = 'libriya-data-v1';
 
-// Only cache offline page during install
+// Static assets to cache during install
 const STATIC_ASSETS = [
-    '/static/offline.html'
+    '/offline',
+    '/static/css/style.css',
+    '/static/js/pwa-manager.js',
+    '/static/manifest.json',
+    '/static/images/logo.svg'
 ];
 
-// Install event - cache essential files
+// Pages that should NEVER be cached (forms with CSRF)
+const NO_CACHE_PAGES = ['/login', '/register', '/invitation'];
+
+// Install event
 self.addEventListener('install', (event) => {
+    console.log('[SW] Installing v13');
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(STATIC_ASSETS).catch(() => {
-                console.log('Install cache failed, will cache on-demand');
+            return cache.addAll(STATIC_ASSETS).catch((err) => {
+                console.log('[SW] Install failed:', err);
             });
         })
     );
     self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Activate event
 self.addEventListener('activate', (event) => {
+    console.log('[SW] Activating v11');
     event.waitUntil(
-        caches.keys().then((cacheNames) => {
+        caches.keys().then((names) => {
             return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME && cacheName !== THUMBNAIL_CACHE && cacheName !== FULLSIZE_CACHE) {
-                        console.log('Deleting old cache:', cacheName);
-                        return caches.delete(cacheName);
+                names.map((name) => {
+                    // Delete old main caches but keep thumbnails and data
+                    if (name.startsWith('libriya-v') && name !== CACHE_NAME) {
+                        console.log('[SW] Deleting old cache:', name);
+                        return caches.delete(name);
                     }
                 })
             );
@@ -36,166 +47,162 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// Fetch event - intelligent caching strategy based on request type
+// Helper: Should cache this page?
+function shouldCache(pathname) {
+    return !NO_CACHE_PAGES.some(p => pathname.includes(p));
+}
+
+// Helper: Cache with URL string as key (not Request object!)
+async function cacheByUrl(cacheName, urlString, response) {
+    try {
+        const cache = await caches.open(cacheName);
+        await cache.put(urlString, response);
+        console.log('[SW] Cached:', urlString);
+    } catch (e) {
+        console.log('[SW] Cache error:', e);
+    }
+}
+
+// Helper: Get from any cache by URL string (tries multiple variants)
+async function getCached(urlString) {
+    const urlsToTry = [
+        urlString,
+        urlString.endsWith('/') ? urlString.slice(0, -1) : urlString + '/'
+    ];
+
+    for (const name of [CACHE_NAME, DATA_CACHE, THUMBNAIL_CACHE, MICRO_CACHE]) {
+        try {
+            const cache = await caches.open(name);
+            for (const url of urlsToTry) {
+                const response = await cache.match(url);
+                if (response) {
+                    console.log('[SW] Cache HIT:', url, 'in', name);
+                    return response;
+                }
+            }
+        } catch (e) {
+            console.log('[SW] Cache error:', e);
+        }
+    }
+    console.log('[SW] Cache MISS:', urlString);
+    return null;
+}
+
+// Fetch event
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
+    const urlString = url.href;
+    const pathname = url.pathname;
 
-    // Strategy 1: THUMBNAILS - Cache first (offline priority)
-    if (url.pathname.includes('/cover/thumbnail')) {
+    // Only GET requests
+    if (request.method !== 'GET') return;
+
+    // Only same origin
+    if (url.origin !== location.origin) return;
+
+    // === UPLOADS & THUMBNAILS - Cache first ===
+    if (pathname.includes('/static/uploads/') || pathname.includes('/cover/thumbnail') || pathname.includes('/cover/micro')) {
         event.respondWith(
-            caches.match(request).then(response => {
-                if (response) {
-                    return response; // Return cached immediately
-                }
+            getCached(urlString).then(cached => {
+                if (cached) return cached;
 
-                // Not in cache, fetch from network
-                return fetch(request)
-                    .then(response => {
-                        if (response.status === 200) {
-                            // Cache the thumbnail for offline use
-                            const responseToCache = response.clone();
-                            caches.open(THUMBNAIL_CACHE).then(cache => {
-                                cache.put(request, responseToCache);
-                            });
-                        }
-                        return response;
-                    })
-                    .catch(() => {
-                        // If thumbnail not cached and offline, return placeholder
-                        return caches.match('/');
-                    });
+                return fetch(request).then(response => {
+                    if (response.ok) {
+                        // Use appropriate cache for micro vs regular thumbnails
+                        const targetCache = pathname.includes('/cover/micro') ? MICRO_CACHE : THUMBNAIL_CACHE;
+                        cacheByUrl(targetCache, urlString, response.clone());
+                    }
+                    return response;
+                }).catch(() => new Response('', { status: 404 }));
             })
         );
+        return;
     }
-    // Strategy 2: FULL-SIZE COVERS - Network first (quality priority)
-    else if (url.pathname.includes('/api/books/') && url.pathname.includes('/cover')) {
+
+    // === API - Network first ===
+    if (pathname.startsWith('/api/')) {
         event.respondWith(
-            fetch(request)
-                .then(response => {
-                    if (response.status === 200) {
-                        // Cache full-size cover for offline viewing
-                        const responseToCache = response.clone();
-                        caches.open(FULLSIZE_CACHE).then(cache => {
-                            cache.put(request, responseToCache);
-                        });
-                    }
-                    return response;
-                })
-                .catch(() => {
-                    // Fall back to cached version if offline
-                    return caches.match(request).then(response => {
-                        return response || caches.match('/'); // Return fallback
+            fetch(request).then(response => {
+                if (response.ok) {
+                    cacheByUrl(DATA_CACHE, urlString, response.clone());
+                }
+                return response;
+            }).catch(() => {
+                return getCached(urlString).then(cached => {
+                    return cached || new Response(JSON.stringify({ error: 'Offline' }), {
+                        status: 503,
+                        headers: { 'Content-Type': 'application/json' }
                     });
-                })
-        );
-    }
-    // Strategy 3: API CALLS - Network first, fallback to cache
-    else if (url.pathname.startsWith('/api/')) {
-        event.respondWith(
-            fetch(request)
-                .then(response => {
-                    // Cache successful API responses
-                    if (response.status === 200) {
-                        const responseToCache = response.clone();
-                        caches.open(CACHE_NAME).then(cache => {
-                            cache.put(request, responseToCache);
-                        });
-                    }
-                    return response;
-                })
-                .catch(() => {
-                    // Return cached response if offline
-                    return caches.match(request).then(response => {
-                        if (response) {
-                            return response;
-                        }
-                        return new Response(JSON.stringify({ error: 'Offline - data not cached' }), {
-                            status: 503,
-                            statusText: 'Service Unavailable',
-                            headers: new Headers({
-                                'Content-Type': 'application/json'
-                            })
-                        });
-                    });
-                })
-        );
-    }
-    // Strategy 4: HTML PAGES - Network first, but cache is priority when offline
-    else if (request.headers.get('accept')?.includes('text/html')) {
-        event.respondWith(
-            fetch(request)
-                .then(response => {
-                    if (response.status === 200) {
-                        const responseToCache = response.clone();
-                        caches.open(CACHE_NAME).then(cache => {
-                            cache.put(request, responseToCache);
-                        });
-                    }
-                    return response;
-                })
-                .catch(() => {
-                    // Try to get cached version first
-                    return caches.match(request).then(cachedResponse => {
-                        if (cachedResponse) {
-                            return cachedResponse;
-                        }
-                        // Try to return cached home page
-                        return caches.match('/').then(homeResponse => {
-                            if (homeResponse) {
-                                return homeResponse;
-                            }
-                            // Last resort: return offline page
-                            return caches.match('/static/offline.html');
-                        });
-                    });
-                })
-        );
-    }
-    // Strategy 5: STATIC ASSETS - Cache first (css, js, images, fonts)
-    else {
-        event.respondWith(
-            caches.match(request).then(response => {
-                return response || fetch(request).then(response => {
-                    // Cache new static assets
-                    if (response.status === 200 && request.method === 'GET') {
-                        const responseToCache = response.clone();
-                        caches.open(CACHE_NAME).then(cache => {
-                            cache.put(request, responseToCache);
-                        });
-                    }
-                    return response;
-                }).catch(() => {
-                    // Return offline page as fallback for HTML requests
-                    if (request.headers.get('accept')?.includes('text/html')) {
-                        return caches.match('/static/offline.html');
-                    }
-                    // For other assets, return error
-                    return new Response('Not found', { status: 404 });
                 });
             })
         );
+        return;
     }
-});
 
-// Background sync for future feature (optional)
-self.addEventListener('sync', (event) => {
-    if (event.tag === 'sync-books') {
-        event.waitUntil(
-            fetch('/api/v1/sync').then(response => response.json())
+    // === HTML PAGES - Network first, cache fallback ===
+    if (request.headers.get('accept')?.includes('text/html')) {
+        event.respondWith(
+            fetch(request, { credentials: 'same-origin' }).then(response => {
+                if (response.ok && shouldCache(pathname)) {
+                    // Cache with full URL
+                    cacheByUrl(CACHE_NAME, urlString, response.clone());
+                    // Also cache alternate URL (with/without slash)
+                    const altUrl = urlString.endsWith('/') ? urlString.slice(0, -1) : urlString + '/';
+                    cacheByUrl(CACHE_NAME, altUrl, response.clone());
+                }
+                return response;
+            }).catch(async () => {
+                console.log('[SW] OFFLINE - looking for:', urlString);
+
+                // Try to get from cache
+                const cached = await getCached(urlString);
+                if (cached) {
+                    console.log('[SW] Returning cached page');
+                    return cached;
+                }
+
+                // Fallback to offline page (dynamic with translations)
+                console.log('[SW] No cache found, showing /offline');
+                const offlinePage = await getCached(location.origin + '/offline');
+                return offlinePage || new Response('Offline', { status: 503 });
+            })
         );
+        return;
     }
+
+    // === STATIC ASSETS - Cache first ===
+    event.respondWith(
+        getCached(urlString).then(cached => {
+            if (cached) return cached;
+
+            return fetch(request).then(response => {
+                if (response.ok) {
+                    cacheByUrl(CACHE_NAME, urlString, response.clone());
+                }
+                return response;
+            }).catch(() => new Response('Not found', { status: 404 }));
+        })
+    );
 });
 
-// Message handler for cache size management
+// Message handler
 self.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'SKIP_WAITING') {
+    if (event.data?.type === 'SKIP_WAITING') {
         self.skipWaiting();
     }
-
-    if (event.data && event.data.type === 'CLEAR_THUMBNAILS') {
-        caches.delete(THUMBNAIL_CACHE).then(() => {
-            console.log('Thumbnail cache cleared');
+    if (event.data?.type === 'CLEAR_THUMBNAILS') {
+        caches.delete(THUMBNAIL_CACHE);
+    }
+    if (event.data?.type === 'CACHE_PAGES') {
+        // Pre-cache pages
+        const pages = ['/', '/books/', '/loans/', '/libraries/'];
+        caches.open(CACHE_NAME).then(cache => {
+            pages.forEach(page => {
+                fetch(page, { credentials: 'same-origin' })
+                    .then(res => res.ok && cache.put(location.origin + page, res))
+                    .catch(() => { });
+            });
         });
     }
 });

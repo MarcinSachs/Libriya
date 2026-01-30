@@ -8,7 +8,8 @@
         <div class="col-md-4">
             {% if book.cover %}
             <img src="{{ url_for('static', filename='uploads/' + book.cover) }}" alt="{{ book.title }}"
-                class="img-fluid rounded shadow-sm" onerror="this.src='{{ url_for('static', filename='images/default-book-cover.png') }}'">
+                class="img-fluid rounded shadow-sm" 
+                onerror="this.onerror=null; this.src='/api/books/{{ book.id }}/cover/micro'; this.style.imageRendering='smooth';">
             {% else %}
             <img src="{{ url_for('static', filename='images/default-book-cover.png') }}" alt="{{ _('Default book cover') }}"
                 class="img-fluid rounded shadow-sm">

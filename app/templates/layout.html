@@ -73,6 +73,15 @@
         #online-status-badge {
             font-size: 0.85rem;
             margin-left: auto;
+            /* Only show on mobile/PWA - hidden by default */
+            display: none;
+        }
+        
+        /* Show only on mobile devices or in standalone PWA mode */
+        @media (max-width: 768px), (display-mode: standalone) {
+            #online-status-badge {
+                display: block;
+            }
         }
         
         .navbar {
@@ -133,7 +142,7 @@
     </style>
 </head>
 
-<body class="{% if login_page %}login-background{% endif %}">
+<body class="{% if login_page %}login-background{% endif %}" {% if current_user.is_authenticated %}data-user-logged-in="true"{% endif %}>
     <!-- Offline warning banner -->
     <div id="offline-warning">
         <span><strong>⚠️ {{ _('You are offline') }}</strong> - {{ _('Some features may not work') }}</span>
@@ -149,7 +158,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-custom-dark border-bottom shadow-lg fixed-top">
         <div class="container">
             <a class="navbar-brand title-text d-flex align-items-center" href="/">
-                <img src="{{ url_for('static', filename='/images/logo.svg') }}" alt="Libriya" class="me-2"> Libriya
+                <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Libriya" class="me-2"> Libriya
             </a>
             <!-- Hamburger button for mobile -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"

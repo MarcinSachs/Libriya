@@ -288,20 +288,67 @@ class BNAPIClient:
             if publisher:
                 publisher = re.sub(r'[.,;:\s]*$', '', publisher.strip())
 
-            # Parse author (format: "Sacher-Masoch, Leopold von (1836-1895)")
+            # Parse authors from MARC fields (more reliable than top-level author field)
+            # MARC 100 = main author, 700 = additional authors
+            # Subfield 'a' = name, 'e' = role (Autor, Tłumaczenie, etc.)
             author_names = []
-            if author:
-                # Split multiple authors if they exist
-                for a in author.split("|"):
+
+            if marc and isinstance(marc, dict):
+                fields = marc.get("fields", [])
+
+                for field in fields:
+                    if isinstance(field, dict):
+                        # Check fields 100 (main author) and 700 (additional authors)
+                        for field_code in ["100", "700"]:
+                            if field_code in field:
+                                subfields = field[field_code].get("subfields", [])
+                                name = None
+                                role = None
+
+                                for subfield in subfields:
+                                    if isinstance(subfield, dict):
+                                        if "a" in subfield:
+                                            name = subfield["a"].strip()
+                                            # Remove trailing comma
+                                            name = re.sub(r',\s*$', '', name)
+                                        if "e" in subfield:
+                                            role = subfield["e"].strip().lower()
+
+                                # Only include if role is "autor" or no role specified (assume author)
+                                # Skip translators, editors, etc.
+                                if name:
+                                    skip_roles = ['tłumaczenie', 'tłumacz', 'przekład',
+                                                  'redakcja', 'redaktor', 'opracowanie']
+                                    if role is None or role == 'autor' or role not in skip_roles:
+                                        # Convert "Lastname, Firstname" to "Firstname Lastname"
+                                        if ', ' in name:
+                                            parts = name.split(', ', 1)
+                                            name = f"{parts[1]} {parts[0]}"
+                                        if name not in author_names:
+                                            author_names.append(name)
+
+            # Fallback to top-level author if MARC parsing found nothing
+            if not author_names and author:
+                # Simple cleanup - just remove dates in parentheses
+                for a in re.split(r'\s{2,}', author):  # Split on multiple spaces
                     a = a.strip()
                     if a:
-                        # Remove dates and extra info in parentheses
-                        cleaned = re.sub(r'\s*\([^)]*\).*$', '', a)
-                        author_names.append(cleaned.strip())
+                        # Skip translators
+                        a_lower = a.lower()
+                        if any(x in a_lower for x in ['przełożył', 'przełożyła', 'tłumacz', 'przekład']):
+                            continue
+                        # Remove dates in parentheses
+                        cleaned = re.sub(r'\s*\([^)]*\)', '', a).strip()
+                        if cleaned and cleaned not in author_names:
+                            author_names.append(cleaned)
 
             # Clean up title: remove trailing "/" and whitespace
+            # Also remove original title after " / " (e.g., "Dublerka / Understudy" -> "Dublerka")
             if title:
-                title = re.sub(r'[\s/]*$', '', title.strip())
+                title = re.sub(r'[\s/,]*$', '', title.strip())
+                # Remove original title after " / " if present
+                if ' / ' in title:
+                    title = title.split(' / ')[0].strip()
 
             if not title:
                 return None

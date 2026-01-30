@@ -7,7 +7,7 @@
     {{ macros.display_flashes() }}
 
     <form method="POST" action="" enctype="multipart/form-data" novalidate>
-        {{ form.hidden_tag() }}
+        {{ form.csrf_token }}
 
         <!-- Scanner & ISBN Search Section -->
         <div class="card mb-4">
@@ -86,7 +86,12 @@
                 <h5 class="mb-0"><i class='bx bx-image'></i> {{ _('Book Cover') }}</h5>
             </div>
             <div class="card-body">
-                <div id="cover-preview" class="mb-3"></div>
+                <div id="cover-preview" class="mb-3">
+                    {% if form.cover_url.data %}
+                    <img src="{{ form.cover_url.data }}" style="max-width: 150px; border-radius: 4px;" onerror="this.src='/static/images/default-book-cover.png'">
+                    {% endif %}
+                </div>
+                {{ form.cover_url(id="cover_url_hidden") }}
                 {{ macros.form_field(form.cover, field_type='file', icon='bx-cloud-upload', help_text=_('Supported formats: JPG, PNG, JPEG (Max 5MB)')) }}
             </div>
         </div>
@@ -305,7 +310,7 @@
 
     // Handle Cancel button - cleanup temporary cover files
     function handleCancel() {
-        const coverUrlInput = Array.from(document.querySelectorAll('input[name="cover_url"]')).pop();
+        const coverUrlInput = document.getElementById('cover_url_hidden');
         
         if (coverUrlInput && coverUrlInput.value) {
             const coverUrl = coverUrlInput.value;
@@ -407,17 +412,16 @@
                         }
                         sourceInfo.innerHTML = `<small>ℹ️ {{ _('Data from:') }} <strong>${sourceLabel}</strong> | {{ _('Cover:') }} <strong>${data.cover_source || '{{ _('Local Default') }}'}</strong></small>`;
                         
+                        // Update cover preview and hidden field
+                        var coverUrlHidden = document.getElementById('cover_url_hidden');
                         if (data.cover_image) {
                             console.log('Setting cover image:', data.cover_image);
                             coverPreview.innerHTML = `<img src="${data.cover_image}" style="max-width: 150px; border-radius: 4px;" onerror="this.src='/static/images/default-book-cover.png'">`;
-                            const hiddenInput = document.createElement('input');
-                            hiddenInput.type = 'hidden';
-                            hiddenInput.name = 'cover_url';
-                            hiddenInput.value = data.cover_image;
-                            document.querySelector('form').appendChild(hiddenInput);
+                            coverUrlHidden.value = data.cover_image;
                         } else {
                             console.log('No cover image in response, will use default');
                             coverPreview.innerHTML = `<img src="/static/images/default-book-cover.png" style="max-width: 150px; border-radius: 4px;">`;
+                            coverUrlHidden.value = '';
                         }
                     })
                     .catch(error => {
@@ -517,6 +521,7 @@
                                 if (year) yearInput.value = year;
 
                                 // Load cover image if available
+                                var coverUrlHidden = document.getElementById('cover_url_hidden');
                                 if (coverId) {
                                     let coverUrl;
                                     if (coverId.startsWith('http')) {
@@ -525,13 +530,10 @@
                                         coverUrl = `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
                                     }
                                     coverPreview.innerHTML = `<img src="${coverUrl}" style="max-width: 150px; border-radius: 4px;" onerror="this.src='/static/images/default-book-cover.png'">`;
-                                    const hiddenInput = document.createElement('input');
-                                    hiddenInput.type = 'hidden';
-                                    hiddenInput.name = 'cover_url';
-                                    hiddenInput.value = coverUrl;
-                                    document.querySelector('form').appendChild(hiddenInput);
+                                    coverUrlHidden.value = coverUrl;
                                 } else {
                                     coverPreview.innerHTML = `<img src="/static/images/default-book-cover.png" style="max-width: 150px; border-radius: 4px;">`;
+                                    coverUrlHidden.value = '';
                                 }
 
                                 searchResultsDiv.innerHTML = '';

@@ -25,6 +25,12 @@ def favicon():
     return current_app.send_static_file("favicon.ico")
 
 
+@bp.route("/offline")
+def offline():
+    """Offline page with translations"""
+    return render_template("offline.html", title=_("Offline"))
+
+
 @bp.route("/")
 @login_required
 def home():
