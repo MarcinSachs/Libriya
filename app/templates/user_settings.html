@@ -87,6 +87,10 @@
                     <span>{{ _('Estimated total') }}:</span>
                     <span id="total-size">~20 KB/{{ _('book') }}</span>
                 </div>
+                <div class="d-flex justify-content-between text-success fw-bold" id="actual-size-row" style="display: none;">
+                    <span><i class='bx bx-check-circle'></i> {{ _('Actual size') }}:</span>
+                    <span id="actual-size">-</span>
+                </div>
             </div>
         </div>
     </div>
@@ -94,10 +98,21 @@
 
 <script>
 // Update offline cache status on page load
-document.addEventListener('DOMContentLoaded', async function() {
-    if (window.pwaManager) {
+async function updateOfflineStatus() {
+    const statusEl = document.getElementById('offline-cache-status');
+    const progressEl = document.getElementById('offline-cache-progress');
+    
+    // Wait for pwaManager to be available
+    if (!window.pwaManager) {
+        progressEl.textContent = 'Oczekiwanie na PWA Manager...';
+        setTimeout(updateOfflineStatus, 500);
+        return;
+    }
+    
+    try {
+        progressEl.textContent = 'Pobieranie statusu cache...';
         const status = await window.pwaManager.getOfflineCacheStatus();
-        const statusEl = document.getElementById('offline-cache-status');
+        progressEl.textContent = '';
         
         if (status.lastCache && status.lastCache.success) {
             const date = new Date(status.lastCache.timestamp).toLocaleDateString();
@@ -106,7 +121,23 @@ document.addEventListener('DOMContentLoaded', async function() {
         } else {
             statusEl.innerHTML = `<span class="text-warning"><i class='bx bx-info-circle'></i> {{ _('Not downloaded yet') }}</span>`;
         }
+        
+        // Always show actual size
+        const actualSizeRow = document.getElementById('actual-size-row');
+        const actualSizeEl = document.getElementById('actual-size');
+        if (actualSizeRow && actualSizeEl) {
+            actualSizeRow.style.display = 'flex';
+            actualSizeEl.textContent = status.totalFormatted || '0 B';
+        }
+        
+    } catch (e) {
+        statusEl.innerHTML = `<span class="text-danger">{{ _('Error') }}: ${e.message}</span>`;
+        progressEl.textContent = '';
     }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(updateOfflineStatus, 1000);
 });
 
 async function downloadOfflineData() {
@@ -123,6 +154,13 @@ async function downloadOfflineData() {
             const statusEl = document.getElementById('offline-cache-status');
             statusEl.innerHTML = `<span class="text-success"><i class='bx bx-check-circle'></i> {{ _('Download complete!') }}</span><br>` +
                 `📚 ${result.booksCount} {{ _('books') }}, 🖼️ ${result.coversCount} {{ _('covers') }}`;
+            
+            // Update actual size after download
+            const status = await window.pwaManager.getOfflineCacheStatus();
+            if (status.totalBytes > 0) {
+                document.getElementById('actual-size-row').style.display = 'flex';
+                document.getElementById('actual-size').textContent = status.totalFormatted;
+            }
         }
     } catch (e) {
         console.error('Download error:', e);
@@ -138,6 +176,7 @@ async function clearOfflineData() {
         document.getElementById('offline-cache-status').innerHTML = 
             `<span class="text-warning"><i class='bx bx-info-circle'></i> {{ _('Not downloaded yet') }}</span>`;
         document.getElementById('offline-cache-progress').textContent = '{{ _("Cache cleared") }}';
+        document.getElementById('actual-size-row').style.display = 'none';
     }
 }
 </script>

@@ -162,6 +162,12 @@
         
         // Convert canvas to blob and send to backend with lower quality for faster processing
         canvas.toBlob(function(blob) {
+            if (!blob) {
+                console.debug('OCR: Failed to create blob from canvas');
+                ocrProcessing = false;
+                return;
+            }
+            
             var formData = new FormData();
             formData.append('image', blob, 'frame.jpg');
             

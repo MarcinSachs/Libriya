@@ -1,4 +1,4 @@
-const CACHE_NAME = 'libriya-v13';
+const CACHE_NAME = 'libriya-v14';
 const THUMBNAIL_CACHE = 'libriya-thumbnails-v1';
 const MICRO_CACHE = 'libriya-micro-v1';
 const DATA_CACHE = 'libriya-data-v1';

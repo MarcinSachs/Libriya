@@ -110,7 +110,7 @@ class PWAManager {
         ];
         console.log('[PWA] Pre-caching pages...');
 
-        const cache = await caches.open('libriya-v13');
+        const cache = await caches.open('libriya-v14');
 
         for (const page of pagesToCache) {
             try {
@@ -330,6 +330,8 @@ class PWAManager {
             console.log('[PWA]', text);
         };
 
+        let totalBytes = 0; // Track total size
+
         try {
             // 1. Fetch all books data
             updateProgress('Pobieranie danych książek...');
@@ -350,9 +352,11 @@ class PWAManager {
 
             // 2. Cache the books JSON data
             const dataCache = await caches.open('libriya-data-v1');
+            const jsonString = JSON.stringify(data);
+            totalBytes += jsonString.length;
             await dataCache.put(
                 new URL('/api/offline/books', location.origin).href,
-                new Response(JSON.stringify(data), {
+                new Response(jsonString, {
                     headers: { 'Content-Type': 'application/json' }
                 })
             );
@@ -368,6 +372,8 @@ class PWAManager {
                     try {
                         const coverResponse = await fetch(book.micro_cover_url);
                         if (coverResponse.ok) {
+                            const blob = await coverResponse.clone().blob();
+                            totalBytes += blob.size;
                             await microCache.put(
                                 new URL(book.micro_cover_url, location.origin).href,
                                 coverResponse.clone()
@@ -396,6 +402,8 @@ class PWAManager {
                 try {
                     const pageResponse = await fetch(book.detail_url, { credentials: 'same-origin' });
                     if (pageResponse.ok) {
+                        const blob = await pageResponse.clone().blob();
+                        totalBytes += blob.size;
                         await mainCache.put(
                             new URL(book.detail_url, location.origin).href,
                             pageResponse.clone()
@@ -417,6 +425,8 @@ class PWAManager {
                 booksCount: books.length,
                 coversCount: cachedCovers,
                 pagesCount: cachedPages,
+                totalBytes: totalBytes,
+                totalFormatted: this.formatBytes(totalBytes),
                 timestamp: new Date().toISOString()
             };
 
@@ -442,24 +452,26 @@ class PWAManager {
         const stored = localStorage.getItem('offlineCacheInfo');
         const cacheInfo = stored ? JSON.parse(stored) : null;
 
-        // Get actual cache sizes
-        const sizes = {};
-        const cacheNames = ['libriya-v13', 'libriya-micro-v1', 'libriya-data-v1', 'libriya-thumbnails-v1'];
-
-        for (const name of cacheNames) {
-            try {
-                const cache = await caches.open(name);
-                const keys = await cache.keys();
-                sizes[name] = keys.length;
-            } catch (e) {
-                sizes[name] = 0;
-            }
-        }
+        // Use stored size from last download
+        const totalBytes = cacheInfo?.totalBytes || 0;
+        const totalFormatted = cacheInfo?.totalFormatted || this.formatBytes(totalBytes);
 
         return {
             lastCache: cacheInfo,
-            currentSizes: sizes
+            totalBytes: totalBytes,
+            totalFormatted: totalFormatted
         };
+    }
+
+    /**
+     * Format bytes to human readable string
+     */
+    formatBytes(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
     }
 
     /**

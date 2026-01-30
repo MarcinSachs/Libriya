@@ -506,10 +506,12 @@ def get_offline_books_data():
     Used by PWA to pre-cache all books for offline access.
     """
     try:
-        # Get all books user has access to (through their libraries)
-        user_library_ids = [lib.id for lib in current_user.libraries]
-
-        books = Book.query.filter(Book.library_id.in_(user_library_ids)).all()
+        # Admin gets all books, others get only books from their libraries
+        if current_user.role == 'admin':
+            books = Book.query.all()
+        else:
+            user_library_ids = [lib.id for lib in current_user.libraries]
+            books = Book.query.filter(Book.library_id.in_(user_library_ids)).all()
 
         books_data = []
         for book in books:
@@ -517,9 +519,7 @@ def get_offline_books_data():
                 'id': book.id,
                 'title': book.title,
                 'isbn': book.isbn,
-                'description': book.description[:200] if book.description else None,
                 'year': book.year,
-                'publisher': book.publisher,
                 'authors': [{'id': a.id, 'name': a.name} for a in book.authors],
                 'library_id': book.library_id,
                 'library_name': book.library.name if book.library else None,
