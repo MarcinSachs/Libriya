@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-01-27 17:34+0100\n"
-"PO-Revision-Date: 2026-01-29 15:59\n"
+"PO-Revision-Date: 2026-01-30 07:02\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -239,7 +239,7 @@ msgstr "Twoja rezerwacja na \"%(title)s\" została zatwierdzona!"
 #: app/routes/loans.py:198
 #, python-format
 msgid "Your reservation for \"%(title)s\" has been cancelled by an administrator."
-msgstr ""
+msgstr "Twoja rezerwacja \"%(title)s\" została anulowana przez administratora."
 
 #: app/routes/loans.py:221
 #, python-format
@@ -453,11 +453,11 @@ msgstr ""
 
 #: app/seeds/seed.py:55
 msgid "Humor"
-msgstr ""
+msgstr "Humor"
 
 #: app/seeds/seed.py:56
 msgid "Inspirational"
-msgstr ""
+msgstr "Inspiracja"
 
 #: app/seeds/seed.py:57
 msgid "Journal"
@@ -659,7 +659,7 @@ msgstr "Szukaj"
 
 #: app/templates/book_add.html:41
 msgid "OR"
-msgstr ""
+msgstr "LUB"
 
 #: app/templates/book_add.html:46
 msgid "Search by Title"
@@ -671,7 +671,7 @@ msgstr ""
 
 #: app/templates/book_add.html:62
 msgid "Book Information"
-msgstr ""
+msgstr "Informacje o książce"
 
 #: app/templates/book_add.html:65 app/templates/book_edit.html:22
 msgid "e.g. The Lord of the Rings"
@@ -768,7 +768,7 @@ msgstr ""
 
 #: app/templates/book_add.html:237 app/templates/book_add.html:332
 msgid "Open Library Cover:"
-msgstr ""
+msgstr "Okładka Open Library"
 
 #: app/templates/book_add.html:247
 msgid "Could not find data for ISBN. Please check the number and try again."
@@ -885,7 +885,7 @@ msgstr ""
 
 #: app/templates/generate_invitation.html:15
 msgid "Select a library"
-msgstr ""
+msgstr "Wybierz bibliotekę"
 
 #: app/templates/generate_invitation.html:23
 msgid "Valid for (days)"
@@ -1102,7 +1102,7 @@ msgstr ""
 
 #: app/templates/libraries.html:13
 msgid "Edit"
-msgstr ""
+msgstr "Edytuj"
 
 #: app/templates/libraries.html:15
 msgid "Are you sure you want to delete this library?"
