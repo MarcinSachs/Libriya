@@ -1949,3 +1949,4 @@ msgstr "Kod zaproszenia dezaktywowany"
 #: app/utils/messages.py:128
 msgid "Unsupported language."
 msgstr "Nieobsługiwany język."
+

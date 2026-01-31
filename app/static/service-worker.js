@@ -95,11 +95,18 @@ self.addEventListener('fetch', (event) => {
     const urlString = url.href;
     const pathname = url.pathname;
 
+
     // Only GET requests
     if (request.method !== 'GET') return;
 
     // Only same origin
     if (url.origin !== location.origin) return;
+
+    // === IGNORE language switch route ===
+    if (pathname.startsWith('/set_language/')) {
+        // Do not intercept, let browser handle
+        return;
+    }
 
     // === UPLOADS & THUMBNAILS - Cache first ===
     if (pathname.includes('/static/uploads/') || pathname.includes('/cover/thumbnail') || pathname.includes('/cover/micro')) {

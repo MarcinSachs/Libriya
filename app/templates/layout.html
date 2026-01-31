@@ -1,6 +1,6 @@
 {% import 'macros.html' as macros %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{% if request.cookies.get('language') in config.LANGUAGES %}{{ request.cookies.get('language') }}{% elif session.get('language') in config.LANGUAGES %}{{ session.get('language') }}{% else %}en{% endif %}">
 
 <head>
     <meta charset="UTF-8">
