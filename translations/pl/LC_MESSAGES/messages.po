@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-01-30 19:21+0100\n"
-"PO-Revision-Date: 2026-01-30 20:14\n"
+"PO-Revision-Date: 2026-01-31 14:25\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -20,7 +20,7 @@ msgstr ""
 
 #: app/__init__.py:32
 msgid "Please log in to access this page."
-msgstr ""
+msgstr "Zaloguj się, aby uzyskać dostęp do tej strony."
 
 #: app/forms.py:20
 msgid "Invalid ISBN format. Must be 10 or 13 digits."
@@ -271,7 +271,7 @@ msgstr "Nie można wysłać przypomnienia o zaległości. Wypożyczenie nie jest
 
 #: app/routes/main.py:31
 msgid "Offline"
-msgstr ""
+msgstr "Offline"
 
 #: app/routes/main.py:106 app/templates/notifications.html:5
 msgid "Your Notifications"
@@ -748,7 +748,7 @@ msgstr "Anuluj"
 
 #: app/templates/book_add.html:280
 msgid "Could not access camera. Please check permissions."
-msgstr ""
+msgstr "Nie można uzyskać dostępu do aparatu. Proszę sprawdzić uprawnienia."
 
 #: app/templates/book_add.html:370
 msgid "Please enter an ISBN."
@@ -772,7 +772,7 @@ msgstr "Open Library"
 
 #: app/templates/book_add.html:399
 msgid "Unknown Source"
-msgstr ""
+msgstr "Nieznane Źródło"
 
 #: app/templates/book_add.html:408
 msgid "Data from:"
@@ -804,7 +804,7 @@ msgstr "Nieznany"
 
 #: app/templates/book_detail.html:13
 msgid "Default book cover"
-msgstr ""
+msgstr "Domyślna okładka książki"
 
 #: app/templates/book_detail.html:19
 msgid "Author(s)"
@@ -1016,7 +1016,7 @@ msgstr "Kody zaproszeń"
 
 #: app/templates/invitation_codes.html:26
 msgid "Add code"
-msgstr ""
+msgstr "Dodaj kod"
 
 #: app/templates/invitation_codes.html:36
 msgid "Code"
@@ -1076,11 +1076,11 @@ msgstr "Niektóre funkcje mogą nie działać"
 
 #: app/templates/layout.html:154
 msgid "New version available!"
-msgstr ""
+msgstr "Dostępna jest nowa wersja!"
 
 #: app/templates/layout.html:155
 msgid "Reload"
-msgstr ""
+msgstr "Przeładuj"
 
 #: app/templates/layout.html:166
 msgid "Toggle navigation"
@@ -1088,7 +1088,7 @@ msgstr "Przełącz nawigację"
 
 #: app/templates/layout.html:181
 msgid "Install App"
-msgstr ""
+msgstr "Zainstaluj Aplikacje"
 
 #: app/templates/layout.html:199
 msgid "unread messages"
@@ -1133,7 +1133,7 @@ msgstr "Użytkownicy"
 
 #: app/templates/layout.html:366
 msgid "Are you sure you want to delete this book?"
-msgstr ""
+msgstr "Czy na pewno chcesz usunąć tę książkę?"
 
 #: app/templates/libraries.html:5
 msgid "Manage Libraries"
@@ -1161,7 +1161,7 @@ msgstr "Wprowadź nazwę biblioteki"
 
 #: app/templates/loan_add.html:4
 msgid "Loan a Book"
-msgstr ""
+msgstr "Wypożycz książkę"
 
 #: app/templates/loans.html:7
 msgid "Add Loan"
@@ -1281,27 +1281,27 @@ msgstr "Nie wybrano pliku"
 
 #: app/templates/notifications.html:9
 msgid "Mark All as Read"
-msgstr ""
+msgstr "Oznacz wszystkie jako przeczytane"
 
 #: app/templates/notifications.html:28
 msgid "Related to loan:"
-msgstr ""
+msgstr "W związku z wypożyczeniem:"
 
 #: app/templates/notifications.html:29
 msgid "by"
-msgstr ""
+msgstr "przez"
 
 #: app/templates/notifications.html:38
 msgid "Mark as Read"
-msgstr ""
+msgstr "Oznacz jako przeczytane"
 
 #: app/templates/notifications.html:43
 msgid "Read"
-msgstr ""
+msgstr "Czytaj"
 
 #: app/templates/notifications.html:49
 msgid "No notifications yet."
-msgstr "Brak powiadomień"
+msgstr "Brak powiadomień."
 
 #: app/templates/offline.html:47
 msgid "But don't worry! Libriya still works"
@@ -1405,7 +1405,7 @@ msgstr "Zaloguj się tutaj"
 
 #: app/templates/user_add.html:4
 msgid "Add a new user"
-msgstr ""
+msgstr "Dodaj nowego użytkownika"
 
 #: app/templates/user_profile.html:19
 msgid "Total Loans"
