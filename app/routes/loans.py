@@ -312,7 +312,8 @@ def user_cancel_reservation(loan_id):
 def send_overdue_reminder(loan_id):
     loan = Loan.query.get_or_404(loan_id)
 
-    if loan.status == 'active' and loan.issue_date and (datetime.utcnow() - loan.issue_date).days > 14:
+    overdue_days = loan.book.library.loan_overdue_days if loan.book and loan.book.library else 14
+    if loan.status == 'active' and loan.issue_date and (datetime.utcnow() - loan.issue_date).days > overdue_days:
         message = _("Reminder: Your loan for \"%(title)s\" is overdue. Please return it as soon as possible.",
                     title=loan.book.title)
         create_notification(loan.user, current_user, message,
