@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-02-01 15:10+0100\n"
-"PO-Revision-Date: 2026-02-01 14:11\n"
+"PO-Revision-Date: 2026-02-01 14:15\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -67,7 +67,7 @@ msgstr "Dozwolone są tylko pliki obrazów (jpg, png, jpeg)!"
 
 #: app/forms.py:78
 msgid "Cover URL"
-msgstr ""
+msgstr "Adres URL okładki"
 
 #: app/forms.py:81 app/templates/book_detail.html:55
 msgid "Shelf"
@@ -150,7 +150,7 @@ msgstr "Nazwa biblioteki"
 
 #: app/forms.py:143 app/templates/library_form.html:15
 msgid "Loan overdue days"
-msgstr ""
+msgstr "Dni opóźnienia wypożyczenia"
 
 #: app/forms.py:149
 msgid "Book"
@@ -222,7 +222,7 @@ msgstr "Dodaj Bibliotekę"
 
 #: app/routes/libraries.py:51
 msgid "You do not have permission to edit this library."
-msgstr ""
+msgstr "Nie masz uprawnień do edycji tej biblioteki."
 
 #: app/routes/libraries.py:60
 msgid "Edit Library"
@@ -1534,7 +1534,7 @@ msgstr "Szacowany rozmiar"
 
 #: app/templates/user_settings.html:91
 msgid "Actual size"
-msgstr ""
+msgstr "Aktualny rozmiar"
 
 #: app/templates/user_settings.html:119
 msgid "Last download"
@@ -1554,7 +1554,7 @@ msgstr "Jeszcze nie pobrano"
 
 #: app/templates/user_settings.html:134
 msgid "Error"
-msgstr ""
+msgstr "Błąd"
 
 #: app/templates/user_settings.html:148
 msgid "Downloading..."
