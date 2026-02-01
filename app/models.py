@@ -266,5 +266,20 @@ class InvitationCode(db.Model):
         self.used_at = datetime.datetime.utcnow()
         db.session.commit()
 
+
     def __str__(self):
         return f"Code {self.code} for {self.library.name} - {'Active' if self.is_valid() else 'Inactive'}"
+
+
+# Model wiadomości kontaktowej
+class ContactMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    user = db.relationship('User', backref='contact_messages')
+    email = db.Column(db.String(120), nullable=True)
+    subject = db.Column(db.String(200), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+    def __str__(self):
+        return f"ContactMessage from {self.email or self.user_id} at {self.created_at}"

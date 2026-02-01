@@ -8,7 +8,8 @@ from sqlalchemy import or_
 import os
 
 from app import db, csrf
-from app.models import Book, Genre, Notification, User
+from app.models import Book, Genre, Notification, User, ContactMessage
+from app.forms import ContactForm
 from app.services.book_service import BookSearchService
 from app.services.cover_service import CoverService
 from app.utils.messages import (
@@ -18,6 +19,28 @@ from app.utils.messages import (
 )
 
 bp = Blueprint("main", __name__)
+
+
+# --- KONTAKT ---
+@bp.route('/contact', methods=['GET', 'POST'])
+@login_required
+def contact():
+    form = ContactForm()
+    if form.validate_on_submit():
+        # Preferuj e-mail z formularza, jeśli podany, inaczej z konta użytkownika
+        email = form.email.data or (current_user.email if hasattr(current_user, 'email') else None)
+        msg = ContactMessage(
+            user_id=current_user.id,
+            email=email,
+            subject=form.subject.data,
+            message=form.message.data
+        )
+        from app import db
+        db.session.add(msg)
+        db.session.commit()
+        flash(_('Wiadomość została wysłana.'), 'success')
+        return redirect(url_for('main.contact'))
+    return render_template('contact.html', form=form, title=_('Kontakt'))
 
 
 @bp.route("/favicon.ico")

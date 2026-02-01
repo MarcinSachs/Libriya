@@ -12,7 +12,9 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('library', sa.Column('loan_overdue_days', sa.Integer(), nullable=False, server_default='14'))
+    # Kolumna loan_overdue_days już istnieje w modelu
+    # Ta migracja jest tylko dla spójności historii migracji
+    pass
 
 
 def downgrade():

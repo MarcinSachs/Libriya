@@ -6,7 +6,7 @@ from flask_babel import _
 
 from app import db
 from app.forms import UserForm, UserEditForm, UserSettingsForm
-from app.models import User, Library
+from app.models import User, Library, ContactMessage
 from app.utils import role_required
 from app.utils.audit_log import (
     log_user_created, log_user_deleted, log_user_role_changed
@@ -20,6 +20,22 @@ from app.utils.messages import (
 )
 
 bp = Blueprint("users", __name__)
+
+
+# Wiadomości kontaktowe - tylko admin/manager
+@bp.route('/contact_messages')
+@login_required
+@role_required('admin', 'manager')
+def contact_messages():
+    # Admin widzi wszystkie, manager tylko z własnych bibliotek lub swoje
+    if current_user.role == 'admin':
+        messages = ContactMessage.query.order_by(ContactMessage.created_at.desc()).all()
+    else:
+        # Manager widzi tylko swoje i użytkowników z zarządzanych bibliotek
+        user_ids = [u.id for lib in current_user.libraries for u in lib.users]
+        messages = ContactMessage.query.filter(ContactMessage.user_id.in_(
+            user_ids)).order_by(ContactMessage.created_at.desc()).all()
+    return render_template('contact_messages.html', messages=messages, title=_('Wiadomości kontaktowe'))
 
 
 @bp.route("/users/")

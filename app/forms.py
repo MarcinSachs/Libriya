@@ -214,7 +214,16 @@ class RegistrationForm(FlaskForm):
         if user:
             raise ValidationError(_('Email already registered'))
 
+
     def validate_username(self, field):
         user = User.query.filter_by(username=field.data).first()
         if user:
             raise ValidationError(_('Username already taken'))
+
+
+# Formularz kontaktowy
+class ContactForm(FlaskForm):
+    email = StringField(_('Twój e-mail'), validators=[Optional(), Email(), Length(max=120)])
+    subject = StringField(_('Temat'), validators=[DataRequired(), Length(max=200)])
+    message = TextAreaField(_('Wiadomość'), validators=[DataRequired(), Length(max=2000)])
+    submit = SubmitField(_('Wyślij'))

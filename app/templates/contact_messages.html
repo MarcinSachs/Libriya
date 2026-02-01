@@ -1,0 +1,34 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ _('Wiadomości kontaktowe') }}</h2>
+    {% if messages %}
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Użytkownik</th>
+                    <th>Email</th>
+                    <th>Temat</th>
+                    <th>Wiadomość</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for msg in messages %}
+                <tr>
+                    <td>{{ msg.id }}</td>
+                    <td>{% if msg.user %}{{ msg.user.username }}{% else %}-{% endif %}</td>
+                    <td>{{ msg.email or '-' }}</td>
+                    <td>{{ msg.subject }}</td>
+                    <td>{{ msg.message|e }}</td>
+                    <td>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>{{ _('Brak wiadomości kontaktowych.') }}</p>
+    {% endif %}
+</div>
+{% endblock %}
