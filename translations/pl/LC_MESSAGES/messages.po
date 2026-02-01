@@ -1,20 +1,22 @@
-
 msgid ""
 msgstr ""
-"Project-Id-Version:  libriya\n"
+"Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-01-30 19:21+0100\n"
 "PO-Revision-Date: 2026-02-01 12:45\n"
 "Last-Translator: \n"
-"Language: pl_PL\n"
 "Language-Team: Polish\n"
-"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && "
-"(n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
-"n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
+"X-Crowdin-Project: libriya\n"
+"X-Crowdin-Project-ID: 866606\n"
+"X-Crowdin-Language: pl\n"
+"X-Crowdin-File: /main/translations/messages.pot\n"
+"X-Crowdin-File-ID: 5\n"
+"Language: pl_PL\n"
 
 #: app/__init__.py:32
 msgid "Please log in to access this page."
@@ -245,9 +247,7 @@ msgstr "Książka \"%(title)s\", którą pożyczyłeś została oznaczona jako z
 
 #: app/routes/loans.py:266
 #, python-format
-msgid ""
-"A loan for \"%(title)s\" has been directly issued to you by an "
-"administrator."
+msgid "A loan for \"%(title)s\" has been directly issued to you by an administrator."
 msgstr "Wypożyczenie \"%(title)s\" zostało udzielone przez administratora."
 
 #: app/routes/loans.py:297
@@ -257,25 +257,17 @@ msgstr "%(username)s anulował rezerwację na \"%(title)s\"."
 
 #: app/routes/loans.py:316
 #, python-format
-msgid ""
-"Reminder: Your loan for \"%(title)s\" is overdue. Please return it as "
-"soon as possible."
-msgstr ""
-"Przypomnienie: Twoja książka \"%(title)s\" jest zaległa. Prosimy zwrócić "
-"ją tak szybko, jak to możliwe."
+msgid "Reminder: Your loan for \"%(title)s\" is overdue. Please return it as soon as possible."
+msgstr "Przypomnienie: Twoja książka \"%(title)s\" jest zaległa. Prosimy zwrócić ją tak szybko, jak to możliwe."
 
 #: app/routes/loans.py:320
 #, python-format
 msgid "Overdue reminder sent to %(username)s for book \"%(title)s\"."
-msgstr ""
-"Przypomnienie o przeterminowaniu wysłane do %(username)s dla książki "
-"\"%(title)s\"."
+msgstr "Przypomnienie o przeterminowaniu wysłane do %(username)s dla książki \"%(title)s\"."
 
 #: app/routes/loans.py:324
 msgid "Cannot send overdue reminder. Loan is not active or not overdue."
-msgstr ""
-"Nie można wysłać przypomnienia o zaległości. Wypożyczenie nie jest "
-"aktywne lub nie jest przeterminowane."
+msgstr "Nie można wysłać przypomnienia o zaległości. Wypożyczenie nie jest aktywne lub nie jest przeterminowane."
 
 #: app/routes/main.py:31
 msgid "Offline"
@@ -287,9 +279,7 @@ msgstr "Twoje powiadomienia"
 
 #: app/routes/main.py:183
 msgid "No data found for this ISBN. Please check the number and try again."
-msgstr ""
-"Nie znaleziono danych dla tego ISBN. Proszę sprawdzić numer i spróbować "
-"ponownie."
+msgstr "Nie znaleziono danych dla tego ISBN. Proszę sprawdzić numer i spróbować ponownie."
 
 #: app/routes/main.py:233 app/routes/main.py:320
 #: app/templates/book_add.html:546
@@ -798,9 +788,7 @@ msgstr "Domyślna"
 
 #: app/templates/book_add.html:425
 msgid "Could not find data for ISBN. Please check the number and try again."
-msgstr ""
-"Nie można znaleźć danych dla ISBN. Proszę sprawdzić numer i spróbować "
-"ponownie."
+msgstr "Nie można znaleźć danych dla ISBN. Proszę sprawdzić numer i spróbować ponownie."
 
 #: app/templates/book_add.html:444
 msgid "Please enter at least 3 characters."
@@ -924,12 +912,8 @@ msgid "Code will expire after this many days"
 msgstr "Kod wygaśnie po tej liczbie dni"
 
 #: app/templates/generate_invitation.html:31
-msgid ""
-"This code will be valid for ONE registration only. Once used, it cannot "
-"be reused."
-msgstr ""
-"Ten kod będzie ważny tylko dla JEDNEJ rejestracji. Po użyciu nie może być"
-" ponownie użyty."
+msgid "This code will be valid for ONE registration only. Once used, it cannot be reused."
+msgstr "Ten kod będzie ważny tylko dla JEDNEJ rejestracji. Po użyciu nie może być ponownie użyty."
 
 #: app/templates/generate_invitation.html:36
 msgid "Generate Code"
@@ -958,8 +942,7 @@ msgid "All"
 msgstr "Wszystkie"
 
 #: app/templates/index.html:32
-msgid ""
-"On\n"
+msgid "On\n"
 "                        Loan/Reserved"
 msgstr "Wypożyczone/zarezerwowane"
 
@@ -1194,11 +1177,9 @@ msgid "Pending Approval"
 msgstr "Oczekujące zatwierdzenie"
 
 #: app/templates/loans.html:25
-msgid ""
-"Active\n"
+msgid "Active\n"
 "                        Loan"
-msgstr ""
-"Aktywne\n"
+msgstr "Aktywne\n"
 "                        Wypożyczenie"
 
 #: app/templates/loans.html:28 app/templates/loans.html:89
@@ -1392,9 +1373,7 @@ msgstr "Strona główna"
 
 #: app/templates/offline.html:119
 msgid "Connection will be restored automatically. You can also try below."
-msgstr ""
-"Połączenie zostanie przywrócone automatycznie. Możesz też spróbować "
-"poniżej."
+msgstr "Połączenie zostanie przywrócone automatycznie. Możesz też spróbować poniżej."
 
 #: app/templates/offline.html:122
 msgid "Refresh page"
@@ -1686,9 +1665,7 @@ msgstr "Książka %(title)s została pomyślnie usunięta."
 
 #: app/utils/messages.py:36
 msgid "Book has been reserved successfully. An admin will approve it shortly."
-msgstr ""
-"Książka została pomyślnie zarezerwowana. Administrator zatwierdzi ją "
-"wkrótce."
+msgstr "Książka została pomyślnie zarezerwowana. Administrator zatwierdzi ją wkrótce."
 
 #: app/utils/messages.py:37 app/utils/messages.py:94
 msgid "This book is already reserved by another user."
@@ -1808,12 +1785,8 @@ msgstr "Książka nie jest w ulubionych."
 
 #: app/utils/messages.py:75
 #, python-format
-msgid ""
-"Cannot delete \"%(title)s\" because it is currently \"%(status)s\". "
-"Consider marking it as inactive instead."
-msgstr ""
-"Nie można usunąć \"%(title)s\", ponieważ jest ona obecnie \"%(status)s\"."
-" Zamiast tego należy uznać go za nieaktywny."
+msgid "Cannot delete \"%(title)s\" because it is currently \"%(status)s\". Consider marking it as inactive instead."
+msgstr "Nie można usunąć \"%(title)s\", ponieważ jest ona obecnie \"%(status)s\". Zamiast tego należy uznać go za nieaktywny."
 
 #: app/utils/messages.py:76
 msgid "You can only edit books within your libraries."
@@ -1862,9 +1835,7 @@ msgstr "Nieprawidłowy identyfikator użytkownika do filtrowania."
 
 #: app/utils/messages.py:93
 msgid "Book has been reserved successfully! An admin will approve it shortly."
-msgstr ""
-"Książka została zarezerwowana pomyślnie! Administrator wkrótce ją "
-"zatwierdzi."
+msgstr "Książka została zarezerwowana pomyślnie! Administrator wkrótce ją zatwierdzi."
 
 #: app/utils/messages.py:95
 msgid "This book is currently on loan."
@@ -1892,12 +1863,8 @@ msgid "Loan for \"%(title)s\" to %(username)s has been approved!"
 msgstr "Wypożyczenie \"%(title)s\" na rzecz %(username)s została zatwierdzona!"
 
 #: app/utils/messages.py:102
-msgid ""
-"Cannot approve loan: Book status is not \"reserved\". It might have been "
-"cancelled or loaned differently."
-msgstr ""
-"Nie można zatwierdzić wypożyczenia: Status książki nie jest "
-"\"zarezerwowany\". Może zostać anulowany lub pożyczony w inny sposób."
+msgid "Cannot approve loan: Book status is not \"reserved\". It might have been cancelled or loaned differently."
+msgstr "Nie można zatwierdzić wypożyczenia: Status książki nie jest \"zarezerwowany\". Może zostać anulowany lub pożyczony w inny sposób."
 
 #: app/utils/messages.py:103
 msgid "Loan is not in \"pending\" status and cannot be approved."
@@ -1944,9 +1911,7 @@ msgstr "Twoja rezerwacja %(title)s została anulowana."
 
 #: app/utils/messages.py:113
 msgid "This reservation cannot be cancelled as it is not in 'pending' status."
-msgstr ""
-"Ta rezerwacja nie może zostać anulowana, ponieważ nie ma statusu "
-"\"oczekującego\"."
+msgstr "Ta rezerwacja nie może zostać anulowana, ponieważ nie ma statusu \"oczekującego\"."
 
 #: app/utils/messages.py:116
 msgid "Cannot delete a library that has books associated with it."
