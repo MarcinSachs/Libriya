@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-02-01 21:05+0100\n"
-"PO-Revision-Date: 2026-02-01 20:20\n"
+"PO-Revision-Date: 2026-02-01 20:30\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -206,19 +206,19 @@ msgid "Username already taken"
 msgstr "Nazwa użytkownika jest zajęta"
 
 #: app/forms.py:225
-msgid "Biblioteka"
-msgstr ""
+msgid "Library"
+msgstr "Biblioteka"
 
 #: app/forms.py:226
-msgid "Temat"
+msgid "Subject"
 msgstr ""
 
 #: app/forms.py:227
-msgid "Wiadomość"
+msgid "Message"
 msgstr ""
 
 #: app/forms.py:228 app/templates/contact.html:31
-msgid "Wyślij"
+msgid "Send"
 msgstr ""
 
 #: app/routes/loans.py:317 app/tasks.py:24
