@@ -304,7 +304,7 @@
                             </a>
                             <div class="collapse {% if parent_page == 'admin' %}show{% endif %}" id="adminMenu">
                                 <ul class="nav flex-column ms-3">
-                                    {% if current_user.role == 'admin' %}
+                                    {% if current_user.role in ['admin', 'manager'] %}
                                     <li class="nav-item">
                                         <a class="nav-link {% if active_page == 'libraries' %}active{% else %}text-dark{% endif %}"
                                             href="{{ url_for('libraries.libraries') }}">{{ _('Libraries') }}</a>

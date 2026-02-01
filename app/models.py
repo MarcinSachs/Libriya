@@ -40,6 +40,7 @@ class Library(db.Model):
     books = db.relationship('Book', back_populates='library', lazy=True)
     users = db.relationship('User', secondary=user_libraries, lazy='subquery',
                             back_populates='libraries')
+    loan_overdue_days = db.Column(db.Integer, nullable=False, default=14)
 
     def __str__(self):
         return self.name

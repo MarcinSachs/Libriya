@@ -140,6 +140,7 @@ class UserSettingsForm(FlaskForm):
 
 class LibraryForm(FlaskForm):
     name = StringField(_('Library Name'), validators=[DataRequired()])
+    loan_overdue_days = IntegerField(_('Loan overdue days'), default=14, validators=[DataRequired()])
     submit = SubmitField(_('Submit'), render_kw={"class": "btn btn-primary"})
 
 

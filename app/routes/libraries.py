@@ -16,9 +16,14 @@ bp = Blueprint("libraries", __name__)
 
 @bp.route("/libraries/")
 @login_required
-@role_required('admin')
+@role_required('admin', 'manager')
 def libraries():
-    all_libraries = Library.query.order_by(Library.name).all()
+    if current_user.is_admin:
+        all_libraries = Library.query.order_by(Library.name).all()
+    elif current_user.is_manager:
+        all_libraries = current_user.libraries
+    else:
+        all_libraries = []
     return render_template("libraries.html", libraries=all_libraries, active_page="libraries", parent_page="admin", title=_("Libraries"))
 
 
@@ -28,7 +33,7 @@ def libraries():
 def library_add():
     form = LibraryForm()
     if form.validate_on_submit():
-        new_library = Library(name=form.name.data)
+        new_library = Library(name=form.name.data, loan_overdue_days=form.loan_overdue_days.data)
         db.session.add(new_library)
         db.session.commit()
         flash(LIBRARY_ADDED, "success")
@@ -38,12 +43,17 @@ def library_add():
 
 @bp.route("/libraries/edit/<int:library_id>", methods=['GET', 'POST'])
 @login_required
-@role_required('admin')
+@role_required('admin', 'manager')
 def library_edit(library_id):
     library = Library.query.get_or_404(library_id)
+    # Manager może edytować tylko swoje biblioteki
+    if current_user.is_manager and library not in current_user.libraries:
+        flash(_('You do not have permission to edit this library.'), 'danger')
+        return redirect(url_for('libraries.libraries'))
     form = LibraryForm(obj=library)
     if form.validate_on_submit():
         library.name = form.name.data
+        library.loan_overdue_days = form.loan_overdue_days.data
         db.session.commit()
         flash(LIBRARY_UPDATED, "success")
         return redirect(url_for('libraries.libraries'))
