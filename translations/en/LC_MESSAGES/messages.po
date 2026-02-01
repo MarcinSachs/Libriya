@@ -1653,17 +1653,17 @@ msgstr ""
 
 #: app/utils/messages.py:33
 #, python-format
-msgid "Book '%(title)s' has been added successfully."
+msgid "Book %(title)s has been added successfully."
 msgstr ""
 
 #: app/utils/messages.py:34
 #, python-format
-msgid "Book '%(title)s' has been updated successfully."
+msgid "Book %(title)s has been updated successfully."
 msgstr ""
 
 #: app/utils/messages.py:35
 #, python-format
-msgid "Book '%(title)s' has been deleted successfully."
+msgid "Book %(title)s has been deleted successfully."
 msgstr ""
 
 #: app/utils/messages.py:36
@@ -1676,17 +1676,17 @@ msgstr ""
 
 #: app/utils/messages.py:39
 #, python-format
-msgid "User '%(username)s' has been created successfully."
+msgid "User %(username)s has been created successfully."
 msgstr ""
 
 #: app/utils/messages.py:40
 #, python-format
-msgid "User '%(username)s' has been updated successfully."
+msgid "User %(username)s has been updated successfully."
 msgstr ""
 
 #: app/utils/messages.py:41
 #, python-format
-msgid "User '%(username)s' has been deleted successfully."
+msgid "User %(username)s has been deleted successfully."
 msgstr ""
 
 #: app/utils/messages.py:42 app/utils/messages.py:85
@@ -1913,7 +1913,7 @@ msgstr ""
 
 #: app/utils/messages.py:112
 #, python-format
-msgid "Your reservation for '%(title)s' has been cancelled."
+msgid "Your reservation for %(title)s has been cancelled."
 msgstr ""
 
 #: app/utils/messages.py:113
@@ -2019,5 +2019,26 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Book Cover:"
+#~ msgstr ""
+
+#~ msgid "Book '%(title)s' has been added successfully."
+#~ msgstr ""
+
+#~ msgid "Book '%(title)s' has been updated successfully."
+#~ msgstr ""
+
+#~ msgid "Book '%(title)s' has been deleted successfully."
+#~ msgstr ""
+
+#~ msgid "User '%(username)s' has been created successfully."
+#~ msgstr ""
+
+#~ msgid "User '%(username)s' has been updated successfully."
+#~ msgstr ""
+
+#~ msgid "User '%(username)s' has been deleted successfully."
+#~ msgstr ""
+
+#~ msgid "Your reservation for '%(title)s' has been cancelled."
 #~ msgstr ""
 
