@@ -85,7 +85,8 @@
                         <img src="{{ url_for('static', filename='uploads/' + book.cover) }}"
                             alt="{{ _('Book cover %(title)s', title=book.title) }}">
                         {% else %}
-                        <i class='bx bx-image'></i>
+                        <img src="{{ url_for('static', filename='images/default-book-cover.png') }}"
+                            alt="{{ _('Default book cover') }}">
                         {% endif %}
                     </td>
                     <td>{{ book.title }}</td>
