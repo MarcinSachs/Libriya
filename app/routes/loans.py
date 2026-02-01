@@ -308,7 +308,7 @@ def user_cancel_reservation(loan_id):
 
 @bp.route("/admin/send_overdue_reminder/<int:loan_id>", methods=['POST'])
 @login_required
-@role_required('admin')
+@role_required('admin', 'manager')
 def send_overdue_reminder(loan_id):
     loan = Loan.query.get_or_404(loan_id)
 
