@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-01-30 19:21+0100\n"
-"PO-Revision-Date: 2026-01-31 14:25\n"
+"PO-Revision-Date: 2026-02-01 12:42\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -1650,18 +1650,18 @@ msgstr "Brak wyników."
 
 #: app/utils/messages.py:33
 #, python-format
-msgid "Book '%(title)s' has been added successfully."
-msgstr "Książka '%(title)s' została dodana pomyślnie."
+msgid "Book %(title)s has been added successfully."
+msgstr ""
 
 #: app/utils/messages.py:34
 #, python-format
-msgid "Book '%(title)s' has been updated successfully."
-msgstr "Książka '%(title)s' została pomyślnie zaktualizowana."
+msgid "Book %(title)s has been updated successfully."
+msgstr ""
 
 #: app/utils/messages.py:35
 #, python-format
-msgid "Book '%(title)s' has been deleted successfully."
-msgstr "Książka '%(title)s' została pomyślnie usunięta."
+msgid "Book %(title)s has been deleted successfully."
+msgstr ""
 
 #: app/utils/messages.py:36
 msgid "Book has been reserved successfully. An admin will approve it shortly."
@@ -1673,18 +1673,18 @@ msgstr "Ta książka jest już zarezerwowana przez innego użytkownika."
 
 #: app/utils/messages.py:39
 #, python-format
-msgid "User '%(username)s' has been created successfully."
-msgstr "Użytkownik '%(username)s' został utworzony pomyślnie."
+msgid "User %(username)s has been created successfully."
+msgstr ""
 
 #: app/utils/messages.py:40
 #, python-format
-msgid "User '%(username)s' has been updated successfully."
-msgstr "Użytkownik '%(username)s' został pomyślnie zaktualizowany."
+msgid "User %(username)s has been updated successfully."
+msgstr ""
 
 #: app/utils/messages.py:41
 #, python-format
-msgid "User '%(username)s' has been deleted successfully."
-msgstr "Użytkownik '%(username)s' został pomyślnie usunięty."
+msgid "User %(username)s has been deleted successfully."
+msgstr ""
 
 #: app/utils/messages.py:42 app/utils/messages.py:85
 msgid "You cannot delete your own account."
@@ -1906,8 +1906,8 @@ msgstr "Możesz anulować tylko swoje własne rezerwacje."
 
 #: app/utils/messages.py:112
 #, python-format
-msgid "Your reservation for '%(title)s' has been cancelled."
-msgstr "Twoja rezerwacja '%(title)s' została anulowana."
+msgid "Your reservation for %(title)s has been cancelled."
+msgstr ""
 
 #: app/utils/messages.py:113
 msgid "This reservation cannot be cancelled as it is not in 'pending' status."
