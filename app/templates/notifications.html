@@ -5,6 +5,7 @@
         <h2>{{ _('Your Notifications') }}</h2>
         {% if unread_notifications_count > 0 %}
         <form action="{{ url_for('main.mark_all_notifications_as_read') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <button type="submit" class="btn btn-outline-secondary btn-sm">
                 <i class='bx bx-check-double'></i> {{ _('Mark All as Read') }}
             </button>
@@ -31,17 +32,32 @@
                     </small>
                 {% endif %}
             </div>
-            {% if not notification.is_read %}
-            <form action="{{ url_for('main.mark_notification_as_read', notification_id=notification.id) }}" method="POST"
-                style="display: inline-block; margin-top: 0.5rem;">
-                <button type="submit" class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip"
-                    data-bs-placement="top" title="{{ _('Mark as Read') }}">
+            <div class="d-flex gap-2" style="margin-top: 0.5rem;">
+                {% if notification.type == 'contact_reply' %}
+                    <a href="{{ url_for('main.my_messages', notification_id=notification.id) }}#history-pane" class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('View Messages') }}">
+                        <i class='bx bx-envelope-open'></i>
+                    </a>
+                {% endif %}
+                {% if notification.type == 'contact_message' %}
+                    <a href="{{ url_for('users.contact_messages', notification_id=notification.id) }}" class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('View Messages') }}">
+                        <i class='bx bx-envelope-open'></i>
+                    </a>
+                {% endif %}
+                {% if not notification.is_read %}
+                <form action="{{ url_for('main.mark_notification_as_read', notification_id=notification.id) }}" method="POST"
+                    style="display: inline-block;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="{{ _('Mark as Read') }}">
+                        <i class='bx bx-check'></i>
+                    </button>
+                </form>
+                {% else %}
+                <span class="badge bg-success" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Marked as Read') }}">
                     <i class='bx bx-check'></i>
-                </button>
-            </form>
-            {% else %}
-            <span class="badge bg-secondary" style="margin-top: 0.5rem;">{{ _('Read') }}</span>
-            {% endif %}
+                </span>
+                {% endif %}
+            </div>
         </li>
         {% endfor %}
     </ul>

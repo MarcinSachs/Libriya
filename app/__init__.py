@@ -78,7 +78,38 @@ def create_app(config_class=Config):
 
         return response
 
+    # Register CLI commands
+    register_cli_commands(app)
+
+    # Initialize background scheduler for periodic cleanup
+    from app.utils.scheduler import init_scheduler, shutdown_scheduler
+    init_scheduler(app)
+
+    # Shutdown scheduler on app teardown
+    app.teardown_appcontext(lambda exc=None: shutdown_scheduler())
+
     return app
+
+
+def register_cli_commands(app):
+    """Register Flask CLI commands"""
+    import click
+    from datetime import datetime, timedelta
+
+    @app.cli.command('cleanup-notifications')
+    @click.option('--days', default=30, help='Delete notifications older than X days (default: 30)')
+    def cleanup_notifications(days):
+        """Delete old read notifications to avoid database bloat"""
+        from app.models import Notification
+
+        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        deleted_count = Notification.query.filter(
+            Notification.is_read == True,
+            Notification.timestamp < cutoff_date
+        ).delete()
+
+        db.session.commit()
+        click.echo(f'Deleted {deleted_count} old notifications (older than {days} days)')
 
 
 @login_manager.user_loader

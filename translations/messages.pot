@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-01 15:10+0100\n"
+"POT-Creation-Date: 2026-02-01 21:05+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,10 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
+
+#: app/__init__.py:32
+msgid "Please log in to access this page."
+msgstr ""
 
 #: app/forms.py:20
 msgid "Invalid ISBN format. Must be 10 or 13 digits."
@@ -200,6 +204,22 @@ msgstr ""
 msgid "Username already taken"
 msgstr ""
 
+#: app/forms.py:225
+msgid "Biblioteka"
+msgstr ""
+
+#: app/forms.py:226
+msgid "Temat"
+msgstr ""
+
+#: app/forms.py:227
+msgid "Wiadomość"
+msgstr ""
+
+#: app/forms.py:228 app/templates/contact.html:31
+msgid "Wyślij"
+msgstr ""
+
 #: app/routes/loans.py:317 app/tasks.py:24
 #, python-format
 msgid ""
@@ -212,8 +232,8 @@ msgstr ""
 msgid "Edit Book"
 msgstr ""
 
-#: app/routes/libraries.py:27 app/templates/layout.html:261
-#: app/templates/layout.html:310 app/templates/offline.html:107
+#: app/routes/libraries.py:27 app/templates/layout.html:263
+#: app/templates/layout.html:312 app/templates/offline.html:107
 msgid "Libraries"
 msgstr ""
 
@@ -229,8 +249,8 @@ msgstr ""
 msgid "Edit Library"
 msgstr ""
 
-#: app/routes/loans.py:78 app/templates/layout.html:266
-#: app/templates/layout.html:319 app/templates/offline.html:69
+#: app/routes/loans.py:78 app/templates/layout.html:268
+#: app/templates/layout.html:321 app/templates/offline.html:69
 #: app/templates/offline.html:103
 msgid "Loans"
 msgstr ""
@@ -280,32 +300,69 @@ msgstr ""
 msgid "Cannot send overdue reminder. Loan is not active or not overdue."
 msgstr ""
 
-#: app/routes/main.py:31
+#: app/routes/main.py:60 app/routes/main.py:72
+#, python-format
+msgid "New contact message from library %(library)s"
+msgstr ""
+
+#: app/routes/main.py:78
+msgid "Message has been sent."
+msgstr ""
+
+#: app/routes/main.py:85 app/templates/my_messages.html:4
+msgid "My Messages"
+msgstr ""
+
+#: app/routes/main.py:96
 msgid "Offline"
 msgstr ""
 
-#: app/routes/main.py:106 app/templates/notifications.html:5
+#: app/routes/main.py:171 app/templates/notifications.html:5
 msgid "Your Notifications"
 msgstr ""
 
-#: app/routes/main.py:183
+#: app/routes/main.py:248
 msgid "No data found for this ISBN. Please check the number and try again."
 msgstr ""
 
-#: app/routes/main.py:233 app/routes/main.py:320
+#: app/routes/main.py:298 app/routes/main.py:385
 #: app/templates/book_add.html:554
 msgid "Error during search. Please try again."
 msgstr ""
 
-#: app/routes/main.py:259
+#: app/routes/main.py:324
 msgid "Search query must be at least 3 characters"
 msgstr ""
 
-#: app/routes/main.py:357 app/templates/book_add.html:4
+#: app/routes/main.py:422 app/templates/book_add.html:4
 msgid "Add a new book"
 msgstr ""
 
-#: app/routes/users.py:174
+#: app/routes/users.py:46 app/templates/contact_messages.html:4
+msgid "Contact Messages"
+msgstr ""
+
+#: app/routes/users.py:64
+msgid "Reply cannot be empty"
+msgstr ""
+
+#: app/routes/users.py:77
+msgid "You received a reply to your contact message"
+msgstr ""
+
+#: app/routes/users.py:83
+msgid "Reply sent"
+msgstr ""
+
+#: app/routes/users.py:103
+msgid "Message marked as resolved"
+msgstr ""
+
+#: app/routes/users.py:119
+msgid "Message"
+msgstr ""
+
+#: app/routes/users.py:271
 #, python-format
 msgid "Edit User: %(username)s"
 msgstr ""
@@ -906,6 +963,60 @@ msgstr ""
 msgid "Upload a new cover to replace the current one."
 msgstr ""
 
+#: app/templates/contact.html:4
+msgid "Contact Administration"
+msgstr ""
+
+#: app/templates/contact_messages.html:16 app/templates/view_message.html:12
+msgid "From:"
+msgstr ""
+
+#: app/templates/contact_messages.html:21 app/templates/view_message.html:17
+msgid "Library:"
+msgstr ""
+
+#: app/templates/contact_messages.html:28 app/templates/my_messages.html:79
+#: app/templates/view_message.html:24
+msgid "Resolved"
+msgstr ""
+
+#: app/templates/contact_messages.html:30 app/templates/view_message.html:26
+msgid "Open"
+msgstr ""
+
+#: app/templates/contact_messages.html:37
+msgid "User Message:"
+msgstr ""
+
+#: app/templates/contact_messages.html:45 app/templates/my_messages.html:100
+#: app/templates/view_message.html:43
+msgid "Reply from:"
+msgstr ""
+
+#: app/templates/contact_messages.html:55
+msgid "Reply"
+msgstr ""
+
+#: app/templates/contact_messages.html:60
+msgid "Mark as Resolved"
+msgstr ""
+
+#: app/templates/contact_messages.html:71
+msgid "Your Reply"
+msgstr ""
+
+#: app/templates/contact_messages.html:74
+msgid "Type your reply..."
+msgstr ""
+
+#: app/templates/contact_messages.html:76
+msgid "Send Reply"
+msgstr ""
+
+#: app/templates/contact_messages.html:87
+msgid "No messages."
+msgstr ""
+
 #: app/templates/generate_invitation.html:9
 msgid "Generate Invitation Code"
 msgstr ""
@@ -1021,8 +1132,8 @@ msgstr ""
 msgid "No invitation codes yet."
 msgstr ""
 
-#: app/templates/invitation_codes.html:22 app/templates/layout.html:269
-#: app/templates/layout.html:323
+#: app/templates/invitation_codes.html:22 app/templates/layout.html:271
+#: app/templates/layout.html:325
 msgid "Invitation Codes"
 msgstr ""
 
@@ -1118,32 +1229,36 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: app/templates/layout.html:222
+#: app/templates/layout.html:221 app/templates/layout.html:329
+msgid "Messages"
+msgstr ""
+
+#: app/templates/layout.html:224
 msgid "Logout"
 msgstr ""
 
-#: app/templates/layout.html:227 app/templates/login.html:24
+#: app/templates/layout.html:229 app/templates/login.html:24
 msgid "Log In"
 msgstr ""
 
-#: app/templates/layout.html:233 app/templates/login.html:50
+#: app/templates/layout.html:235 app/templates/login.html:50
 msgid "Language"
 msgstr ""
 
-#: app/templates/layout.html:248 app/templates/layout.html:289
+#: app/templates/layout.html:250 app/templates/layout.html:291
 msgid "Books"
 msgstr ""
 
-#: app/templates/layout.html:256 app/templates/layout.html:301
+#: app/templates/layout.html:258 app/templates/layout.html:303
 msgid "Administration"
 msgstr ""
 
-#: app/templates/layout.html:264 app/templates/layout.html:315
+#: app/templates/layout.html:266 app/templates/layout.html:317
 #: app/templates/users.html:17
 msgid "Users"
 msgstr ""
 
-#: app/templates/layout.html:366
+#: app/templates/layout.html:372
 msgid "Are you sure you want to delete this book?"
 msgstr ""
 
@@ -1291,27 +1406,75 @@ msgstr ""
 msgid "No file selected"
 msgstr ""
 
-#: app/templates/notifications.html:9
+#: app/templates/my_messages.html:12
+msgid "Send Message"
+msgstr ""
+
+#: app/templates/my_messages.html:17
+msgid "Message History"
+msgstr ""
+
+#: app/templates/my_messages.html:54
+msgid "Send"
+msgstr ""
+
+#: app/templates/my_messages.html:72
+msgid "To Library:"
+msgstr ""
+
+#: app/templates/my_messages.html:81
+msgid "Replied"
+msgstr ""
+
+#: app/templates/my_messages.html:83
+msgid "Pending"
+msgstr ""
+
+#: app/templates/my_messages.html:90
+msgid "Your Message:"
+msgstr ""
+
+#: app/templates/my_messages.html:109 app/templates/view_message.html:52
+msgid "Waiting for a response from administration..."
+msgstr ""
+
+#: app/templates/my_messages.html:115
+msgid "Message sent, awaiting response."
+msgstr ""
+
+#: app/templates/my_messages.html:117
+msgid "You have received a reply!"
+msgstr ""
+
+#: app/templates/my_messages.html:126
+msgid "You haven't sent any messages yet."
+msgstr ""
+
+#: app/templates/notifications.html:10
 msgid "Mark All as Read"
 msgstr ""
 
-#: app/templates/notifications.html:28
+#: app/templates/notifications.html:29
 msgid "Related to loan:"
 msgstr ""
 
-#: app/templates/notifications.html:29
+#: app/templates/notifications.html:30
 msgid "by"
 msgstr ""
 
-#: app/templates/notifications.html:38
+#: app/templates/notifications.html:37 app/templates/notifications.html:42
+msgid "View Messages"
+msgstr ""
+
+#: app/templates/notifications.html:51
 msgid "Mark as Read"
 msgstr ""
 
-#: app/templates/notifications.html:43
-msgid "Read"
+#: app/templates/notifications.html:56
+msgid "Marked as Read"
 msgstr ""
 
-#: app/templates/notifications.html:49
+#: app/templates/notifications.html:65
 msgid "No notifications yet."
 msgstr ""
 
@@ -1597,6 +1760,14 @@ msgstr ""
 
 #: app/templates/users.html:51
 msgid "Add user"
+msgstr ""
+
+#: app/templates/view_message.html:33
+msgid "Message:"
+msgstr ""
+
+#: app/templates/view_message.html:58
+msgid "Back to Contact"
 msgstr ""
 
 #: app/utils/decorators.py:14

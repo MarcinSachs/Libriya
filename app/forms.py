@@ -218,3 +218,11 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(username=field.data).first()
         if user:
             raise ValidationError(_('Username already taken'))
+
+
+# Formularz kontaktowy
+class ContactForm(FlaskForm):
+    library = SelectField(_('Biblioteka'), coerce=int, validators=[DataRequired()])
+    subject = StringField(_('Temat'), validators=[DataRequired(), Length(max=200)])
+    message = TextAreaField(_('Wiadomość'), validators=[DataRequired(), Length(max=2000)])
+    submit = SubmitField(_('Wyślij'))
