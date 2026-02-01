@@ -14,3 +14,4 @@ isbnlib
 opencv-python
 easyocr
 Pillow
+APScheduler

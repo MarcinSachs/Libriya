@@ -6,11 +6,12 @@ from flask_babel import _
 
 from app import db
 from app.forms import UserForm, UserEditForm, UserSettingsForm
-from app.models import User, Library, ContactMessage
+from app.models import User, Library, ContactMessage, Notification
 from app.utils import role_required
 from app.utils.audit_log import (
     log_user_created, log_user_deleted, log_user_role_changed
 )
+from datetime import datetime
 from app.utils.messages import (
     USER_ADDED, USER_UPDATED, USER_DELETED, USER_CANNOT_DELETE_SELF,
     USER_CANNOT_DELETE_ADMIN, USER_NO_PERMISSION_EDIT, USER_NOT_IN_LIBRARY,
@@ -27,15 +28,103 @@ bp = Blueprint("users", __name__)
 @login_required
 @role_required('admin', 'manager')
 def contact_messages():
-    # Admin widzi wszystkie, manager tylko z własnych bibliotek lub swoje
+    # Mark notification as read if notification_id is provided
+    notification_id = request.args.get('notification_id', type=int)
+    if notification_id:
+        notification = Notification.query.get(notification_id)
+        if notification and notification.recipient_id == current_user.id:
+            notification.is_read = True
+            db.session.commit()
+
+    # Admin widzi wszystkie, manager tylko z własnych bibliotek
     if current_user.role == 'admin':
         messages = ContactMessage.query.order_by(ContactMessage.created_at.desc()).all()
     else:
-        # Manager widzi tylko swoje i użytkowników z zarządzanych bibliotek
-        user_ids = [u.id for lib in current_user.libraries for u in lib.users]
-        messages = ContactMessage.query.filter(ContactMessage.user_id.in_(
-            user_ids)).order_by(ContactMessage.created_at.desc()).all()
-    return render_template('contact_messages.html', messages=messages, title=_('Wiadomości kontaktowe'))
+        # Manager widzi tylko wiadomości z zarządzanych bibliotek
+        library_ids = [lib.id for lib in current_user.libraries]
+        messages = ContactMessage.query.filter(ContactMessage.library_id.in_(
+            library_ids)).order_by(ContactMessage.created_at.desc()).all()
+
+    # Mark all messages as read by admin
+    for msg in messages:
+        if not msg.read_by_admin:
+            msg.read_by_admin = True
+    db.session.commit()
+
+    return render_template('contact_messages.html', messages=messages, title=_('Contact Messages'))
+
+
+@bp.route('/reply_to_message/<int:message_id>', methods=['POST'])
+@login_required
+@role_required('admin', 'manager')
+def reply_to_message(message_id):
+    message = ContactMessage.query.get_or_404(message_id)
+
+    # Check if admin/manager has permission to reply
+    if current_user.role == 'manager':
+        # Manager can only reply to messages from their libraries
+        if message.library not in current_user.libraries:
+            flash(ERROR_PERMISSION_DENIED, "danger")
+            return redirect(url_for('users.contact_messages'))
+
+    reply_text = request.form.get('reply_message', '').strip()
+    if not reply_text:
+        flash(_('Reply cannot be empty'), "danger")
+        return redirect(url_for('users.contact_messages'))
+
+    message.reply_message = reply_text
+    message.reply_by_id = current_user.id
+    message.replied_at = datetime.utcnow()
+    db.session.commit()
+
+    # Create notification for user who sent the message
+    notification = Notification(
+        recipient_id=message.user_id,
+        sender_id=current_user.id,
+        contact_message_id=message.id,
+        message=_('You received a reply to your contact message'),
+        type='contact_reply'
+    )
+    db.session.add(notification)
+    db.session.commit()
+
+    flash(_('Reply sent'), "success")
+    return redirect(url_for('users.contact_messages'))
+
+
+@bp.route('/mark_message_resolved/<int:message_id>', methods=['GET', 'POST'])
+@login_required
+@role_required('admin', 'manager')
+def mark_message_resolved(message_id):
+    message = ContactMessage.query.get_or_404(message_id)
+
+    # Check if admin/manager has permission
+    if current_user.role == 'manager':
+        # Manager can only mark messages from their libraries as resolved
+        if message.library not in current_user.libraries:
+            flash(ERROR_PERMISSION_DENIED, "danger")
+            return redirect(url_for('users.contact_messages'))
+
+    message.is_resolved = True
+    db.session.commit()
+
+    flash(_('Message marked as resolved'), "success")
+    return redirect(url_for('users.contact_messages'))
+
+
+@bp.route('/view_contact_message/<int:message_id>')
+@login_required
+@role_required('admin', 'manager')
+def view_contact_message(message_id):
+    """View contact message for admin/manager"""
+    message = ContactMessage.query.get_or_404(message_id)
+
+    # Check if admin/manager has permission to view
+    if current_user.role == 'manager' and message.library not in current_user.libraries:
+        flash(ERROR_PERMISSION_DENIED, "danger")
+        return redirect(url_for('users.contact_messages'))
+
+    return render_template('view_message.html', message=message, title=_('Message'))
 
 
 @bp.route("/users/")

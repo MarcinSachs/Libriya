@@ -1,34 +1,91 @@
 {% extends 'layout.html' %}
 {% block content %}
 <div class="container mt-4">
-    <h2>{{ _('Wiadomości kontaktowe') }}</h2>
+    <h2>{{ _('Contact Messages') }}</h2>
+    
     {% if messages %}
-        <table class="table table-bordered table-hover">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Użytkownik</th>
-                    <th>Email</th>
-                    <th>Temat</th>
-                    <th>Wiadomość</th>
-                    <th>Data</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for msg in messages %}
-                <tr>
-                    <td>{{ msg.id }}</td>
-                    <td>{% if msg.user %}{{ msg.user.username }}{% else %}-{% endif %}</td>
-                    <td>{{ msg.email or '-' }}</td>
-                    <td>{{ msg.subject }}</td>
-                    <td>{{ msg.message|e }}</td>
-                    <td>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="row">
+        {% for msg in messages %}
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header {% if not msg.read_by_admin %}bg-info text-white{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="mb-0">{{ msg.subject }}</h5>
+                            <small>
+                                {{ _('From:') }} <strong>{{ msg.user.username }}</strong> 
+                                ({{ msg.user.email }})
+                            </small>
+                            <br>
+                            <small>
+                                {{ _('Library:') }} <strong>{{ msg.library.name }}</strong>
+                            </small>
+                            <br>
+                            <small class="text-muted">{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        <div>
+                            {% if msg.is_resolved %}
+                            <span class="badge bg-success">{{ _('Resolved') }}</span>
+                            {% else %}
+                            <span class="badge bg-warning">{{ _('Open') }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p class="text-muted"><small>{{ _('User Message:') }}</small></p>
+                        <p>{{ msg.message | replace('\n', '<br>') | safe }}</p>
+                    </div>
+                    
+                    {% if msg.reply_message %}
+                    <hr>
+                    <div class="mb-3 bg-light p-3 rounded">
+                        <p class="text-muted"><small>
+                            {{ _('Reply from:') }} <strong>{{ msg.reply_by.username }}</strong> 
+                            - {{ msg.replied_at.strftime('%Y-%m-%d %H:%M') }}
+                        </small></p>
+                        <p>{{ msg.reply_message | replace('\n', '<br>') | safe }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    {% if not msg.reply_message %}
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#reply-{{ msg.id }}">
+                        {{ _('Reply') }}
+                    </button>
+                    {% endif %}
+                    {% if not msg.is_resolved %}
+                    <a href="{{ url_for('users.mark_message_resolved', message_id=msg.id) }}" class="btn btn-sm btn-success">
+                        {{ _('Mark as Resolved') }}
+                    </a>
+                    {% endif %}
+                </div>
+                
+                {% if not msg.reply_message %}
+                <div class="collapse" id="reply-{{ msg.id }}">
+                    <div class="card-body border-top">
+                        <form method="post" action="{{ url_for('users.reply_to_message', message_id=msg.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <div class="mb-3">
+                                <label class="form-label">{{ _('Your Reply') }}</label>
+                                <textarea class="form-control" name="reply_message" rows="6" required 
+                                    style="resize: vertical; min-height: 150px;" 
+                                    placeholder="{{ _('Type your reply...') }}"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">{{ _('Send Reply') }}</button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
     {% else %}
-        <p>{{ _('Brak wiadomości kontaktowych.') }}</p>
+    <div class="alert alert-info">
+        {{ _('No messages.') }}
+    </div>
     {% endif %}
 </div>
 {% endblock %}

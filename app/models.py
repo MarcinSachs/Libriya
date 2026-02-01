@@ -192,12 +192,14 @@ class Notification(db.Model):
     is_read = db.Column(db.Boolean, default=False)
     type = db.Column(db.String(100), nullable=False)
     loan_id = db.Column(db.Integer, db.ForeignKey('loan.id'), nullable=True)
+    contact_message_id = db.Column(db.Integer, db.ForeignKey('contact_message.id'), nullable=True)
 
     recipient = db.relationship(
         'User', foreign_keys=[recipient_id], back_populates='received_notifications')
     sender = db.relationship('User', foreign_keys=[
                              sender_id], back_populates='sent_notifications')
     loan = db.relationship('Loan', back_populates='notifications')
+    contact_message = db.relationship('ContactMessage')
 
     def __str__(self):
         return f"Notification for {self.recipient.username}: {self.message[:50]}..."
@@ -266,7 +268,6 @@ class InvitationCode(db.Model):
         self.used_at = datetime.datetime.utcnow()
         db.session.commit()
 
-
     def __str__(self):
         return f"Code {self.code} for {self.library.name} - {'Active' if self.is_valid() else 'Inactive'}"
 
@@ -275,11 +276,23 @@ class InvitationCode(db.Model):
 class ContactMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    user = db.relationship('User', backref='contact_messages')
-    email = db.Column(db.String(120), nullable=True)
+    user = db.relationship('User', foreign_keys=[user_id], backref='contact_messages')
+    library_id = db.Column(db.Integer, db.ForeignKey('library.id'), nullable=False)
+    library = db.relationship('Library', backref='contact_messages')
     subject = db.Column(db.String(200), nullable=False)
     message = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+    # Odpowiedź
+    reply_message = db.Column(db.Text, nullable=True)
+    reply_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    reply_by = db.relationship('User', foreign_keys=[reply_by_id])
+    replied_at = db.Column(db.DateTime, nullable=True)
+
+    # Status
+    read_by_admin = db.Column(db.Boolean, default=False)
+    is_resolved = db.Column(db.Boolean, default=False)
 
     def __str__(self):
-        return f"ContactMessage from {self.email or self.user_id} at {self.created_at}"
+        return f"ContactMessage from {self.user_id} in library {self.library_id} at {self.created_at}"
