@@ -1,37 +1,162 @@
+
 # Libriya
-![alt text](app/static/images/logo.svg)
+![Libriya logo](app/static/images/logo.svg)
 
-Libriya is a web application for managing a library, built with Flask, SQLAlchemy, and other Python packages.
+Libriya to nowoczesna aplikacja webowa do zarządzania biblioteką, oparta o Flask, SQLAlchemy i szereg zaawansowanych technologii Python oraz frontendowych. Pozwala na wygodne prowadzenie księgozbioru, obsługę wypożyczeń, zarządzanie użytkownikami, powiadomieniami, komentarzami i wiele więcej.
 
-**Please Note: This project is still under development and is not yet feature-complete.**
+**Status projektu:** Aktywnie rozwijany, stabilna wersja produkcyjna z pełnym wsparciem PWA i wielojęzyczności.
 
-[Live Demo](https://marcins.pythonanywhere.com)
+[Demo online](https://marcins.pythonanywhere.com)
 
-## Features (Implemented/Planned)
+## Najważniejsze funkcje
 
-*   **Book Management:** Add, edit, and delete books from the library.
-*   **Book Location Tracking:** Store structured location information (shelf, section, room, notes) for each book.
-*   **Author and Genre Management:** Automatically create and manage authors and genres associated with books.
-*   **User Authentication:** User login, registration with invitation codes, and logout.
-*   **Admin Privileges:** Admin users can manage users, books, and generate invitation codes.
-*   **Book Loans:** Track which books are currently borrowed and by whom.
-*   **User Profiles:** Users can view their loan history.
-*   **User Settings:** Users can edit their profile and settings.
-*   **Internationalization (i18n):** Full support for multiple languages (currently English and Polish).
-*   **ISBN Lookup:** Integration with Biblioteka Narodowa (BN) and OpenLibrary APIs to fetch book data by ISBN.
-*   **ISBN Scanner with OCR:** Mobile camera-based scanner that reads:
-    - Traditional QR/barcode codes
-    - Printed ISBN numbers via optical character recognition (OCR)
-*   **Book Cover Management:** Automatic cover retrieval with intelligent fallback system:
-    - Biblioteka Narodowa (Polish National Library) - primary source for Polish books
-    - Open Library - fallback when primary source lacks cover images
-    - Bookcover API (Goodreads) - secondary fallback
-    - Local caching of external cover images
-*   **MARC Record Support:** Extraction of book metadata from MARC records when top-level fields are incomplete.
-*   **Comments:** Users can add comments to books.
-*   **Favorites:** Users can add books to their favorites list.
-*   **Notifications:**  Users and administrators receive notifications about loan requests, approvals, cancellations, and overdue reminders.
-*   **Audit Logging:** Administrative actions are logged for security and compliance.
+- **Zarządzanie książkami:** Dodawanie, edycja, usuwanie, lokalizacja (półka, sekcja, pokój, notatki)
+- **Automatyczne zarządzanie autorami i gatunkami**
+- **Wyszukiwanie książek po ISBN, tytule, autorze**
+- **Skaner ISBN:** obsługa kodów QR/barcode oraz rozpoznawanie drukowanych numerów ISBN przez OCR (EasyOCR)
+- **Pobieranie okładek:** inteligentny system pobierania i cache’owania okładek z BN, OpenLibrary, Goodreads
+- **Obsługa rekordów MARC**
+- **Komentarze i ulubione książki**
+- **Wypożyczenia:** pełny workflow, historia, powiadomienia o zaległościach
+- **Powiadomienia systemowe i e-mail**
+- **Zaawansowane profile użytkowników, ustawienia, role (user, admin, bibliotekarz)**
+- **Rejestracja przez kody zaproszeń**
+- **Logowanie, edycja profilu, zarządzanie użytkownikami**
+- **Wielojęzyczność (PL/EN, Crowdin)**
+- **PWA:** pełna obsługa offline, instalacja na urządzeniu, cache okładek i metadanych
+- **Log audytowy działań administracyjnych**
+
+## Instalacja i uruchomienie
+
+1. **Klonowanie repozytorium:**
+  ```bash
+  git clone https://github.com/MarcinSachs/Libriya.git
+  cd Libriya
+  ```
+2. **Tworzenie środowiska wirtualnego:**
+  ```bash
+  python -m venv .venv
+  .venv\Scripts\activate  # Windows
+  # source venv/bin/activate  # Linux/macOS
+  ```
+3. **Instalacja zależności:**
+  ```bash
+  pip install -r requirements.txt
+  ```
+4. **Konfiguracja aplikacji:**
+  - Ustaw zmienne środowiskowe (patrz `config.py`). Przykład pliku `.flaskenv`:
+    ```
+    FLASK_APP=libriya.py
+    FLASK_ENV=development
+    SECRET_KEY=twoj_sekret
+    ```
+  - Domyślnie baza SQLite (`libriya.db`). Możesz ustawić `DATABASE_URL` dla innej bazy.
+5. **Inicjalizacja bazy danych:**
+  ```bash
+  flask db init
+  flask db migrate -m "Initial migration"
+  flask db upgrade
+  ```
+6. **Uruchomienie aplikacji:**
+  ```bash
+  flask run
+  ```
+
+## Testy
+
+Aplikacja posiada testy jednostkowe i integracyjne (Pytest):
+```bash
+pytest tests/
+```
+
+## Architektura
+
+- **Backend:** Flask, SQLAlchemy, Alembic, EasyOCR, APScheduler
+- **Frontend:** HTML5, JavaScript, Service Worker, manifest.json, Bootstrap
+- **API:** REST (zarządzanie książkami, wyszukiwanie, OCR, powiadomienia)
+- **PWA:** Service Worker, cache okładek i metadanych, instalacja na urządzeniu, tryb offline
+
+### Przykładowe endpointy API
+
+- `GET /api/v1/isbn/<isbn>` – wyszukiwanie książki po ISBN
+- `POST /api/v1/ocr/isbn` – rozpoznawanie ISBN z obrazu (OCR)
+- `GET /api/books` – lista książek
+- `POST /api/books` – dodanie książki
+- `GET /api/books/<id>` – szczegóły książki
+- `PUT /api/books/<id>` – edycja książki
+- `DELETE /api/books/<id>` – usunięcie książki
+
+## Konfiguracja
+
+Patrz plik `config.py`:
+- `DATABASE_URL` – baza danych
+- `SECRET_KEY` – klucz Flask
+- `UPLOAD_FOLDER` – folder na okładki
+- `MAX_COVER_SIZE` – limit rozmiaru okładki
+- `LANGUAGES` – obsługiwane języki
+
+### OCR
+
+EasyOCR (Python, bez zewnętrznych zależności):
+- automatyczne pobieranie modelu przy pierwszym uruchomieniu (~200MB)
+- działa na Windows, Linux, macOS, serwerach
+
+## Crowdin – tłumaczenia
+
+Projekt korzysta z [Crowdin](https://crowdin.com/) do zarządzania tłumaczeniami i automatycznej synchronizacji z GitHub.
+
+Instrukcja: patrz [CROWDIN_SETUP.md](CROWDIN_SETUP.md)
+
+### Praca z tłumaczeniami
+1. Ekstrakcja nowych fraz:
+  ```bash
+  pybabel extract -F babel.cfg -o translations/messages.pot .
+  ```
+2. Aktualizacja tłumaczeń:
+  ```bash
+  pybabel update -i translations/messages.pot -d translations
+  ```
+3. Kompilacja tłumaczeń:
+  ```bash
+  python compile_translations.py
+  # lub
+  pybabel compile -d translations
+  ```
+
+## PWA – Progressive Web App
+
+- Pełna obsługa offline: cache okładek, metadanych, manifest.json
+- Instalacja na urządzeniu (Android/iOS/Desktop)
+- Service Worker: cache-first dla miniatur, network-first dla pełnych okładek
+- Automatyczne czyszczenie starych cache
+- Powiadomienia o statusie online/offline
+- Szybkie ładowanie (miniatury 40KB, pełne okładki 200KB)
+- Limit lokalnego storage: 17MB (250+ miniatur, 25 pełnych okładek)
+
+## Roadmap
+
+- [x] PWA – pełna obsługa offline
+- [x] Skaner ISBN z OCR
+- [x] Powiadomienia systemowe
+- [x] Komentarze i ulubione
+- [x] Crowdin – tłumaczenia
+- [ ] Zaawansowane filtry wyszukiwania
+- [ ] System rekomendacji książek
+- [ ] Zarządzanie karami
+- [ ] Archiwizacja książek
+- [ ] Rozszerzenie obsługi języków
+- [ ] Optymalizacja dla dużych bibliotek
+
+## Wkład i rozwój
+
+Chcesz pomóc? Forkuj repozytorium i wyślij Pull Request. Każdy wkład mile widziany!
+
+## Zasoby
+
+- [MDN - Progressive Web Apps](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
+- [MDN - Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
+- [Web App Manifest Spec](https://developer.mozilla.org/en-US/docs/Web/Manifest)
+- [Offline Web Applications](https://www.w3.org/TR/offline-web-apps/)
 
 ## Setup
 

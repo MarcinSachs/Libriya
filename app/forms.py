@@ -222,7 +222,7 @@ class RegistrationForm(FlaskForm):
 
 # Formularz kontaktowy
 class ContactForm(FlaskForm):
-    library = SelectField(_('Biblioteka'), coerce=int, validators=[DataRequired()])
-    subject = StringField(_('Temat'), validators=[DataRequired(), Length(max=200)])
-    message = TextAreaField(_('Wiadomość'), validators=[DataRequired(), Length(max=2000)])
-    submit = SubmitField(_('Wyślij'))
+    library = SelectField(_('Library'), coerce=int, validators=[DataRequired()])
+    subject = StringField(_('Subject'), validators=[DataRequired(), Length(max=200)])
+    message = TextAreaField(_('Message'), validators=[DataRequired(), Length(max=2000)])
+    submit = SubmitField(_('Send'))
