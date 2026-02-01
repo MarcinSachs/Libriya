@@ -30,15 +30,15 @@ INFO_LANGUAGE_CHANGED_PL = "Język zmieniony na polski."
 INFO_LANGUAGE_CHANGED_EN = "Language changed to English."
 
 # Specific messages
-BOOK_ADDED = _("Book '%(title)s' has been added successfully.")
-BOOK_UPDATED = _("Book '%(title)s' has been updated successfully.")
-BOOK_DELETED = _("Book '%(title)s' has been deleted successfully.")
+BOOK_ADDED = _("Book %(title)s has been added successfully.")
+BOOK_UPDATED = _("Book %(title)s has been updated successfully.")
+BOOK_DELETED = _("Book %(title)s has been deleted successfully.")
 BOOK_RESERVED = _("Book has been reserved successfully. An admin will approve it shortly.")
 BOOK_ALREADY_RESERVED = _("This book is already reserved by another user.")
 
-USER_ADDED = _("User '%(username)s' has been created successfully.")
-USER_UPDATED = _("User '%(username)s' has been updated successfully.")
-USER_DELETED = _("User '%(username)s' has been deleted successfully.")
+USER_ADDED = _("User %(username)s has been created successfully.")
+USER_UPDATED = _("User %(username)s has been updated successfully.")
+USER_DELETED = _("User %(username)s has been deleted successfully.")
 USER_CANNOT_DELETE_SELF = _("You cannot delete your own account.")
 USER_CANNOT_DELETE_ADMIN = _("You cannot delete an administrator.")
 USER_NO_PERMISSION_EDIT = _("You do not have permission to edit this user.")
@@ -109,7 +109,7 @@ LOANS_ADDED_SUCCESS = _("Loan added successfully!")
 LOANS_BOOK_UNAVAILABLE = _("This book is currently on loan or reserved.")
 LOANS_INVALID_BOOK_USER = _("Invalid book or user.")
 LOANS_CAN_ONLY_CANCEL_OWN = _("You can only cancel your own reservations.")
-LOANS_USER_RESERVATION_CANCELLED = _("Your reservation for '%(title)s' has been cancelled.")
+LOANS_USER_RESERVATION_CANCELLED = _("Your reservation for %(title)s has been cancelled.")
 LOANS_CANNOT_CANCEL_NOT_PENDING = _("This reservation cannot be cancelled as it is not in 'pending' status.")
 
 # Library management messages

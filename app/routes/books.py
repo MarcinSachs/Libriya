@@ -176,7 +176,7 @@ def book_add():
             db.session.add(location)
             db.session.commit()
 
-        flash(BOOK_ADDED, "success")
+        flash(BOOK_ADDED % {'title': new_book.title}, "success")
         return redirect(url_for("main.home"))
 
     return render_template("book_add.html", form=form)
@@ -215,7 +215,7 @@ def book_delete(book_id):
 
     db.session.delete(book)
     db.session.commit()
-    flash(BOOK_DELETED, "success")
+    flash(BOOK_DELETED % {'title': book.title}, "success")
     return redirect(url_for("main.home"))
 
 
@@ -314,7 +314,7 @@ def book_edit(book_id):
             db.session.delete(book.location)
 
         db.session.commit()
-        flash(BOOK_UPDATED, "success")
+        flash(BOOK_UPDATED % {'title': book.title}, "success")
         return redirect(url_for("main.home"))
 
     # Render template for GET request or form validation error
