@@ -1,34 +1,32 @@
-
 msgid ""
 msgstr ""
-"Project-Id-Version:  libriya\n"
+"Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-30 19:21+0100\n"
-"PO-Revision-Date: 2026-02-01 12:45\n"
+"POT-Creation-Date: 2026-02-01 15:10+0100\n"
+"PO-Revision-Date: 2026-02-01 14:15\n"
 "Last-Translator: \n"
-"Language: pl_PL\n"
 "Language-Team: Polish\n"
-"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && "
-"(n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
-"n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
-
-#: app/__init__.py:32
-msgid "Please log in to access this page."
-msgstr "Zaloguj się, aby uzyskać dostęp do tej strony."
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
+"X-Crowdin-Project: libriya\n"
+"X-Crowdin-Project-ID: 866606\n"
+"X-Crowdin-Language: pl\n"
+"X-Crowdin-File: /main/translations/messages.pot\n"
+"X-Crowdin-File-ID: 5\n"
+"Language: pl_PL\n"
 
 #: app/forms.py:20
 msgid "Invalid ISBN format. Must be 10 or 13 digits."
 msgstr "Nieprawidłowy format ISBN. Musi mieć 10 lub 13 cyfr."
 
-#: app/forms.py:39 app/templates/book_detail.html:34
+#: app/forms.py:39 app/templates/book_detail.html:35
 msgid "ISBN"
 msgstr "ISBN"
 
-#: app/forms.py:42 app/templates/book_detail.html:18
+#: app/forms.py:42 app/templates/book_detail.html:19
 #: app/templates/index.html:22 app/templates/index.html:70
 msgid "Title"
 msgstr "Tytuł"
@@ -42,11 +40,11 @@ msgstr "Autor(-zy) (oddzielone przecinkami)"
 msgid "Library"
 msgstr "Biblioteka"
 
-#: app/forms.py:53 app/templates/book_detail.html:24
+#: app/forms.py:53 app/templates/book_detail.html:25
 msgid "Genres"
 msgstr "Gatunki"
 
-#: app/forms.py:58 app/templates/book_detail.html:33
+#: app/forms.py:58 app/templates/book_detail.html:34
 #: app/templates/index.html:73
 msgid "Year"
 msgstr "Rok"
@@ -67,149 +65,166 @@ msgstr "Okładka"
 msgid "Only image files (jpg, png, jpeg) are allowed!"
 msgstr "Dozwolone są tylko pliki obrazów (jpg, png, jpeg)!"
 
-#: app/forms.py:79 app/templates/book_detail.html:54
+#: app/forms.py:78
+msgid "Cover URL"
+msgstr "Adres URL okładki"
+
+#: app/forms.py:81 app/templates/book_detail.html:55
 msgid "Shelf"
 msgstr "Półka"
 
-#: app/forms.py:80
+#: app/forms.py:82
 msgid "Section"
 msgstr "Sekcja"
 
-#: app/forms.py:81
+#: app/forms.py:83
 msgid "Room"
 msgstr "Pokój"
 
-#: app/forms.py:82
+#: app/forms.py:84
 msgid "Location Notes"
 msgstr "Notatki lokalizacji"
 
-#: app/forms.py:84 app/forms.py:119 app/forms.py:135 app/forms.py:141
-#: app/forms.py:156
+#: app/forms.py:86 app/forms.py:121 app/forms.py:137 app/forms.py:144
+#: app/forms.py:159
 msgid "Submit"
 msgstr "Zatwierdź"
 
-#: app/forms.py:102 app/forms.py:112 app/forms.py:180
+#: app/forms.py:104 app/forms.py:114 app/forms.py:183
 #: app/templates/users.html:22
 msgid "Username"
 msgstr "Nazwa Użytkownika"
 
-#: app/forms.py:103 app/forms.py:113 app/forms.py:124 app/forms.py:176
+#: app/forms.py:105 app/forms.py:115 app/forms.py:126 app/forms.py:179
 #: app/templates/users.html:23
 msgid "Email"
 msgstr "E-mail"
 
-#: app/forms.py:104
+#: app/forms.py:106
 msgid "user@example.com"
 msgstr "użytkownik@przyklad.com"
 
-#: app/forms.py:105 app/forms.py:192
+#: app/forms.py:107 app/forms.py:195
 msgid "Password"
 msgstr "Hasło"
 
-#: app/forms.py:106 app/forms.py:196
+#: app/forms.py:108 app/forms.py:199
 msgid "Confirm Password"
 msgstr "Potwierdź hasło"
 
-#: app/forms.py:108
+#: app/forms.py:110
 msgid "Add User"
 msgstr "Dodaj użytkownika"
 
-#: app/forms.py:114 app/templates/users.html:24
+#: app/forms.py:116 app/templates/users.html:24
 msgid "Role"
 msgstr "Rola"
 
-#: app/forms.py:125
+#: app/forms.py:127
 msgid "Update Profile Picture"
 msgstr "Zmień Zdjęcie Profilowe"
 
-#: app/forms.py:126
+#: app/forms.py:128
 msgid "Images only!"
 msgstr "Tylko zdjęcia!"
 
-#: app/forms.py:128
+#: app/forms.py:130
 msgid "File size must be less than 2MB."
 msgstr "Rozmiar pliku musi być mniejszy niż 2MB."
 
-#: app/forms.py:130
+#: app/forms.py:132
 msgid "New Password"
 msgstr "Nowe Hasło"
 
-#: app/forms.py:132
+#: app/forms.py:134
 msgid "Confirm New Password"
 msgstr "Potwierdź Nowe Hasło"
 
-#: app/forms.py:133
+#: app/forms.py:135
 msgid "Passwords must match."
 msgstr "Hasła muszą się zgadzać."
 
-#: app/forms.py:140
+#: app/forms.py:142
 msgid "Library Name"
 msgstr "Nazwa biblioteki"
 
-#: app/forms.py:146
+#: app/forms.py:143 app/templates/library_form.html:15
+msgid "Loan overdue days"
+msgstr "Dni opóźnienia wypożyczenia"
+
+#: app/forms.py:149
 msgid "Book"
 msgstr "Książka"
 
-#: app/forms.py:151 app/templates/loans.html:34 app/templates/loans.html:55
+#: app/forms.py:154 app/templates/loans.html:34 app/templates/loans.html:55
 msgid "User"
 msgstr "Użytkownik"
 
-#: app/forms.py:163 app/templates/book_detail.html:95
-#: app/templates/book_detail.html:101
+#: app/forms.py:166 app/templates/book_detail.html:96
+#: app/templates/book_detail.html:102
 msgid "Your Comment"
 msgstr "Twój Komentarz"
 
-#: app/forms.py:167 app/templates/book_detail.html:131
+#: app/forms.py:170 app/templates/book_detail.html:132
 msgid "Add Comment"
 msgstr "Dodaj Komentarz"
 
-#: app/forms.py:172
+#: app/forms.py:175
 msgid "Invitation Code"
 msgstr "Kod Zaproszenia"
 
-#: app/forms.py:184
+#: app/forms.py:187
 msgid "First Name"
 msgstr "Imię"
 
-#: app/forms.py:188
+#: app/forms.py:191
 msgid "Last Name"
 msgstr "Nazwisko"
 
-#: app/forms.py:199 app/templates/register.html:9
+#: app/forms.py:202 app/templates/register.html:9
 msgid "Register"
 msgstr "Zarejestruj"
 
-#: app/forms.py:205
+#: app/forms.py:208
 msgid "Invalid invitation code"
 msgstr "Nieprawidłowy kod zaproszenia"
 
-#: app/forms.py:207
+#: app/forms.py:210
 msgid "Invitation code has expired or has already been used"
 msgstr "Kod zaproszenia wygasł lub został już użyty"
 
-#: app/forms.py:212
+#: app/forms.py:215
 msgid "Email already registered"
 msgstr "Adres e-mail jest już zarejestrowany"
 
-#: app/forms.py:217
+#: app/forms.py:220
 msgid "Username already taken"
 msgstr "Nazwa użytkownika jest zajęta"
 
-#: app/routes/books.py:347 app/templates/book_detail.html:82
-#: app/templates/index.html:137
+#: app/routes/loans.py:317 app/tasks.py:24
+#, python-format
+msgid "Reminder: Your loan for \"%(title)s\" is overdue. Please return it as soon as possible."
+msgstr "Przypomnienie: Twoja książka \"%(title)s\" jest zaległa. Prosimy zwrócić ją tak szybko, jak to możliwe."
+
+#: app/routes/books.py:321 app/templates/book_detail.html:83
+#: app/templates/index.html:138
 msgid "Edit Book"
 msgstr "Edytuj Książkę"
 
-#: app/routes/libraries.py:22 app/templates/layout.html:261
+#: app/routes/libraries.py:27 app/templates/layout.html:261
 #: app/templates/layout.html:310 app/templates/offline.html:107
 msgid "Libraries"
 msgstr "Biblioteki"
 
-#: app/routes/libraries.py:36 app/templates/libraries.html:6
+#: app/routes/libraries.py:41 app/templates/libraries.html:6
 msgid "Add Library"
 msgstr "Dodaj Bibliotekę"
 
-#: app/routes/libraries.py:50
+#: app/routes/libraries.py:51
+msgid "You do not have permission to edit this library."
+msgstr "Nie masz uprawnień do edycji tej biblioteki."
+
+#: app/routes/libraries.py:60
 msgid "Edit Library"
 msgstr "Edytuj Bibliotekę"
 
@@ -245,9 +260,7 @@ msgstr "Książka \"%(title)s\", którą pożyczyłeś została oznaczona jako z
 
 #: app/routes/loans.py:266
 #, python-format
-msgid ""
-"A loan for \"%(title)s\" has been directly issued to you by an "
-"administrator."
+msgid "A loan for \"%(title)s\" has been directly issued to you by an administrator."
 msgstr "Wypożyczenie \"%(title)s\" zostało udzielone przez administratora."
 
 #: app/routes/loans.py:297
@@ -255,27 +268,14 @@ msgstr "Wypożyczenie \"%(title)s\" zostało udzielone przez administratora."
 msgid "%(username)s has cancelled their reservation for \"%(title)s\"."
 msgstr "%(username)s anulował rezerwację na \"%(title)s\"."
 
-#: app/routes/loans.py:316
-#, python-format
-msgid ""
-"Reminder: Your loan for \"%(title)s\" is overdue. Please return it as "
-"soon as possible."
-msgstr ""
-"Przypomnienie: Twoja książka \"%(title)s\" jest zaległa. Prosimy zwrócić "
-"ją tak szybko, jak to możliwe."
-
-#: app/routes/loans.py:320
+#: app/routes/loans.py:321
 #, python-format
 msgid "Overdue reminder sent to %(username)s for book \"%(title)s\"."
-msgstr ""
-"Przypomnienie o przeterminowaniu wysłane do %(username)s dla książki "
-"\"%(title)s\"."
+msgstr "Przypomnienie o przeterminowaniu wysłane do %(username)s dla książki \"%(title)s\"."
 
-#: app/routes/loans.py:324
+#: app/routes/loans.py:325
 msgid "Cannot send overdue reminder. Loan is not active or not overdue."
-msgstr ""
-"Nie można wysłać przypomnienia o zaległości. Wypożyczenie nie jest "
-"aktywne lub nie jest przeterminowane."
+msgstr "Nie można wysłać przypomnienia o zaległości. Wypożyczenie nie jest aktywne lub nie jest przeterminowane."
 
 #: app/routes/main.py:31
 msgid "Offline"
@@ -287,12 +287,10 @@ msgstr "Twoje powiadomienia"
 
 #: app/routes/main.py:183
 msgid "No data found for this ISBN. Please check the number and try again."
-msgstr ""
-"Nie znaleziono danych dla tego ISBN. Proszę sprawdzić numer i spróbować "
-"ponownie."
+msgstr "Nie znaleziono danych dla tego ISBN. Proszę sprawdzić numer i spróbować ponownie."
 
 #: app/routes/main.py:233 app/routes/main.py:320
-#: app/templates/book_add.html:546
+#: app/templates/book_add.html:554
 msgid "Error during search. Please try again."
 msgstr "Błąd podczas wyszukiwania. Spróbuj ponownie."
 
@@ -674,7 +672,7 @@ msgid "Enter ISBN or scan..."
 msgstr "Wprowadź ISBN lub skanuj..."
 
 #: app/templates/book_add.html:33 app/templates/book_add.html:51
-#: app/templates/book_add.html:429 app/templates/offline.html:81
+#: app/templates/book_add.html:439 app/templates/offline.html:81
 msgid "Search"
 msgstr "Szukaj"
 
@@ -715,174 +713,172 @@ msgstr "Przytrzymaj Ctrl (lub Cmd na Mac), aby wybrać kilka gatunków."
 msgid "Book Cover"
 msgstr "Okładka książki"
 
-#: app/templates/book_add.html:90
+#: app/templates/book_add.html:95
 msgid "Supported formats: JPG, PNG, JPEG (Max 5MB)"
 msgstr "Obsługiwane formaty: JPG, PNG, JPEG (Max 5MB)"
 
-#: app/templates/book_add.html:97 app/templates/book_edit.html:41
+#: app/templates/book_add.html:102 app/templates/book_edit.html:41
 msgid "Location Information"
 msgstr "Informacje o lokalizacji"
 
-#: app/templates/book_add.html:97 app/templates/book_edit.html:41
+#: app/templates/book_add.html:102 app/templates/book_edit.html:41
 msgid "Optional"
 msgstr "Opcjonalnie"
 
-#: app/templates/book_add.html:102 app/templates/book_edit.html:46
+#: app/templates/book_add.html:107 app/templates/book_edit.html:46
 msgid "e.g., A, B-1"
 msgstr "np. A, B-1"
 
-#: app/templates/book_add.html:105 app/templates/book_edit.html:49
+#: app/templates/book_add.html:110 app/templates/book_edit.html:49
 msgid "e.g., Fiction, Science"
 msgstr "np. Fikcja, Nauka"
 
-#: app/templates/book_add.html:110 app/templates/book_edit.html:54
+#: app/templates/book_add.html:115 app/templates/book_edit.html:54
 msgid "e.g., Main Hall, Room 2"
 msgstr "np. Główna Sala, Pokój 2"
 
-#: app/templates/book_add.html:113 app/templates/book_edit.html:57
+#: app/templates/book_add.html:118 app/templates/book_edit.html:57
 msgid "e.g., Top shelf, Near window"
 msgstr "np. Półka górna, blisko okna"
 
-#: app/templates/book_add.html:122
+#: app/templates/book_add.html:127
 msgid "Save"
 msgstr "Zapisz"
 
-#: app/templates/book_add.html:127
+#: app/templates/book_add.html:132
 msgid "Add Book"
 msgstr "Dodaj książkę"
 
-#: app/templates/book_add.html:129 app/templates/generate_invitation.html:39
+#: app/templates/book_add.html:134 app/templates/generate_invitation.html:39
 #: app/templates/macros.html:113 app/templates/user_settings.html:43
 msgid "Cancel"
 msgstr "Anuluj"
 
-#: app/templates/book_add.html:280
+#: app/templates/book_add.html:291
 msgid "Could not access camera. Please check permissions."
 msgstr "Nie można uzyskać dostępu do aparatu. Proszę sprawdzić uprawnienia."
 
-#: app/templates/book_add.html:370
+#: app/templates/book_add.html:381
 msgid "Please enter an ISBN."
 msgstr "Proszę wprowadzić ISBN."
 
-#: app/templates/book_add.html:377 app/templates/book_add.html:449
+#: app/templates/book_add.html:388 app/templates/book_add.html:459
 msgid "Searching..."
 msgstr "Wyszukiwanie..."
 
-#: app/templates/book_add.html:395
+#: app/templates/book_add.html:406
 msgid "Polish National Library - Combined Catalogs"
 msgstr "Biblioteka Narodowa – Katalogi połączone"
 
-#: app/templates/book_add.html:396
+#: app/templates/book_add.html:407
 msgid "Polish National Library"
 msgstr "Biblioteka Narodowa"
 
-#: app/templates/book_add.html:397
+#: app/templates/book_add.html:408
 msgid "Open Library"
 msgstr "Open Library"
 
-#: app/templates/book_add.html:399
+#: app/templates/book_add.html:410
 msgid "Unknown Source"
 msgstr "Nieznane Źródło"
 
-#: app/templates/book_add.html:408
+#: app/templates/book_add.html:419
 msgid "Data from:"
 msgstr "Dane z:"
 
-#: app/templates/book_add.html:408
+#: app/templates/book_add.html:419
 msgid "Cover:"
 msgstr "Okładka:"
 
-#: app/templates/book_add.html:408
+#: app/templates/book_add.html:419
 msgid "Local Default"
 msgstr "Domyślna"
 
-#: app/templates/book_add.html:425
+#: app/templates/book_add.html:435
 msgid "Could not find data for ISBN. Please check the number and try again."
-msgstr ""
-"Nie można znaleźć danych dla ISBN. Proszę sprawdzić numer i spróbować "
-"ponownie."
+msgstr "Nie można znaleźć danych dla ISBN. Proszę sprawdzić numer i spróbować ponownie."
 
-#: app/templates/book_add.html:444
+#: app/templates/book_add.html:454
 msgid "Please enter at least 3 characters."
 msgstr "Proszę wpisać co najmniej 3 znaki."
 
-#: app/templates/book_add.html:461
+#: app/templates/book_add.html:471
 msgid "No books found."
 msgstr "Nie znaleziono książek."
 
-#: app/templates/book_add.html:477
+#: app/templates/book_add.html:487
 msgid "Unknown"
 msgstr "Nieznany"
 
-#: app/templates/book_detail.html:13
+#: app/templates/book_detail.html:14 app/templates/index.html:89
 msgid "Default book cover"
 msgstr "Domyślna okładka książki"
 
-#: app/templates/book_detail.html:19
+#: app/templates/book_detail.html:20
 msgid "Author(s)"
 msgstr "Autor(rzy)"
 
-#: app/templates/book_detail.html:30
+#: app/templates/book_detail.html:31
 msgid "No genres assigned"
 msgstr "Brak przypisanych gatunków"
 
-#: app/templates/book_detail.html:35 app/templates/index.html:27
+#: app/templates/book_detail.html:36 app/templates/index.html:27
 #: app/templates/index.html:75 app/templates/invitation_codes.html:41
 #: app/templates/loans.html:59 app/templates/user_profile.html:51
 #: app/templates/user_profile.html:120
 msgid "Status"
 msgstr "Status"
 
-#: app/templates/book_detail.html:37 app/templates/index.html:31
-#: app/templates/index.html:106
+#: app/templates/book_detail.html:38 app/templates/index.html:31
+#: app/templates/index.html:107
 msgid "Available"
 msgstr "Dostępna"
 
-#: app/templates/book_detail.html:39 app/templates/index.html:108
+#: app/templates/book_detail.html:40 app/templates/index.html:109
 msgid "Reserved"
 msgstr "Zarezerwowana"
 
-#: app/templates/book_detail.html:41 app/templates/index.html:110
+#: app/templates/book_detail.html:42 app/templates/index.html:111
 msgid "On Loan"
 msgstr "Wypożyczona"
 
-#: app/templates/book_detail.html:48
+#: app/templates/book_detail.html:49
 msgid "Location"
 msgstr "Lokalizacja"
 
-#: app/templates/book_detail.html:66 app/templates/index.html:127
+#: app/templates/book_detail.html:67 app/templates/index.html:128
 msgid "Request Reservation"
 msgstr "Prośba o rezerwację"
 
-#: app/templates/book_detail.html:70 app/templates/index.html:131
+#: app/templates/book_detail.html:71 app/templates/index.html:132
 msgid "Book not available for reservation"
 msgstr "Książka niedostępna do rezerwacji"
 
-#: app/templates/book_detail.html:75
+#: app/templates/book_detail.html:76
 msgid "Back to List"
 msgstr "Wróć do listy"
 
-#: app/templates/book_detail.html:85 app/templates/index.html:141
+#: app/templates/book_detail.html:86 app/templates/index.html:142
 msgid "Delete Book"
 msgstr "Usuń książkę"
 
-#: app/templates/book_detail.html:108
+#: app/templates/book_detail.html:109
 msgid "You have not added a comment for this book yet."
 msgstr "Nie dodałeś jeszcze komentarza do tej książki."
 
-#: app/templates/book_detail.html:113
+#: app/templates/book_detail.html:114
 msgid "Edit Your Comment"
 msgstr "Edytuj swój komentarz"
 
-#: app/templates/book_detail.html:115
+#: app/templates/book_detail.html:116
 msgid "Add Your Comment"
 msgstr "Dodaj komentarz"
 
-#: app/templates/book_detail.html:122
+#: app/templates/book_detail.html:123
 msgid "Enter your comment here..."
 msgstr "Wpisz tutaj swój komentarz..."
 
-#: app/templates/book_detail.html:131
+#: app/templates/book_detail.html:132
 msgid "Update Comment"
 msgstr "Zaktualizuj komentarz"
 
@@ -924,12 +920,8 @@ msgid "Code will expire after this many days"
 msgstr "Kod wygaśnie po tej liczbie dni"
 
 #: app/templates/generate_invitation.html:31
-msgid ""
-"This code will be valid for ONE registration only. Once used, it cannot "
-"be reused."
-msgstr ""
-"Ten kod będzie ważny tylko dla JEDNEJ rejestracji. Po użyciu nie może być"
-" ponownie użyty."
+msgid "This code will be valid for ONE registration only. Once used, it cannot be reused."
+msgstr "Ten kod będzie ważny tylko dla JEDNEJ rejestracji. Po użyciu nie może być ponownie użyty."
 
 #: app/templates/generate_invitation.html:36
 msgid "Generate Code"
@@ -958,8 +950,7 @@ msgid "All"
 msgstr "Wszystkie"
 
 #: app/templates/index.html:32
-msgid ""
-"On\n"
+msgid "On\n"
 "                        Loan/Reserved"
 msgstr "Wypożyczone/zarezerwowane"
 
@@ -1010,15 +1001,15 @@ msgstr "Akcje"
 msgid "Book cover %(title)s"
 msgstr "Okładka książki %(title)s"
 
-#: app/templates/index.html:99
+#: app/templates/index.html:100
 msgid "No genres"
 msgstr "Brak gatunków"
 
-#: app/templates/index.html:120
+#: app/templates/index.html:121
 msgid "Add to favorites"
 msgstr "Dodaj do ulubionych"
 
-#: app/templates/index.html:151
+#: app/templates/index.html:152
 msgid "Add book"
 msgstr "Dodaj książkę"
 
@@ -1194,11 +1185,9 @@ msgid "Pending Approval"
 msgstr "Oczekujące zatwierdzenie"
 
 #: app/templates/loans.html:25
-msgid ""
-"Active\n"
+msgid "Active\n"
 "                        Loan"
-msgstr ""
-"Aktywne\n"
+msgstr "Aktywne\n"
 "                        Wypożyczenie"
 
 #: app/templates/loans.html:28 app/templates/loans.html:89
@@ -1392,9 +1381,7 @@ msgstr "Strona główna"
 
 #: app/templates/offline.html:119
 msgid "Connection will be restored automatically. You can also try below."
-msgstr ""
-"Połączenie zostanie przywrócone automatycznie. Możesz też spróbować "
-"poniżej."
+msgstr "Połączenie zostanie przywrócone automatycznie. Możesz też spróbować poniżej."
 
 #: app/templates/offline.html:122
 msgid "Refresh page"
@@ -1545,35 +1532,43 @@ msgstr "Strony szczegółów"
 msgid "Estimated total"
 msgstr "Szacowany rozmiar"
 
-#: app/templates/user_settings.html:104
+#: app/templates/user_settings.html:91
+msgid "Actual size"
+msgstr "Aktualny rozmiar"
+
+#: app/templates/user_settings.html:119
 msgid "Last download"
 msgstr "Ostatnie pobranie"
 
-#: app/templates/user_settings.html:105 app/templates/user_settings.html:125
+#: app/templates/user_settings.html:120 app/templates/user_settings.html:156
 msgid "books"
 msgstr "książek"
 
-#: app/templates/user_settings.html:105 app/templates/user_settings.html:125
+#: app/templates/user_settings.html:120 app/templates/user_settings.html:156
 msgid "covers"
 msgstr "okładek"
 
-#: app/templates/user_settings.html:107 app/templates/user_settings.html:139
+#: app/templates/user_settings.html:122 app/templates/user_settings.html:177
 msgid "Not downloaded yet"
 msgstr "Jeszcze nie pobrano"
 
-#: app/templates/user_settings.html:117
+#: app/templates/user_settings.html:134
+msgid "Error"
+msgstr "Błąd"
+
+#: app/templates/user_settings.html:148
 msgid "Downloading..."
 msgstr "Pobieranie..."
 
-#: app/templates/user_settings.html:124
+#: app/templates/user_settings.html:155
 msgid "Download complete!"
 msgstr "Pobieranie zakończone!"
 
-#: app/templates/user_settings.html:136
+#: app/templates/user_settings.html:174
 msgid "Are you sure you want to clear offline data?"
 msgstr "Czy na pewno chcesz wyczyścić dane offline?"
 
-#: app/templates/user_settings.html:140
+#: app/templates/user_settings.html:178
 msgid "Cache cleared"
 msgstr "Cache wyczyszczony"
 
@@ -1686,9 +1681,7 @@ msgstr "Książka %(title)s została pomyślnie usunięta."
 
 #: app/utils/messages.py:36
 msgid "Book has been reserved successfully. An admin will approve it shortly."
-msgstr ""
-"Książka została pomyślnie zarezerwowana. Administrator zatwierdzi ją "
-"wkrótce."
+msgstr "Książka została pomyślnie zarezerwowana. Administrator zatwierdzi ją wkrótce."
 
 #: app/utils/messages.py:37 app/utils/messages.py:94
 msgid "This book is already reserved by another user."
@@ -1808,12 +1801,8 @@ msgstr "Książka nie jest w ulubionych."
 
 #: app/utils/messages.py:75
 #, python-format
-msgid ""
-"Cannot delete \"%(title)s\" because it is currently \"%(status)s\". "
-"Consider marking it as inactive instead."
-msgstr ""
-"Nie można usunąć \"%(title)s\", ponieważ jest ona obecnie \"%(status)s\"."
-" Zamiast tego należy uznać go za nieaktywny."
+msgid "Cannot delete \"%(title)s\" because it is currently \"%(status)s\". Consider marking it as inactive instead."
+msgstr "Nie można usunąć \"%(title)s\", ponieważ jest ona obecnie \"%(status)s\". Zamiast tego należy uznać go za nieaktywny."
 
 #: app/utils/messages.py:76
 msgid "You can only edit books within your libraries."
@@ -1862,9 +1851,7 @@ msgstr "Nieprawidłowy identyfikator użytkownika do filtrowania."
 
 #: app/utils/messages.py:93
 msgid "Book has been reserved successfully! An admin will approve it shortly."
-msgstr ""
-"Książka została zarezerwowana pomyślnie! Administrator wkrótce ją "
-"zatwierdzi."
+msgstr "Książka została zarezerwowana pomyślnie! Administrator wkrótce ją zatwierdzi."
 
 #: app/utils/messages.py:95
 msgid "This book is currently on loan."
@@ -1892,12 +1879,8 @@ msgid "Loan for \"%(title)s\" to %(username)s has been approved!"
 msgstr "Wypożyczenie \"%(title)s\" na rzecz %(username)s została zatwierdzona!"
 
 #: app/utils/messages.py:102
-msgid ""
-"Cannot approve loan: Book status is not \"reserved\". It might have been "
-"cancelled or loaned differently."
-msgstr ""
-"Nie można zatwierdzić wypożyczenia: Status książki nie jest "
-"\"zarezerwowany\". Może zostać anulowany lub pożyczony w inny sposób."
+msgid "Cannot approve loan: Book status is not \"reserved\". It might have been cancelled or loaned differently."
+msgstr "Nie można zatwierdzić wypożyczenia: Status książki nie jest \"zarezerwowany\". Może zostać anulowany lub pożyczony w inny sposób."
 
 #: app/utils/messages.py:103
 msgid "Loan is not in \"pending\" status and cannot be approved."
@@ -1944,9 +1927,7 @@ msgstr "Twoja rezerwacja %(title)s została anulowana."
 
 #: app/utils/messages.py:113
 msgid "This reservation cannot be cancelled as it is not in 'pending' status."
-msgstr ""
-"Ta rezerwacja nie może zostać anulowana, ponieważ nie ma statusu "
-"\"oczekującego\"."
+msgstr "Ta rezerwacja nie może zostać anulowana, ponieważ nie ma statusu \"oczekującego\"."
 
 #: app/utils/messages.py:116
 msgid "Cannot delete a library that has books associated with it."
