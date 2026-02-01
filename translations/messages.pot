@@ -204,20 +204,21 @@ msgstr ""
 msgid "Username already taken"
 msgstr ""
 
+
 #: app/forms.py:225
-msgid "Biblioteka"
+msgid "Library"
 msgstr ""
 
 #: app/forms.py:226
-msgid "Temat"
+msgid "Subject"
 msgstr ""
 
 #: app/forms.py:227
-msgid "Wiadomość"
+msgid "Message"
 msgstr ""
 
 #: app/forms.py:228 app/templates/contact.html:31
-msgid "Wyślij"
+msgid "Send"
 msgstr ""
 
 #: app/routes/loans.py:317 app/tasks.py:24
