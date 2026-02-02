@@ -8,7 +8,8 @@ from sqlalchemy import or_
 import os
 
 from app import db, csrf
-from app.models import Book, Genre, Notification, User
+from app.models import Book, Genre, Notification, User, ContactMessage
+from app.forms import ContactForm
 from app.services.book_service import BookSearchService
 from app.services.cover_service import CoverService
 from app.utils.messages import (
@@ -18,6 +19,78 @@ from app.utils.messages import (
 )
 
 bp = Blueprint("main", __name__)
+
+
+# --- KONTAKT ---
+@bp.route('/contact', methods=['GET', 'POST'])
+@login_required
+def contact():
+    """Redirect to my-messages for consistency"""
+    return redirect(url_for('main.my_messages'))
+
+
+@bp.route('/my-messages', methods=['GET', 'POST'])
+@login_required
+def my_messages():
+    """View all contact messages sent by the current user and send new ones"""
+    # Mark notification as read if notification_id is provided
+    notification_id = request.args.get('notification_id', type=int)
+    if notification_id:
+        notification = Notification.query.get(notification_id)
+        if notification and notification.recipient_id == current_user.id:
+            notification.is_read = True
+            db.session.commit()
+
+    form = ContactForm()
+    # Set available libraries for the user
+    form.library.choices = [(lib.id, lib.name) for lib in current_user.libraries]
+
+    if form.validate_on_submit():
+        msg = ContactMessage(
+            user_id=current_user.id,
+            library_id=form.library.data,
+            subject=form.subject.data,
+            message=form.message.data
+        )
+        from app import db
+        db.session.add(msg)
+        db.session.commit()
+
+        # Create notification for admins and library managers
+        library = msg.library
+        # Notify all admins
+        admins = User.query.filter_by(role='admin').all()
+        for admin in admins:
+            notification = Notification(
+                recipient_id=admin.id,
+                sender_id=current_user.id,
+                contact_message_id=msg.id,
+                message=_('New contact message from library %(library)s', library=library.name),
+                type='contact_message'
+            )
+            db.session.add(notification)
+
+        # Notify library managers
+        for manager in library.users:
+            if manager.role == 'manager':
+                notification = Notification(
+                    recipient_id=manager.id,
+                    sender_id=current_user.id,
+                    contact_message_id=msg.id,
+                    message=_('New contact message from library %(library)s', library=library.name),
+                    type='contact_message'
+                )
+                db.session.add(notification)
+
+        db.session.commit()
+        flash(_('Message has been sent.'), 'success')
+        return redirect(url_for('main.my_messages'))
+
+    # Get all messages sent by current user
+    messages = ContactMessage.query.filter_by(user_id=current_user.id).order_by(
+        ContactMessage.created_at.desc()).all()
+
+    return render_template('my_messages.html', form=form, messages=messages, title=_('My Messages'))
 
 
 @bp.route("/favicon.ico")

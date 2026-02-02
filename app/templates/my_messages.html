@@ -1,0 +1,146 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ _('My Messages') }}</h2>
+    
+    {{ macros.display_flashes() }}
+    
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="send-tab" data-bs-toggle="tab" data-bs-target="#send-pane" type="button" role="tab" aria-controls="send-pane" aria-selected="true">
+                <i class='bx bx-pen'></i> {{ _('Send Message') }}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-pane" type="button" role="tab" aria-controls="history-pane" aria-selected="false">
+                <i class='bx bx-history'></i> {{ _('Message History') }} 
+                {% if messages|length > 0 %}
+                <span class="badge bg-info">{{ messages|length }}</span>
+                {% endif %}
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <!-- Send Message Tab -->
+        <div class="tab-pane fade show active" id="send-pane" role="tabpanel" aria-labelledby="send-tab">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ form.library.label(class="form-label") }}
+                            {{ form.library(class="form-control") }}
+                            {% for error in form.library.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.subject.label(class="form-label") }}
+                            {{ form.subject(class="form-control", placeholder="Subject") }}
+                            {% for error in form.subject.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.message.label(class="form-label") }}
+                            {{ form.message(class="form-control", rows=10, style="resize: vertical; min-height: 250px;", placeholder="Message") }}
+                            {% for error in form.message.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-primary">{{ _('Send') }}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message History Tab -->
+        <div class="tab-pane fade" id="history-pane" role="tabpanel" aria-labelledby="history-tab">
+            {% if messages %}
+            <div class="row">
+                {% for msg in messages %}
+                <div class="col-md-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="mb-0">{{ msg.subject }}</h5>
+                                    <small>
+                                        {{ _('To Library:') }} <strong>{{ msg.library.name }}</strong>
+                                    </small>
+                                    <br>
+                                    <small class="text-muted">{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                </div>
+                                <div>
+                                    {% if msg.is_resolved %}
+                                    <span class="badge bg-success">{{ _('Resolved') }}</span>
+                                    {% elif msg.reply_message %}
+                                    <span class="badge bg-info">{{ _('Replied') }}</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">{{ _('Pending') }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <p class="text-muted"><small>{{ _('Your Message:') }}</small></p>
+                                <div class="border-start border-3 border-secondary ps-3">
+                                    <p>{{ msg.message | replace('\n', '<br>') | safe }}</p>
+                                </div>
+                            </div>
+                            
+                            {% if msg.reply_message %}
+                            <hr>
+                            <div class="mb-3 bg-light p-4 rounded">
+                                <p class="text-muted mb-2"><small>
+                                    <i class='bx bx-reply'></i> {{ _('Reply from:') }} <strong>{{ msg.reply_by.username }}</strong> 
+                                    - {{ msg.replied_at.strftime('%Y-%m-%d %H:%M') }}
+                                </small></p>
+                                <div class="border-start border-3 border-success ps-3">
+                                    <p>{{ msg.reply_message | replace('\n', '<br>') | safe }}</p>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                {{ _('Waiting for a response from administration...') }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            {% if not msg.reply_message %}
+                            <span class="text-muted"><small>{{ _('Message sent, awaiting response.') }}</small></span>
+                            {% else %}
+                            <span class="text-success"><small>{{ _('You have received a reply!') }}</small></span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                {{ _('You haven\'t sent any messages yet.') }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we need to open the history tab based on URL fragment
+    if (window.location.hash === '#history-pane') {
+        // Click the history tab button
+        const historyTab = document.getElementById('history-tab');
+        if (historyTab) {
+            const tab = new bootstrap.Tab(historyTab);
+            tab.show();
+        }
+    }
+});
+</script>
+{% endblock %}

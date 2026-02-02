@@ -1,0 +1,65 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header {% if not message.read_by_admin and current_user.role in ['admin', 'manager'] %}bg-info text-white{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h4 class="mb-2">{{ message.subject }}</h4>
+                            <small>
+                                {{ _('From:') }} <strong>{{ message.user.username }}</strong> 
+                                ({{ message.user.email }})
+                            </small>
+                            <br>
+                            <small>
+                                {{ _('Library:') }} <strong>{{ message.library.name }}</strong>
+                            </small>
+                            <br>
+                            <small class="text-muted">{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        <div>
+                            {% if message.is_resolved %}
+                            <span class="badge bg-success">{{ _('Resolved') }}</span>
+                            {% else %}
+                            <span class="badge bg-warning">{{ _('Open') }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <p class="text-muted"><small>{{ _('Message:') }}</small></p>
+                        <div class="border-start border-3 border-secondary ps-3">
+                            <p>{{ message.message | replace('\n', '<br>') | safe }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if message.reply_message %}
+                    <hr>
+                    <div class="mb-4 bg-light p-4 rounded">
+                        <p class="text-muted mb-2"><small>
+                            <i class='bx bx-reply'></i> {{ _('Reply from:') }} <strong>{{ message.reply_by.username }}</strong> 
+                            - {{ message.replied_at.strftime('%Y-%m-%d %H:%M') }}
+                        </small></p>
+                        <div class="border-start border-3 border-success ps-3">
+                            <p>{{ message.reply_message | replace('\n', '<br>') | safe }}</p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        {{ _('Waiting for a response from administration...') }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('main.contact') }}" class="btn btn-secondary">
+                        <i class='bx bx-arrow-back'></i> {{ _('Back to Contact') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
