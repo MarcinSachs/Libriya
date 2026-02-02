@@ -1,6 +1,6 @@
 """Update ContactMessage for two-way conversations
 
-Revision ID: update_contact_message_conversations
+Revision ID: update_contact_msg_conv
 Revises: add_contact_message_table
 Create Date: 2026-02-01
 
@@ -9,7 +9,7 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers
-revision = 'update_contact_message_conversations'
+revision = 'update_contact_msg_conv'
 down_revision = 'add_contact_message_table'
 branch_labels = None
 depends_on = None

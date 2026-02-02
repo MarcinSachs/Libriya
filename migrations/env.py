@@ -97,11 +97,17 @@ def run_migrations_online():
     connectable = get_engine()
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection,
-            target_metadata=get_metadata(),
-            **conf_args
-        )
+        # Merge our custom args with conf_args (our args take precedence)
+        context_args = {
+            'connection': connection,
+            'target_metadata': get_metadata(),
+            'render_as_batch': True,  # Enable batch mode for SQLite
+            'compare_type': True,  # Detect column type changes
+            'compare_server_default': True,  # Detect default value changes
+        }
+        context_args.update(conf_args)
+
+        context.configure(**context_args)
 
         with context.begin_transaction():
             context.run_migrations()

@@ -50,13 +50,32 @@ Libriya to nowoczesna aplikacja webowa do zarządzania biblioteką, oparta o Fla
     FLASK_ENV=development
     SECRET_KEY=twoj_sekret
     ```
-  - Domyślnie baza SQLite (`libriya.db`). Możesz ustawić `DATABASE_URL` dla innej bazy.
-5. **Inicjalizacja bazy danych:**
+  - Zobacz `.env.example` dla pełnej konfiguracji
+  
+5. **Baza danych:**
+  
+  **Opcja A: SQLite (development)**
   ```bash
-  flask db init
-  flask db migrate -m "Initial migration"
+  # Automatycznie utworzy libriya.db
   flask db upgrade
   ```
+  
+  **Opcja B: MariaDB/MySQL (production)**
+  ```bash
+  # 1. Uruchom MariaDB (Docker)
+  docker-compose up -d mariadb
+  
+  # 2. Skonfiguruj .env
+  DATABASE_URL=mysql+pymysql://libriya_user:password@localhost:3306/libriya_db?charset=utf8mb4
+  
+  # 3. Inicjalizuj bazę
+  python manage_db.py init
+  # lub
+  flask db upgrade
+  ```
+  
+  📚 **Szczegóły:** Zobacz [docs/MARIADB_SETUP.md](docs/MARIADB_SETUP.md) i [docs/DATABASE_MIGRATIONS.md](docs/DATABASE_MIGRATIONS.md)
+
 6. **Uruchomienie aplikacji:**
   ```bash
   flask run

@@ -1,0 +1,51 @@
+[mysqld]
+# Character set and collation
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+# Performance tuning
+max_connections = 200
+innodb_buffer_pool_size = 256M
+innodb_log_file_size = 64M
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
+
+# Query cache (disabled by default in modern MariaDB)
+# query_cache_type = 0
+# query_cache_size = 0
+
+# Binary logging (for replication and backups)
+# Uncomment for production:
+# log_bin = /var/log/mysql/mysql-bin.log
+# expire_logs_days = 7
+# max_binlog_size = 100M
+
+# Slow query log (useful for optimization)
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/slow.log
+long_query_time = 2
+
+# Error log
+log_error = /var/log/mysql/error.log
+
+# General log (disable in production - very verbose)
+# general_log = 1
+# general_log_file = /var/log/mysql/general.log
+
+# Connection timeout
+wait_timeout = 28800
+interactive_timeout = 28800
+
+# InnoDB settings
+innodb_file_per_table = 1
+innodb_stats_on_metadata = 0
+
+# Security
+# Disable LOAD DATA LOCAL INFILE
+local_infile = 0
+
+[client]
+default-character-set = utf8mb4
+
+[mysql]
+default-character-set = utf8mb4

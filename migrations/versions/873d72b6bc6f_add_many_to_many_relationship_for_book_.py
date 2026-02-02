@@ -16,10 +16,20 @@ branch_labels = None
 depends_on = None
 
 
-# Wersja z `drop_column` zamiast `drop_constraint`
 def upgrade():
-    with op.batch_alter_table('book', schema=None) as batch_op:
-        batch_op.drop_column('genre_id') # To powinno usunąć kolumnę i powiązany klucz obcy
+    # Get database connection to check dialect
+    bind = op.get_bind()
+
+    if bind.dialect.name == 'sqlite':
+        # SQLite needs batch mode
+        with op.batch_alter_table('book', schema=None) as batch_op:
+            batch_op.drop_column('genre_id')
+    else:
+        # MySQL/MariaDB/PostgreSQL can drop directly
+        # Drop foreign key first, then column
+        with op.batch_alter_table('book', schema=None) as batch_op:
+            batch_op.drop_constraint('book_ibfk_1', type_='foreignkey')
+        op.drop_column('book', 'genre_id')
 
     op.create_table(
         'book_genres',
@@ -29,6 +39,7 @@ def upgrade():
         sa.ForeignKeyConstraint(['genre_id'], ['genre.id'], ),
         sa.PrimaryKeyConstraint('book_id', 'genre_id')
     )
+
 
 def downgrade():
     op.drop_table('book_genres')

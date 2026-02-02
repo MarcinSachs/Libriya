@@ -41,7 +41,8 @@ def invitation_codes_list():
             InvitationCode.library_id.in_(library_ids)
         ).order_by(InvitationCode.created_at.desc()).all()
 
-    return render_template('invitation_codes.html', codes=codes, now=datetime.utcnow)
+    return render_template('invitation_codes.html', codes=codes, now=datetime.utcnow,
+                           active_page='invitations', parent_page='admin')
 
 
 @bp.route('/generate', methods=['GET', 'POST'])
