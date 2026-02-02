@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-02-01 21:05+0100\n"
-"PO-Revision-Date: 2026-02-01 20:30\n"
+"PO-Revision-Date: 2026-02-02 08:59\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -20,7 +20,7 @@ msgstr ""
 
 #: app/__init__.py:32
 msgid "Please log in to access this page."
-msgstr ""
+msgstr "Zaloguj się, aby uzyskać dostęp do tej strony."
 
 #: app/forms.py:20
 msgid "Invalid ISBN format. Must be 10 or 13 digits."
@@ -211,15 +211,15 @@ msgstr "Biblioteka"
 
 #: app/forms.py:226
 msgid "Subject"
-msgstr ""
+msgstr "Temat"
 
 #: app/forms.py:227
 msgid "Message"
-msgstr ""
+msgstr "Wiadomość"
 
 #: app/forms.py:228 app/templates/contact.html:31
 msgid "Send"
-msgstr ""
+msgstr "Wyślij"
 
 #: app/routes/loans.py:317 app/tasks.py:24
 #, python-format
@@ -300,15 +300,15 @@ msgstr "Nie można wysłać przypomnienia o zaległości. Wypożyczenie nie jest
 #: app/routes/main.py:60 app/routes/main.py:72
 #, python-format
 msgid "New contact message from library %(library)s"
-msgstr ""
+msgstr "Nowa wiadomość kontaktowa z biblioteki %(library)s"
 
 #: app/routes/main.py:78
 msgid "Message has been sent."
-msgstr ""
+msgstr "Wiadomość została wysłana."
 
 #: app/routes/main.py:85 app/templates/my_messages.html:4
 msgid "My Messages"
-msgstr ""
+msgstr "Moje wiadomości"
 
 #: app/routes/main.py:96
 msgid "Offline"
@@ -337,27 +337,27 @@ msgstr "Dodaj nową książkę"
 
 #: app/routes/users.py:46 app/templates/contact_messages.html:4
 msgid "Contact Messages"
-msgstr ""
+msgstr "Wiadomości kontaktowe"
 
 #: app/routes/users.py:64
 msgid "Reply cannot be empty"
-msgstr ""
+msgstr "Odpowiedź nie może być pusta"
 
 #: app/routes/users.py:77
 msgid "You received a reply to your contact message"
-msgstr ""
+msgstr "Otrzymałeś odpowiedź na wiadomość kontaktową"
 
 #: app/routes/users.py:83
 msgid "Reply sent"
-msgstr ""
+msgstr "Wysłano odpowiedź"
 
 #: app/routes/users.py:103
 msgid "Message marked as resolved"
-msgstr ""
+msgstr "Wiadomość oznaczona jako rozwiązana"
 
 #: app/routes/users.py:119
 msgid "Message"
-msgstr ""
+msgstr "Wiadomość"
 
 #: app/routes/users.py:271
 #, python-format
@@ -962,57 +962,57 @@ msgstr "Prześlij nową okładkę, aby zastąpić bieżącą."
 
 #: app/templates/contact.html:4
 msgid "Contact Administration"
-msgstr ""
+msgstr "Kontakt z administracją"
 
 #: app/templates/contact_messages.html:16 app/templates/view_message.html:12
 msgid "From:"
-msgstr ""
+msgstr "Od:"
 
 #: app/templates/contact_messages.html:21 app/templates/view_message.html:17
 msgid "Library:"
-msgstr ""
+msgstr "Biblioteka:"
 
 #: app/templates/contact_messages.html:28 app/templates/my_messages.html:79
 #: app/templates/view_message.html:24
 msgid "Resolved"
-msgstr ""
+msgstr "Rozwiązane"
 
 #: app/templates/contact_messages.html:30 app/templates/view_message.html:26
 msgid "Open"
-msgstr ""
+msgstr "Otwarte"
 
 #: app/templates/contact_messages.html:37
 msgid "User Message:"
-msgstr ""
+msgstr "Wiadomość użytkownika:"
 
 #: app/templates/contact_messages.html:45 app/templates/my_messages.html:100
 #: app/templates/view_message.html:43
 msgid "Reply from:"
-msgstr ""
+msgstr "Odpowiedź od:"
 
 #: app/templates/contact_messages.html:55
 msgid "Reply"
-msgstr ""
+msgstr "Odpowiedz"
 
 #: app/templates/contact_messages.html:60
 msgid "Mark as Resolved"
-msgstr ""
+msgstr "Oznacz jako rozwiązane"
 
 #: app/templates/contact_messages.html:71
 msgid "Your Reply"
-msgstr ""
+msgstr "Twoja odpowiedź"
 
 #: app/templates/contact_messages.html:74
 msgid "Type your reply..."
-msgstr ""
+msgstr "Napisz swoją odpowiedź..."
 
 #: app/templates/contact_messages.html:76
 msgid "Send Reply"
-msgstr ""
+msgstr "Wyślij odpowiedź"
 
 #: app/templates/contact_messages.html:87
 msgid "No messages."
-msgstr ""
+msgstr "Brak wiadomości."
 
 #: app/templates/generate_invitation.html:9
 msgid "Generate Invitation Code"
@@ -1227,7 +1227,7 @@ msgstr "Ustawienia"
 
 #: app/templates/layout.html:221 app/templates/layout.html:329
 msgid "Messages"
-msgstr ""
+msgstr "Wiadomości"
 
 #: app/templates/layout.html:224
 msgid "Logout"
@@ -1404,47 +1404,47 @@ msgstr "Nie wybrano pliku"
 
 #: app/templates/my_messages.html:12
 msgid "Send Message"
-msgstr ""
+msgstr "Wyślij wiadomość"
 
 #: app/templates/my_messages.html:17
 msgid "Message History"
-msgstr ""
+msgstr "Historia wiadomości"
 
 #: app/templates/my_messages.html:54
 msgid "Send"
-msgstr ""
+msgstr "Wyślij"
 
 #: app/templates/my_messages.html:72
 msgid "To Library:"
-msgstr ""
+msgstr "Do Biblioteki:"
 
 #: app/templates/my_messages.html:81
 msgid "Replied"
-msgstr ""
+msgstr "Odpowiedziano"
 
 #: app/templates/my_messages.html:83
 msgid "Pending"
-msgstr ""
+msgstr "Oczekuje"
 
 #: app/templates/my_messages.html:90
 msgid "Your Message:"
-msgstr ""
+msgstr "Twoja wiadomość:"
 
 #: app/templates/my_messages.html:109 app/templates/view_message.html:52
 msgid "Waiting for a response from administration..."
-msgstr ""
+msgstr "Oczekiwanie na odpowiedź administracji..."
 
 #: app/templates/my_messages.html:115
 msgid "Message sent, awaiting response."
-msgstr ""
+msgstr "Wiadomość wysłana, oczekiwanie na odpowiedź."
 
 #: app/templates/my_messages.html:117
 msgid "You have received a reply!"
-msgstr ""
+msgstr "Otrzymałeś odpowiedź!"
 
 #: app/templates/my_messages.html:126
 msgid "You haven't sent any messages yet."
-msgstr ""
+msgstr "Nie wysłałeś jeszcze żadnych wiadomości."
 
 #: app/templates/notifications.html:10
 msgid "Mark All as Read"
@@ -1460,7 +1460,7 @@ msgstr "przez"
 
 #: app/templates/notifications.html:37 app/templates/notifications.html:42
 msgid "View Messages"
-msgstr ""
+msgstr "Wyświetl Wiadomości"
 
 #: app/templates/notifications.html:51
 msgid "Mark as Read"
@@ -1762,11 +1762,11 @@ msgstr "Dodaj użytkownika"
 
 #: app/templates/view_message.html:33
 msgid "Message:"
-msgstr ""
+msgstr "Wiadomość:"
 
 #: app/templates/view_message.html:58
 msgid "Back to Contact"
-msgstr ""
+msgstr "Powrót do kontaktu"
 
 #: app/utils/decorators.py:14
 msgid "You do not have the required privileges to access this page."
