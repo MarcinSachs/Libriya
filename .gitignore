@@ -215,6 +215,12 @@ __marimo__/
 # Database
 *.db
 libriya.db
+*.sql
+*.sql.gz
+
+# Database backups
+backup_*.sql
+backup_*.sql.gz
 
 # Covers
 app/static/uploads/*

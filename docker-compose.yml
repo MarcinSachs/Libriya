@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:11.2
+    container_name: libriya_mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root_password
+      MARIADB_DATABASE: libriya
+      MARIADB_USER: libriya_user
+      MARIADB_PASSWORD: libriya_password
+      # Timezone
+      TZ: Europe/Warsaw
+    ports:
+      - "3306:3306"
+    volumes:
+      # Persistent data storage
+      - mariadb_data:/var/lib/mysql
+      # Custom configuration (optional)
+      - ./docker/mariadb/conf.d:/etc/mysql/conf.d:ro
+    command: >
+      --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --max_connections=200 --innodb_buffer_pool_size=256M
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - libriya_network
+
+  # Optional: phpMyAdmin for database management
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: libriya_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mariadb
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    ports:
+      - "8080:80"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - libriya_network
+
+volumes:
+  mariadb_data:
+    driver: local
+
+networks:
+  libriya_network:
+    driver: bridge

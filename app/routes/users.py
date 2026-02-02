@@ -51,7 +51,8 @@ def contact_messages():
             msg.read_by_admin = True
     db.session.commit()
 
-    return render_template('contact_messages.html', messages=messages, title=_('Contact Messages'))
+    return render_template('contact_messages.html', messages=messages, title=_('Contact Messages'),
+                           active_page='contact_messages', parent_page='admin')
 
 
 @bp.route('/reply_to_message/<int:message_id>', methods=['POST'])

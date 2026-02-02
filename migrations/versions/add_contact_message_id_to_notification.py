@@ -1,8 +1,8 @@
 """add contact_message_id to notification
 
 Revision ID: add_contact_message_id
-Revises: update_contact_message_conversations
-Create Date: 2026-02-01 20:43:00.000000
+Revises: update_contact_msg_conv
+Create Date: 2026-02-01
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'add_contact_message_id'
-down_revision = 'update_contact_message_conversations'
+down_revision = 'update_contact_msg_conv'
 branch_labels = None
 depends_on = None
 
