@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version:  libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-02-01 21:05+0100\n"
-"PO-Revision-Date: 2026-02-01 14:15+0000\n"
+"PO-Revision-Date: 2026-02-02 08:59\n"
 "Last-Translator: \n"
 "Language: pl_PL\n"
 "Language-Team: Polish\n"
@@ -19,6 +19,10 @@ msgstr ""
 #: app/__init__.py:32
 msgid "Please log in to access this page."
 msgstr ""
+
+#: app/__init__.py:32
+msgid "Please log in to access this page."
+msgstr "Zaloguj się, aby uzyskać dostęp do tej strony."
 
 #: app/forms.py:20
 msgid "Invalid ISBN format. Must be 10 or 13 digits."
@@ -204,21 +208,20 @@ msgid "Username already taken"
 msgstr "Nazwa użytkownika jest zajęta"
 
 #: app/forms.py:225
-msgid "Biblioteka"
-msgstr ""
+msgid "Library"
+msgstr "Biblioteka"
 
 #: app/forms.py:226
-#, fuzzy
-msgid "Temat"
-msgstr "E-mail"
+msgid "Subject"
+msgstr "Temat"
 
 #: app/forms.py:227
-msgid "Wiadomość"
-msgstr ""
+msgid "Message"
+msgstr "Wiadomość"
 
 #: app/forms.py:228 app/templates/contact.html:31
-msgid "Wyślij"
-msgstr ""
+msgid "Send"
+msgstr "Wyślij"
 
 #: app/routes/loans.py:317 app/tasks.py:24
 #, python-format
@@ -311,15 +314,18 @@ msgstr ""
 msgid "New contact message from library %(library)s"
 msgstr ""
 
+#: app/routes/main.py:60 app/routes/main.py:72
+#, python-format
+msgid "New contact message from library %(library)s"
+msgstr "Nowa wiadomość kontaktowa z biblioteki %(library)s"
+
 #: app/routes/main.py:78
-#, fuzzy
 msgid "Message has been sent."
-msgstr "Zmiany zostały zapisane."
+msgstr "Wiadomość została wysłana."
 
 #: app/routes/main.py:85 app/templates/my_messages.html:4
-#, fuzzy
 msgid "My Messages"
-msgstr "nieprzeczytanych wiadomości"
+msgstr "Moje wiadomości"
 
 #: app/routes/main.py:96
 msgid "Offline"
@@ -349,31 +355,28 @@ msgid "Add a new book"
 msgstr "Dodaj nową książkę"
 
 #: app/routes/users.py:46 app/templates/contact_messages.html:4
-#, fuzzy
 msgid "Contact Messages"
-msgstr "nieprzeczytanych wiadomości"
+msgstr "Wiadomości kontaktowe"
 
 #: app/routes/users.py:64
 msgid "Reply cannot be empty"
-msgstr ""
+msgstr "Odpowiedź nie może być pusta"
 
 #: app/routes/users.py:77
 msgid "You received a reply to your contact message"
-msgstr ""
+msgstr "Otrzymałeś odpowiedź na wiadomość kontaktową"
 
 #: app/routes/users.py:83
-#, fuzzy
 msgid "Reply sent"
-msgstr "Zresetuj"
+msgstr "Wysłano odpowiedź"
 
 #: app/routes/users.py:103
 msgid "Message marked as resolved"
-msgstr ""
+msgstr "Wiadomość oznaczona jako rozwiązana"
 
 #: app/routes/users.py:119
-#, fuzzy
 msgid "Message"
-msgstr "nieprzeczytanych wiadomości"
+msgstr "Wiadomość"
 
 #: app/routes/users.py:271
 #, python-format
@@ -979,66 +982,58 @@ msgid "Upload a new cover to replace the current one."
 msgstr "Prześlij nową okładkę, aby zastąpić bieżącą."
 
 #: app/templates/contact.html:4
-#, fuzzy
 msgid "Contact Administration"
-msgstr "Administracja"
+msgstr "Kontakt z administracją"
 
 #: app/templates/contact_messages.html:16 app/templates/view_message.html:12
-#, fuzzy
 msgid "From:"
-msgstr "Pokój"
+msgstr "Od:"
 
 #: app/templates/contact_messages.html:21 app/templates/view_message.html:17
-#, fuzzy
 msgid "Library:"
-msgstr "Biblioteka"
+msgstr "Biblioteka:"
 
 #: app/templates/contact_messages.html:28 app/templates/my_messages.html:79
 #: app/templates/view_message.html:24
-#, fuzzy
 msgid "Resolved"
-msgstr "Zarezerwowana"
+msgstr "Rozwiązane"
 
 #: app/templates/contact_messages.html:30 app/templates/view_message.html:26
-#, fuzzy
 msgid "Open"
-msgstr "Skopiowano"
+msgstr "Otwarte"
 
 #: app/templates/contact_messages.html:37
-#, fuzzy
 msgid "User Message:"
-msgstr "nieprzeczytanych wiadomości"
+msgstr "Wiadomość użytkownika:"
 
 #: app/templates/contact_messages.html:45 app/templates/my_messages.html:100
 #: app/templates/view_message.html:43
 msgid "Reply from:"
-msgstr ""
+msgstr "Odpowiedź od:"
 
 #: app/templates/contact_messages.html:55
 msgid "Reply"
-msgstr ""
+msgstr "Odpowiedz"
 
 #: app/templates/contact_messages.html:60
-#, fuzzy
 msgid "Mark as Resolved"
-msgstr "Oznacz jako przeczytane"
+msgstr "Oznacz jako rozwiązane"
 
 #: app/templates/contact_messages.html:71
 msgid "Your Reply"
-msgstr ""
+msgstr "Twoja odpowiedź"
 
 #: app/templates/contact_messages.html:74
 msgid "Type your reply..."
-msgstr ""
+msgstr "Napisz swoją odpowiedź..."
 
 #: app/templates/contact_messages.html:76
 msgid "Send Reply"
-msgstr ""
+msgstr "Wyślij odpowiedź"
 
 #: app/templates/contact_messages.html:87
-#, fuzzy
 msgid "No messages."
-msgstr "nieprzeczytanych wiadomości"
+msgstr "Brak wiadomości."
 
 #: app/templates/generate_invitation.html:9
 msgid "Generate Invitation Code"
@@ -1257,9 +1252,8 @@ msgid "Settings"
 msgstr "Ustawienia"
 
 #: app/templates/layout.html:221 app/templates/layout.html:329
-#, fuzzy
 msgid "Messages"
-msgstr "nieprzeczytanych wiadomości"
+msgstr "Wiadomości"
 
 #: app/templates/layout.html:224
 msgid "Logout"
@@ -1437,55 +1431,48 @@ msgid "No file selected"
 msgstr "Nie wybrano pliku"
 
 #: app/templates/my_messages.html:12
-#, fuzzy
 msgid "Send Message"
-msgstr "nieprzeczytanych wiadomości"
+msgstr "Wyślij wiadomość"
 
 #: app/templates/my_messages.html:17
-#, fuzzy
 msgid "Message History"
-msgstr "Historia wypożyczeń"
+msgstr "Historia wiadomości"
 
 #: app/templates/my_messages.html:54
-#, fuzzy
 msgid "Send"
-msgstr "Użyty"
+msgstr "Wyślij"
 
 #: app/templates/my_messages.html:72
-#, fuzzy
 msgid "To Library:"
-msgstr "Open Library"
+msgstr "Do Biblioteki:"
 
 #: app/templates/my_messages.html:81
-#, fuzzy
 msgid "Replied"
-msgstr "Recenzja"
+msgstr "Odpowiedziano"
 
 #: app/templates/my_messages.html:83
-#, fuzzy
 msgid "Pending"
-msgstr "Rodzicielstwo"
+msgstr "Oczekuje"
 
 #: app/templates/my_messages.html:90
-#, fuzzy
 msgid "Your Message:"
-msgstr "nieprzeczytanych wiadomości"
+msgstr "Twoja wiadomość:"
 
 #: app/templates/my_messages.html:109 app/templates/view_message.html:52
 msgid "Waiting for a response from administration..."
-msgstr ""
+msgstr "Oczekiwanie na odpowiedź administracji..."
 
 #: app/templates/my_messages.html:115
 msgid "Message sent, awaiting response."
-msgstr ""
+msgstr "Wiadomość wysłana, oczekiwanie na odpowiedź."
 
 #: app/templates/my_messages.html:117
 msgid "You have received a reply!"
-msgstr ""
+msgstr "Otrzymałeś odpowiedź!"
 
 #: app/templates/my_messages.html:126
 msgid "You haven't sent any messages yet."
-msgstr ""
+msgstr "Nie wysłałeś jeszcze żadnych wiadomości."
 
 #: app/templates/notifications.html:10
 msgid "Mark All as Read"
@@ -1500,9 +1487,8 @@ msgid "by"
 msgstr "przez"
 
 #: app/templates/notifications.html:37 app/templates/notifications.html:42
-#, fuzzy
 msgid "View Messages"
-msgstr "nieprzeczytanych wiadomości"
+msgstr "Wyświetl Wiadomości"
 
 #: app/templates/notifications.html:51
 msgid "Mark as Read"
@@ -1805,14 +1791,12 @@ msgid "Add user"
 msgstr "Dodaj użytkownika"
 
 #: app/templates/view_message.html:33
-#, fuzzy
 msgid "Message:"
-msgstr "Menedżer:"
+msgstr "Wiadomość:"
 
 #: app/templates/view_message.html:58
-#, fuzzy
 msgid "Back to Contact"
-msgstr "Wróć do listy"
+msgstr "Powrót do kontaktu"
 
 #: app/utils/decorators.py:14
 msgid "You do not have the required privileges to access this page."
