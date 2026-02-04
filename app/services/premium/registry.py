@@ -139,17 +139,28 @@ class PremiumRegistry:
             return None
 
     def _is_enabled(self, feature_id: str) -> bool:
-        """Check if feature is enabled via environment variable."""
+        """Check if feature is enabled via environment variable or Flask config."""
         import os
+        from flask import current_app
+
         feature = self._features.get(feature_id)
         if not feature:
             logger.warning(f"PremiumRegistry: Feature '{feature_id}' not registered")
             return False
 
         env_var = feature['enabled_env_var']
-        env_value = os.getenv(env_var, 'false').lower()
-        is_enabled = env_value == 'true'
-        logger.info(f"PremiumRegistry: Feature '{feature_id}' enabled check: {env_var}={env_value} -> {is_enabled}")
+
+        # Try Flask config first (preferred), then fallback to environment variable
+        try:
+            is_enabled = current_app.config.get(env_var, False)
+            logger.debug(f"PremiumRegistry: Feature '{feature_id}' enabled check (from config): {env_var}={is_enabled}")
+        except RuntimeError:
+            # No app context, fall back to os.getenv
+            env_value = os.getenv(env_var, 'false').lower()
+            is_enabled = env_value == 'true'
+            logger.debug(
+                f"PremiumRegistry: Feature '{feature_id}' enabled check (from env): {env_var}={env_value} -> {is_enabled}")
+
         return is_enabled
 
     def check_license(self, feature_id: str) -> bool:

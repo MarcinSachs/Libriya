@@ -4,7 +4,7 @@ Premium manager - central point for managing premium features.
 Provides high-level API for accessing premium services without modifying core code.
 """
 
-from typing import Optional, Any, Dict, Callable
+from typing import Optional, Any, Dict
 from app.services.premium.registry import premium_registry
 import logging
 
@@ -53,10 +53,23 @@ class PremiumManager:
             license_path='app/services/premium/covers/license.json',
         )
 
+        premium_registry.register(
+            feature_id='biblioteka_narodowa',
+            name='Biblioteka Narodowa Metadata',
+            description='Premium metadata from Polish National Library API',
+            module_path='app.services.premium.metadata.biblioteka_narodowa_service',
+            class_name='BibliotekaNarodowaService',
+            enabled_env_var='PREMIUM_BIBLIOTEKA_NARODOWA_ENABLED',
+            requires_config={
+                'API_URL': 'https://data.bn.org.pl/api/institutions/bibs.json',
+            },
+            license_path='app/services/premium/metadata/license.json',
+        )
+
         # TODO: Register more premium features as they're added
         # premium_registry.register(
-        #     feature_id='metadata',
-        #     name='Premium Metadata',
+        #     feature_id='recommendations',
+        #     name='Premium Recommendations',
         #     ...
         # )
 

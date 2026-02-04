@@ -1,10 +1,19 @@
 """
 Book cover service.
 
-Manages downloading and storing book covers with tiered fallback:
-1. Open Library (always available)
-2. Premium sources (if enabled and licensed, e.g., bookcover.longitood.com)
-3. Local default image
+Manages downloading and storing book covers with tiered fallback strategy:
+
+Priority:
+1. Premium Bookcover API (if enabled and licensed) - bookcover.longitood.com
+2. Cover from source metadata (e.g., Open Library)
+3. Cover from Open Library by ISBN lookup
+4. Local default image
+
+Notes:
+- Biblioteka Narodowa doesn't provide covers, so covers always come from OL/premium
+- Premium bookcover service has HIGHEST priority when enabled and licensed
+- If no premium cover found, falls back to Open Library
+- If Open Library has no data, uses local default
 
 Premium covers transparently extend base functionality without code changes.
 """
@@ -20,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 class CoverService:
-    """Service for managing book covers from Open Library."""
+    """Service for managing book covers with tiered priority."""
 
     # URLs
     DEFAULT_COVER_FILENAME = "default-book-cover.png"
@@ -43,16 +52,19 @@ class CoverService:
 
         Priority:
         1. Premium sources (if enabled and licensed):
-           - bookcover.longitood.com (Goodreads)
-        2. Cover from Open Library metadata (cover_from_source)
+           - bookcover.longitood.com (Goodreads covers)
+        2. Cover from source metadata (e.g., from Open Library/BN)
         3. Cover from Open Library by ISBN lookup
         4. Local default image
+
+        Note: Biblioteka Narodowa doesn't provide covers. This method ensures
+        covers always come from Open Library (or premium service if enabled).
 
         Args:
             isbn: ISBN number
             title: Book title
             author: Book author
-            cover_from_source: Cover URL from Open Library metadata
+            cover_from_source: Cover URL from metadata source (OL/BN)
             source_cover_data: Cover ID from Open Library (not used)
 
         Returns:
@@ -62,14 +74,15 @@ class CoverService:
         logger.info(f"CoverService: Getting cover for: {title or isbn}")
 
         # 1. Try premium sources FIRST (if enabled and licensed)
+        # Premium bookcover service has HIGHEST priority
         cover_url = CoverService._get_cover_from_premium_sources(isbn, title, author)
         if cover_url:
-            logger.info(f"CoverService: Got premium cover from premium sources")
+            logger.info(f"CoverService: Got premium cover from bookcover API")
             return cover_url, "premium_bookcover"
 
-        # 2. Try cover from source (Open Library metadata)
+        # 2. Try cover from source metadata (Open Library or Biblioteka Narodowa)
         if cover_from_source:
-            logger.info(f"CoverService: Using OL cover from metadata")
+            logger.info(f"CoverService: Using cover from metadata source")
             return cover_from_source, "open_library"
 
         # 3. Try Open Library by ISBN lookup

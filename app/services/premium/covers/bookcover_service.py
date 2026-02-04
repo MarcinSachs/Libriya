@@ -8,6 +8,7 @@ See: https://bookcover.longitood.com/
 import requests
 from typing import Optional
 import logging
+from app.services.isbn_validator import ISBNValidator
 
 logger = logging.getLogger(__name__)
 
@@ -63,8 +64,11 @@ class BookcoverService:
     def _try_bookcover_isbn(isbn: str) -> Optional[str]:
         """Try to get cover by ISBN from Bookcover API."""
         try:
+            # Convert ISBN-10 to ISBN-13 if needed
+            isbn_13 = ISBNValidator.to_isbn_13(isbn)
+
             response = requests.get(
-                f"{BookcoverService.API_URL}/{isbn}",
+                f"{BookcoverService.API_URL}/{isbn_13}",
                 timeout=BookcoverService.TIMEOUT
             )
 
@@ -72,7 +76,7 @@ class BookcoverService:
                 data = response.json()
                 url = data.get("url")
                 if url:
-                    logger.info(f"BookcoverService: Found cover for ISBN {isbn}")
+                    logger.info(f"BookcoverService: Found cover for ISBN {isbn} (converted to {isbn_13})")
                     return url
         except Exception as e:
             logger.debug(f"BookcoverService: ISBN lookup failed: {e}")

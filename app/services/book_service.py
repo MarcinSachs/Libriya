@@ -1,29 +1,40 @@
 """
 Book search service orchestrator.
 
-Searches books using Open Library API with cover sources:
-- Primary: Open Library covers
-- Premium: Bookcover.longitood.com (via premium_cover_service)
+Searches books with tiered priority:
+1. Premium Biblioteka Narodowa (Polish National Library) - if enabled
+2. Open Library (fallback if BN has no data)
+3. Premium covers (Bookcover API) - if enabled
+4. Open Library covers (fallback)
+
+Usage:
+    book = BookSearchService.search_by_isbn("9788375799538")
+    results = BookSearchService.search_by_title("The Hobbit")
 """
 
 from typing import List, Dict, Optional
 from app.services.openlibrary_service import OpenLibraryClient
 from app.services.cover_service import CoverService
 from app.services.isbn_validator import ISBNValidator
+from app.services.premium.manager import PremiumManager
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 class BookSearchService:
-    """Main service for searching books via Open Library."""
+    """Main service for searching books with premium source support."""
 
     @staticmethod
     def search_by_isbn(isbn: str) -> Optional[Dict]:
         """
-        Search for book by ISBN in Open Library.
+        Search for book by ISBN with tiered source priority.
 
-        If Open Library has no data, tries premium sources for cover image.
+        Priority:
+        1. Biblioteka Narodowa (Premium) - if enabled
+        2. Open Library (fallback if BN has no data or not enabled)
+        3. Premium covers - if enabled
+        4. Open Library covers (fallback)
 
         Args:
             isbn: ISBN number (10 or 13)
@@ -40,31 +51,47 @@ class BookSearchService:
             return None
 
         normalized_isbn = ISBNValidator.normalize(isbn)
-        logger.info(f"BookSearchService: Searching ISBN in Open Library: {normalized_isbn}")
+        logger.info(f"BookSearchService: Searching ISBN: {normalized_isbn}")
 
-        # Search in Open Library
+        book_data = None
+
+        # 1. Try Biblioteka Narodowa FIRST (if enabled)
+        if PremiumManager.is_enabled('biblioteka_narodowa'):
+            logger.debug(f"BookSearchService: Trying Biblioteka Narodowa for ISBN {normalized_isbn}")
+            book_data = PremiumManager.call(
+                'biblioteka_narodowa',
+                'search_by_isbn',
+                isbn=normalized_isbn
+            )
+            if book_data:
+                logger.info(f"BookSearchService: Found in BN: {book_data.get('title')}")
+                # Enhance with cover (OL or premium)
+                BookSearchService._enhance_with_cover(book_data, normalized_isbn)
+                return book_data
+            else:
+                logger.info("BookSearchService: Not found in BN, falling back to Open Library")
+
+        # 2. Try Open Library (fallback)
+        logger.debug(f"BookSearchService: Searching Open Library for ISBN {normalized_isbn}")
         book_data = OpenLibraryClient.search_by_isbn(normalized_isbn)
 
         if book_data:
-            logger.info(f"BookSearchService: Found book: {book_data.get('title')}")
+            logger.info(f"BookSearchService: Found in OL: {book_data.get('title')}")
             # Enhance with cover
             BookSearchService._enhance_with_cover(book_data, normalized_isbn)
             return book_data
 
-        # If Open Library has no data, try premium sources for cover
-        logger.info(
-            f"BookSearchService: Book not found in Open Library, trying premium sources for ISBN {normalized_isbn}")
-
-        logger.debug(f"BookSearchService: Calling CoverService._get_cover_from_premium_sources()")
+        # If Open Library has no data, try premium sources for cover only
+        logger.info("BookSearchService: Book not found in any source")
+        logger.debug(f"BookSearchService: Trying premium cover sources for ISBN {normalized_isbn}")
         cover_url = CoverService._get_cover_from_premium_sources(isbn=normalized_isbn)
-        logger.debug(f"BookSearchService: Premium sources returned: {cover_url}")
 
         if cover_url:
             logger.info(f"BookSearchService: Found cover in premium sources for ISBN {normalized_isbn}")
             # Return minimal book data with cover from premium
             return {
                 "isbn": normalized_isbn,
-                "title": None,  # No data from OL
+                "title": None,  # No metadata available
                 "authors": [],
                 "year": None,
                 "publisher": None,
@@ -87,6 +114,9 @@ class BookSearchService:
         """
         Search for books by title in Open Library.
 
+        Note: Biblioteka Narodowa doesn't have a good title search API,
+        so we only use Open Library for title searches.
+
         Args:
             title: Book title (min 3 characters)
             author: Author name (optional, not used in OL search)
@@ -99,7 +129,7 @@ class BookSearchService:
             logger.warning(f"BookSearchService: Invalid title query: {title}")
             return []
 
-        logger.info(f"BookSearchService: Searching title in Open Library: '{title}'")
+        logger.info(f"BookSearchService: Searching by title in Open Library: '{title}'")
 
         # Search in Open Library
         ol_results = OpenLibraryClient.search_by_title(title, limit)
@@ -118,6 +148,12 @@ class BookSearchService:
     ) -> None:
         """
         Enhance book data with cover information.
+
+        Uses CoverService which handles the tiered cover priority:
+        1. Premium bookcover (if enabled and licensed)
+        2. Cover from metadata (OL)
+        3. Open Library ISBN lookup
+        4. Local default
 
         Modifies book_data in place to add/update cover info.
 

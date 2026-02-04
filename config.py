@@ -47,6 +47,10 @@ class Config(BaseSettings):
     BABEL_DEFAULT_TIMEZONE: str = 'UTC'
     BABEL_TRANSLATION_DIRECTORIES: str = os.path.join(BASE_DIR, 'translations')
 
+    # Premium Features (optional - defaults to disabled for safety)
+    PREMIUM_BOOKCOVER_ENABLED: bool = False
+    PREMIUM_BIBLIOTEKA_NARODOWA_ENABLED: bool = False
+
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'

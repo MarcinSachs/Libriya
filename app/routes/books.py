@@ -24,6 +24,7 @@ from app.utils.messages import (
     BOOKS_ONLY_EDIT_OWN_LIBRARIES, COVER_IMAGE_ERROR
 )
 from app.services.openlibrary_service import OpenLibraryClient
+from app.services.premium.manager import PremiumManager
 
 bp = Blueprint("books", __name__)
 
@@ -63,47 +64,66 @@ def get_genres_from_isbn():
             return jsonify({'error': 'ISBN is required'}), 400
 
         try:
-            # Search for book in Open Library
-            current_app.logger.info(f"Genres API - Searching OL for ISBN: {isbn}")
-            book_data = OpenLibraryClient.search_by_isbn(isbn)
-            current_app.logger.info(f"Genres API - Book data from OL: {book_data is not None}")
+            # Try premium metadata services (like Biblioteka Narodowa) first
+            current_app.logger.info(f"Genres API - Searching premium services for ISBN: {isbn}")
+            book_data = PremiumManager.call('biblioteka_narodowa', 'search_by_isbn', isbn=isbn)
+
+            if not book_data:
+                # Fallback to Open Library
+                current_app.logger.info(f"Genres API - Premium services failed, searching OL for ISBN: {isbn}")
+                book_data = OpenLibraryClient.search_by_isbn(isbn)
+                current_app.logger.info(f"Genres API - Book data from OL: {book_data is not None}")
 
             if not book_data:
                 current_app.logger.warning(f"Genres API - Book not found for ISBN: {isbn}")
-                return jsonify({'error': 'Book not found in Open Library'}), 404
+                return jsonify({'error': 'Book not found'}), 404
 
-            # Get subjects from the book data
-            subjects = book_data.get('subjects', [])
-            current_app.logger.info(f"Genres API - Found {len(subjects)} subjects: {subjects}")
-
-            if not subjects:
-                current_app.logger.info(f"Genres API - No subjects found for ISBN: {isbn}")
-                return jsonify({
-                    'genres': [],
-                    'message': 'No subjects found for this book in Open Library'
-                }), 200
-
-            # Map OL subjects to application genres
-            genre_ids = OpenLibraryClient.get_genre_ids_for_subjects(subjects)
-            current_app.logger.info(f"Genres API - Mapped {len(genre_ids)} genre IDs: {genre_ids}")
-
-            # Get genre names for display
+            # Check if we got genres from premium service or need to map from OL subjects
             genres_info = []
-            if genre_ids:
-                genres = Genre.query.filter(Genre.id.in_(genre_ids)).all()
-                genres_info = [{'id': g.id, 'name': g.name} for g in genres]
-                current_app.logger.info(f"Genres API - Genre info: {genres_info}")
+
+            # If book_data has 'genres' key, it's from premium service
+            if 'genres' in book_data and book_data['genres']:
+                current_app.logger.info(
+                    f"Genres API - Found {len(book_data['genres'])} genres from premium service: {book_data['genres']}")
+                # Map genre names to IDs
+                for genre_name in book_data['genres']:
+                    genre = Genre.query.filter_by(name=genre_name).first()
+                    if genre:
+                        genres_info.append({'id': genre.id, 'name': genre.name})
+                        current_app.logger.info(f"Genres API - Mapped '{genre_name}' to ID {genre.id}")
+                    else:
+                        current_app.logger.warning(f"Genres API - Genre '{genre_name}' not found in database")
+            else:
+                # Get subjects from Open Library and map them
+                subjects = book_data.get('subjects', [])
+                current_app.logger.info(f"Genres API - Found {len(subjects)} subjects from OL: {subjects}")
+
+                if not subjects:
+                    current_app.logger.info(f"Genres API - No subjects found for ISBN: {isbn}")
+                    return jsonify({
+                        'genres': [],
+                        'message': 'No subjects found for this book'
+                    }), 200
+
+                # Map OL subjects to application genres
+                genre_ids = OpenLibraryClient.get_genre_ids_for_subjects(subjects)
+                current_app.logger.info(f"Genres API - Mapped {len(genre_ids)} genre IDs: {genre_ids}")
+
+                # Get genre names for display
+                if genre_ids:
+                    genres = Genre.query.filter(Genre.id.in_(genre_ids)).all()
+                    genres_info = [{'id': g.id, 'name': g.name} for g in genres]
+                    current_app.logger.info(f"Genres API - Genre info: {genres_info}")
 
             current_app.logger.info(f"Genres API - Success! Returning {len(genres_info)} genres")
             return jsonify({
                 'genres': genres_info,
-                'subjects': subjects,
-                'message': 'Genres automatically mapped from Open Library'
+                'message': 'Genres automatically mapped from book metadata'
             }), 200
 
         except Exception as e:
             current_app.logger.error(f"Genres API - Error fetching genres: {e}", exc_info=True)
-            return jsonify({'error': 'Error fetching data from Open Library'}), 500
+            return jsonify({'error': 'Error fetching book data'}), 500
 
     except Exception as e:
         current_app.logger.error(f"Genres API - Unexpected error: {e}", exc_info=True)

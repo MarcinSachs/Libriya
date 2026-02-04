@@ -117,6 +117,32 @@ class ISBNValidator:
 
         return cleaned
 
+    @staticmethod
+    def to_isbn_13(isbn: str) -> str:
+        """
+        Convert ISBN to ISBN-13 format (without hyphens).
+
+        Args:
+            isbn: ISBN string (can be ISBN-10 or ISBN-13, with or without formatting)
+
+        Returns:
+            ISBN-13 as 13-digit string, or original if already ISBN-13 or if conversion fails
+        """
+        normalized = ISBNValidator.normalize(isbn)
+        cleaned = re.sub(r'[^\d]', '', normalized)
+
+        if len(cleaned) == 13:
+            return cleaned  # Already ISBN-13
+        elif len(cleaned) == 10:
+            # Convert ISBN-10 to ISBN-13
+            isbn_13 = "978" + cleaned[:-1]
+            total = sum(int(digit) * (1 if i % 2 == 0 else 3)
+                        for i, digit in enumerate(isbn_13))
+            check_digit = (10 - (total % 10)) % 10
+            return isbn_13 + str(check_digit)
+
+        return cleaned  # Return as-is if unknown format
+
 
 def validate_isbn(isbn: str) -> tuple[bool, str]:
     """
