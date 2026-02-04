@@ -1,10 +1,12 @@
 """
 Book cover service.
 
-Manages downloading and storing book covers from multiple sources:
-1. Open Library (if data source is OL)
-2. Bookcover API (Goodreads via bookcover.longitood.com)
-3. Local default fallback image
+Manages downloading and storing book covers with tiered fallback:
+1. Open Library (always available)
+2. Premium sources (if enabled and licensed, e.g., bookcover.longitood.com)
+3. Local default image
+
+Premium covers transparently extend base functionality without code changes.
 """
 
 import requests
@@ -18,10 +20,9 @@ logger = logging.getLogger(__name__)
 
 
 class CoverService:
-    """Service for managing book covers from multiple sources."""
+    """Service for managing book covers from Open Library."""
 
     # URLs
-    BOOKCOVER_API_URL = "https://bookcover.longitood.com/bookcover"
     DEFAULT_COVER_FILENAME = "default-book-cover.png"
 
     # Limits
@@ -38,54 +39,61 @@ class CoverService:
         source_cover_data: Optional[str] = None
     ) -> Tuple[Optional[str], str]:
         """
-        Get cover URL based on priority: OL (source) → OL (ISBN) → Bookcover API → Default.
+        Get cover URL with tiered fallback strategy.
+
+        Priority:
+        1. Premium sources (if enabled and licensed):
+           - bookcover.longitood.com (Goodreads)
+        2. Cover from Open Library metadata (cover_from_source)
+        3. Cover from Open Library by ISBN lookup
+        4. Local default image
 
         Args:
             isbn: ISBN number
             title: Book title
             author: Book author
-            cover_from_source: Cover URL from data source (e.g., Open Library)
-            source_cover_data: Additional cover data (e.g., cover_id from OL)
+            cover_from_source: Cover URL from Open Library metadata
+            source_cover_data: Cover ID from Open Library (not used)
 
         Returns:
-            Tuple of (cover_url, source) where source is one of:
-            'open_library', 'bookcover_api', 'local_default', None
+            Tuple of (cover_url, source) where source is:
+            'open_library', 'premium_bookcover', 'local_default', or None
         """
         logger.info(f"CoverService: Getting cover for: {title or isbn}")
 
-        # 1. Try Open Library cover (if data is from OL)
+        # 1. Try premium sources FIRST (if enabled and licensed)
+        cover_url = CoverService._get_cover_from_premium_sources(isbn, title, author)
+        if cover_url:
+            logger.info(f"CoverService: Got premium cover from premium sources")
+            return cover_url, "premium_bookcover"
+
+        # 2. Try cover from source (Open Library metadata)
         if cover_from_source:
-            logger.info(f"CoverService: Using cover from source: {cover_from_source[:50]}...")
+            logger.info(f"CoverService: Using OL cover from metadata")
             return cover_from_source, "open_library"
 
-        # 2. Try Open Library by ISBN (when source has no cover but ISBN is available)
+        # 3. Try Open Library by ISBN lookup
         if isbn:
             cover_url = CoverService._get_cover_from_openlibrary_by_isbn(isbn)
             if cover_url:
                 logger.info(f"CoverService: Got cover from Open Library (ISBN lookup)")
                 return cover_url, "open_library"
 
-        # 3. Try Bookcover API (searches Goodreads)
-        if isbn or (title and author):
-            cover_url = CoverService._get_cover_from_bookcover_api(isbn, title, author)
-            if cover_url:
-                logger.info(f"CoverService: Got cover from Bookcover API")
-                return cover_url, "bookcover_api"
-
         # 4. Fallback to local default image
         logger.info(f"CoverService: Using local default cover")
         return None, "local_default"
 
     @staticmethod
-    def _get_cover_from_bookcover_api(
+    def _get_cover_from_premium_sources(
         isbn: Optional[str] = None,
         title: Optional[str] = None,
         author: Optional[str] = None
     ) -> Optional[str]:
         """
-        Get cover from Bookcover API (Goodreads).
+        Try to get cover from premium sources.
 
-        Tries ISBN first, then title+author.
+        This method transparently uses premium features if they're enabled and licensed.
+        No code changes needed when adding new premium cover sources!
 
         Args:
             isbn: ISBN number
@@ -93,70 +101,32 @@ class CoverService:
             author: Book author
 
         Returns:
-            Cover URL or None if not found
+            Cover URL or None if not found or premium not available
         """
-        try:
-            # Try by ISBN first
-            if isbn:
-                url = CoverService._try_bookcover_isbn(isbn)
-                if url:
-                    return url
+        # Import here to avoid circular imports
+        from app.services.premium.manager import PremiumManager
 
-            # Try by title and author
-            if title and author:
-                url = CoverService._try_bookcover_title_author(title, author)
-                if url:
-                    return url
-
-            return None
-
-        except Exception as e:
-            logger.warning(f"CoverService: Bookcover API error: {e}")
-            return None
-
-    @staticmethod
-    def _try_bookcover_isbn(isbn: str) -> Optional[str]:
-        """Try to get cover by ISBN from Bookcover API."""
-        try:
-            response = requests.get(
-                f"{CoverService.BOOKCOVER_API_URL}/{isbn}",
-                timeout=CoverService.TIMEOUT
+        # Try bookcover API (Goodreads) - premium source
+        if PremiumManager.is_enabled('bookcover_api'):
+            logger.info("CoverService: Trying premium bookcover API")
+            cover_url = PremiumManager.call(
+                'bookcover_api',
+                'get_cover_from_bookcover_api',
+                isbn=isbn,
+                title=title,
+                author=author
             )
+            if cover_url:
+                logger.info("CoverService: Got premium cover from bookcover API")
+                return cover_url
+        else:
+            logger.info("CoverService: bookcover_api premium feature is not enabled")
 
-            if response.status_code == 200:
-                data = response.json()
-                url = data.get("url")
-                if url:
-                    logger.info(f"CoverService: Found cover for ISBN {isbn}")
-                    return url
-        except Exception as e:
-            logger.debug(f"CoverService: Bookcover ISBN lookup failed: {e}")
-
-        return None
-
-    @staticmethod
-    def _try_bookcover_title_author(title: str, author: str) -> Optional[str]:
-        """Try to get cover by title and author from Bookcover API."""
-        try:
-            params = {
-                "book_title": title,
-                "author_name": author
-            }
-
-            response = requests.get(
-                CoverService.BOOKCOVER_API_URL,
-                params=params,
-                timeout=CoverService.TIMEOUT
-            )
-
-            if response.status_code == 200:
-                data = response.json()
-                url = data.get("url")
-                if url:
-                    logger.info(f"CoverService: Found cover for '{title}' by {author}")
-                    return url
-        except Exception as e:
-            logger.debug(f"CoverService: Bookcover title/author lookup failed: {e}")
+        # Future: Add more premium sources here
+        # if PremiumManager.is_enabled('another_premium_source'):
+        #     cover_url = PremiumManager.call(...)
+        #     if cover_url:
+        #         return cover_url
 
         return None
 

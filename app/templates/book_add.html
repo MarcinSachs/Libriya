@@ -387,7 +387,9 @@
                 findBtn.disabled = true;
                 findBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> {{ _('Searching...') }}';
 
-                fetch(`/api/v1/isbn/${isbn}?include_bn=true`)
+                fetch(`/api/v1/isbn/${isbn}`, {
+                    credentials: 'same-origin'
+                })
                     .then(response => {
                         console.log('API Response status:', response.status);
                         if (!response.ok) {
@@ -397,26 +399,47 @@
                     })
                     .then(data => {
                         console.log('API Data received:', data);
-                        if (data.title) titleInput.value = data.title;
+                        
+                        // Fill in book data if available
+                        if (data.title) {
+                            titleInput.value = data.title;
+                        }
                         if (data.author) authorInput.value = data.author;
                         if (data.year) yearInput.value = data.year;
                         
-                        // Show data source
+                        // Create consolidated info alert
                         var sourceMap = {
                             'bn_networks': '{{ _('Polish National Library - Combined Catalogs') }}',
                             'bn_direct': '{{ _('Polish National Library') }}',
-                            'open_library': '{{ _('Open Library') }}'
+                            'open_library': '{{ _('Open Library') }}',
+                            'premium_cover_only': '{{ _('Premium Source (Cover Only)') }}'
                         };
                         var sourceLabel = sourceMap[data.source] || data.source || '{{ _('Unknown Source') }}';
                         
-                        var sourceInfo = document.getElementById('data-source-info');
-                        if (!sourceInfo) {
-                            sourceInfo = document.createElement('div');
-                            sourceInfo.id = 'data-source-info';
-                            sourceInfo.className = 'alert alert-info mt-3';
-                            document.querySelector('form').insertBefore(sourceInfo, document.querySelector('form').firstChild.nextSibling);
+                        // Build alert content
+                        var alertClass = 'alert-info';  // Default: info
+                        var alertContent = '';
+                        
+                        if (!data.title) {
+                            // Limited data from premium
+                            alertClass = 'alert-warning';
+                            alertContent = `<strong>⚠️ {{ _('Limited Data') }}</strong><br/>` +
+                                         `{{ _('Book data not found in Open Library. Only cover image available from premium source.') }}<br/>` +
+                                         `<small style="margin-top: 8px; display: block;">ℹ️ {{ _('Data from:') }} <strong>${sourceLabel}</strong> | {{ _('Cover:') }} <strong>${data.cover_source || '{{ _('Local Default') }}'}</strong></small>`;
+                        } else {
+                            // Full data available
+                            alertContent = `<small>ℹ️ {{ _('Data from:') }} <strong>${sourceLabel}</strong> | {{ _('Cover:') }} <strong>${data.cover_source || '{{ _('Local Default') }}'}</strong></small>`;
                         }
-                        sourceInfo.innerHTML = `<small>ℹ️ {{ _('Data from:') }} <strong>${sourceLabel}</strong> | {{ _('Cover:') }} <strong>${data.cover_source || '{{ _('Local Default') }}'}</strong></small>`;
+                        
+                        // Create or update single info alert
+                        var infoAlert = document.getElementById('data-source-info');
+                        if (!infoAlert) {
+                            infoAlert = document.createElement('div');
+                            infoAlert.id = 'data-source-info';
+                            document.querySelector('form').insertBefore(infoAlert, document.querySelector('form').firstChild.nextSibling);
+                        }
+                        infoAlert.className = `alert ${alertClass} mt-3`;
+                        infoAlert.innerHTML = alertContent;
                         
                         // Update cover preview and hidden field
                         var coverUrlHidden = document.getElementById('cover_url_hidden');
@@ -459,7 +482,9 @@
                 searchResultsDiv.innerHTML = '<div class="text-center"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> {{ _('Searching...') }}</div>';
                 searchByTitleBtn.disabled = true;
 
-                fetch(`/api/v1/search/title?q=${encodeURIComponent(query)}&limit=10`)
+                fetch(`/api/v1/search/title?q=${encodeURIComponent(query)}&limit=10`, {
+                    credentials: 'same-origin'
+                })
                     .then(response => {
                         if (!response.ok) {
                             return response.json().then(err => { throw new Error(err.error || 'Error searching.') });

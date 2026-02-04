@@ -234,23 +234,12 @@ def get_book_by_isbn(isbn):
     """
     API endpoint to fetch book data by ISBN.
 
-    Searches in this priority:
-    1. Biblioteka Narodowa (Polish National Library) - networks catalog
-    2. Open Library API
-    3. Enriches with cover from best available source
-
-    Query params:
-        - include_bn (bool): Include BN search (default: true)
+    Searches in Open Library API with optional premium source extensions.
     """
     try:
         current_app.logger.info(f"API /api/v1/isbn/ called with: {isbn}")
-        use_bn = request.args.get('include_bn', 'true').lower() != 'false'
 
-        book_data = BookSearchService.search_by_isbn(
-            isbn=isbn,
-            use_bn=use_bn,
-            use_openlibrary=True
-        )
+        book_data = BookSearchService.search_by_isbn(isbn=isbn)
 
         if not book_data:
             return jsonify({"error": _("No data found for this ISBN. Please check the number and try again.")}), 404
@@ -312,21 +301,16 @@ def search_book_by_title():
     """
     API endpoint to search for books by title.
 
-    Searches in this priority:
-    1. Biblioteka Narodowa (Polish National Library)
-    2. Open Library API
-    3. Merges results and enriches with covers
+    Searches in Open Library API with optional premium source extensions.
 
     Query params:
         - q (required): Search query (min 3 characters)
         - limit (optional): Max results (default: 10, max: 20)
         - author (optional): Filter by author
-        - include_bn (bool): Include BN search (default: true)
     """
     query = request.args.get('q', '').strip()
     author = request.args.get('author', '').strip()
     limit = request.args.get('limit', 10, type=int)
-    use_bn = request.args.get('include_bn', 'true').lower() != 'false'
 
     if not query or len(query) < 3:
         return jsonify({"error": _("Search query must be at least 3 characters")}), 400
@@ -335,9 +319,7 @@ def search_book_by_title():
         results = BookSearchService.search_by_title(
             title=query,
             author=author or None,
-            limit=min(limit, 20),
-            use_bn=use_bn,
-            use_openlibrary=True
+            limit=min(limit, 20)
         )
 
         # Format for frontend

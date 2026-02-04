@@ -50,6 +50,10 @@ def create_app(config_class=Config):
 
     babel.init_app(app, locale_selector=get_locale)
 
+    # Initialize premium features manager
+    from app.services.premium.manager import PremiumManager
+    PremiumManager.init()
+
     # Register all blueprints
     from app.routes import register_blueprints
     register_blueprints(app)

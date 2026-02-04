@@ -1,12 +1,12 @@
 """
-Main book search service orchestrator.
+Book search service orchestrator.
 
-Coordinates searching across multiple databases and cover sources with proper
-fallback logic and unified response format.
+Searches books using Open Library API with cover sources:
+- Primary: Open Library covers
+- Premium: Bookcover.longitood.com (via premium_cover_service)
 """
 
-from typing import List, Dict, Optional, Tuple
-from app.services.bn_api import BNAPIClient
+from typing import List, Dict, Optional
 from app.services.openlibrary_service import OpenLibraryClient
 from app.services.cover_service import CoverService
 from app.services.isbn_validator import ISBNValidator
@@ -16,26 +16,17 @@ logger = logging.getLogger(__name__)
 
 
 class BookSearchService:
-    """Main service for searching books across multiple sources."""
+    """Main service for searching books via Open Library."""
 
     @staticmethod
-    def search_by_isbn(
-        isbn: str,
-        use_bn: bool = True,
-        use_openlibrary: bool = True
-    ) -> Optional[Dict]:
+    def search_by_isbn(isbn: str) -> Optional[Dict]:
         """
-        Search for book by ISBN with fallback logic.
+        Search for book by ISBN in Open Library.
 
-        Priority:
-        1. Biblioteka Narodowa (combined catalogs)
-        2. Open Library API
-        3. None if not found anywhere
+        If Open Library has no data, tries premium sources for cover image.
 
         Args:
             isbn: ISBN number (10 or 13)
-            use_bn: Try BN first if True
-            use_openlibrary: Fallback to Open Library if True
 
         Returns:
             Unified book data dict with cover info, or None if not found
@@ -44,62 +35,62 @@ class BookSearchService:
             return None
 
         # Validate ISBN
-        is_valid, formatted_isbn = ISBNValidator.normalize(isbn), isbn
         if not ISBNValidator.is_valid(isbn):
             logger.warning(f"BookSearchService: Invalid ISBN: {isbn}")
             return None
 
         normalized_isbn = ISBNValidator.normalize(isbn)
-        logger.info(f"BookSearchService: Search by ISBN: {normalized_isbn}")
+        logger.info(f"BookSearchService: Searching ISBN in Open Library: {normalized_isbn}")
 
-        book_data = None
-        source_used = None
+        # Search in Open Library
+        book_data = OpenLibraryClient.search_by_isbn(normalized_isbn)
 
-        # 1. Try BN first
-        if use_bn:
-            book_data = BNAPIClient.search_by_isbn(normalized_isbn)
-            if book_data:
-                source_used = "bn"
-                logger.info(f"BookSearchService: Found in BN: {book_data.get('title')}")
+        if book_data:
+            logger.info(f"BookSearchService: Found book: {book_data.get('title')}")
+            # Enhance with cover
+            BookSearchService._enhance_with_cover(book_data, normalized_isbn)
+            return book_data
 
-        # 2. Fallback to Open Library
-        if not book_data and use_openlibrary:
-            book_data = OpenLibraryClient.search_by_isbn(normalized_isbn)
-            if book_data:
-                source_used = "open_library"
-                logger.info(f"BookSearchService: Found in Open Library: {book_data.get('title')}")
+        # If Open Library has no data, try premium sources for cover
+        logger.info(
+            f"BookSearchService: Book not found in Open Library, trying premium sources for ISBN {normalized_isbn}")
 
-        if not book_data:
-            logger.info(f"BookSearchService: Not found in any source")
-            return None
+        logger.debug(f"BookSearchService: Calling CoverService._get_cover_from_premium_sources()")
+        cover_url = CoverService._get_cover_from_premium_sources(isbn=normalized_isbn)
+        logger.debug(f"BookSearchService: Premium sources returned: {cover_url}")
 
-        # Enhance with cover
-        BookSearchService._enhance_with_cover(book_data, normalized_isbn)
+        if cover_url:
+            logger.info(f"BookSearchService: Found cover in premium sources for ISBN {normalized_isbn}")
+            # Return minimal book data with cover from premium
+            return {
+                "isbn": normalized_isbn,
+                "title": None,  # No data from OL
+                "authors": [],
+                "year": None,
+                "publisher": None,
+                "source": "premium_cover_only",
+                "cover": {
+                    "url": cover_url,
+                    "source": "premium_bookcover"
+                }
+            }
 
-        return book_data
+        logger.info(f"BookSearchService: No data found for ISBN {normalized_isbn}")
+        return None
 
     @staticmethod
     def search_by_title(
         title: str,
         author: Optional[str] = None,
-        limit: int = 10,
-        use_bn: bool = True,
-        use_openlibrary: bool = True
+        limit: int = 10
     ) -> List[Dict]:
         """
-        Search for books by title with fallback logic.
-
-        Priority:
-        1. Biblioteka Narodowa (combined catalogs)
-        2. Open Library API
-        3. Merge and deduplicate results
+        Search for books by title in Open Library.
 
         Args:
             title: Book title (min 3 characters)
-            author: Author name (optional)
+            author: Author name (optional, not used in OL search)
             limit: Max results to return
-            use_bn: Try BN first if True
-            use_openlibrary: Try Open Library if True
 
         Returns:
             List of unified book data dicts
@@ -108,35 +99,17 @@ class BookSearchService:
             logger.warning(f"BookSearchService: Invalid title query: {title}")
             return []
 
-        logger.info(f"BookSearchService: Search by title: '{title}', author: '{author}'")
+        logger.info(f"BookSearchService: Searching title in Open Library: '{title}'")
 
-        results = []
-        seen_isbns = set()
+        # Search in Open Library
+        ol_results = OpenLibraryClient.search_by_title(title, limit)
 
-        # 1. Try BN first
-        if use_bn:
-            bn_results = BNAPIClient.search_by_title(title, author, limit)
-            for result in bn_results:
-                isbn = result.get("isbn")
-                if isbn and isbn not in seen_isbns:
-                    BookSearchService._enhance_with_cover(result)
-                    results.append(result)
-                    seen_isbns.add(isbn)
-            logger.info(f"BookSearchService: BN returned {len(bn_results)} results")
+        # Enhance each result with cover info
+        for result in ol_results:
+            BookSearchService._enhance_with_cover(result)
 
-        # 2. Try Open Library (to fill gaps)
-        if len(results) < limit and use_openlibrary:
-            ol_results = OpenLibraryClient.search_by_title(title, limit - len(results))
-            for result in ol_results:
-                isbn = result.get("isbn")
-                if isbn and isbn not in seen_isbns:
-                    BookSearchService._enhance_with_cover(result)
-                    results.append(result)
-                    seen_isbns.add(isbn)
-            logger.info(f"BookSearchService: Open Library returned {len(ol_results)} results")
-
-        logger.info(f"BookSearchService: Total results: {len(results)}")
-        return results[:limit]
+        logger.info(f"BookSearchService: Found {len(ol_results)} results")
+        return ol_results
 
     @staticmethod
     def _enhance_with_cover(

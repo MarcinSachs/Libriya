@@ -2,6 +2,10 @@ from flask import session
 from app.models import Genre, Book, Author
 from app import create_app, db
 import os
+from dotenv import load_dotenv
+
+# Load environment variables BEFORE creating app
+load_dotenv('.env')
 
 app = create_app()
 
