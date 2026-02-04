@@ -92,7 +92,7 @@ class BookForm(FlaskForm):
         translated_genres = [(g.id, _real(g.name)) for g in all_genres]
         sorted_translated_genres = sorted(
             translated_genres,
-            key=lambda x: x[1]
+            key=lambda x: x[0]  # Sort by ID, not by name
         )
 
         self.genres.choices = sorted_translated_genres

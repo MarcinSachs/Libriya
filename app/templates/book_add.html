@@ -419,16 +419,17 @@
                         // Build alert content
                         var alertClass = 'alert-info';  // Default: info
                         var alertContent = '';
+                        window.genresForAlert = [];  // Store genres to add to main alert later
                         
                         if (!data.title) {
                             // Limited data from premium
                             alertClass = 'alert-warning';
                             alertContent = `<strong>⚠️ {{ _('Limited Data') }}</strong><br/>` +
                                          `{{ _('Book data not found in Open Library. Only cover image available from premium source.') }}<br/>` +
-                                         `<small style="margin-top: 8px; display: block;">ℹ️ {{ _('Data from:') }} <strong>${sourceLabel}</strong> | {{ _('Cover:') }} <strong>${data.cover_source || '{{ _('Local Default') }}'}</strong></small>`;
+                                         `<small style="margin-top: 8px; display: block;"><i class='bx bxs-info-square me-1'></i>{{ _('Data from:') }} <strong>${sourceLabel}</strong> | {{ _('Cover:') }} <strong>${data.cover_source || '{{ _('Local Default') }}'}</strong></small>`;
                         } else {
                             // Full data available
-                            alertContent = `<small>ℹ️ {{ _('Data from:') }} <strong>${sourceLabel}</strong> | {{ _('Cover:') }} <strong>${data.cover_source || '{{ _('Local Default') }}'}</strong></small>`;
+                            alertContent = `<small><i class='bx bxs-info-square me-1'></i>{{ _('Data from:') }} <strong>${sourceLabel}</strong> | {{ _('Cover:') }} <strong>${data.cover_source || '{{ _('Local Default') }}'}</strong></small>`;
                         }
                         
                         // Create or update single info alert
@@ -438,6 +439,7 @@
                             infoAlert.id = 'data-source-info';
                             document.querySelector('form').insertBefore(infoAlert, document.querySelector('form').firstChild.nextSibling);
                         }
+                        
                         infoAlert.className = `alert ${alertClass} mt-3`;
                         infoAlert.innerHTML = alertContent;
                         
@@ -452,6 +454,89 @@
                             coverPreview.innerHTML = `<img src="/static/images/default-book-cover.png" style="max-width: 150px; border-radius: 4px;">`;
                             coverUrlHidden.value = '';
                         }
+
+                        // Fetch genres from Open Library
+                        console.log('Fetching genres from Open Library for ISBN:', isbn);
+                        console.log('Sending JSON body:', JSON.stringify({ isbn: isbn }));
+                        
+                        // Get CSRF token from meta tag
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                        console.log('CSRF token available:', !!csrfToken);
+                        
+                        fetch(`/api/book/genres-from-isbn`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken,
+                            },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({ isbn: isbn })
+                        })
+                            .then(response => {
+                                console.log('Genre fetch response status:', response.status);
+                                console.log('Genre fetch response OK:', response.ok);
+                                if (!response.ok) {
+                                    return response.json().then(err => { 
+                                        console.error('Genre API error response:', err);
+                                        throw new Error(err.error || 'Error fetching genres') 
+                                    });
+                                }
+                                return response.json();
+                            })
+                            .then(genreData => {
+                                console.log('Genre data received:', genreData);
+                                
+                                if (genreData.genres && genreData.genres.length > 0) {
+                                    // Auto-select genres
+                                    var genreSelect = document.getElementById('genres');
+                                    if (genreSelect) {
+                                        console.log('Genre select element found');
+                                        console.log('Available options:', Array.from(genreSelect.options).map(o => ({value: o.value, text: o.text})));
+                                        
+                                        // Clear current selection
+                                        Array.from(genreSelect.options).forEach(opt => opt.selected = false);
+                                        
+                                        // Select matched genres
+                                        genreData.genres.forEach(genre => {
+                                            console.log(`Looking for genre ID ${genre.id} (${genre.name})`);
+                                            const option = Array.from(genreSelect.options).find(o => {
+                                                const match = o.value === genre.id.toString();
+                                                console.log(`  Checking option value=${o.value} text=${o.text} - match=${match}`);
+                                                return match;
+                                            });
+                                            if (option) {
+                                                option.selected = true;
+                                                console.log(`Selected genre: ${genre.name}`);
+                                            } else {
+                                                console.warn(`Could not find option for genre ID ${genre.id}`);
+                                            }
+                                        });
+                                        
+                                        // Store genres and update info alert
+                                        window.genresForAlert = genreData.genres;
+                                        
+                                        // Update the info alert with genres
+                                        var infoAlert = document.getElementById('data-source-info');
+                                        if (infoAlert && genreData.genres.length > 0) {
+                                            const genreList = genreData.genres.map(g => `<strong>${g.name}</strong>`).join(', ');
+                                            var currentContent = infoAlert.innerHTML;
+                                            var genreInfo = `<br/><small style="margin-top: 8px; display: block;"><i class='bx bxs-info-square me-1'></i>{{ _('Genres:') }} ${genreList}</small>`;
+                                            infoAlert.innerHTML = currentContent + genreInfo;
+                                            console.log('Updated info alert with genres');
+                                        }
+                                    } else {
+                                        console.error('Genre select element not found!');
+                                    }
+                                } else if (genreData.message) {
+                                    // No genres found, show message
+                                    console.info('Genre message:', genreData.message);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Could not auto-map genres from Open Library:', error);
+                                console.error('Error details:', error.toString());
+                                // Don't fail the whole operation if genres can't be fetched
+                            });
                     })
                     .catch(error => {
                         console.error('Error fetching data by ISBN:', error);
