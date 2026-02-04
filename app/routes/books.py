@@ -3,7 +3,7 @@ import secrets
 import requests
 from urllib.parse import urlparse
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file, jsonify
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from werkzeug.utils import secure_filename
@@ -11,7 +11,7 @@ from werkzeug.datastructures import FileStorage
 from PIL import Image
 from io import BytesIO
 
-from app import db
+from app import db, csrf
 from app.forms import BookForm
 from app.models import Book, Author, Library, Location, Genre
 from app.utils import role_required
@@ -23,8 +23,117 @@ from app.utils.messages import (
     BOOK_REMOVED_FROM_FAVORITES, BOOK_NOT_IN_FAVORITES, BOOK_CANNOT_DELETE_NOT_AVAILABLE,
     BOOKS_ONLY_EDIT_OWN_LIBRARIES, COVER_IMAGE_ERROR
 )
+from app.services.openlibrary_service import OpenLibraryClient
 
 bp = Blueprint("books", __name__)
+
+
+@bp.route("/api/book/genres-from-isbn", methods=['POST'])
+@csrf.exempt
+def get_genres_from_isbn():
+    """
+    AJAX endpoint to fetch and map genres from Open Library for a given ISBN.
+
+    Returns JSON with list of genre IDs and genre names.
+    """
+    try:
+        # Debug info
+        current_app.logger.info(f"Genres API - Request received")
+        current_app.logger.info(f"Genres API - Content-Type: {request.content_type}")
+        current_app.logger.info(f"Genres API - Raw data length: {len(request.data)}")
+
+        # Try to get JSON data
+        try:
+            data = request.get_json(force=True)
+        except Exception as e:
+            current_app.logger.error(f"Genres API - JSON parse error: {e}")
+            return jsonify({'error': 'Invalid JSON'}), 400
+
+        current_app.logger.info(f"Genres API - Received JSON data: {data}")
+
+        if not data:
+            current_app.logger.error("Genres API - No JSON data received")
+            return jsonify({'error': 'Invalid request'}), 400
+
+        isbn = data.get('isbn', '').strip() if data else ''
+        current_app.logger.info(f"Genres API - Extracted ISBN: '{isbn}'")
+
+        if not isbn:
+            current_app.logger.warning("Genres API - ISBN is empty or missing")
+            return jsonify({'error': 'ISBN is required'}), 400
+
+        try:
+            # Search for book in Open Library
+            current_app.logger.info(f"Genres API - Searching OL for ISBN: {isbn}")
+            book_data = OpenLibraryClient.search_by_isbn(isbn)
+            current_app.logger.info(f"Genres API - Book data from OL: {book_data is not None}")
+
+            if not book_data:
+                current_app.logger.warning(f"Genres API - Book not found for ISBN: {isbn}")
+                return jsonify({'error': 'Book not found in Open Library'}), 404
+
+            # Get subjects from the book data
+            subjects = book_data.get('subjects', [])
+            current_app.logger.info(f"Genres API - Found {len(subjects)} subjects: {subjects}")
+
+            if not subjects:
+                current_app.logger.info(f"Genres API - No subjects found for ISBN: {isbn}")
+                return jsonify({
+                    'genres': [],
+                    'message': 'No subjects found for this book in Open Library'
+                }), 200
+
+            # Map OL subjects to application genres
+            genre_ids = OpenLibraryClient.get_genre_ids_for_subjects(subjects)
+            current_app.logger.info(f"Genres API - Mapped {len(genre_ids)} genre IDs: {genre_ids}")
+
+            # Get genre names for display
+            genres_info = []
+            if genre_ids:
+                genres = Genre.query.filter(Genre.id.in_(genre_ids)).all()
+                genres_info = [{'id': g.id, 'name': g.name} for g in genres]
+                current_app.logger.info(f"Genres API - Genre info: {genres_info}")
+
+            current_app.logger.info(f"Genres API - Success! Returning {len(genres_info)} genres")
+            return jsonify({
+                'genres': genres_info,
+                'subjects': subjects,
+                'message': 'Genres automatically mapped from Open Library'
+            }), 200
+
+        except Exception as e:
+            current_app.logger.error(f"Genres API - Error fetching genres: {e}", exc_info=True)
+            return jsonify({'error': 'Error fetching data from Open Library'}), 500
+
+    except Exception as e:
+        current_app.logger.error(f"Genres API - Unexpected error: {e}", exc_info=True)
+        return jsonify({'error': 'Unexpected error'}), 500
+
+
+@bp.route("/api/book/genres-from-isbn/test", methods=['POST'])
+@csrf.exempt
+def get_genres_from_isbn_test():
+    """
+    Test endpoint without authentication for debugging.
+    """
+    try:
+        current_app.logger.info(f"Test Genres API - Content-Type: {request.content_type}")
+        current_app.logger.info(f"Test Genres API - Raw data: {request.data}")
+
+        data = request.get_json(force=True)
+        current_app.logger.info(f"Test Genres API - Received JSON data: {data}")
+
+        if not data:
+            return jsonify({'error': 'Invalid request', 'debug': 'No JSON data'}), 400
+
+        isbn = data.get('isbn', '').strip() if data else ''
+        current_app.logger.info(f"Test Genres API - Extracted ISBN: '{isbn}'")
+
+        return jsonify({'success': True, 'isbn': isbn, 'debug': 'Test endpoint working'}), 200
+
+    except Exception as e:
+        current_app.logger.error(f"Test Genres API - Unexpected error: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
 
 
 @bp.route("/book/<int:book_id>", methods=['GET', 'POST'])
