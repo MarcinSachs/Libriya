@@ -13,6 +13,7 @@ import os
 
 logger = logging.getLogger(__name__)
 
+
 class BibliotekaNarodowaService:
     """Service for querying Polish National Library API with ID-based mapping."""
 
@@ -21,27 +22,13 @@ class BibliotekaNarodowaService:
     TIMEOUT = 10
     USER_AGENT = "Libriya/1.0 (Book Management System)"
 
-    # Official genre list (indices 0-17 correspond to IDs 1-18 in the database)
-    GENRES_LIST = [
-        'Business / Self-Help',     # ID 1
-        'Children',                # ID 2
-        'Young Adult',             # ID 3
-        'Fantasy',                 # ID 4
-        'Comic',                   # ID 5
-        'Crime / Thriller',        # ID 6
-        'Culture / Art',           # ID 7
-        'Non-fiction',             # ID 8
-        'Fiction',                 # ID 9
-        'Popular Science',         # ID 10
-        'Scientific / Academic',   # ID 11
-        'Poetry / Drama',          # ID 12
-        'Manual / Education',      # ID 13
-        'Guide / Hobby',           # ID 14
-        'Press',                   # ID 15
-        'Religion / Philosophy',   # ID 16
-        'Romance / Contemporary',  # ID 17
-        'Others'                   # ID 18
-    ]
+    @staticmethod
+    def get_genres_list():
+        """Dynamically fetch genre names from the database."""
+        from app.models import Genre
+        from app import db
+        genres = db.session.query(Genre).order_by(Genre.id).all()
+        return [g.name for g in genres]
 
     # Legacy text dictionary (used as fallback only)
     BN_TYPE_TO_GENRE_MAPPING = {
@@ -122,8 +109,10 @@ class BibliotekaNarodowaService:
                 "isbn": isbn,
                 "title": title,
                 "authors": BibliotekaNarodowaService._extract_authors_from_marc(fields),
-                "year": BibliotekaNarodowaService._extract_year_from_marc(fields) or BibliotekaNarodowaService._extract_year(record),
-                "publisher": BibliotekaNarodowaService._extract_publisher_from_marc(fields) or BibliotekaNarodowaService._extract_publisher(record),
+                "year": BibliotekaNarodowaService._extract_year_from_marc(fields)
+                or BibliotekaNarodowaService._extract_year(record),
+                "publisher": BibliotekaNarodowaService._extract_publisher_from_marc(fields)
+                or BibliotekaNarodowaService._extract_publisher(record),
                 "genres": BibliotekaNarodowaService._extract_genres(record),
                 "source": "biblioteka_narodowa",
                 "bn_id": record.get("id", record.get("identifier", "")),
@@ -140,7 +129,7 @@ class BibliotekaNarodowaService:
         """
         genres = set()
         id_map = BibliotekaNarodowaService._get_id_map()
-        
+
         marc_data = record.get("marc", {})
         fields = marc_data.get("fields", [])
 
@@ -157,7 +146,9 @@ class BibliotekaNarodowaService:
                             clean_val = str(val).strip().rstrip('.')
                             if clean_val in id_map:
                                 genre_idx = id_map[clean_val] - 1
-                                genres.add(BibliotekaNarodowaService.GENRES_LIST[genre_idx])
+                                genres_list = BibliotekaNarodowaService.get_genres_list()
+                                if 0 <= genre_idx < len(genres_list):
+                                    genres.add(genres_list[genre_idx])
 
         # If a precise match by ID is found, return early
         if genres:
@@ -166,7 +157,7 @@ class BibliotekaNarodowaService:
         # 2. FALLBACK (Keyword-based text matching)
         genre_field = str(record.get("genre", "")).lower()
         form_field = str(record.get("formOfWork", "")).lower()
-        
+
         all_text = f"{genre_field} {form_field}"
         for bn_key, app_genre in BibliotekaNarodowaService.BN_TYPE_TO_GENRE_MAPPING.items():
             if bn_key in all_text:
@@ -213,7 +204,8 @@ class BibliotekaNarodowaService:
                 for s in subs:
                     if 'c' in s:
                         match = re.search(r"\d{4}", str(s['c']))
-                        if match: return int(match.group())
+                        if match:
+                            return int(match.group())
         return None
 
     @staticmethod
@@ -224,7 +216,8 @@ class BibliotekaNarodowaService:
                 tag = "260" if "260" in f else "264"
                 subs = f[tag].get("subfields", [])
                 for s in subs:
-                    if 'b' in s: return str(s['b']).rstrip('., ')
+                    if 'b' in s:
+                        return str(s['b']).rstrip('., ')
         return None
 
     @staticmethod
@@ -233,12 +226,14 @@ class BibliotekaNarodowaService:
         y = record.get("publicationYear") or record.get("date")
         if y:
             m = re.search(r"\d{4}", str(y))
-            if m: return int(m.group())
+            if m:
+                return int(m.group())
         return None
 
     @staticmethod
     def _extract_publisher(record: Dict) -> Optional[str]:
         """Fallback method to extract publisher from simple fields."""
         p = record.get("publisher")
-        if isinstance(p, list) and p: p = p[0]
+        if isinstance(p, list) and p:
+            p = p[0]
         return str(p).split(',')[0].strip() if p else None
