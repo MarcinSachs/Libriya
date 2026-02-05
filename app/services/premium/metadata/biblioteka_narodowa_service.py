@@ -1,129 +1,78 @@
 """
 Biblioteka Narodowa (Polish National Library) metadata service.
-
-Provides book metadata from the National Library of Poland API.
-Documentation: https://data.bn.org.pl/docs/bibs
-
-Priority: If enabled, BN data takes priority over Open Library.
-Fallback: If book not found in BN, falls back to Open Library.
-
-Note: BN API doesn't provide cover images - covers always come from Open Library
-(or premium bookcover service if enabled).
+Updated with Authority ID Mapping for precise genre classification.
+Comments translated to English.
 """
 
 import requests
 from typing import Optional, Dict, List
 import logging
 import re
+import json
+import os
 
 logger = logging.getLogger(__name__)
 
 
 class BibliotekaNarodowaService:
-    """Service for querying Polish National Library API."""
+    """Service for querying Polish National Library API with ID-based mapping."""
 
     # API Configuration
     API_BASE_URL = "https://data.bn.org.pl/api/institutions/bibs.json"
     TIMEOUT = 10
     USER_AGENT = "Libriya/1.0 (Book Management System)"
 
-    # Mapping from BN categories/types to application genres
+    @staticmethod
+    def get_genres_list():
+        """Dynamically fetch genre names from the database."""
+        from app.models import Genre
+        from app import db
+        genres = db.session.query(Genre).order_by(Genre.id).all()
+        return [g.name for g in genres]
+
+    # Legacy text dictionary (used as fallback only)
     BN_TYPE_TO_GENRE_MAPPING = {
-        # Fiction
-        'beletrystyka': 'Fiction',
-        'powieść': 'Fiction',
-        'opowiadanie': 'Fiction',
-        'utwór literacki': 'Fiction',
-        'literatura artystyczna': 'Fiction',
-
-        # Fantasy/Science Fiction
-        'fantastyka': 'Fantasy',
-        'science fiction': 'Fiction',
-
-        # Romance
-        'romans': 'Romance / Contemporary',
-
-        # Crime/Thriller
-        'kryminał': 'Crime / Thriller',
-        'thriller': 'Crime / Thriller',
-
-        # Young Adult/Children
-        'literatura dziecięca': 'Children',
-        'literatura młodzieżowa': 'Young Adult',
-
-        # Drama/Poetry
-        'drama': 'Poetry / Drama',
-        'dramat': 'Poetry / Drama',
-        'poemat': 'Poetry / Drama',
-        'wiersze': 'Poetry / Drama',
-        'poezja': 'Poetry / Drama',
-
-        # Non-fiction - General
-        'poradnik': 'Business / Self-Help',
-        'podręcznik': 'Manual / Education',
-        'przewodnik': 'Guide / Hobby',
-
-        # Non-fiction - Educational/Academic
-        'publikacja naukowa': 'Scientific / Academic',
-        'monografia': 'Scientific / Academic',
-        'akademicka': 'Scientific / Academic',
-
-        # Non-fiction - Reference
-        'słownik': 'Manual / Education',
-        'encyklopedia': 'Manual / Education',
-
-        # Non-fiction - Biography/Memoir
-        'biografia': 'Non-fiction',
-        'autobiografia': 'Non-fiction',
-        'wspomnienia': 'Non-fiction',
-
-        # Non-fiction - Art/Culture
-        'sztuka': 'Culture / Art',
-        'historia': 'Non-fiction',
-        'archeologia': 'Non-fiction',
-
-        # Non-fiction - Science
-        'nauka': 'Scientific / Academic',
-        'przyrodoznawstwo': 'Scientific / Academic',
-
-        # Other
-        'publicystyka': 'Non-fiction',
-        'esej': 'Non-fiction',
+        'beletrystyka': 'Fiction', 'powieść': 'Fiction', 'opowiadanie': 'Fiction',
+        'fantastyka': 'Fantasy', 'science fiction': 'Fiction',
+        'romans': 'Romance / Contemporary', 'kryminał': 'Crime / Thriller',
+        'thriller': 'Crime / Thriller', 'literatura dziecięca': 'Children',
+        'literatura młodzieżowa': 'Young Adult', 'poezja': 'Poetry / Drama',
+        'poradnik': 'Business / Self-Help', 'podręcznik': 'Manual / Education',
+        'słownik': 'Manual / Education', 'biografia': 'Non-fiction',
+        'sztuka': 'Culture / Art', 'historia': 'Non-fiction'
     }
+
+    _id_map_cache = None
+
+    @classmethod
+    def _get_id_map(cls) -> Dict[str, int]:
+        """Loads the mapping of 6466 BN Authority IDs (Singleton)."""
+        if cls._id_map_cache is None:
+            # Path to the JSON file in the data folder next to the service
+            path = os.path.join(os.path.dirname(__file__), 'bn_id_to_internal_id.json')
+            try:
+                if os.path.exists(path):
+                    with open(path, 'r', encoding='utf-8') as f:
+                        cls._id_map_cache = json.load(f)
+                    logger.info(f"BN Service: Loaded {len(cls._id_map_cache)} authority mappings.")
+                else:
+                    logger.warning(f"BN Service: Mapping file not found at {path}")
+                    cls._id_map_cache = {}
+            except Exception as e:
+                logger.error(f"BN Service: Failed to load mapping: {e}")
+                cls._id_map_cache = {}
+        return cls._id_map_cache
 
     @staticmethod
     def search_by_isbn(isbn: str) -> Optional[Dict]:
-        """
-        Search for book in Biblioteka Narodowa by ISBN.
-
-        Args:
-            isbn: ISBN-13 or ISBN-10 (will be normalized)
-
-        Returns:
-            Dict with book data if found, None otherwise.
-            Format:
-            {
-                'isbn': '9788375799538',
-                'title': 'Book Title',
-                'authors': ['Author Name'],
-                'year': 2023,
-                'publisher': 'Publisher Name',
-                'genres': ['Fiction', 'Crime / Thriller'],
-                'source': 'biblioteka_narodowa',
-                'bn_id': '123456789'  # BN internal ID
-            }
-        """
+        """Search for book in Biblioteka Narodowa by ISBN."""
         if not isbn:
-            logger.warning("BibliotekaNarodowaService: ISBN is empty")
             return None
 
-        # Normalize ISBN - remove hyphens/spaces
         clean_isbn = isbn.replace("-", "").replace(" ", "").strip()
-
-        logger.info(f"BibliotekaNarodowaService: Searching for ISBN: {clean_isbn}")
+        logger.info(f"BN Service: Searching ISBN: {clean_isbn}")
 
         try:
-            # Query BN API with ISBN or ISSN parameter
             params = {"isbnIssn": clean_isbn}
             response = requests.get(
                 BibliotekaNarodowaService.API_BASE_URL,
@@ -131,385 +80,160 @@ class BibliotekaNarodowaService:
                 timeout=BibliotekaNarodowaService.TIMEOUT,
                 headers={"User-Agent": BibliotekaNarodowaService.USER_AGENT},
             )
-
             response.raise_for_status()
             data = response.json()
 
-            logger.debug(f"BibliotekaNarodowaService: API response received for {clean_isbn}")
-
-            # BN API returns dict with 'bibs' array containing results
-            if not isinstance(data, dict) or not data.get('bibs'):
-                logger.info(f"BibliotekaNarodowaService: No results for ISBN {clean_isbn}")
-                return None
-
             bibs = data.get('bibs', [])
-            if len(bibs) == 0:
-                logger.info(f"BibliotekaNarodowaService: No bibs in response for ISBN {clean_isbn}")
+            if not bibs:
                 return None
 
-            # Take first result
-            bib_record = bibs[0]
+            # Parse the first result
+            return BibliotekaNarodowaService._parse_bib_record(bibs[0], clean_isbn)
 
-            # Parse the response
-            book_data = BibliotekaNarodowaService._parse_bib_record(bib_record, clean_isbn)
-
-            if book_data:
-                logger.info(
-                    f"BibliotekaNarodowaService: Found book in BN: {book_data.get('title')}"
-                )
-                return book_data
-
-            return None
-
-        except requests.RequestException as e:
-            logger.error(f"BibliotekaNarodowaService: API request failed: {e}")
-            return None
         except Exception as e:
-            logger.error(f"BibliotekaNarodowaService: Error parsing response: {e}")
+            logger.error(f"BN Service: API error: {e}")
             return None
 
     @staticmethod
     def _parse_bib_record(record: Dict, isbn: str) -> Optional[Dict]:
-        """
-        Parse BN API response record into unified book format.
-        Uses MARC data for cleaner extraction.
-
-        Args:
-            record: Single bibliographic record from BN API
-            isbn: ISBN used for search
-
-        Returns:
-            Unified book data dict or None if essential fields missing
-        """
+        """Parse BN record into unified book format."""
         try:
-            # Use MARC data if available, otherwise fallback to simple fields
             marc_data = record.get("marc", {})
             fields = marc_data.get("fields", []) if marc_data else []
 
-            # Extract from MARC or fallback to simple fields
             title = BibliotekaNarodowaService._extract_title_from_marc(fields) or record.get("title")
             if not title:
-                logger.warning("BibliotekaNarodowaService: Record missing title")
                 return None
-
-            authors = BibliotekaNarodowaService._extract_authors_from_marc(fields)
-            year = BibliotekaNarodowaService._extract_year_from_marc(
-                fields) or BibliotekaNarodowaService._extract_year(record)
-            publisher = BibliotekaNarodowaService._extract_publisher_from_marc(
-                fields) or BibliotekaNarodowaService._extract_publisher(record)
-            genres = BibliotekaNarodowaService._extract_genres(record)
-            bn_id = record.get("id", record.get("identifier", ""))
 
             book_data = {
                 "isbn": isbn,
                 "title": title,
-                "authors": authors,
-                "year": year,
-                "publisher": publisher,
-                "genres": genres if genres else [],
+                "authors": BibliotekaNarodowaService._extract_authors_from_marc(fields),
+                "year": BibliotekaNarodowaService._extract_year_from_marc(fields)
+                or BibliotekaNarodowaService._extract_year(record),
+                "publisher": BibliotekaNarodowaService._extract_publisher_from_marc(fields)
+                or BibliotekaNarodowaService._extract_publisher(record),
+                "genres": BibliotekaNarodowaService._extract_genres(record),
                 "source": "biblioteka_narodowa",
-                "bn_id": bn_id,
+                "bn_id": record.get("id", record.get("identifier", "")),
             }
-
             return book_data
-
         except Exception as e:
-            logger.error(f"BibliotekaNarodowaService: Error parsing record: {e}")
-            return None
-
-    @staticmethod
-    def _extract_title_from_marc(fields: List[Dict]) -> Optional[str]:
-        """Extract title from MARC field 245."""
-        try:
-            for field_dict in fields:
-                # Field 245 contains title
-                field_245 = field_dict.get("245")
-                if field_245:
-                    subfields = field_245.get("subfields", [])
-                    title_parts = []
-
-                    # Subfield 'a' - main title
-                    # Subfield 'b' - remainder of title
-                    for subfield in subfields:
-                        if isinstance(subfield, dict):
-                            if 'a' in subfield:
-                                title_parts.append(subfield['a'].rstrip('/:; '))
-                            elif 'b' in subfield:
-                                title_parts.append(subfield['b'].rstrip('/:; '))
-
-                    if title_parts:
-                        title = ' : '.join(title_parts)
-                        # Clean up
-                        title = re.sub(r'\s+', ' ', title).strip()
-                        return title
-
-            return None
-        except Exception as e:
-            logger.warning(f"BibliotekaNarodowaService: Error extracting title from MARC: {e}")
-            return None
-
-    @staticmethod
-    def _extract_authors_from_marc(fields: List[Dict]) -> List[str]:
-        """Extract authors from MARC fields 100 and 700."""
-        try:
-            authors = []
-
-            for field_dict in fields:
-                # Field 100 - main author
-                field_100 = field_dict.get("100")
-                if field_100:
-                    author = BibliotekaNarodowaService._parse_author_field(field_100)
-                    if author:
-                        authors.append(author)
-
-                # Field 700 - additional authors
-                field_700 = field_dict.get("700")
-                if field_700:
-                    author = BibliotekaNarodowaService._parse_author_field(field_700)
-                    if author:
-                        authors.append(author)
-
-            return authors[:3]  # Return max 3 authors
-
-        except Exception as e:
-            logger.warning(f"BibliotekaNarodowaService: Error extracting authors from MARC: {e}")
-            return []
-
-    @staticmethod
-    def _parse_author_field(field: Dict) -> Optional[str]:
-        """Parse author from MARC 100 or 700 field."""
-        try:
-            subfields = field.get("subfields", [])
-            author_parts = []
-
-            for subfield in subfields:
-                if isinstance(subfield, dict):
-                    # 'a' - surname, given names
-                    # 'd' - dates (ignore)
-                    # 'e' - relationship (ignore)
-                    if 'a' in subfield:
-                        name = subfield['a'].rstrip(',. ')
-                        author_parts.append(name)
-
-            if author_parts:
-                # Combine parts and format nicely
-                author = ' '.join(author_parts)
-                # Remove trailing dates in parentheses
-                author = re.sub(r'\s*\([^)]*\)\s*$', '', author).strip()
-
-                # Convert "LastName, FirstName" to "FirstName LastName"
-                if ',' in author:
-                    parts = [p.strip() for p in author.split(',')]
-                    if len(parts) == 2:
-                        author = f"{parts[1]} {parts[0]}"
-
-                return author if len(author) > 2 else None
-
-            return None
-        except Exception as e:
-            logger.warning(f"BibliotekaNarodowaService: Error parsing author field: {e}")
-            return None
-
-    @staticmethod
-    def _extract_year_from_marc(fields: List[Dict]) -> Optional[int]:
-        """Extract publication year from MARC field 260 or 008."""
-        try:
-            for field_dict in fields:
-                # Field 260 - Publication info
-                field_260 = field_dict.get("260")
-                if field_260:
-                    subfields = field_260.get("subfields", [])
-                    for subfield in subfields:
-                        if isinstance(subfield, dict) and 'c' in subfield:
-                            # Subfield 'c' contains date
-                            date_str = subfield['c']
-                            year_match = re.search(r"\d{4}", str(date_str))
-                            if year_match:
-                                return int(year_match.group())
-
-            return None
-        except Exception as e:
-            logger.warning(f"BibliotekaNarodowaService: Error extracting year from MARC: {e}")
-            return None
-
-    @staticmethod
-    def _extract_publisher_from_marc(fields: List[Dict]) -> Optional[str]:
-        """Extract publisher from MARC field 260."""
-        try:
-            for field_dict in fields:
-                # Field 260 - Publication, distribution, etc.
-                field_260 = field_dict.get("260")
-                if field_260:
-                    subfields = field_260.get("subfields", [])
-                    for subfield in subfields:
-                        if isinstance(subfield, dict) and 'b' in subfield:
-                            # Subfield 'b' contains publisher
-                            publisher = subfield['b'].rstrip('., ')
-                            if publisher:
-                                return publisher
-
-            return None
-        except Exception as e:
-            logger.warning(f"BibliotekaNarodowaService: Error extracting publisher from MARC: {e}")
-            return None
-
-    @staticmethod
-    def _extract_authors(record: Dict) -> List[str]:
-        """Extract author names from BN record."""
-        try:
-            authors = []
-
-            # BN API provides author info in 'author' field
-            # Format: "LastName, FirstName (birth) LastName, FirstName... Wydawnictwo..."
-            author_field = record.get("author", "")
-
-            if author_field:
-                # Remove publisher info (usually at end)
-                author_field = re.sub(r'\s*Wydawnictwo.*$', '', author_field, flags=re.IGNORECASE)
-
-                # Split by "LastName, FirstName" patterns
-                author_parts = re.split(r'\s+(?=[A-Z][a-ząćęłńóśźż]+,)', author_field)
-
-                for part in author_parts:
-                    if part.strip() and part.strip() not in ['a', 'i']:
-                        # Clean up parenthetical info (birth dates, etc)
-                        clean = re.sub(r'\s*\([^)]*\)\s*', ' ', part.strip())
-                        # Remove extra spaces
-                        clean = re.sub(r'\s+', ' ', clean).strip()
-                        if clean and len(clean) > 2:
-                            authors.append(clean)
-
-            return authors[:3]  # Return max 3 authors
-
-        except Exception as e:
-            logger.warning(f"BibliotekaNarodowaService: Error extracting authors: {e}")
-            return []
-
-    @staticmethod
-    def _extract_year(record: Dict) -> Optional[int]:
-        """Extract publication year from BN record."""
-        try:
-            # BN API uses 'publicationYear', but let's also check other fields
-            year_str = (record.get("publicationYear")
-                        or record.get("date")
-                        or record.get("timePeriodOfCreation")
-                        or record.get("issued")
-                        or record.get("dateIssued"))
-
-            if year_str:
-                # Extract first 4 digit sequence as year
-                year_match = re.search(r"\d{4}", str(year_str))
-                if year_match:
-                    return int(year_match.group())
-
-            return None
-
-        except Exception as e:
-            logger.warning(f"BibliotekaNarodowaService: Error extracting year: {e}")
-            return None
-
-    @staticmethod
-    def _extract_publisher(record: Dict) -> Optional[str]:
-        """Extract publisher name from BN record."""
-        try:
-            # BN API uses 'publisher' field
-            publisher = record.get("publisher")
-
-            if isinstance(publisher, list):
-                publisher = publisher[0] if publisher else None
-
-            if publisher:
-                # Clean up - remove trailing commas and duplicates
-                publisher = re.sub(r',\s*$', '', publisher.strip())
-                publisher = re.sub(r',\s*[A-Z][a-z]+,', ',', publisher)  # Remove duplicate publisher
-                # Take first part (before comma usually)
-                if ',' in publisher:
-                    publisher = publisher.split(',')[0].strip()
-                return publisher if publisher else None
-
-            return None
-
-        except Exception as e:
-            logger.warning(f"BibliotekaNarodowaService: Error extracting publisher: {e}")
+            logger.error(f"BN Service: Parsing error: {e}")
             return None
 
     @staticmethod
     def _extract_genres(record: Dict) -> List[str]:
         """
-        Extract genres from BN record and map to app genres.
-
-        BN provides type/category information that we map to app genres.
-        Uses simple fields, MARC field 380 (form of work), and MARC field 655 (genre/form).
+        Primary Genre Extraction using Authority IDs and fallback text matching.
         """
-        try:
-            genres = set()
+        genres = set()
+        id_map = BibliotekaNarodowaService._get_id_map()
 
-            # BN API uses 'genre', 'formOfWork', 'domain', 'kind'
-            genre_field = record.get("genre", "")
-            form_field = record.get("formOfWork", "")
-            domain_field = record.get("domain", "")
-            kind_field = record.get("kind", "")
+        marc_data = record.get("marc", {})
+        fields = marc_data.get("fields", [])
 
-            all_types = []
+        # 1. SEARCH BY ID (Authority Mapping)
+        # Checking MARC tags 380, 655, and 650 for known Authority IDs
+        target_tags = ['380', '655', '650']
+        for field_dict in fields:
+            for tag in target_tags:
+                if tag in field_dict:
+                    subfields = field_dict[tag].get("subfields", [])
+                    for sub in subfields:
+                        # Extract subfield values (e.g., 'a' or '1')
+                        for val in sub.values():
+                            clean_val = str(val).strip().rstrip('.')
+                            if clean_val in id_map:
+                                genre_idx = id_map[clean_val] - 1
+                                genres_list = BibliotekaNarodowaService.get_genres_list()
+                                if 0 <= genre_idx < len(genres_list):
+                                    genres.add(genres_list[genre_idx])
 
-            for field in [genre_field, form_field, domain_field, kind_field]:
-                if isinstance(field, str) and field.strip():
-                    # Split by space or comma
-                    parts = re.split(r'[\s,]+', field.lower())
-                    all_types.extend([p.strip() for p in parts if p.strip() and len(p.strip()) > 1])
-                elif isinstance(field, list):
-                    all_types.extend([t.lower().strip() for t in field if isinstance(t, str) and t.strip()])
-
-            # Also extract from MARC fields
-            marc_data = record.get("marc", {})
-            marc_fields = marc_data.get("fields", []) if marc_data else []
-
-            for field_dict in marc_fields:
-                # Field 380 - form of work
-                field_380 = field_dict.get("380")
-                if field_380:
-                    subfields = field_380.get("subfields", [])
-                    for subfield in subfields:
-                        if isinstance(subfield, dict) and 'a' in subfield:
-                            text = subfield['a'].lower().strip().rstrip('.,')
-                            if text and len(text) > 1:
-                                all_types.append(text)
-
-                # Field 655 - form/genre (primary genre field)
-                field_655 = field_dict.get("655")
-                if field_655:
-                    subfields = field_655.get("subfields", [])
-                    for subfield in subfields:
-                        if isinstance(subfield, dict) and 'a' in subfield:
-                            text = subfield['a'].lower().strip().rstrip('.,')
-                            if text and len(text) > 1:
-                                all_types.append(text)
-
-            # Map BN types to app genres
-            for bn_type in all_types:
-                # Direct mapping
-                if bn_type in BibliotekaNarodowaService.BN_TYPE_TO_GENRE_MAPPING:
-                    genre = BibliotekaNarodowaService.BN_TYPE_TO_GENRE_MAPPING[bn_type]
-                    genres.add(genre)
-                else:
-                    # Substring matching
-                    for bn_key, app_genre in BibliotekaNarodowaService.BN_TYPE_TO_GENRE_MAPPING.items():
-                        if bn_key in bn_type or bn_type in bn_key:
-                            genres.add(app_genre)
-                            break
-
-            # If no genres found, try to infer from subject
-            if not genres:
-                subject = record.get("subject", "").lower()
-                if "psychologia" in subject or "samopomoc" in subject or "kontrola" in subject:
-                    genres.add("Business / Self-Help")
-                elif "literatura" in subject or "fiction" in subject:
-                    genres.add("Fiction")
-                elif "historia" in subject:
-                    genres.add("Non-fiction")
-
+        # If a precise match by ID is found, return early
+        if genres:
             return list(genres)
 
-        except Exception as e:
-            logger.warning(f"BibliotekaNarodowaService: Error extracting genres: {e}")
-            return []
+        # 2. FALLBACK (Keyword-based text matching)
+        genre_field = str(record.get("genre", "")).lower()
+        form_field = str(record.get("formOfWork", "")).lower()
+
+        all_text = f"{genre_field} {form_field}"
+        for bn_key, app_genre in BibliotekaNarodowaService.BN_TYPE_TO_GENRE_MAPPING.items():
+            if bn_key in all_text:
+                genres.add(app_genre)
+
+        return list(genres) if genres else ["Others"]
+
+    # --- MARC HELPER METHODS (TITLE, AUTHORS, ETC) ---
+
+    @staticmethod
+    def _extract_title_from_marc(fields: List[Dict]) -> Optional[str]:
+        """Extract title from MARC field 245."""
+        for f in fields:
+            if "245" in f:
+                subs = f["245"].get("subfields", [])
+                parts = [list(s.values())[0] for s in subs if 'a' in s or 'b' in s]
+                return " ".join(parts).rstrip('/:; ').strip() if parts else None
+        return None
+
+    @staticmethod
+    def _extract_authors_from_marc(fields: List[Dict]) -> List[str]:
+        """Extract primary and additional authors from MARC fields 100 and 700."""
+        authors = []
+        for f in fields:
+            for tag in ["100", "700"]:
+                if tag in f:
+                    subs = f[tag].get("subfields", [])
+                    name_parts = [s['a'] for s in subs if 'a' in s]
+                    if name_parts:
+                        name = name_parts[0].rstrip(',. ')
+                        if ',' in name:
+                            p = name.split(',')
+                            name = f"{p[1].strip()} {p[0].strip()}"
+                        authors.append(name)
+        return list(dict.fromkeys(authors))[:3]
+
+    @staticmethod
+    def _extract_year_from_marc(fields: List[Dict]) -> Optional[int]:
+        """Extract publication year from MARC field 260 or 264."""
+        for f in fields:
+            if "260" in f or "264" in f:
+                tag = "260" if "260" in f else "264"
+                subs = f[tag].get("subfields", [])
+                for s in subs:
+                    if 'c' in s:
+                        match = re.search(r"\d{4}", str(s['c']))
+                        if match:
+                            return int(match.group())
+        return None
+
+    @staticmethod
+    def _extract_publisher_from_marc(fields: List[Dict]) -> Optional[str]:
+        """Extract publisher from MARC field 260 or 264."""
+        for f in fields:
+            if "260" in f or "264" in f:
+                tag = "260" if "260" in f else "264"
+                subs = f[tag].get("subfields", [])
+                for s in subs:
+                    if 'b' in s:
+                        return str(s['b']).rstrip('., ')
+        return None
+
+    @staticmethod
+    def _extract_year(record: Dict) -> Optional[int]:
+        """Fallback method to extract year from simple fields."""
+        y = record.get("publicationYear") or record.get("date")
+        if y:
+            m = re.search(r"\d{4}", str(y))
+            if m:
+                return int(m.group())
+        return None
+
+    @staticmethod
+    def _extract_publisher(record: Dict) -> Optional[str]:
+        """Fallback method to extract publisher from simple fields."""
+        p = record.get("publisher")
+        if isinstance(p, list) and p:
+            p = p[0]
+        return str(p).split(',')[0].strip() if p else None
