@@ -77,6 +77,8 @@
                 </div>
 
                 {{ macros.form_field(form.genres, field_type='select', icon='bx-tag', help_text=_('Hold Ctrl (or Cmd on Mac) to select multiple genres.'), size=8) }}
+
+                {{ macros.form_field(form.description, field_type='textarea', icon='bx-align-left', placeholder=_('Enter a description (optional)')) }}
             </div>
         </div>
 
@@ -406,6 +408,11 @@
                         }
                         if (data.author) authorInput.value = data.author;
                         if (data.year) yearInput.value = data.year;
+                        // Autofill description if present
+                        var descriptionInput = document.getElementById('description');
+                        if (descriptionInput && data.description) {
+                            descriptionInput.value = data.description;
+                        }
                         
                         // Create consolidated info alert
                         var sourceMap = {

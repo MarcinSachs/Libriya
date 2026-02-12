@@ -288,6 +288,14 @@ class OpenLibraryClient:
                 else:
                     subjects.append(str(subject).lower().strip())
 
+            # Extract description (can be str or dict)
+            description = None
+            desc_data = book_data.get("description")
+            if isinstance(desc_data, dict):
+                description = desc_data.get("value", "").strip()
+            elif isinstance(desc_data, str):
+                description = desc_data.strip()
+
             return {
                 "source": "open_library",
                 "source_id": book_data.get("key"),
@@ -300,6 +308,7 @@ class OpenLibraryClient:
                 "cover": cover_url,
                 "number_of_pages": book_data.get("number_of_pages"),
                 "subjects": subjects,  # Raw subjects from OL
+                "description": description,
             }
 
         except Exception as e:

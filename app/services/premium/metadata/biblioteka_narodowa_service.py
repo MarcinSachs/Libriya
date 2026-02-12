@@ -113,6 +113,23 @@ class BibliotekaNarodowaService:
         if not title:
             return None
 
+
+        # Extract description from MARC 520, record['description'], or fallback to 'subject'
+        description = None
+        for f in marc_fields:
+            if "520" in f:
+                subs = f["520"].get("subfields", [])
+                for s in subs:
+                    if 'a' in s:
+                        description = str(s['a']).strip()
+                        break
+                if description:
+                    break
+        if not description:
+            description = record.get("description")
+        if not description:
+            description = record.get("subject")
+
         return {
             "isbn": isbn,
             "title": title,
@@ -120,6 +137,7 @@ class BibliotekaNarodowaService:
             "year": BibliotekaNarodowaService._extract_year_from_marc(marc_fields) or record.get("publicationYear"),
             "publisher": BibliotekaNarodowaService._extract_publisher_from_marc(marc_fields) or record.get("publisher"),
             "genres": BibliotekaNarodowaService._extract_genres_with_priority(record, marc_fields),
+            "description": description,
             "source": "biblioteka_narodowa",
             "bn_id": record.get("id"),
         }

@@ -7,6 +7,7 @@
     <hr>
 
     <form method="POST" action="" enctype="multipart/form-data" novalidate>
+
         {{ form.hidden_tag() }}
 
         {% if book.cover %}
@@ -24,13 +25,10 @@
         {{ macros.form_field(form.library, field_type='select', icon='bx-building') }}
         {{ macros.form_field(form.genres, field_type='select', icon='bx-tag', help_text=_('Hold Ctrl (or Cmd on Mac) to select multiple genres.')) }}
         {{ macros.form_field(form.year, field_type='number', icon='bx-calendar', placeholder=_("e.g. 1954")) }}
-            {{ form.year(class="form-control", placeholder=_("e.g. 1954")) }}
-            {% for error in form.year.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
-        </div>
+        {{ macros.form_field(form.description, field_type='textarea', icon='bx-align-left', placeholder=_('Enter a description (optional)')) }}
         <div class="form-group mb-3">
             {{ form.cover.label(class="form-label") }}
-            <small class="form-text text-muted d-block mb-1">{{ _('Upload a new cover to replace the current one.')
-                }}</small>
+            <small class="form-text text-muted d-block mb-1">{{ _('Upload a new cover to replace the current one.') }}</small>
             {{ form.cover(class="form-control") }}
             {% for error in form.cover.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </div>
