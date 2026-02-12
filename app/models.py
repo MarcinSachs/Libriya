@@ -63,6 +63,7 @@ class Book(db.Model):
 
     year = db.Column(db.Integer, nullable=False)
     cover = db.Column(db.String(200))
+    description = db.Column(db.Text, nullable=True)
     # 'available', 'reserved', 'on_loan'
     status = db.Column(db.String(50), default='available', nullable=False)
 

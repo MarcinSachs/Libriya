@@ -212,14 +212,30 @@ def book_add():
         if len(current_user.libraries) == 1:
             form.library.data = current_user.libraries[0].id
 
+
     if form.validate_on_submit():
+        # Try to get description from form, or from Open Library/BN if available
+        description = form.description.data.strip() if form.description.data else None
+
+        # Try to fetch description from APIs if not provided
+        if not description and form.isbn.data:
+            # Try BN first
+            book_data = PremiumManager.call('biblioteka_narodowa', 'search_by_isbn', isbn=form.isbn.data)
+            if not book_data:
+                book_data = OpenLibraryClient.search_by_isbn(form.isbn.data)
+            if book_data:
+                current_app.logger.info(f"[DEBUG] BN/OL book_data for ISBN {form.isbn.data}: {book_data}")
+            if book_data and book_data.get('description'):
+                description = book_data['description']
+                current_app.logger.info(f"[DEBUG] Set description for ISBN {form.isbn.data}: {description}")
 
         new_book = Book(
             isbn=form.isbn.data,
             title=form.title.data,
             year=form.year.data,
             library_id=form.library.data,  # Assign library
-            status='available'
+            status='available',
+            description=description
         )
 
         author_names = [name.strip()
@@ -393,6 +409,7 @@ def book_edit(book_id):
         book.title = form.title.data
         book.year = form.year.data
         book.library_id = form.library.data  # Update library
+        book.description = form.description.data.strip() if form.description.data else None
 
         # Handle multiple authors
         book.authors.clear()

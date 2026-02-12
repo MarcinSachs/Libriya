@@ -65,6 +65,10 @@ class BookForm(FlaskForm):
             )
         ]
     )
+    description = TextAreaField(
+        _('Description'),
+        validators=[Optional(), Length(max=2000)]
+    )
     cover = FileField(
         _('Cover'),
         validators=[

@@ -252,6 +252,7 @@ def get_book_by_isbn(isbn):
             "isbn": book_data.get("isbn"),
             "publisher": book_data.get("publisher"),
             "source": book_data.get("source"),
+            "description": book_data.get("description"),
         }
 
         # Add cover info with local caching for external URLs

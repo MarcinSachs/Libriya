@@ -79,7 +79,7 @@
         </span>
         {% endif %}
         {% if field_type == 'textarea' %}
-        {{ field(class='form-control' + (' is-invalid' if field.errors else ''), placeholder=placeholder or '', rows='4') }}
+        {{ field(class='form-control' + (' is-invalid' if field.errors else ''), placeholder=placeholder or '', rows='8', style='height:200px;') }}
         {% elif field_type == 'select' %}
         {{ field(class='form-select' + (' is-invalid' if field.errors else ''), size=size or 1) }}
         {% else %}

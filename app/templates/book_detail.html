@@ -33,6 +33,9 @@
             </p>
             <p><strong>{{ _('Year') }}:</strong> {{ book.year }}</p>
             <p><strong>{{ _('ISBN') }}:</strong> {{ book.isbn }}</p>
+            {% if book.description %}
+            <p><strong>{{ _('Description') }}:</strong><br>{{ book.description|e|linebreaksbr }}</p>
+            {% endif %}
             <p><strong>{{ _('Status') }}:</strong>
                 {% if book.status == 'available' %}
                     <span class="badge bg-success">{{ _('Available') }}</span>
