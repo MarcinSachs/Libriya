@@ -212,7 +212,6 @@ def book_add():
         if len(current_user.libraries) == 1:
             form.library.data = current_user.libraries[0].id
 
-
     if form.validate_on_submit():
         # Try to get description from form, or from Open Library/BN if available
         description = form.description.data.strip() if form.description.data else None

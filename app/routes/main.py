@@ -104,12 +104,12 @@ def offline():
     return render_template("base/offline.html", title=_("Offline"))
 
 
-
 @bp.route("/")
 def landing():
     if current_user.is_authenticated:
         return redirect(url_for("main.home"))
     return render_template("landing/landing.html", landing_page=True)
+
 
 @bp.route("/index")
 def index():

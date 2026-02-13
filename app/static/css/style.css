@@ -1,6 +1,8 @@
 /* === Libriya - Modern Tailwind Design System === */
 
-[x-cloak] { display: none !important; }
+[x-cloak] {
+    display: none !important;
+}
 
 /* ===== Core Utilities ===== */
 
@@ -61,119 +63,134 @@
     --text-dark: #333;
     --text-light: #f8f9fa;
 }
-    color: var(--primary-color);
+
+color: var(--primary-color);
 
 
 }
 }
 }
 
-    body {
-        font-family: 'Inter', sans-serif;
-        color: #333;
-        background-color: #f8f9fa;
-        min-height: 100vh;
-    }
+body {
+    font-family: 'Inter', sans-serif;
+    color: #333;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
 
-    font-size: 1.1rem;
-        font-family: 'Inter', sans-serif;
-        color: #1a535c;
-        font-weight: 700;
-        line-height: 1.2;
-        margin-bottom: 0.5rem;
-    }
+font-size: 1.1rem;
+font-family: 'Inter',
+sans-serif;
+color: #1a535c;
+font-weight: 700;
+line-height: 1.2;
+margin-bottom: 0.5rem;
+}
 
 }
-        font-size: 3rem;
-        letter-spacing: -0.02em;
-    }
+
+font-size: 3rem;
+letter-spacing: -0.02em;
+}
 
 
-        font-size: 2.25rem;
-        letter-spacing: -0.01em;
-    }
+font-size: 2.25rem;
+letter-spacing: -0.01em;
+}
 
 h6 {
-        font-size: 1.5rem;
-    }
+    font-size: 1.5rem;
+}
 
-    font-size: 1rem;
-        font-size: 1.25rem;
-    }
+font-size: 1rem;
+font-size: 1.25rem;
+}
 
 }
-        font-size: 1.1rem;
-    }
+
+font-size: 1.1rem;
+}
 
 
-        font-size: 1rem;
-    }
+font-size: 1rem;
+}
 
-    .btn, a.btn, button.btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        padding: 0.75rem 2rem;
-        border-radius: 1rem;
-        font-weight: bold;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
+.btn,
+a.btn,
+button.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 2rem;
+    border-radius: 1rem;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
 
-    .btn-primary, .bg-primary {
-        background-color: #1a535c !important;
-        color: #fff;
-    }
-    .btn-primary:hover:not(:disabled), .bg-primary:hover:not(:disabled) {
-        /* Usunięto efekt scale i box-shadow na hover, badge jest statyczny */
-    }
+.btn-primary,
+.bg-primary {
+    background-color: #1a535c !important;
+    color: #fff;
+}
 
-    .btn-accent, .bg-accent {
-        background-color: #4ecdc4;
-        color: #fff;
-    }
-    .btn-accent:hover:not(:disabled), .bg-accent:hover:not(:disabled) {
-        /* Usunięto efekt scale i box-shadow na hover, aby nie było animacji */
-    }
+.btn-primary:hover:not(:disabled),
+.bg-primary:hover:not(:disabled) {
+    /* Usunięto efekt scale i box-shadow na hover, badge jest statyczny */
+}
 
-    .btn-outline {
-        background: transparent !important;
-        color: #1a535c;
-        border: 2px solid #1a535c !important;
-        box-shadow: none !important;
-    }
-    .btn-outline:hover:not(:disabled) {
-        background: rgba(26, 83, 92, 0.1) !important;
-        box-shadow: 0 4px 6px -1px rgba(26, 83, 92, 0.2) !important;
-        transform: scale(1.02) !important;
-    }
+.btn-accent,
+.bg-accent {
+    background-color: #4ecdc4;
+    color: #fff;
+}
 
-    .glass-nav {
-        background: rgba(255, 255, 255, 0.8) !important;
-        backdrop-filter: blur(10px) !important;
-        -webkit-backdrop-filter: blur(10px) !important;
-        box-shadow: none !important;
-        transition: box-shadow 0.3s ease !important;
-    }
+.btn-accent:hover:not(:disabled),
+.bg-accent:hover:not(:disabled) {
+    /* Usunięto efekt scale i box-shadow na hover, aby nie było animacji */
+}
 
-    .hero-gradient {
-        background: linear-gradient(135deg, #1a535c 0%, #4ecdc4 100%) !important;
-    }
+.btn-outline {
+    background: transparent !important;
+    color: #1a535c;
+    border: 2px solid #1a535c !important;
+    box-shadow: none !important;
+}
 
-    .bento-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease !important;
-        border: 1px solid #e5e7eb !important;
-        border-radius: 3rem !important;
-    }
-    .bento-card:hover {
-        transform: translateY(-5px) !important;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-        border-color: #4ecdc4 !important;
-    }
+.btn-outline:hover:not(:disabled) {
+    background: rgba(26, 83, 92, 0.1) !important;
+    box-shadow: 0 4px 6px -1px rgba(26, 83, 92, 0.2) !important;
+    transform: scale(1.02) !important;
+}
+
+.glass-nav {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    box-shadow: none !important;
+    transition: box-shadow 0.3s ease !important;
+}
+
+.hero-gradient {
+    background: linear-gradient(135deg, #1a535c 0%, #4ecdc4 100%) !important;
+}
+
+.bento-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 3rem !important;
+}
+
+.bento-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    border-color: #4ecdc4 !important;
+}
+
 /* ===== Forms ===== */
 
 input[type="text"],
@@ -232,7 +249,9 @@ label {
 
 /* ===== Buttons ===== */
 
-.btn, a.btn, button.btn {
+.btn,
+a.btn,
+button.btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -247,7 +266,8 @@ label {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-button:disabled, .btn:disabled {
+button:disabled,
+.btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
@@ -1370,6 +1390,7 @@ i.bx {
     white-space: nowrap;
     flex-shrink: 0;
 }
+
 /* Barcode Scanner Styles */
 #interactive {
     background: #000;
@@ -1398,34 +1419,33 @@ body {
     flex-direction: column;
 }
 
-body > .flex {
+body>.flex {
     flex: 1;
 }
 
 /* Wymuszenie braku animacji na badge REKOMENDOWANY/RECOMMENDED */
 .no-anim-badge {
-  display: block !important;
-  animation: none !important;
-  -webkit-animation: none !important;
-  -moz-animation: none !important;
-  -o-animation: none !important;
-  transition: none !important;
-  opacity: 1 !important;
+    display: block !important;
+    animation: none !important;
+    -webkit-animation: none !important;
+    -moz-animation: none !important;
+    -o-animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
 }
 
 /* Wymuszenie białego tła na hover dla przycisku (Tailwind hover:bg-white) */
 .hover\:bg-white:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+    --tw-bg-opacity: 1;
+    background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
 }
 
 /* Utility to disable all transitions (for static rotate-3) */
-.!transition-none {
-  transition: none !important;
+. !transition-none {
+    transition: none !important;
 }
 
 /* Utility to force text-primary color for important cases */
 .text-primary-force {
-  color: #1a535c !important;
+    color: #1a535c !important;
 }
-
