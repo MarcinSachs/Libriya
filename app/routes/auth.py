@@ -20,7 +20,7 @@ def login():
     from flask_login import current_user
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
-    return render_template("login.html", login_page=True, title='Log In')
+    return render_template("auth/login.html", login_page=True, title='Log In')
 
 
 @bp.route("/login/", methods=['POST'])
@@ -87,4 +87,4 @@ def register():
         flash(AUTH_REGISTRATION_SUCCESS, 'success')
         return redirect(url_for('auth.login'))
 
-    return render_template('register.html', form=form)
+    return render_template('auth/register.html', form=form)

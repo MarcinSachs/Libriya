@@ -1,0 +1,162 @@
+{% extends 'base/layout.html' %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-4">
+    <h2 class="text-2xl font-bold text-gray-800">{{ _('My Messages') }}</h2>
+    
+    {{ macros.display_flashes() }}
+    
+    <!-- Tab Navigation -->
+    <ul class="flex border-b border-gray-200 mb-4" role="tablist">
+        <li class="mr-6" role="presentation">
+            <button class="py-2 px-1 border-b-2 border-[#4ecdc4] text-[#4ecdc4] font-semibold active" id="send-tab" onclick="switchTab('send-pane')" type="button" role="tab" aria-controls="send-pane" aria-selected="true">
+                <i class='bx bx-pen'></i> {{ _('Send Message') }}
+            </button>
+        </li>
+        <li role="presentation">
+            <button class="py-2 px-1 border-b-2 border-transparent text-gray-600 font-semibold hover:text-gray-800" id="history-tab" onclick="switchTab('history-pane')" type="button" role="tab" aria-controls="history-pane" aria-selected="false">
+                <i class='bx bx-history'></i> {{ _('Message History') }} 
+                {% if messages|length > 0 %}
+                <span class="inline-block bg-blue-200 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">{{ messages|length }}</span>
+                {% endif %}
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <!-- Send Message Tab -->
+        <div class="block" id="send-pane" role="tabpanel" aria-labelledby="send-tab">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="px-4 py-3">
+                    <form method="post">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ form.library.label(class="block font-medium text-gray-700 mb-2") }}
+                            {{ form.library(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#4ecdc4] focus:ring-2 focus:ring-[#4ecdc4] focus:ring-opacity-20 transition") }}
+                            {% for error in form.library.errors %}
+                                <div class="text-red-500">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.subject.label(class="block font-medium text-gray-700 mb-2") }}
+                            {{ form.subject(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#4ecdc4] focus:ring-2 focus:ring-[#4ecdc4] focus:ring-opacity-20 transition", placeholder="Subject") }}
+                            {% for error in form.subject.errors %}
+                                <div class="text-red-500">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.message.label(class="block font-medium text-gray-700 mb-2") }}
+                            {{ form.message(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#4ecdc4] focus:ring-2 focus:ring-[#4ecdc4] focus:ring-opacity-20 transition", rows=10, style="resize: vertical; min-height: 250px;", placeholder="Message") }}
+                            {% for error in form.message.errors %}
+                                <div class="text-red-500">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-primary">{{ _('Send') }}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message History Tab -->
+        <div class="hidden" id="history-pane" role="tabpanel" aria-labelledby="history-tab">
+            {% if messages %}
+            <div class="space-y-4">
+                {% for msg in messages %}
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h5 class="font-semibold text-lg mb-0">{{ msg.subject }}</h5>
+                                <small class="text-sm">
+                                    {{ _('To Library:') }} <strong>{{ msg.library.name }}</strong>
+                                </small>
+                                <br>
+                                <small class="text-gray-600">{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <div>
+                                {% if msg.is_resolved %}
+                                <span class="inline-block bg-green-200 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">{{ _('Resolved') }}</span>
+                                {% elif msg.reply_message %}
+                                <span class="inline-block bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">{{ _('Replied') }}</span>
+                                {% else %}
+                                <span class="inline-block bg-yellow-200 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">{{ _('Pending') }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3">
+                        <div class="mb-3">
+                            <p class="text-gray-600 text-sm"><small>{{ _('Your Message:') }}</small></p>
+                            <div class="border-l-4 border-gray-400 pl-3">
+                                <p>{{ msg.message | replace('\n', '<br>') | safe }}</p>
+                            </div>
+                        </div>
+                        
+                        {% if msg.reply_message %}
+                        <hr class="my-4">
+                        <div class="mb-3 bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-600 text-sm mb-2"><small>
+                                <i class='bx bx-reply'></i> {{ _('Reply from:') }} <strong>{{ msg.reply_by.username }}</strong> 
+                                - {{ msg.replied_at.strftime('%Y-%m-%d %H:%M') }}
+                            </small></p>
+                            <div class="border-l-4 border-green-400 pl-3">
+                                <p>{{ msg.reply_message | replace('\n', '<br>') | safe }}</p>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg">
+                            {{ _('Waiting for a response from administration...') }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 border-t border-gray-200">
+                        {% if not msg.reply_message %}
+                        <span class="text-gray-600 text-sm"><small>{{ _('Message sent, awaiting response.') }}</small></span>
+                        {% else %}
+                        <span class="text-green-600 text-sm"><small>{{ _('You have received a reply!') }}</small></span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg">
+                {{ _('You haven\'t sent any messages yet.') }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function switchTab(tabPane) {
+    // Hide all tab panes
+    document.querySelectorAll('[role="tabpanel"]').forEach(pane => {
+        pane.classList.add('hidden');
+    });
+    
+    // Deactivate all tab buttons
+    document.querySelectorAll('[role="tab"]').forEach(btn => {
+        btn.classList.remove('border-[#4ecdc4]', 'text-[#4ecdc4]');
+        btn.classList.add('border-transparent', 'text-gray-600');
+        btn.setAttribute('aria-selected', 'false');
+    });
+    
+    // Show selected tab pane
+    document.getElementById(tabPane).classList.remove('hidden');
+    
+    // Activate selected tab button
+    const button = tabPane === 'send-pane' ? document.getElementById('send-tab') : document.getElementById('history-tab');
+    button.classList.remove('border-transparent', 'text-gray-600');
+    button.classList.add('border-[#4ecdc4]', 'text-[#4ecdc4]');
+    button.setAttribute('aria-selected', 'true');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we need to open the history tab based on URL fragment
+    if (window.location.hash === '#history-pane') {
+        switchTab('history-pane');
+    }
+});
+</script>
+{% endblock %}

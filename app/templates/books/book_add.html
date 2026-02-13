@@ -1,0 +1,689 @@
+{% extends "base/layout.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4">
+    <h2 class="text-2xl font-bold text-gray-800">{{ _('Add a new book') }}</h2>
+    <hr class="my-4">
+
+    {{ macros.display_flashes() }}
+
+    <form method="POST" action="" enctype="multipart/form-data" novalidate>
+        {{ form.csrf_token }}
+
+        <!-- Scanner & ISBN Search Section -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+            <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
+                <h5 class="font-semibold text-lg mb-0"><i class='bx bx-barcode'></i> {{ _('Quick Book Search') }}</h5>
+            </div>
+            <div class="px-4 py-3">
+                <!-- ISBN Scanner Button -->
+                <div id="scanner-button-container" class="mb-3">
+                    <button type="button" id="start-scanner" class="w-full bg-blue-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-600 transition mb-2">
+                        <i class='bx bx-camera'></i> {{ _('Scan ISBN/Barcode') }}
+                    </button>
+                    <!-- Live video viewport - Html5Qrcode creates video element here -->
+                    <div id="interactive" style="display:none; width:100%; max-width:500px; margin:10px auto; border-radius:8px; overflow:hidden;"></div>
+                </div>
+
+                <!-- ISBN Input -->
+                <div class="mb-3">
+                    {{ form.isbn.label(class="block font-medium text-gray-700 mb-2") }}
+                    <div class="flex items-center gap-2">
+                        {{ form.isbn(class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#4ecdc4] focus:ring-2 focus:ring-[#4ecdc4] focus:ring-opacity-20 transition", placeholder=_("Enter ISBN or scan...")) }}
+                        <button type="button" id="find-by-isbn" class="shrink-0 bg-gray-200 text-gray-700 font-semibold px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+                            <i class='bx bx-search-alt'></i> {{ _('Search') }}
+                        </button>
+                    </div>
+                    <div id="isbn-error" class="text-red-500 mt-1 text-sm"></div>
+                    {% for error in form.isbn.errors %}<span class="text-red-500">{{ error }}</span>{% endfor %}
+                </div>
+
+                <!-- Or divider -->
+                <div class="text-center mb-3">
+                    <span class="inline-block bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-xs font-semibold">{{ _('OR') }}</span>
+                </div>
+
+                <!-- Title Search -->
+                <div class="mb-3">
+                    <label class="block font-medium text-gray-700 mb-2"><i class='bx bx-search'></i> {{ _('Search by Title') }}</label>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="title-search" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#4ecdc4] focus:ring-2 focus:ring-[#4ecdc4] focus:ring-opacity-20 transition" placeholder="{{ _('Enter book title...') }}">
+                        <button type="button" id="search-by-title" class="shrink-0 bg-gray-200 text-gray-700 font-semibold px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+                            <i class='bx bx-search-alt'></i> {{ _('Search') }}
+                        </button>
+                    </div>
+                    <div id="title-error" class="text-red-500 mt-1 text-sm"></div>
+                    <div id="search-results" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Entry Section -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+            <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
+                <h5 class="font-semibold text-lg mb-0"><i class='bx bx-edit'></i> {{ _('Book Information') }}</h5>
+            </div>
+            <div class="px-4 py-3">
+                {{ macros.form_field(form.title, field_type='text', icon='bx-book-open', placeholder=_("e.g. The Lord of the Rings")) }}
+
+                {{ macros.form_field(form.author, field_type='text', icon='bx-user', placeholder=_("e.g. J.R.R. Tolkien")) }}
+
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex-1 min-w-xs">
+                        {{ macros.form_field(form.year, field_type='number', icon='bx-calendar', placeholder=_("e.g. 1954")) }}
+                    </div>
+                    <div class="flex-1 min-w-xs">
+                        {{ macros.form_field(form.library, field_type='select', icon='bx-building') }}
+                    </div>
+                </div>
+
+                {{ macros.form_field(form.genres, field_type='select', icon='bx-tag', help_text=_('Hold Ctrl (or Cmd on Mac) to select multiple genres.'), size=8) }}
+
+                {{ macros.form_field(form.description, field_type='textarea', icon='bx-align-left', placeholder=_('Enter a description (optional)')) }}
+            </div>
+        </div>
+
+        <!-- Cover Section -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+            <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
+                <h5 class="font-semibold text-lg mb-0"><i class='bx bx-image'></i> {{ _('Book Cover') }}</h5>
+            </div>
+            <div class="px-4 py-3">
+                <div id="cover-preview" class="mb-3">
+                    {% if form.cover_url.data %}
+                    <img src="{{ form.cover_url.data }}" style="max-width: 150px; border-radius: 4px;" onerror="this.src='/static/images/default-book-cover.png'">
+                    {% endif %}
+                </div>
+                {{ form.cover_url(id="cover_url_hidden") }}
+                {{ macros.form_field(form.cover, field_type='file', icon='bx-cloud-upload', help_text=_('Supported formats: JPG, PNG, JPEG (Max 5MB)')) }}
+            </div>
+        </div>
+
+        <!-- Location Section (Optional) -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+            <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
+                <h5 class="font-semibold text-lg mb-0"><i class='bx bx-map'></i> {{ _('Location Information') }} <small class="text-gray-600 font-normal">({{ _('Optional') }})</small></h5>
+            </div>
+            <div class="px-4 py-3">
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex-1 min-w-xs">
+                        {{ macros.form_field(form.shelf, field_type='text', icon='bx-layer', placeholder=_("e.g., A, B-1")) }}
+                    </div>
+                    <div class="flex-1 min-w-xs">
+                        {{ macros.form_field(form.section, field_type='text', icon='bx-grid', placeholder=_("e.g., Fiction, Science")) }}
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex-1 min-w-xs">
+                        {{ macros.form_field(form.room, field_type='text', icon='bx-door-open', placeholder=_("e.g., Main Hall, Room 2")) }}
+                    </div>
+                    <div class="flex-1 min-w-xs">
+                        {{ macros.form_field(form.location_notes, field_type='text', icon='bx-notepad', placeholder=_("e.g., Top shelf, Near window")) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Section -->
+        <div class="bg-white rounded-lg shadow-sm border border-green-200 mb-4">
+            <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
+                <h5 class="font-semibold text-lg mb-0"><i class='bx bx-save'></i> {{ _('Save') }}</h5>
+            </div>
+            <div class="px-4 py-3">
+                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap gap-2">
+                    {{ macros.form_submit(_('Add Book'), 'success', 'bx-check') }}
+                    <button type="button" class="btn btn-outline" id="cancel-btn" onclick="handleCancel()">
+                        <i class='bx bx-x me-1'></i> {{ _('Cancel') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<!-- Html5-Qrcode - Local copy with better mobile support -->
+<script src="{{ url_for('static', filename='js/vendor/html5-qrcode.min.js') }}"></script>
+<script>
+    // Live video barcode scanner using Html5Qrcode
+    // OCR processing is handled on the backend via API
+    var html5QrCode = null;
+    var scannerActive = false;
+    var lastFrameTime = 0;
+    var FRAME_INTERVAL = 300; // Send frame every 300ms (faster OCR attempts)
+    var ocrProcessing = false;
+    
+    function performBackendOCR(canvas) {
+        if (ocrProcessing) return;
+        
+        var now = Date.now();
+        if (now - lastFrameTime < FRAME_INTERVAL) {
+            return;
+        }
+        lastFrameTime = now;
+        
+        ocrProcessing = true;
+        
+        // Convert canvas to blob and send to backend with lower quality for faster processing
+        canvas.toBlob(function(blob) {
+            if (!blob) {
+                console.debug('OCR: Failed to create blob from canvas');
+                ocrProcessing = false;
+                return;
+            }
+            
+            var formData = new FormData();
+            formData.append('image', blob, 'frame.jpg');
+            
+            fetch('/api/v1/ocr/isbn', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.isbn) {
+                    console.log('✓ ISBN found via OCR:', data.isbn);
+                    
+                    var isbnInput = document.getElementById('isbn');
+                    if (isbnInput && !isbnInput.value) {
+                        isbnInput.value = data.isbn;
+                        isbnInput.style.backgroundColor = '#d4edda';
+                        
+                        // Stop scanner and auto-search
+                        stopScanner();
+                        setTimeout(function() {
+                            var findBtn = document.getElementById('find-by-isbn');
+                            if (findBtn) {
+                                findBtn.click();
+                            }
+                        }, 500);
+                    }
+                }
+            })
+            .catch(error => {
+                console.debug('OCR error:', error);
+            })
+            .finally(() => {
+                ocrProcessing = false;
+            });
+        }, 'image/jpeg', 0.7);
+    }
+    
+    function startScanner() {
+        if (scannerActive) return;
+        
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("interactive");
+        }
+        
+        var config = {
+            fps: 10,
+            qrbox: { width: 250, height: 150 },
+            aspectRatio: 1.777778
+        };
+        
+        html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            function(decodedText, decodedResult) {
+                console.log('✓ Barcode detected:', decodedText);
+                
+                // Clean and validate ISBN from barcode
+                var cleanCode = decodedText.replace(/[^0-9X]/gi, '');
+                if (cleanCode.length === 10 || cleanCode.length === 13) {
+                    var isbnInput = document.getElementById('isbn');
+                    if (isbnInput) {
+                        isbnInput.value = cleanCode;
+                        isbnInput.style.backgroundColor = '#d4edda';
+                    }
+                    
+                    // Stop scanner
+                    stopScanner();
+                    
+                    // Auto-search
+                    setTimeout(function() {
+                        var findBtn = document.getElementById('find-by-isbn');
+                        if (findBtn) {
+                            findBtn.click();
+                        }
+                    }, 500);
+                }
+            },
+            function(errorMessage) {
+                // Ignore decode errors
+            }
+        ).then(function() {
+            scannerActive = true;
+            lastOCRTime = 0;
+            
+            var interactive = document.getElementById('interactive');
+            if (interactive) {
+                interactive.style.display = 'block';
+            }
+            
+            var startBtn = document.getElementById('start-scanner');
+            if (startBtn) {
+                startBtn.innerHTML = '<i class="bx bx-stop"></i> Zatrzymaj';
+                startBtn.classList.remove('btn-info');
+                startBtn.classList.add('btn-danger');
+            }
+            
+            // Start frame capture loop for backend OCR
+            var frameInterval = setInterval(function() {
+                if (!scannerActive) {
+                    clearInterval(frameInterval);
+                    return;
+                }
+                
+                try {
+                    var video = document.querySelector('#interactive video');
+                    if (video && video.videoWidth > 0 && video.videoHeight > 0) {
+                        var canvas = document.createElement('canvas');
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(video, 0, 0);
+                        
+                        performBackendOCR(canvas);
+                    }
+                } catch(e) {
+                    console.debug('Frame capture error:', e);
+                }
+            }, 250); // Check every 250ms for OCR attempt
+        }).catch(function(err) {
+            console.error('Camera error:', err);
+            alert("{{ _('Could not access camera. Please check permissions.') }}");
+        });
+    }
+    
+    function stopScanner() {
+        if (!scannerActive || !html5QrCode) return;
+        
+        html5QrCode.stop().then(function() {
+            scannerActive = false;
+            
+            var interactive = document.getElementById('interactive');
+            if (interactive) {
+                interactive.style.display = 'none';
+            }
+            
+            var startBtn = document.getElementById('start-scanner');
+            if (startBtn) {
+                startBtn.innerHTML = '<i class="bx bx-camera"></i> Skanuj ISBN/Kod kreskowy';
+                startBtn.classList.remove('btn-danger');
+                startBtn.classList.add('btn-info');
+            }
+        }).catch(function(err) {
+            console.error('Stop error:', err);
+        });
+    }
+
+    // Handle Cancel button - cleanup temporary cover files
+    function handleCancel() {
+        const coverUrlInput = document.getElementById('cover_url_hidden');
+        
+        if (coverUrlInput && coverUrlInput.value) {
+            const coverUrl = coverUrlInput.value;
+            
+            // Only cleanup local files (containing /uploads/)
+            if (coverUrl.includes('/uploads/')) {
+                fetch('/api/cleanup-cover', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ cover_url: coverUrl })
+                })
+                .then(response => response.json())
+                .catch(error => {
+                    console.error('Error cleaning up cover:', error);
+                    // Continue anyway, don't block user from leaving
+                })
+                .finally(() => {
+                    window.location.href = "{{ url_for('main.home') }}";
+                });
+            } else {
+                // External URL, no cleanup needed
+                window.location.href = "{{ url_for('main.home') }}";
+            }
+        } else {
+            // No cover URL, redirect immediately
+            window.location.href = "{{ url_for('main.home') }}";
+        }
+    }
+
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, Html5Qrcode available:', typeof Html5Qrcode !== 'undefined');
+        
+        var startBtn = document.getElementById('start-scanner');
+        if (startBtn) {
+            startBtn.addEventListener('click', function() {
+                if (!scannerActive) {
+                    startScanner();
+                } else {
+                    stopScanner();
+                }
+            });
+        }
+
+        // ===== ISBN SEARCH =====
+        var findBtn = document.getElementById('find-by-isbn');
+        var isbnInput = document.getElementById('isbn');
+        var titleInput = document.getElementById('title');
+        var authorInput = document.getElementById('author');
+        var yearInput = document.getElementById('year');
+        var errorDiv = document.getElementById('isbn-error');
+        var coverPreview = document.getElementById('cover-preview');
+
+        if (findBtn) {
+            findBtn.addEventListener('click', function () {
+                var isbn = isbnInput.value.trim().replace(/-/g, '');
+                console.log('ISBN Search clicked, value:', isbn);
+                
+                if (!isbn) {
+                    alert("{{ _('Please enter an ISBN.') }}");
+                    return;
+                }
+
+                coverPreview.innerHTML = '';
+                errorDiv.textContent = '';
+                findBtn.disabled = true;
+                findBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> {{ _('Searching...') }}';
+
+                fetch(`/api/v1/isbn/${isbn}`, {
+                    credentials: 'same-origin'
+                })
+                    .then(response => {
+                        console.log('API Response status:', response.status);
+                        if (!response.ok) {
+                            return response.json().then(err => { throw new Error(err.error || 'Error fetching data.') });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('API Data received:', data);
+                        
+                        // Fill in book data if available
+                        if (data.title) {
+                            titleInput.value = data.title;
+                        }
+                        if (data.author) authorInput.value = data.author;
+                        if (data.year) yearInput.value = data.year;
+                        // Autofill description if present
+                        var descriptionInput = document.getElementById('description');
+                        if (descriptionInput && data.description) {
+                            descriptionInput.value = data.description;
+                        }
+                        
+                        // Create consolidated info alert
+                        var sourceMap = {
+                            'bn_networks': '{{ _('Polish National Library - Combined Catalogs') }}',
+                            'bn_direct': '{{ _('Polish National Library') }}',
+                            'open_library': '{{ _('Open Library') }}',
+                            'premium_cover_only': '{{ _('Premium Source (Cover Only)') }}'
+                        };
+                        var sourceLabel = sourceMap[data.source] || data.source || '{{ _('Unknown Source') }}';
+                        
+                        // Build alert content
+                        var alertClass = 'alert-info';  // Default: info
+                        var alertContent = '';
+                        window.genresForAlert = [];  // Store genres to add to main alert later
+                        
+                        if (!data.title) {
+                            // Limited data from premium
+                            alertClass = 'alert-warning';
+                            alertContent = `<strong>⚠️ {{ _('Limited Data') }}</strong><br/>` +
+                                         `{{ _('Book data not found in Open Library. Only cover image available from premium source.') }}<br/>` +
+                                         `<small style="margin-top: 8px; display: block;"><i class='bx bxs-info-square me-1'></i>{{ _('Data from:') }} <strong>${sourceLabel}</strong> | {{ _('Cover:') }} <strong>${data.cover_source || '{{ _('Local Default') }}'}</strong></small>`;
+                        } else {
+                            // Full data available
+                            alertContent = `<small><i class='bx bxs-info-square me-1'></i>{{ _('Data from:') }} <strong>${sourceLabel}</strong> | {{ _('Cover:') }} <strong>${data.cover_source || '{{ _('Local Default') }}'}</strong></small>`;
+                        }
+                        
+                        // Create or update single info alert
+                        var infoAlert = document.getElementById('data-source-info');
+                        if (!infoAlert) {
+                            infoAlert = document.createElement('div');
+                            infoAlert.id = 'data-source-info';
+                            document.querySelector('form').insertBefore(infoAlert, document.querySelector('form').firstChild.nextSibling);
+                        }
+                        
+                        infoAlert.className = `alert ${alertClass} mt-3`;
+                        infoAlert.innerHTML = alertContent;
+                        
+                        // Update cover preview and hidden field
+                        var coverUrlHidden = document.getElementById('cover_url_hidden');
+                        if (data.cover_image) {
+                            console.log('Setting cover image:', data.cover_image);
+                            coverPreview.innerHTML = `<img src="${data.cover_image}" style="max-width: 150px; border-radius: 4px;" onerror="this.src='/static/images/default-book-cover.png'">`;
+                            coverUrlHidden.value = data.cover_image;
+                        } else {
+                            console.log('No cover image in response, will use default');
+                            coverPreview.innerHTML = `<img src="/static/images/default-book-cover.png" style="max-width: 150px; border-radius: 4px;">`;
+                            coverUrlHidden.value = '';
+                        }
+
+                        // Fetch genres from Open Library
+                        console.log('Fetching genres from Open Library for ISBN:', isbn);
+                        console.log('Sending JSON body:', JSON.stringify({ isbn: isbn }));
+                        
+                        // Get CSRF token from meta tag
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                        console.log('CSRF token available:', !!csrfToken);
+                        
+                        fetch(`/api/book/genres-from-isbn`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken,
+                            },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({ isbn: isbn })
+                        })
+                            .then(response => {
+                                console.log('Genre fetch response status:', response.status);
+                                console.log('Genre fetch response OK:', response.ok);
+                                if (!response.ok) {
+                                    return response.json().then(err => { 
+                                        console.error('Genre API error response:', err);
+                                        throw new Error(err.error || 'Error fetching genres') 
+                                    });
+                                }
+                                return response.json();
+                            })
+                            .then(genreData => {
+                                console.log('Genre data received:', genreData);
+                                
+                                if (genreData.genres && genreData.genres.length > 0) {
+                                    // Auto-select genres
+                                    var genreSelect = document.getElementById('genres');
+                                    if (genreSelect) {
+                                        console.log('Genre select element found');
+                                        console.log('Available options:', Array.from(genreSelect.options).map(o => ({value: o.value, text: o.text})));
+                                        
+                                        // Clear current selection
+                                        Array.from(genreSelect.options).forEach(opt => opt.selected = false);
+                                        
+                                        // Select matched genres
+                                        genreData.genres.forEach(genre => {
+                                            console.log(`Looking for genre ID ${genre.id} (${genre.name})`);
+                                            const option = Array.from(genreSelect.options).find(o => {
+                                                const match = o.value === genre.id.toString();
+                                                console.log(`  Checking option value=${o.value} text=${o.text} - match=${match}`);
+                                                return match;
+                                            });
+                                            if (option) {
+                                                option.selected = true;
+                                                console.log(`Selected genre: ${genre.name}`);
+                                            } else {
+                                                console.warn(`Could not find option for genre ID ${genre.id}`);
+                                            }
+                                        });
+                                        
+                                        // Store genres and update info alert
+                                        window.genresForAlert = genreData.genres;
+                                        
+                                        // Update the info alert with genres
+                                        var infoAlert = document.getElementById('data-source-info');
+                                        if (infoAlert && genreData.genres.length > 0) {
+                                            const genreList = genreData.genres.map(g => `<strong>${g.name}</strong>`).join(', ');
+                                            var currentContent = infoAlert.innerHTML;
+                                            var genreInfo = `<br/><small style="margin-top: 8px; display: block;"><i class='bx bxs-info-square me-1'></i>{{ _('Genres:') }} ${genreList}</small>`;
+                                            infoAlert.innerHTML = currentContent + genreInfo;
+                                            console.log('Updated info alert with genres');
+                                        }
+                                    } else {
+                                        console.error('Genre select element not found!');
+                                    }
+                                } else if (genreData.message) {
+                                    // No genres found, show message
+                                    console.info('Genre message:', genreData.message);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Could not auto-map genres from Open Library:', error);
+                                console.error('Error details:', error.toString());
+                                // Don't fail the whole operation if genres can't be fetched
+                            });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching data by ISBN:', error);
+                        errorDiv.textContent = "{{ _('Could not find data for ISBN. Please check the number and try again.') }}";
+                    })
+                    .finally(() => {
+                        findBtn.disabled = false;
+                        findBtn.innerHTML = '<i class="bx bx-search-alt"></i> {{ _('Search') }}';
+                    });
+            });
+        }
+
+        // ===== TITLE SEARCH =====
+        var titleSearchInput = document.getElementById('title-search');
+        var searchByTitleBtn = document.getElementById('search-by-title');
+        var searchResultsDiv = document.getElementById('search-results');
+        var titleErrorDiv = document.getElementById('title-error');
+
+        if (searchByTitleBtn) {
+            searchByTitleBtn.addEventListener('click', function () {
+                var query = titleSearchInput.value.trim();
+                if (!query || query.length < 3) {
+                    titleErrorDiv.textContent = "{{ _('Please enter at least 3 characters.') }}";
+                    return;
+                }
+
+                titleErrorDiv.textContent = '';
+                searchResultsDiv.innerHTML = '<div class="text-center"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> {{ _('Searching...') }}</div>';
+                searchByTitleBtn.disabled = true;
+
+                fetch(`/api/v1/search/title?q=${encodeURIComponent(query)}&limit=10`, {
+                    credentials: 'same-origin'
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => { throw new Error(err.error || 'Error searching.') });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.results.length === 0) {
+                            searchResultsDiv.innerHTML = '<div class="alert alert-info"><i class="bx bx-info-circle me-2"></i>{{ _('No books found.') }}</div>';
+                            return;
+                        }
+
+                        let html = '<div class="list-group">';
+                        data.results.forEach(book => {
+                            // Handle both direct URL and cover_id format
+                            let coverImg = '';
+                            if (book.cover_id && book.cover_id.startsWith('http')) {
+                                // Direct URL from Bookcover API or OL
+                                coverImg = `<img src="${book.cover_id}" alt="cover" style="height: 60px; margin-right: 10px;" onerror="this.src='/static/images/default-book-cover.png'">`;
+                            } else if (book.cover_id) {
+                                // Open Library cover ID
+                                coverImg = `<img src="https://covers.openlibrary.org/b/id/${book.cover_id}-S.jpg" alt="cover" style="height: 60px; margin-right: 10px;" onerror="this.src='/static/images/default-book-cover.png'">`;
+                            }
+                            
+                            const authors = book.authors ? book.authors.join(', ') : '{{ _('Unknown') }}';
+                            const sourceLabel = book.source === 'bn_networks' ? '🇵🇱 BN' : (book.source === 'bn_direct' ? '🇵🇱 BN' : '📚 OL');
+                            
+                            html += `
+                                <a href="#" class="list-group-item list-group-item-action book-result-item" 
+                                   data-title="${book.title}" 
+                                   data-author="${authors}" 
+                                   data-isbn="${book.isbn}"
+                                   data-year="${book.year || ''}"
+                                   data-cover-id="${book.cover_id || ''}">
+                                    <div class="d-flex w-100">
+                                        ${coverImg}
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <h6 class="mb-1">${book.title}</h6>
+                                                <small class="badge bg-info">${sourceLabel}</small>
+                                            </div>
+                                            <p class="mb-1 text-muted"><small>${authors}</small></p>
+                                            <p class="mb-0 text-muted"><small>ISBN: ${book.isbn}</small></p>
+                                        </div>
+                                    </div>
+                                </a>
+                            `;
+                        });
+                        html += '</div>';
+                        searchResultsDiv.innerHTML = html;
+
+                        // Add click handlers to book results
+                        document.querySelectorAll('.book-result-item').forEach(item => {
+                            item.addEventListener('click', function (e) {
+                                e.preventDefault();
+                                const title = this.dataset.title;
+                                const author = this.dataset.author;
+                                const isbn = this.dataset.isbn;
+                                const year = this.dataset.year;
+                                const coverId = this.dataset.coverId;
+
+                                titleInput.value = title;
+                                authorInput.value = author;
+                                isbnInput.value = isbn;
+                                if (year) yearInput.value = year;
+
+                                // Load cover image if available
+                                var coverUrlHidden = document.getElementById('cover_url_hidden');
+                                if (coverId) {
+                                    let coverUrl;
+                                    if (coverId.startsWith('http')) {
+                                        coverUrl = coverId;
+                                    } else {
+                                        coverUrl = `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
+                                    }
+                                    coverPreview.innerHTML = `<img src="${coverUrl}" style="max-width: 150px; border-radius: 4px;" onerror="this.src='/static/images/default-book-cover.png'">`;
+                                    coverUrlHidden.value = coverUrl;
+                                } else {
+                                    coverPreview.innerHTML = `<img src="/static/images/default-book-cover.png" style="max-width: 150px; border-radius: 4px;">`;
+                                    coverUrlHidden.value = '';
+                                }
+
+                                searchResultsDiv.innerHTML = '';
+                                titleSearchInput.value = '';
+                                // Scroll to form
+                                titleInput.scrollIntoView({ behavior: 'smooth' });
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error searching by title:', error);
+                        titleErrorDiv.textContent = "{{ _('Error during search. Please try again.') }}";
+                        searchResultsDiv.innerHTML = '';
+                    })
+                    .finally(() => {
+                        searchByTitleBtn.disabled = false;
+                    });
+            });
+
+            // Allow Enter key to search
+            titleSearchInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchByTitleBtn.click();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

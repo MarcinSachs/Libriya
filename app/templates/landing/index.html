@@ -1,0 +1,235 @@
+{% extends "base/layout.html" %}
+{% block content %}
+<!-- Navigation -->
+<nav class="fixed w-full z-50 glass-nav border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-20 items-center">
+            <div class="flex items-center gap-3">
+                <img src="/static/images/logo.svg" alt="Libriya Logo" class="h-10 w-auto">
+                <span class="font-serif text-3xl font-bold text-primary">Libriya</span>
+            </div>
+            <div class="hidden md:flex items-center space-x-10">
+                <a href="#features" class="font-semibold text-gray-700 hover:text-primary transition-colors">{{ _('Features') }}</a>
+                <a href="#multi-tenant" class="font-semibold text-gray-700 hover:text-primary transition-colors">{{ _('For Whom') }}</a>
+                <a href="#premium" class="font-semibold text-gray-700 hover:text-primary transition-colors">{{ _('Premium') }}</a>
+                <a href="{{ url_for('auth.login') }}" class="bg-primary text-white px-6 py-2.5 rounded-xl font-bold hover:shadow-lg hover:scale-105 transition-all shadow-md">{{ _('Sign In') }}</a>
+            </div>
+            <!-- Mobile menu button -->
+            <div class="md:hidden flex items-center gap-4">
+                <a href="{{ url_for('main.set_language', lang='pl') }}" class="text-xs font-bold text-primary border border-primary px-2 py-1 rounded">PL</a>
+                <a href="{{ url_for('main.set_language', lang='en') }}" class="text-xs font-bold text-primary border border-primary px-2 py-1 rounded">EN</a>
+                <button class="text-primary text-3xl">
+                    <i class='bx bx-menu'></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+<!-- Hero Section -->
+<section class="pt-32 pb-8 lg:pt-56 lg:pb-40 overflow-hidden relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+                <h1 class="text-5xl lg:text-7xl font-bold leading-tight mb-8">
+                    {{ _('Manage your') }} <span class="text-primary">{{ _('library') }}</span> {{ _('the modern way.') }}
+                </h1>
+                <p class="text-xl text-gray-600 mb-4 max-w-xl leading-relaxed">{{ _('Libriya is a professional tool for cataloging collections, tracking loans, and managing a reader community. Perfect for home and institutions.') }}</p>
+                <div class="flex flex-col sm:flex-row gap-5">
+                    <a href="{{ url_for('auth.register') }}" class="flex items-center justify-center gap-2 bg-primary text-white px-10 py-5 rounded-2xl font-bold text-xl hover:shadow-2xl hover:-translate-y-1 transition-all">
+                        {{ _('Start for free') }} <i class='bx bx-right-arrow-alt text-3xl'></i>
+                    </a>
+                    <a href="#features" class="flex items-center justify-center gap-2 border-2 border-gray-200 bg-white px-10 py-5 rounded-2xl font-bold text-xl hover:bg-gray-50 transition-all">{{ _('Learn more') }}</a>
+                </div>
+            </div>
+            <div class="relative">
+                <div class="absolute -inset-10 hero-gradient opacity-10 blur-[100px] rounded-full"></div>
+                <div class="relative bg-white p-5 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(26,83,92,0.15)] border border-gray-100">
+                    <div class="hero-image-container relative overflow-hidden rounded-[1.5rem]">
+                        <img src="/static/images/library-bg.jpg" alt="Libriya App" class="w-full h-auto">
+                    </div>
+                    <!-- Photo attribution -->
+                    <div class="absolute bottom-8 right-8 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[10px] opacity-70 hover:opacity-100 transition-opacity">
+                        Photo by <a href="https://unsplash.com/@it_me_clark?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash" target="_blank" class="underline">it's me clark</a> on <a href="https://unsplash.com/photos/books-on-white-wooden-shelf-89_E_p_R3S4?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash" target="_blank" class="underline">Unsplash</a>
+                    </div>
+                    <!-- Floating elements -->
+                    <div class="absolute -top-10 -right-10 bg-white p-6 rounded-3xl shadow-2xl border border-gray-50 flex items-center gap-4 animate-bounce hover:pause">
+                        <div class="w-12 h-12 bg-accent rounded-2xl flex items-center justify-center text-white shadow-lg shadow-accent/30">
+                            <i class='bx bx-barcode-reader text-3xl'></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">{{ _('Scan ISBN') }}</p>
+                            <p class="text-lg font-black text-primary">{{ _('Instantly') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Libriya Etymology Section -->
+<section class="py-4 bg-white" id="about-libriya">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-primary mb-4">{{ _('The Story Behind the Name: Libriya') }}</h2>
+            <p class="text-lg text-gray-700 leading-relaxed mb-4">{{ _('The name of our app is more than just a word. It is a thoughtful fusion of two distinct cultures, coming together to create the perfect sanctuary for every reader.') }}</p>
+            <p class="text-lg text-gray-700 leading-relaxed mb-4"><strong>Libri</strong> – {{ _('rooted in Latin, meaning "books." It represents the timeless tradition of collecting knowledge and literature.') }}</p>
+            <p class="text-lg text-gray-700 leading-relaxed mb-4"><strong>Ya (屋)</strong> – {{ _('a Japanese suffix meaning "shop," "establishment," or "house of." In Japan, a Hon-ya is a bookstore—literally, a house where books reside.') }}</p>
+            <p class="text-lg text-gray-700 leading-relaxed">{{ _('Libriya translates to the "House of Books"—your personal, digital space where every story finds its home. It is a blend of European heritage and the Japanese art of organization and mindfulness.') }}</p>
+        </div>
+    </div>
+</section>
+<!-- Features Section -->
+<section id="features" class="py-10 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-24">
+            <h2 class="text-primary font-black tracking-[0.2em] uppercase text-sm mb-6">{{ _('Powerful capabilities') }}</h2>
+            <h3 class="text-5xl font-bold text-gray-900">{{ _('Everything you need') }}</h3>
+        </div>
+        <div class="grid md:grid-cols-3 gap-10">
+            <!-- Card 1: ISBN Scanning -->
+            <div class="bento-card p-10 bg-gray-bg rounded-[3rem] border border-gray-100">
+                <div class="w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-primary/20 rotate-3">
+                    <i class='bx bx-barcode-reader text-4xl'></i>
+                </div>
+                <h4 class="text-2xl font-bold mb-5">{{ _('ISBN Code Scanning') }}</h4>
+                <p class="text-gray-600 leading-relaxed">{{ _('Quickly and conveniently add books using the ISBN code scanning feature. Just scan the code from the cover to automatically fetch book data.') }}</p>
+            </div>
+            <!-- Card 2 -->
+            <div class="bento-card p-10 bg-gray-bg rounded-[3rem] border border-gray-100">
+                <div class="w-16 h-16 bg-accent text-white rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-accent/20 -rotate-3">
+                    <i class='bx bx-history text-4xl'></i>
+                </div>
+                <h4 class="text-2xl font-bold mb-5">{{ _('Full History') }}</h4>
+                <p class="text-gray-600 leading-relaxed">{{ _('Track every loan, return, and reservation. Audit log system ensures complete control over your collections.') }}</p>
+            </div>
+            <!-- Card 3 -->
+            <div class="bento-card p-10 bg-gray-bg rounded-[3rem] border border-gray-100">
+                <div class="w-16 h-16 bg-indigo-500 text-white rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-indigo-500/20 rotate-6">
+                    <i class='bx bx-devices text-4xl'></i>
+                </div>
+                <h4 class="text-2xl font-bold mb-5">{{ _('PWA Support') }}</h4>
+                <p class="text-gray-600 leading-relaxed">{{ _('Use Libriya on any device. Our app works offline and can be installed on your phone.') }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Multi-tenant Section -->
+<section id="multi-tenant" class="py-32 hero-gradient text-white overflow-hidden relative">
+    <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" style="background-image: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid lg:grid-cols-2 gap-20 items-center">
+            <div>
+                <h2 class="font-black tracking-[0.2em] uppercase text-sm mb-6 opacity-70">{{ _('Solution for everyone') }}</h2>
+                <h3 class="text-5xl font-bold mb-10 leading-tight">{{ _('From home libraries to large organizations') }}</h3>
+                <div class="space-y-8">
+                    <div class="flex gap-6">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                            <i class='bx bx-check text-2xl'></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-2xl mb-2">{{ _('Multiple libraries, one account') }}</h4>
+                            <p class="text-white/70 text-lg leading-relaxed">{{ _('Manage separate collections for home, work, or association from a single dashboard.') }}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-6">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                            <i class='bx bx-check text-2xl'></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-2xl mb-2">{{ _('Roles & Permissions') }}</h4>
+                            <p class="text-white/70 text-lg leading-relaxed">{{ _('Assign admin, manager, and reader roles, ensuring data security.') }}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-6">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                            <i class='bx bx-check text-2xl'></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-2xl mb-2">{{ _('Invitation Codes') }}</h4>
+                            <p class="text-white/70 text-lg leading-relaxed">{{ _('Easily invite new users to your library using secure access codes.') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white/10 backdrop-blur-xl rounded-[3rem] p-12 border border-white/20 shadow-2xl">
+                <h4 class="text-3xl font-bold mb-8 flex items-center gap-4">
+                    <i class='bx bx-building-house text-accent text-4xl'></i> <span>{{ _('For Your Organization') }}</span>
+                </h4>
+                <p class="mb-10 text-white/90 text-xl leading-relaxed">{{ _('Libriya is designed for scaling. Each tenant receives their own, isolated space.') }}</p>
+                <ul class="grid grid-cols-2 gap-6 mb-10">
+                    <li class="flex items-center gap-3 text-lg font-medium"><i class='bx bx-check-circle text-accent text-2xl'></i> {{ _('Data isolation') }}</li>
+                    <li class="flex items-center gap-3 text-lg font-medium"><i class='bx bx-check-circle text-accent text-2xl'></i> {{ _('Custom branding') }}</li>
+                    <li class="flex items-center gap-3 text-lg font-medium"><i class='bx bx-check-circle text-accent text-2xl'></i> {{ _('Audit logs') }}</li>
+                    <li class="flex items-center gap-3 text-lg font-medium"><i class='bx bx-check-circle text-accent text-2xl'></i> {{ _('Statistics') }}</li>
+                </ul>
+                <a href="#premium" class="block w-full text-center bg-accent text-primary py-5 rounded-2xl font-black text-xl hover:bg-white hover:scale-[1.02] transition-all shadow-2xl shadow-black/20">{{ _('Learn more about PRO plans') }}</a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Pricing Section -->
+<section id="premium" class="py-32 bg-gray-bg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-24">
+            <h2 class="text-primary font-black tracking-[0.2em] uppercase text-sm mb-6">{{ _('Flexibility') }}</h2>
+            <h3 class="text-5xl font-bold text-gray-900">{{ _('Choose your plan') }}</h3>
+        </div>
+        <div class="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+            <!-- Free -->
+            <div class="bg-white p-12 rounded-[3.5rem] border border-gray-200 shadow-sm hover:shadow-xl transition-all">
+                <h4 class="text-2xl font-bold mb-4">{{ _('Basic') }}</h4>
+                <p class="text-gray-500 mb-10 text-lg">{{ _('Perfect for private collectors') }}</p>
+                <div class="mb-10">
+                    <span class="text-6xl font-black text-primary">0 PLN</span>
+                    <span class="text-gray-400 block mt-2 text-lg">{{ _('/ forever') }}</span>
+                </div>
+                <ul class="space-y-5 mb-12 text-gray-600 text-lg">
+                    <li class="flex items-center gap-4"><i class='bx bx-check text-green-500 text-2xl'></i> {{ _('Up to 100 books') }}</li>
+                    <li class="flex items-center gap-4"><i class='bx bx-check text-green-500 text-2xl'></i> {{ _('1 library') }}</li>
+                    <li class="flex items-center gap-4"><i class='bx bx-check text-green-500 text-2xl'></i> {{ _('Basic statistics') }}</li>
+                </ul>
+                <a href="{{ url_for('auth.register') }}" class="block w-full text-center border-3 border-primary/20 text-primary py-5 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all">{{ _('Choose Basic') }}</a>
+            </div>
+            <!-- Premium -->
+            <div class="bg-white p-12 rounded-[3.5rem] border-4 border-primary shadow-2xl relative scale-105">
+                <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-primary text-white px-6 py-2 rounded-full text-sm font-black uppercase tracking-[0.2em]">{{ _('PRO') }}</div>
+                <h4 class="text-2xl font-bold mb-4">{{ _('Professional') }}</h4>
+                <p class="text-gray-500 mb-10 text-lg">{{ _('For organizations and advanced users') }}</p>
+                <div class="mb-10">
+                    <span class="text-6xl font-black text-primary">{{ _('Contact us') }}</span>
+                    <span class="text-gray-400 block mt-2 text-lg">{{ _('/ month') }}</span>
+                </div>
+                <ul class="space-y-5 mb-12 text-gray-600 text-lg">
+                    <li class="flex items-center gap-4"><i class='bx bx-check text-accent text-2xl'></i> {{ _('Unlimited books') }}</li>
+                    <li class="flex items-center gap-4"><i class='bx bx-check text-accent text-2xl'></i> {{ _('Multiple libraries') }}</li>
+                    <li class="flex items-center gap-4"><i class='bx bx-check text-accent text-2xl'></i> {{ _('Advanced statistics') }}</li>
+                    <li class="flex items-center gap-4"><i class='bx bx-check text-accent text-2xl'></i> {{ _('Priority support') }}</li>
+                </ul>
+                <a href="{{ url_for('auth.register') }}" class="block w-full text-center bg-primary text-white py-5 rounded-2xl font-black text-xl hover:shadow-2xl hover:scale-[1.02] transition-all shadow-lg shadow-primary/30">{{ _('Choose PRO') }}</a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Footer -->
+<footer class="bg-white py-20 border-t border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-12">
+            <div class="flex flex-col items-center md:items-start">
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="/static/images/logo.svg" alt="Libriya Logo" class="h-8 w-auto">
+                    <span class="font-serif text-3xl font-bold text-primary">Libriya</span>
+                </div>
+                <p class="text-gray-500 text-lg">{{ _('Your modern library system') }}</p>
+            </div>
+            <div class="flex gap-8 text-3xl text-gray-400">
+                <a href="https://github.com/MarcinSachs/Libriya" class="hover:text-primary transition-all hover:scale-110"><i class='bx bxl-github'></i></a>
+                <a href="#" class="hover:text-primary transition-all hover:scale-110"><i class='bx bxl-linkedin-square'></i></a>
+                <a href="#" class="hover:text-primary transition-all hover:scale-110"><i class='bx bxl-twitter'></i></a>
+            </div>
+        </div>
+        <div class="mt-20 pt-10 border-t border-gray-100 text-center text-gray-400 text-base">
+            <p>&copy; 2026 Libriya. {{ _('All rights reserved.') }}</p>
+        </div>
+    </div>
+</footer>
+{% endblock %}

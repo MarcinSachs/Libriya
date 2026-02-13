@@ -1,0 +1,25 @@
+{% extends "base/layout.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-4">
+    <div class="flex">
+        <div class="w-full md:w-1/2 md:mx-auto">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
+                    <h2 class="text-2xl font-bold text-gray-800">{{ title }}</h2>
+                </div>
+                <div class="px-4 py-3">
+                    <form method="POST" action="">
+                        {{ form.hidden_tag() }}
+                        {{ macros.form_field(form.name, field_type='text', icon='bx-building', placeholder=_("Enter library name")) }}
+                        {{ macros.form_field(form.loan_overdue_days, field_type='number', icon='bx-time', placeholder=_("Loan overdue days")) }}
+                        <div class="w-full">
+                           {{ form.submit(class="w-full btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

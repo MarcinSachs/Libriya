@@ -41,7 +41,7 @@ def invitation_codes_list():
             InvitationCode.library_id.in_(library_ids)
         ).order_by(InvitationCode.created_at.desc()).all()
 
-    return render_template('invitation_codes.html', codes=codes, now=datetime.utcnow,
+    return render_template('superadmin/invitation_codes.html', codes=codes, now=datetime.utcnow,
                            active_page='invitations', parent_page='admin')
 
 
@@ -61,7 +61,7 @@ def generate_code():
                 libraries = Library.query.all()
             else:
                 libraries = current_user.libraries
-            return render_template('generate_invitation.html', libraries=libraries)
+            return render_template('superadmin/generate_invitation.html', libraries=libraries)
 
         # Verify library access
         library = Library.query.get_or_404(library_id)
@@ -98,7 +98,7 @@ def generate_code():
     else:  # manager
         libraries = current_user.libraries
 
-    return render_template('generate_invitation.html', libraries=libraries)
+    return render_template('superadmin/generate_invitation.html', libraries=libraries)
 
 
 @bp.route('/<int:code_id>/deactivate', methods=['POST'])

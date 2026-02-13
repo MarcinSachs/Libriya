@@ -1,0 +1,63 @@
+{% extends 'base/layout.html' %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-4">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-gray-100 {% if not message.read_by_admin and current_user.role in ['admin', 'manager'] %}bg-blue-100{% endif %} px-4 py-3 border-b border-gray-200">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h4 class="text-lg font-semibold mb-2">{{ message.subject }}</h4>
+                        <small class="text-sm">
+                            {{ _('From:') }} <strong>{{ message.user.username }}</strong> 
+                            ({{ message.user.email }})
+                        </small>
+                        <br>
+                        <small class="text-sm">
+                            {{ _('Library:') }} <strong>{{ message.library.name }}</strong>
+                        </small>
+                        <br>
+                        <small class="text-gray-600">{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
+                    <div>
+                        {% if message.is_resolved %}
+                        <span class="inline-block bg-green-200 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">{{ _('Resolved') }}</span>
+                        {% else %}
+                        <span class="inline-block bg-yellow-200 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">{{ _('Open') }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="px-4 py-3">
+                <div class="mb-4">
+                    <p class="text-gray-600 text-sm"><small>{{ _('Message:') }}</small></p>
+                    <div class="border-l-4 border-gray-400 pl-3">
+                        <p>{{ message.message | replace('\n', '<br>') | safe }}</p>
+                    </div>
+                </div>
+                
+                {% if message.reply_message %}
+                <hr class="my-4">
+                <div class="mb-4 bg-gray-50 p-4 rounded-lg">
+                    <p class="text-gray-600 text-sm mb-2"><small>
+                        <i class='bx bx-reply'></i> {{ _('Reply from:') }} <strong>{{ message.reply_by.username }}</strong> 
+                        - {{ message.replied_at.strftime('%Y-%m-%d %H:%M') }}
+                    </small></p>
+                    <div class="border-l-4 border-green-400 pl-3">
+                        <p>{{ message.reply_message | replace('\n', '<br>') | safe }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg">
+                    {{ _('Waiting for a response from administration...') }}
+                </div>
+                {% endif %}
+            </div>
+            <div class="bg-gray-50 px-4 py-3 border-t border-gray-200">
+                <a href="{{ url_for('main.contact') }}" class="btn btn-outline">
+                    <i class='bx bx-arrow-back'></i> {{ _('Back to Contact') }}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

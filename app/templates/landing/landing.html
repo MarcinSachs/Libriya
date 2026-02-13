@@ -1,0 +1,374 @@
+    <footer class="bg-white py-5 border-t border-gray-100">
+<!DOCTYPE html>
+<html lang="{{ g.get('lang', 'pl') }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libriya - {{ _('house for your books') }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1a535c',
+                        accent: '#4ecdc4',
+                        'text-dark': '#333',
+                        'gray-bg': '#f8f9fa',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Cormorant Garamond', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body class="font-sans text-text-dark bg-gray-bg selection:bg-accent selection:text-white">
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass-nav border-b border-gray-200" style="top:0; margin-top:0; padding-top:0;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex items-center gap-3">
+                    <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Libriya Logo" class="h-10 w-auto">
+                    <span class="font-serif text-3xl font-bold text-primary">Libriya</span>
+                    <span class="text-gray-500 text-lg ml-3">house for your books</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-10">
+                    <a href="#features" class="font-semibold text-gray-700 hover:text-primary transition-colors">{{ _('Features') }}</a>
+                    <a href="#multi-tenant" class="font-semibold text-gray-700 hover:text-primary transition-colors">{{ _('For Whom') }}</a>
+                    <a href="#premium" class="font-semibold text-gray-700 hover:text-primary transition-colors">{{ _('Premium') }}</a>
+                    <div class="flex items-center gap-2 border-l pl-6 border-gray-200">
+                        <a href="{{ url_for('main.set_language', lang='pl') }}" class="text-sm transition-all {% if g.get('lang', 'pl') == 'pl' %}text-primary font-bold{% else %}text-gray-400 hover:text-gray-600{% endif %}">PL</a>
+                        <span class="text-gray-300">|</span>
+                        <a href="{{ url_for('main.set_language', lang='en') }}" class="text-sm transition-all {% if g.get('lang', 'pl') == 'en' %}text-primary font-bold{% else %}text-gray-400 hover:text-gray-600{% endif %}">EN</a>
+                    </div>
+                    <a href="{{ url_for('auth.login') }}" class="bg-primary text-white px-6 py-2.5 rounded-xl font-bold hover:shadow-lg hover:scale-105 transition-all shadow-md">{{ _('Sign In') }}</a>
+                </div>
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center gap-4">
+                    <a href="{{ url_for('main.set_language', lang=g.get('lang', 'pl') == 'pl' and 'en' or 'pl') }}" class="text-xs font-bold text-primary border border-primary px-2 py-1 rounded">{{ g.get('lang', 'pl').upper() }}</a>
+                    <button class="text-primary text-3xl">
+                        <i class='bx bx-menu'></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Hero Section -->
+    <section class="pt-32 pb-8 lg:pt-56 lg:pb-40 overflow-hidden relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div data-aos="fade-right">
+                    <h1 class="text-5xl lg:text-7xl font-bold leading-tight mb-8">
+                        {% if g.get('lang', 'pl') == 'pl' %}
+                            Zarządzaj swoją <span class="text-primary">biblioteką</span> w nowoczesny sposób.
+                        {% else %}
+                            Manage your <span class="text-primary">library</span> the modern way.
+                        {% endif %}
+                    </h1>
+                    <p class="text-xl text-gray-600 mb-4 max-w-xl leading-relaxed">
+                        {% if g.get('lang', 'pl') == 'pl' %}
+                            Libriya to profesjonalne narzędzie do katalogowania zbiorów, śledzenia wypożyczeń i zarządzania społecznością czytelników. Idealne dla domu i instytucji.
+                        {% else %}
+                            Libriya is a professional tool for cataloging collections, tracking loans, and managing a reader community. Perfect for home and institutions.
+                        {% endif %}
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-5">
+                        <a href="{{ url_for('auth.login') }}" class="flex items-center justify-center gap-2 bg-primary text-white px-10 py-5 rounded-2xl font-bold text-xl hover:shadow-2xl hover:-translate-y-1 transition-all">
+                            {% if g.get('lang', 'pl') == 'pl' %}Zacznij za darmo{% else %}Start for free{% endif %} <i class='bx bx-right-arrow-alt text-3xl'></i>
+                        </a>
+                        <a href="#features" class="flex items-center justify-center gap-2 border-2 border-gray-200 bg-white px-10 py-5 rounded-2xl font-bold text-xl hover:bg-gray-50 transition-all">
+                            {% if g.get('lang', 'pl') == 'pl' %}Dowiedz się więcej{% else %}Learn more{% endif %}
+                        </a>
+                    </div>
+                </div>
+                <div class="relative" data-aos="fade-left">
+                    <div class="absolute -inset-10 hero-gradient opacity-10 blur-[100px] rounded-full"></div>
+                    <div class="relative bg-white p-5 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(26,83,92,0.15)] border border-gray-100">
+                        <div class="hero-image-container relative overflow-hidden rounded-[1.5rem]">
+                            <img src="{{ url_for('static', filename='images/library-bg.jpg') }}" alt="Libriya App" class="w-full h-auto">
+                        </div>
+                        <!-- Photo attribution -->
+                        <div class="absolute bottom-8 right-8 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[10px] opacity-70 hover:opacity-100 transition-opacity">
+                            Clementinum, Prague.
+                        </div>
+                        <!-- Floating elements -->
+                        <div class="absolute -top-10 -right-10 bg-white p-6 rounded-3xl shadow-2xl border border-gray-50 flex items-center gap-4 animate-bounce">
+                            <div class="w-12 h-12 bg-accent rounded-2xl flex items-center justify-center text-white shadow-lg shadow-accent/30">
+                                <i class='bx bx-barcode-reader text-3xl'></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">
+                                    {% if g.get('lang', 'pl') == 'pl' %}Skanuj ISBN{% else %}Scan ISBN{% endif %}
+                                </p>
+                                <p class="text-lg font-black text-primary">
+                                    {% if g.get('lang', 'pl') == 'pl' %}Błyskawicznie{% else %}Instantly{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Libriya Etymology Section -->
+    <section class="py-4 bg-white" id="about-libriya">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-primary mb-4">{{ _('The Story Behind the Name: Libriya') if g.get('lang', 'pl') == 'en' else 'Historia nazwy: Libriya' }}</h2>
+                {% if g.get('lang', 'pl') == 'pl' %}
+                <p class="text-lg text-gray-700 leading-relaxed mb-4">
+                    Nazwa aplikacji nie jest dziełem przypadku. To starannie przemyślane połączenie dwóch odległych kultur, które wspólnie tworzą idealną przestrzeń dla każdego czytelnika.
+                </p>
+                <p class="text-lg text-gray-700 leading-relaxed mb-4">
+                    <strong>Libri</strong> – pochodzi z łaciny i oznacza „książki”. To fundament, który nawiązuje do wielowiekowej tradycji gromadzenia wiedzy i literatury.
+                </p>
+                <p class="text-lg text-gray-700 leading-relaxed mb-4">
+                    <strong>Ya (屋)</strong> – to japoński przyrostek oznaczający „miejsce”, „sklep” lub „dom rzemiosła”. W Japonii Hon-ya to księgarnia, czyli dom, w którym mieszkają książki.
+                </p>
+                <p class="text-lg text-gray-700 leading-relaxed">
+                    <strong>Libriya</strong> to zatem „Dom Książek” – Twoja osobista, cyfrowa przestrzeń, w której każdy wolumin znajduje swoje miejsce. To połączenie europejskiej tradycji z japońskim zamiłowaniem do porządku i estetyki.
+                </p>
+                {% else %}
+                <p class="text-lg text-gray-700 leading-relaxed mb-4">
+                    The name of our app is more than just a word. It is a thoughtful fusion of two distinct cultures, coming together to create the perfect sanctuary for every reader.
+                </p>
+                <p class="text-lg text-gray-700 leading-relaxed mb-4">
+                    <strong>Libri</strong> – rooted in Latin, meaning "books." It represents the timeless tradition of collecting knowledge and literature.
+                </p>
+                <p class="text-lg text-gray-700 leading-relaxed mb-4">
+                    <strong>Ya (屋)</strong> – a Japanese suffix meaning "shop," "establishment," or "house of." In Japan, a Hon-ya is a bookstore—literally, a house where books reside.
+                </p>
+                <p class="text-lg text-gray-700 leading-relaxed">
+                    <strong>Libriya</strong> translates to the "House of Books"—your personal, digital space where every story finds its home. It is a blend of European heritage and the Japanese art of organization and mindfulness.
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-10 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-24">
+                <h2 class="text-primary font-black tracking-[0.2em] uppercase text-sm mb-6">{{ _('Features') }}</h2>
+                <h3 class="text-5xl font-bold text-gray-900">{{ _('Everything you need to manage your library') }}</h3>
+            </div>
+            <div class="grid md:grid-cols-3 gap-10">
+                <!-- Card 1: ISBN Scanning -->
+                <div class="bento-card p-10 bg-gray-bg rounded-[3rem] border border-gray-100 aos-init aos-animate" data-aos="fade-up">
+                    <div class="w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-primary/20 rotate-3 !transition-none">
+                        <i class='bx bx-barcode-reader text-5xl'></i>
+                    </div>
+                    <h4 class="text-2xl font-bold mb-5">
+                        {% if g.get('lang', 'pl') == 'pl' %}Skanowanie kodów ISBN{% else %}ISBN Code Scanning{% endif %}
+                    </h4>
+                    <p class="text-gray-600 leading-relaxed">
+                        {% if g.get('lang', 'pl') == 'pl' %}Dodawaj książki w sekundę skanując ich kod ISBN lub używając zaawansowanego systemu rozpoznawania tekstu (OCR).{% else %}Quickly and conveniently add books using the ISBN code scanning feature. Just scan the code from the cover to automatically fetch book data.{% endif %}
+                    </p>
+                </div>
+                <!-- Card 2: Full History -->
+                <div class="bento-card p-10 bg-gray-bg rounded-[3rem] border border-gray-100 aos-init aos-animate" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-16 h-16 bg-accent text-white rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-accent/10 rotate-3 !transition-none">
+                        <i class='bx bx-history text-5xl'></i>
+                    </div>
+                    <h4 class="text-2xl font-bold mb-5">
+                        {% if g.get('lang', 'pl') == 'pl' %}Pełna historia{% else %}Full History{% endif %}
+                    </h4>
+                    <p class="text-gray-600 leading-relaxed">
+                        {% if g.get('lang', 'pl') == 'pl' %}Śledź każde wypożyczenie, zwrot i rezerwację. System logów audytowych zapewnia pełną kontrolę nad Twoimi zbiorami.{% else %}Track every loan, return, and reservation. Audit log system ensures complete control over your collections.{% endif %}
+                    </p>
+                </div>
+                <!-- Card 3: PWA Support -->
+                <div class="bento-card p-10 bg-gray-bg rounded-[3rem] border border-gray-100 aos-init aos-animate" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-16 h-16 bg-indigo-500 text-white rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-indigo-500/10 rotate-3 !transition-none">
+                        <i class='bx bx-devices text-5xl'></i>
+                    </div>
+                    <h4 class="text-2xl font-bold mb-5">
+                        {% if g.get('lang', 'pl') == 'pl' %}Wsparcie PWA{% else %}PWA Support{% endif %}
+                    </h4>
+                    <p class="text-gray-600 leading-relaxed">
+                        {% if g.get('lang', 'pl') == 'pl' %}Korzystaj z Libriya na dowolnym urządzeniu. Nasza aplikacja działa offline i może być zainstalowana na telefonie.{% else %}Use Libriya on any device. Our app works offline and can be installed on your phone.{% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Multi-tenant Section -->
+    <section id="multi-tenant" class="py-32 hero-gradient text-white overflow-hidden relative">
+        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" aria-hidden="true"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid lg:grid-cols-2 gap-20 items-center">
+                <div data-aos="fade-right">
+                    <h2 class="font-black tracking-[0.2em] uppercase text-sm mb-6 opacity-70">
+                        {% if g.get('lang', 'pl') == 'pl' %}ROZWIĄZANIE DLA KAŻDEGO{% else %}SOLUTION FOR EVERYONE{% endif %}
+                    </h2>
+                    <h3 class="text-5xl font-bold mb-10 leading-tight">
+                        {% if g.get('lang', 'pl') == 'pl' %}Od domowych biblioteczek po duże organizacje{% else %}From home libraries to large organizations{% endif %}
+                    </h3>
+                    <div class="space-y-8">
+                        <div class="flex gap-6">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                                <i class='bx bx-check text-2xl'></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-2xl mb-2">
+                                    {% if g.get('lang', 'pl') == 'pl' %}Wiele bibliotek, jedno konto{% else %}Multiple libraries, one account{% endif %}
+                                </h4>
+                                <p class="text-white/70 text-lg leading-relaxed">
+                                    {% if g.get('lang', 'pl') == 'pl' %}Zarządzaj oddzielnymi zbiorami dla domu, pracy czy stowarzyszenia z poziomu jednego panelu.{% else %}Manage separate collections for home, work, or association from a single dashboard.{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex gap-6">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                                <i class='bx bx-check text-2xl'></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-2xl mb-2">
+                                    {% if g.get('lang', 'pl') == 'pl' %}System ról i uprawnień{% else %}Roles & Permissions{% endif %}
+                                </h4>
+                                <p class="text-white/70 text-lg leading-relaxed">
+                                    {% if g.get('lang', 'pl') == 'pl' %}Przydzielaj role administratorów, managerów i czytelników, dbając o bezpieczeństwo danych.{% else %}Assign admin, manager, and reader roles, ensuring data security.{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex gap-6">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                                <i class='bx bx-check text-2xl'></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-2xl mb-2">
+                                    {% if g.get('lang', 'pl') == 'pl' %}Kody zaproszeń{% else %}Invitation Codes{% endif %}
+                                </h4>
+                                <p class="text-white/70 text-lg leading-relaxed">
+                                    {% if g.get('lang', 'pl') == 'pl' %}Łatwo zapraszaj nowych użytkowników do swojej biblioteki za pomocą bezpiecznych kodów dostępu.{% else %}Easily invite new users to your library using secure access codes.{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-xl rounded-[2.5rem] p-12 border border-white/20 shadow-2xl" data-aos="zoom-in">
+                    <h4 class="text-3xl font-bold mb-8 flex items-center gap-4">
+                        <i class='bx bx-building-house text-accent text-4xl'></i>
+                        {% if g.get('lang', 'pl') == 'pl' %}Dla Twojej organizacji{% else %}For Your Organization{% endif %}
+                    </h4>
+                    <p class="mb-10 text-white/90 text-xl leading-relaxed">
+                        {% if g.get('lang', 'pl') == 'pl' %}Libriya została zaprojektowana z myślą o skalowaniu. Każdy tenant otrzymuje własną, odizolowaną przestrzeń.{% else %}Libriya is designed for scaling. Each tenant receives their own, isolated space.{% endif %}
+                    </p>
+                    <ul class="grid grid-cols-2 gap-6 mb-10">
+                        <li class="flex items-center gap-3 text-lg font-medium"><i class='bx bx-check-circle text-accent text-2xl'></i> {% if g.get('lang', 'pl') == 'pl' %}Izolacja danych{% else %}Data isolation{% endif %}</li>
+                        <li class="flex items-center gap-3 text-lg font-medium"><i class='bx bx-check-circle text-accent text-2xl'></i> {% if g.get('lang', 'pl') == 'pl' %}Własny branding{% else %}Custom branding{% endif %}</li>
+                        <li class="flex items-center gap-3 text-lg font-medium"><i class='bx bx-check-circle text-accent text-2xl'></i> {% if g.get('lang', 'pl') == 'pl' %}Logi audytowe{% else %}Audit logs{% endif %}</li>
+                        <li class="flex items-center gap-3 text-lg font-medium"><i class='bx bx-check-circle text-accent text-2xl'></i> {% if g.get('lang', 'pl') == 'pl' %}Statystyki{% else %}Statistics{% endif %}</li>
+                    </ul>
+                    <a href="{{ url_for('auth.register') }}" class="block w-full text-center bg-accent text-primary py-5 rounded-2xl font-black text-xl hover:bg-white hover:scale-[1.02] transition-all shadow-2xl shadow-black/20">
+                        <span class="text-primary-force">{% if g.get('lang', 'pl') == 'pl' %}Dowiedz się więcej o planach PRO{% else %}Learn more about PRO plans{% endif %}</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="premium" class="py-32 bg-gray-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-24">
+                <h2 class="text-primary font-black tracking-[0.2em] uppercase text-sm mb-6">
+                    {% if g.get('lang', 'pl') == 'pl' %}ELASTYCZNOŚĆ{% else %}FLEXIBILITY{% endif %}
+                </h2>
+                <h3 class="text-5xl font-bold text-gray-900">
+                    {% if g.get('lang', 'pl') == 'pl' %}Wybierz swój pakiet{% else %}Choose your plan{% endif %}
+                </h3>
+            </div>
+            <div class="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+                <!-- Pakiet Basic/Free -->
+                <div class="bg-white p-12 rounded-[3.5rem] border border-gray-200 shadow-sm hover:shadow-xl transition-all">
+                    <h4 class="text-2xl font-bold mb-4">
+                        {% if g.get('lang', 'pl') == 'pl' %}Basic{% else %}Basic{% endif %}
+                    </h4>
+                    <p class="text-gray-500 mb-10 text-lg">
+                        {% if g.get('lang', 'pl') == 'pl' %}Idealny dla prywatnych kolekcjonerów{% else %}Perfect for private collectors{% endif %}
+                    </p>
+                    <div class="mb-10">
+                        <span class="text-6xl font-black text-primary">0 PLN</span>
+                        <span class="text-gray-400 block mt-2 text-lg">
+                            {% if g.get('lang', 'pl') == 'pl' %}/ na zawsze{% else %}/ forever{% endif %}
+                        </span>
+                    </div>
+                    <ul class="space-y-5 mb-12 text-gray-600 text-lg">
+                        <li class="flex items-center gap-4"><i class='bx bx-check text-green-500 text-2xl'></i> {% if g.get('lang', 'pl') == 'pl' %}Do 100 książek{% else %}Up to 100 books{% endif %}</li>
+                        <li class="flex items-center gap-4"><i class='bx bx-check text-green-500 text-2xl'></i> {% if g.get('lang', 'pl') == 'pl' %}1 biblioteka{% else %}1 library{% endif %}</li>
+                        <li class="flex items-center gap-4"><i class='bx bx-check text-green-500 text-2xl'></i> {% if g.get('lang', 'pl') == 'pl' %}Podstawowe statystyki{% else %}Basic statistics{% endif %}</li>
+                    </ul>
+                    <a href="{{ url_for('auth.register') }}" class="block w-full text-center border-3 border-primary/20 text-primary py-5 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all">
+                        {% if g.get('lang', 'pl') == 'pl' %}Załóż darmowe konto{% else %}Start for Free{% endif %}
+                    </a>
+                </div>
+                <!-- Pakiet Professional/Recommended -->
+                <div class="bg-white p-12 rounded-[3.5rem] border-4 border-primary shadow-2xl relative">
+                    <div class="w-full flex justify-center">
+                        <div class="bg-primary text-white px-6 py-2 rounded-full text-sm font-black uppercase tracking-[0.2em] select-none mt-[-2.5rem] mb-6" style="animation: none !important; opacity: 1 !important; transition: none !important;">
+                            {% if g.get('lang', 'pl') == 'pl' %}REKOMENDOWANY{% else %}RECOMMENDED{% endif %}
+                        </div>
+                    </div>
+                    <h4 class="text-2xl font-bold mb-4">
+                        {% if g.get('lang', 'pl') == 'pl' %}Professional{% else %}Professional{% endif %}
+                    </h4>
+                    <p class="text-gray-500 mb-10 text-lg">
+                        {% if g.get('lang', 'pl') == 'pl' %}Dla instytucji i dużych kolekcji{% else %}For institutions & large collections{% endif %}
+                    </p>
+                    <div class="mb-10">
+                        <span class="text-6xl font-black text-primary">
+                            {% if g.get('lang', 'pl') == 'pl' %}Kontakt{% else %}Contact{% endif %}
+                        </span>
+                        <span class="text-gray-400 block mt-2 text-lg">
+                            {% if g.get('lang', 'pl') == 'pl' %}/ zapytaj o cenę{% else %}/ ask for price{% endif %}
+                        </span>
+                    </div>
+                    <ul class="space-y-5 mb-12 text-gray-600 text-lg">
+                        <li class="flex items-center gap-4"><i class='bx bx-check text-accent text-2xl'></i> {% if g.get('lang', 'pl') == 'pl' %}Nielimitowana liczba książek{% else %}Unlimited books{% endif %}</li>
+                        <li class="flex items-center gap-4"><i class='bx bx-check text-accent text-2xl'></i> {% if g.get('lang', 'pl') == 'pl' %}Wiele lokalizacji{% else %}Multiple locations{% endif %}</li>
+                        <li class="flex items-center gap-4"><i class='bx bx-check text-accent text-2xl'></i> {% if g.get('lang', 'pl') == 'pl' %}Premium Metadata (BN){% else %}Premium Metadata (BN){% endif %}</li>
+                        <li class="flex items-center gap-4"><i class='bx bx-check text-accent text-2xl'></i> {% if g.get('lang', 'pl') == 'pl' %}Priorytetowe wsparcie{% else %}Priority support{% endif %}</li>
+                    </ul>
+                    <a href="mailto:kontakt@libriya.pl" class="block w-full text-center bg-primary text-white py-5 rounded-2xl font-black text-xl hover:shadow-2xl hover:scale-[1.02] transition-all shadow-lg shadow-primary/30">
+                        {% if g.get('lang', 'pl') == 'pl' %}Zapytaj o ofertę{% else %}Contact us{% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-white py-0.5 border-t border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-[40px]" style="min-height:2.5rem;">
+            <p class="text-gray-400 text-base text-center w-full">&copy; 2026 Libriya. {{ _('All rights reserved.') }}</p>
+        </div>
+    </footer>
+<script>
+    window.addEventListener('scroll', function() {
+        const nav = document.querySelector('nav');
+        if (window.scrollY > 50) {
+            nav.classList.add('shadow-xl');
+            nav.classList.add('bg-white');
+            nav.classList.remove('glass-nav');
+        } else {
+            nav.classList.remove('shadow-xl');
+            nav.classList.remove('bg-white');
+            nav.classList.add('glass-nav');
+        }
+    });
+</script>
+</body>
+</html>

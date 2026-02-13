@@ -1,0 +1,16 @@
+{% extends "base/layout.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4">
+    <h2 class="text-2xl font-bold text-gray-800">{{ _('Loan a Book') }}</h2>
+    <hr class="my-4">
+
+    {{ macros.display_flashes() }}
+
+    <form method="POST" action="" novalidate>
+        {{ form.hidden_tag() }}
+        {{ macros.form_field(form.book_id, field_type='select', icon='bx-book') }}
+        {{ macros.form_field(form.user_id, field_type='select', icon='bx-user') }}
+        {{ macros.form_submit(form.submit.label.text, cancel_url=url_for('loans.loans')) }}
+    </form>
+</div>
+{% endblock %}

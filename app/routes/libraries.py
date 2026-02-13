@@ -24,7 +24,7 @@ def libraries():
         all_libraries = current_user.libraries
     else:
         all_libraries = []
-    return render_template("libraries.html", libraries=all_libraries, active_page="libraries", parent_page="admin", title=_("Libraries"))
+    return render_template("libraries/libraries.html", libraries=all_libraries, active_page="libraries", parent_page="admin", title=_("Libraries"))
 
 
 @bp.route("/libraries/add", methods=['GET', 'POST'])
@@ -38,7 +38,7 @@ def library_add():
         db.session.commit()
         flash(LIBRARY_ADDED, "success")
         return redirect(url_for('libraries.libraries'))
-    return render_template('library_form.html', form=form, title=_('Add Library'), active_page="libraries", parent_page="admin")
+    return render_template('libraries/library_form.html', form=form, title=_('Add Library'), active_page="libraries", parent_page="admin")
 
 
 @bp.route("/libraries/edit/<int:library_id>", methods=['GET', 'POST'])
@@ -57,7 +57,7 @@ def library_edit(library_id):
         db.session.commit()
         flash(LIBRARY_UPDATED, "success")
         return redirect(url_for('libraries.libraries'))
-    return render_template('library_form.html', form=form, title=_('Edit Library'), active_page="libraries", parent_page="admin")
+    return render_template('libraries/library_form.html', form=form, title=_('Edit Library'), active_page="libraries", parent_page="admin")
 
 
 @bp.route("/libraries/delete/<int:library_id>", methods=['POST'])

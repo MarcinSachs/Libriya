@@ -1,0 +1,1 @@
+// Placeholder for Polish translations JS if needed. For Flask, use Flask-Babel and .po files instead.

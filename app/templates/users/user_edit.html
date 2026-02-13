@@ -1,0 +1,43 @@
+{% extends "base/layout.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4">
+    <h2 class="text-2xl font-bold text-gray-800">{{ _('Edit User:') }} <span class="text-gray-600">{{ user.username }}</span></h2>
+    <hr class="my-4">
+
+    {{ macros.display_flashes() }}
+
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        {{ macros.form_field(form.username, field_type='text', icon='bx-user', readonly=true) }}
+        {{ macros.form_field(form.email, field_type='email', icon='bx-mail-send') }}
+        {{ macros.form_field(form.role, field_type='select', icon='bx-shield-alt') }}
+
+        <!-- Library Memberships -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-3">
+            <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
+                <h5 class="font-semibold text-lg mb-0">{{ _('Library Memberships') }}</h5>
+            </div>
+            <div class="px-4 py-3">
+                <div class="flex flex-wrap gap-6">
+                {% for library in all_libraries %}
+                    <div class="mb-3">
+                        <div class="flex items-center">
+                            <input class="w-4 h-4 rounded" type="checkbox" name="libraries" value="{{ library.id }}" id="lib-{{ library.id }}"
+                                   {% if library in user.libraries %}checked{% endif %}>
+                            <label class="ml-2 text-gray-700" for="lib-{{ library.id }}">
+                                {{ library.name }}
+                            </label>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="w-full">
+                        <p class="text-gray-600">{{ _('No libraries available to assign.') }}</p>
+                    </div>
+                {% endfor %}
+                </div>
+            </div>
+        </div>
+        {{ macros.form_submit(form.submit.label.text, cancel_url=url_for('users.users')) }}
+    </form>
+</div>
+{% endblock %}

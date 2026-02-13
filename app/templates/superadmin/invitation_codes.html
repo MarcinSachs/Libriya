@@ -1,0 +1,125 @@
+{% extends "base/layout.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg mb-4">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {% if not codes %}
+    <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+        <i class='bx bxs-info-circle'></i>
+        <span>{{ _('No invitation codes yet.') }}</span>
+    </div>
+    {% endif %}
+
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-gray-800">{{ _('Invitation Codes') }}</h2>
+        <a href="{{ url_for('invitations.generate_code') }}" class="btn btn-primary">
+            {{ _('Add code') }}
+        </a>
+    </div>
+
+    {% if codes %}
+    <div class="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
+        <table class="w-full">
+            <thead>
+                <tr class="bg-[#1a535c] text-white">
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Code') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Library') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Created By') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Created') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Expires') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Status') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Used By') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Actions') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for code in codes %}
+                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                    <td class="px-4 py-3">
+                        <code class="bg-gray-100 px-2 py-1 rounded">{{ code.code }}</code>
+                    </td>
+                    <td class="px-4 py-3">{{ code.library.name }}</td>
+                    <td class="px-4 py-3">{{ code.created_by.username }}</td>
+                    <td class="px-4 py-3">{{ code.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="px-4 py-3">
+                        {% if code.expires_at > now() %}
+                            {{ code.expires_at.strftime('%Y-%m-%d') }}
+                            <small class="text-gray-600">({{ (code.expires_at - now()).days }} days)</small>
+                        {% else %}
+                            <span class="inline-block bg-red-200 text-red-800 px-3 py-1 rounded-full text-xs font-semibold">{{ _('Expired') }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3">
+                        {% if code.is_valid() %}
+                            <span class="inline-block bg-green-200 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">{{ _('Active') }}</span>
+                        {% else %}
+                            {% if code.used_by_id %}
+                                <span class="inline-block bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">{{ _('Used') }}</span>
+                            {% else %}
+                                <span class="inline-block bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-xs font-semibold">-</span>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3">
+                        {% if code.used_by_id %}
+                            {{ code.used_by.username }}
+                        {% else %}
+                            <span class="text-gray-600">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3">
+                        <button class="p-2 text-primary hover:bg-gray-200 rounded transition copy-code" data-code-id="{{ code.id }}" 
+                                title="{{ _('Copy code to clipboard') }}">
+                            <i class='bx bx-copy'></i>
+                        </button>
+                        {% if not code.used_by_id and code.is_valid() %}
+                        <form method="POST" action="{{ url_for('invitations.deactivate_code', code_id=code.id) }}" 
+                              style="display: inline;" 
+                              onsubmit="return confirm('{{ _('Deactivate this code?') }}')">
+                            <button class="bg-red-200 text-red-800 font-semibold text-sm px-3 py-1.5 rounded-lg hover:bg-red-300 transition" type="submit">
+                                <i class='bx bx-trash'></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.querySelectorAll('.copy-code').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const codeId = this.dataset.codeId;
+        const response = await fetch(`/invitation-codes/${codeId}/copy`, { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.code) {
+            navigator.clipboard.writeText(data.code).then(() => {
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="bx bx-check"></i> {{ _("Copied") }}';
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                }, 2000);
+            });
+        }
+    });
+});
+</script>
+
+<style>
+    .copy-code {
+        transition: all 0.3s;
+    }
+</style>
+{% endblock %}

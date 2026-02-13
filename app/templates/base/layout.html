@@ -1,0 +1,411 @@
+{% import 'base/macros.html' as macros %}
+<!DOCTYPE html>
+<html lang="{% if request.cookies.get('language') in config.LANGUAGES %}{{ request.cookies.get('language') }}{% elif session.get('language') in config.LANGUAGES %}{{ session.get('language') }}{% else %}en{% endif %}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Libriya</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1e3a5f">
+    <meta name="description" content="A library management application for organizing and tracking books">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Libriya">
+    <meta name="apple-mobile-web-app-icon" href="{{ url_for('static', filename='images/logo.svg') }}">
+    
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1a535c',
+                        accent: '#4ecdc4',
+                        'text-dark': '#333',
+                        'gray-bg': '#f8f9fa',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Cormorant Garamond', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1707835200">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@700&display=swap" rel="stylesheet">
+    
+    <!-- Flag Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css" />
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #1a535c 0%, #4ecdc4 100%);
+        }
+
+        /* Offline warning banner */
+        #offline-warning {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #fff3cd;
+            border-bottom: 2px solid #ffc107;
+            padding: 0.75rem 1rem;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1030;
+            margin-top: 0;
+        }
+        
+        #offline-warning.show {
+            display: flex !important;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        #online-status-badge {
+            font-size: 0.85rem;
+            margin-left: auto;
+            display: none;
+        }
+        
+        @media (max-width: 768px), (display-mode: standalone) {
+            #online-status-badge {
+                display: block;
+            }
+        }
+        
+        /* Update banner */
+        #update-banner {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0d6efd;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1031;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        #update-banner.show {
+            display: flex !important;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(120%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        #reload-app-btn {
+            background: white;
+            color: #0d6efd;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin-left: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        #reload-app-btn:hover {
+            background: #f0f0f0;
+        }
+        
+        #install-app-btn {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="font-sans text-text-dark bg-gray-bg {% if login_page %}login-page{% endif %}" {% if current_user.is_authenticated %}data-user-logged-in="true"{% endif %}>
+    <!-- Offline warning banner -->
+    <div id="offline-warning" class="hidden fixed top-0 left-0 right-0 bg-yellow-100 border-b-2 border-yellow-500 px-4 py-3 flex justify-between items-center z-[1030]">
+        <span><strong>⚠️ {{ _('You are offline') }}</strong> - {{ _('Some features may not work') }}</span>
+        <button type="button" class="text-yellow-600 hover:text-yellow-800 text-lg font-bold" onclick="this.parentElement.classList.remove('show')">&times;</button>
+    </div>
+
+    <!-- Update available banner -->
+    <div id="update-banner" class="hidden fixed bottom-5 right-5 bg-blue-600 text-white px-6 py-4 rounded-lg flex justify-between items-center z-[1031] shadow-lg">
+        <span>✨ {{ _('New version available!') }}</span>
+        <button id="reload-app-btn" class="ml-4 bg-white text-blue-600 px-4 py-2 rounded font-semibold text-sm hover:bg-gray-100">{{ _('Reload') }}</button>
+    </div>
+
+    <!-- Navigation -->
+    {% if not landing_page %}
+    <nav id="navbar" class="{% if login_page %}bg-white border-b border-gray-200{% else %}glass-nav{% endif %} fixed w-full top-0 z-50 shadow-sm transition-shadow duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center gap-2">
+                        <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Libriya" class="w-10 h-10">
+                        <span class="font-serif text-3xl font-bold {% if login_page %}text-text-dark{% else %}text-primary{% endif %} hidden sm:block">Libriya</span>
+                    </a>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center gap-8">
+                    <!-- Online/Offline Status -->
+                    <div id="online-status-badge" class="hidden">
+                        <span class="px-3 py-1 bg-green-500 text-white rounded-full text-sm flex items-center gap-1">
+                            <i class="bx bx-wifi text-sm"></i> Online
+                        </span>
+                    </div>
+
+                    <!-- Install App Button -->
+                    <button id="install-app-btn" onclick="window.pwaManager && window.pwaManager.installApp()" class="hidden px-3 py-2 border {% if login_page %}border-text-dark text-text-dark hover:bg-text-dark hover:text-white{% else %}border-white text-white hover:bg-white hover:text-primary{% endif %} rounded transition">
+                        <i class="bx bx-download"></i> {{ _('Install App') }}
+                    </button>
+
+                    {% if current_user.is_authenticated %}
+                    <!-- User Dropdown -->
+                    <div class="relative group pb-2">
+                        <button class="flex items-center gap-2 {% if login_page %}text-text-dark{% else %}text-primary{% endif %} hover:text-accent transition">
+                            <img class="w-8 h-8 rounded-full object-cover" 
+                                src="{{ url_for('static', filename='uploads/' + current_user.image_file) }}" 
+                                alt="{{ current_user.username }}">
+                            <span class="text-sm font-medium">{{ current_user.username }}</span>
+                            {% if unread_notifications_count and unread_notifications_count > 0 %}
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                {{ unread_notifications_count }}
+                            </span>
+                            {% endif %}
+                        </button>
+                        <div class="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
+                            <a href="{{ url_for('main.view_notifications') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg">
+                                <i class="bx bx-bell align-middle me-2"></i>{{ _('Notifications') }}
+                                {% if unread_notifications_count and unread_notifications_count > 0 %}
+                                <span class="float-right bg-red-500 text-white text-xs px-2 py-1 rounded-full">{{ unread_notifications_count }}</span>
+                                {% endif %}
+                            </a>
+                            <a href="{{ url_for('users.user_profile', user_id=current_user.id) }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-user-circle align-middle me-2"></i>{{ _('Profile & Loans') }}
+                            </a>
+                            <a href="{{ url_for('users.user_settings') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-cog align-middle me-2"></i>{{ _('Settings') }}
+                            </a>
+                            <a href="{{ url_for('main.my_messages') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-envelope align-middle me-2"></i>{{ _('Messages') }}
+                            </a>
+                            <hr class="my-1">
+                            <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg">
+                                <i class="bx bx-log-out align-middle me-2"></i>{{ _('Logout') }}
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="{% if login_page %}text-text-dark{% else %}text-primary{% endif %} hover:text-accent transition font-medium">{{ _('Log In') }}</a>
+                    {% endif %}
+
+                    <!-- Language Selector -->
+                    <div class="relative group pb-2">
+                        <button class="flex items-center gap-1 {% if login_page %}text-text-dark{% else %}text-primary{% endif %} hover:text-accent transition">
+                            <i class="bx bx-globe"></i>
+                            <span class="text-sm font-medium">{{ _('Language') }}</span>
+                        </button>
+                        <div class="absolute right-0 top-full mt-0 w-40 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
+                            <a href="{{ url_for('main.set_language', lang='en') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg">
+                                <span class="fi fi-gb me-2"></span> English
+                            </a>
+                            <a href="{{ url_for('main.set_language', lang='pl') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg">
+                                <span class="fi fi-pl me-2"></span> Polski
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded hover:bg-gray-100">
+                    <i class="bx bx-menu text-2xl {% if login_page %}text-text-dark{% else %}text-primary{% endif %}"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="flex pt-16">
+        {% if not login_page and not landing_page %}
+        <!-- Sidebar - Hidden on Mobile -->
+        <aside id="sidebar" class="hidden md:flex md:w-64 bg-white border-r border-gray-200 flex-col py-6 px-4 fixed left-0 top-16 h-[calc(100vh-64px)] overflow-y-auto">
+            ...existing code...
+        </aside>
+        {% endif %}
+
+        <!-- Main Content -->
+        <main class="w-full {% if login_page %}flex items-center justify-center{% elif not landing_page %}md:ml-64{% endif %} min-h-[calc(100vh-64px)]">
+            {% if login_page %}
+            <div class="w-full max-w-md px-4">
+            {% elif not landing_page %}
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            {% endif %}
+                {% block content %}{% endblock %}
+            {% if not landing_page %}</div>{% endif %}
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="{% if login_page %}bg-white border-t border-gray-200{% else %}bg-gradient-to-r from-primary to-accent mt-12{% endif %} py-8 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="{% if login_page %}text-text-dark{% else %}text-white{% endif %} text-sm">
+                <span class="font-semibold">Libriya</span> &copy; 2024-2026 
+                <span class="mx-1">|</span>
+                A modern library management system
+            </p>
+            {% if not login_page %}
+            <div class="mt-4 flex justify-center gap-6 text-white text-sm">
+                <a href="#" class="hover:text-gray-200 transition">{{ _('Privacy') }}</a>
+                <a href="#" class="hover:text-gray-200 transition">{{ _('Terms') }}</a>
+                <a href="#" class="hover:text-gray-200 transition">{{ _('Contact') }}</a>
+            </div>
+            {% endif %}
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/pwa-manager.js') }}"></script>
+    <script>
+        // Admin menu toggle
+        const adminToggle = document.getElementById('admin-toggle');
+        const adminMenu = document.getElementById('admin-menu');
+        if (adminToggle && adminMenu) {
+            adminToggle.addEventListener('click', () => {
+                adminMenu.classList.toggle('hidden');
+                const icon = adminToggle.querySelector('i:last-child');
+                icon.classList.toggle('rotate-180');
+            });
+        }
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        if (mobileMenuBtn && sidebar) {
+            mobileMenuBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('hidden');
+            });
+
+            // Close sidebar when clicking a link
+            sidebar.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    sidebar.classList.add('hidden');
+                });
+            });
+        }
+
+        // Register Service Worker for PWA support
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('{{ url_for("static", filename="service-worker.js") }}')
+                .then(registration => {
+                    console.log('Service Worker registered successfully:', registration);
+                })
+                .catch(error => {
+                    console.log('Service Worker registration failed:', error);
+                });
+        }
+
+        // Handle delete button clicks
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const bookId = this.getAttribute('data-book-id');
+                
+                if (confirm(`{{ _('Are you sure you want to delete this book?') }}`)) {
+                    // Create form with proper structure
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/book_delete/${bookId}`;
+                    form.style.display = 'none';
+                    
+                    // Add CSRF token from meta tag
+                    const csrfTokenValue = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    if (csrfTokenValue) {
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrf_token';
+                        csrfInput.value = csrfTokenValue;
+                        form.appendChild(csrfInput);
+                    }
+                    
+                    document.body.appendChild(form);
+                    
+                    // Submit form with delay to ensure it's added to DOM
+                    setTimeout(() => {
+                        form.submit();
+                    }, 10);
+                }
+            });
+        });
+
+        // Offline status
+        window.addEventListener('offline', () => {
+            document.getElementById('offline-warning').classList.add('show');
+        });
+
+        window.addEventListener('online', () => {
+            document.getElementById('offline-warning').classList.remove('show');
+        });
+
+        // Navbar scroll shadow effect
+        const navbar = document.getElementById('navbar');
+        if (navbar) {
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 0) {
+                    navbar.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.1)';
+                } else {
+                    navbar.style.boxShadow = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
