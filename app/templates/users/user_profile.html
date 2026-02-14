@@ -52,14 +52,14 @@
                 <td class="px-4 py-3">{{ loan.book.title }}</td>
                 <td class="px-4 py-3">{{ loan.reservation_date.strftime('%Y-%m-%d %H:%M') }}</td>
                 <td class="px-4 py-3"><span class="inline-block bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">{{ _('Pending Approval') }}</span></td>
-                <td class="px-4 py-3">
+                <td class="px-4 py-3 flex items-center gap-2">
                     <form action="{{ url_for('loans.user_cancel_reservation', loan_id=loan.id) }}" method="POST"
-                        style="display: inline-block; margin-bottom: 0.25rem;">
-                        <button type="submit" class="btn btn-danger btn-sm" title="{{ _('Cancel My Reservation') }}">
-                            <i class="bx bx-x-circle"></i>
+                        style="display: inline-block;">
+                        <button type="submit" class="text-red-500 hover:text-red-700 transition" title="{{ _('Cancel My Reservation') }}">
+                            <i class="bx bx-x-circle text-lg"></i>
                         </button>
                     </form>
-                    <span class="text-gray-600 ml-2 text-sm">{{ _('Waiting for admin approval') }}</span>
+                    <span class="text-gray-600 text-sm">{{ _('Waiting for admin approval') }}</span>
                 </td>
             </tr>
             {% endfor %}
@@ -175,8 +175,8 @@
             </button>
             <div class="bg-white border-t border-gray-200 px-4 py-3 flex justify-end">
                 <form action="{{ url_for('books.remove_favorite', book_id=book.id) }}" method="POST">
-                    <button type="submit" class="btn btn-danger btn-sm" title="{{ _('Remove from Favorites') }}">
-                        <i class="bx bx-trash"></i>
+                    <button type="submit" class="text-red-500 hover:text-red-700 transition" title="{{ _('Remove from Favorites') }}">
+                        <i class="bx bx-trash text-lg"></i>
                     </button>
                 </form>
             </div>
