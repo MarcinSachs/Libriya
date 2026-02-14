@@ -1,63 +1,19 @@
-    <footer class="bg-white py-5 border-t border-gray-100">
-<!DOCTYPE html>
-<html lang="{{ g.get('lang', 'pl') }}">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Libriya - {{ _('house for your books') }}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@700&display=swap" rel="stylesheet">
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#1a535c',
-                        accent: '#4ecdc4',
-                        'text-dark': '#333',
-                        'gray-bg': '#f8f9fa',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        serif: ['Cormorant Garamond', 'serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-</head>
-<body class="font-sans text-text-dark bg-gray-bg selection:bg-accent selection:text-white">
-    <!-- Navigation -->
-    <nav class="fixed w-full z-50 glass-nav border-b border-gray-200" style="top:0; margin-top:0; padding-top:0;">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-20 items-center">
-                <div class="flex items-center gap-3">
-                    <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Libriya Logo" class="h-10 w-auto">
-                    <span class="font-serif text-3xl font-bold text-primary">Libriya</span>
-                    <span class="text-gray-500 text-lg ml-3">{{ _('house for your books') }}</span>
-                </div>
-                <div class="hidden md:flex items-center space-x-10">
-                    <a href="#features" class="font-semibold text-gray-700 hover:text-primary transition-colors">{{ _('Features') }}</a>
-                    <a href="#multi-tenant" class="font-semibold text-gray-700 hover:text-primary transition-colors">{{ _('For Whom') }}</a>
-                    <a href="#premium" class="font-semibold text-gray-700 hover:text-primary transition-colors">{{ _('Premium') }}</a>
-                    <a href="{{ url_for('auth.login') }}" class="bg-primary text-white px-6 py-2.5 rounded-xl font-bold hover:shadow-lg hover:scale-105 transition-all shadow-md">{{ _('Sign In') }}</a>
-                </div>
-                <!-- Mobile menu button -->
-                <div class="md:hidden flex items-center gap-4">
-                    <button class="text-primary text-3xl">
-                        <i class='bx bx-menu'></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
+{% extends "base/main_base.html" %}
+{% block title %}Libriya - {{ _('house for your books') }}{% endblock %}
+{% block nav_links %}
+    <a href="#features" class="font-semibold text-gray-700 hover:text-primary transition-colors">{{ _('Features') }}</a>
+    <a href="#multi-tenant" class="font-semibold text-gray-700 hover:text-primary transition-colors">{{ _('For Whom') }}</a>
+    <a href="#premium" class="font-semibold text-gray-700 hover:text-primary transition-colors">{{ _('Premium') }}</a>
+    <a href="{{ url_for('auth.login') }}" class="bg-primary text-white px-6 py-2.5 rounded-xl font-bold hover:shadow-lg hover:scale-105 transition-all shadow-md">{{ _('Sign In') }}</a>
+{% endblock %}
+{% block mobile_menu_button %}
+    <button class="text-primary text-3xl">
+        <i class='bx bx-menu'></i>
+    </button>
+{% endblock %}
+{% block content %}
     <!-- Hero Section -->
-    <section class="pt-32 pb-8 lg:pt-56 lg:pb-40 overflow-hidden relative">
+    <section class="pt-12 pb-8 lg:pt-20 lg:pb-40 overflow-hidden relative">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid lg:grid-cols-2 gap-16 items-center">
                 <div data-aos="fade-right">
@@ -84,7 +40,7 @@
                         </div>
                         <!-- Photo attribution -->
                         <div class="absolute bottom-8 right-8 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[10px] opacity-70 hover:opacity-100 transition-opacity">
-                            {{ _('Clementinum, Prague.') }}
+                            {{ _('Clementinum, Prague. Photo by Marcin Sachs') }}
                         </div>
                         <!-- Floating elements -->
                         <div class="absolute -top-10 -right-10 bg-white p-6 rounded-3xl shadow-2xl border border-gray-50 flex items-center gap-4 animate-bounce">
@@ -311,12 +267,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-white py-0.5 border-t border-gray-100">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-[40px]" style="min-height:2.5rem;">
-            <p class="text-gray-400 text-base text-center w-full">&copy; 2026 Libriya. {{ _('All rights reserved.') }}</p>
-        </div>
-    </footer>
 <script>
     window.addEventListener('scroll', function() {
         const nav = document.querySelector('nav');
@@ -331,5 +281,4 @@
         }
     });
 </script>
-</body>
-</html>
+{% endblock %}

@@ -1434,10 +1434,10 @@ body>.flex {
     opacity: 1 !important;
 }
 
-/* Wymuszenie białego tła na hover dla przycisku (Tailwind hover:bg-white) */
-.hover\:bg-white:hover {
-    --tw-bg-opacity: 1;
-    background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+/* Wymuszenie koloru tła na hover dla .hover:bg-primary */
+.hover\:bg-primary:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(26 83 92 / var(--tw-bg-opacity, 1));
 }
 
 /* Utility to disable all transitions (for static rotate-3) */

@@ -1,0 +1,70 @@
+{# Unified base template for all pages: logo, language switcher, head, footer #}
+<!DOCTYPE html>
+<html lang="{{ g.get('lang', 'en') }}">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Libriya{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a535c">
+    <meta name="description" content="A library management application for organizing and tracking books">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css" />
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="font-sans text-text-dark bg-gray-bg selection:bg-accent selection:text-white">
+    <!-- Unified Navbar -->
+    <nav class="fixed w-full z-50 glass-nav border-b border-gray-200" style="top:0; margin-top:0; padding-top:0;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex items-center gap-3">
+                    <a href="/" class="flex items-center gap-2">
+                        <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Libriya Logo" class="h-10 w-auto">
+                        <span class="font-serif text-3xl font-bold text-primary">Libriya</span>
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-10">
+                    {% block nav_links %}{% endblock %}
+                    <!-- Language Selector -->
+                    <div class="relative group pb-2">
+                        <button class="flex items-center gap-1 font-semibold text-gray-700 hover:text-primary transition-colors">
+                            <i class="bx bx-globe"></i>
+                            <span>{{ _('Language') }}</span>
+                        </button>
+                        <div class="absolute right-0 top-full mt-0 w-32 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
+                            <a href="{{ url_for('main.set_language', lang='pl') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg flex items-center gap-2">
+                                <span class="fi fi-pl"></span> PL
+                            </a>
+                            <a href="{{ url_for('main.set_language', lang='en') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg flex items-center gap-2">
+                                <span class="fi fi-gb"></span> EN
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mobile menu button + language -->
+                <div class="md:hidden flex items-center gap-4">
+                    <a href="{{ url_for('main.set_language', lang='pl') }}" class="text-xs font-bold text-primary border border-primary px-2 py-1 rounded"><span class="fi fi-pl"></span> PL</a>
+                    <a href="{{ url_for('main.set_language', lang='en') }}" class="text-xs font-bold text-primary border border-primary px-2 py-1 rounded"><span class="fi fi-gb"></span> EN</a>
+                    {% block mobile_menu_button %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="pt-32">
+        {% block content %}{% endblock %}
+    </main>
+    <!-- Unified Footer -->
+    <footer class="bg-white py-0.5 border-t border-gray-100 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-[40px]" style="min-height:2.5rem;">
+            <p class="text-gray-400 text-base text-center w-full">&copy; 2026 Libriya. {{ _('All rights reserved.') }}</p>
+        </div>
+    </footer>
+    {% block extra_body %}{% endblock %}
+</body>
+</html>
