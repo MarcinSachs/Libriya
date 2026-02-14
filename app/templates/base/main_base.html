@@ -1,4 +1,5 @@
 {# Unified base template for all pages: logo, language switcher, head, footer #}
+{% import 'base/macros.html' as macros %}
 <!DOCTYPE html>
 <html lang="{{ g.get('lang', 'en') }}">
 <head>
@@ -34,6 +35,43 @@
                 </div>
                 <div class="hidden md:flex items-center space-x-10">
                     {% block nav_links %}{% endblock %}
+                    {% if current_user.is_authenticated %}
+                    <!-- User Dropdown -->
+                    <div class="relative group pb-2">
+                        <button class="flex items-center gap-2 text-primary hover:text-accent transition">
+                            <img class="w-8 h-8 rounded-full object-cover" 
+                                src="{{ url_for('static', filename='uploads/' + current_user.image_file) }}" 
+                                alt="{{ current_user.username }}">
+                            <span class="text-sm font-medium">{{ current_user.username }}</span>
+                            {% if unread_notifications_count and unread_notifications_count > 0 %}
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                {{ unread_notifications_count }}
+                            </span>
+                            {% endif %}
+                        </button>
+                        <div class="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
+                            <a href="{{ url_for('main.view_notifications') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg">
+                                <i class="bx bx-bell align-middle me-2"></i>{{ _('Notifications') }}
+                                {% if unread_notifications_count and unread_notifications_count > 0 %}
+                                <span class="float-right bg-red-500 text-white text-xs px-2 py-1 rounded-full">{{ unread_notifications_count }}</span>
+                                {% endif %}
+                            </a>
+                            <a href="{{ url_for('users.user_profile', user_id=current_user.id) }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-user-circle align-middle me-2"></i>{{ _('Profile & Loans') }}
+                            </a>
+                            <a href="{{ url_for('users.user_settings') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-cog align-middle me-2"></i>{{ _('Settings') }}
+                            </a>
+                            <a href="{{ url_for('main.my_messages') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-envelope align-middle me-2"></i>{{ _('Messages') }}
+                            </a>
+                            <hr class="my-1">
+                            <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg">
+                                <i class="bx bx-log-out align-middle me-2"></i>{{ _('Logout') }}
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
                     <!-- Language Selector -->
                     <div class="relative group pb-2">
                         <button class="flex items-center gap-1 font-semibold text-gray-700 hover:text-primary transition-colors">
@@ -60,7 +98,71 @@
         </div>
     </nav>
     <main class="pt-32">
+        <div class="flex">
+            {% if current_user.is_authenticated %}
+            <!-- Sidebar -->
+            <aside class="hidden lg:flex w-64 bg-white border-r border-gray-200 flex-col py-6 px-4 h-[calc(100vh-128px)] overflow-y-auto">
+                <nav class="space-y-2">
+                    <!-- Books -->
+                    <a href="{{ url_for('main.home') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {% if active_page == 'books' %}bg-gray-bg text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg hover:text-primary{% endif %} transition">
+                        <i class="bx bxs-book text-lg"></i>
+                        <span class="font-medium">{{ _('Books') }}</span>
+                    </a>
+
+                    <!-- Administration Section -->
+                    {% if current_user and current_user.role in ['admin', 'manager'] %}
+                    <div>
+                        <button id="admin-toggle" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg {% if parent_page == 'admin' %}bg-gray-bg text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg hover:text-primary{% endif %} transition">
+                            <span class="flex items-center gap-3">
+                                <i class="bx bxs-dashboard text-lg"></i>
+                                <span class="font-medium">{{ _('Administration') }}</span>
+                            </span>
+                            <i class="bx bx-chevron-down transition-transform {% if parent_page == 'admin' %}rotate-180{% endif %}"></i>
+                        </button>
+                        <div id="admin-menu" class="{% if parent_page != 'admin' %}hidden{% endif %} ml-4 mt-2 space-y-1 border-l-2 border-gray-200 pl-2">
+                            <!-- Libraries -->
+                            {% if current_user.role in ['admin', 'manager'] %}
+                            <a href="{{ url_for('libraries.libraries') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'libraries' %}bg-accent bg-opacity-10 text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
+                                <i class="bx bxs-building text-base"></i>
+                                <span>{{ _('Libraries') }}</span>
+                            </a>
+                            {% endif %}
+
+                            <!-- Users -->
+                            <a href="{{ url_for('users.users') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'users' %}bg-accent bg-opacity-10 text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
+                                <i class="bx bxs-group text-base"></i>
+                                <span>{{ _('Users') }}</span>
+                            </a>
+
+                            <!-- Loans -->
+                            <a href="{{ url_for('loans.loans') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'loans' %}bg-accent bg-opacity-10 text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
+                                <i class="bx bxs-check-circle text-base"></i>
+                                <span>{{ _('Loans') }}</span>
+                            </a>
+
+                            <!-- Invitation Codes -->
+                            <a href="{{ url_for('invitations.invitation_codes_list') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'invitations' %}bg-accent bg-opacity-10 text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
+                                <i class="bx bxs-key text-base"></i>
+                                <span>{{ _('Invitation Codes') }}</span>
+                            </a>
+
+                            <!-- Messages -->
+                            <a href="{{ url_for('users.contact_messages') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'contact_messages' %}bg-accent bg-opacity-10 text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
+                                <i class="bx bxs-message-detail text-base"></i>
+                                <span>{{ _('Messages') }}</span>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </nav>
+            </aside>
+            {% endif %}
+
+            <!-- Main Content -->
+            <div class="flex-1">
         {% block content %}{% endblock %}
+            </div>
+        </div>
     </main>
     <!-- Unified Footer -->
     <footer class="bg-white py-0.5 border-t border-gray-100 mt-20">
@@ -69,5 +171,17 @@
         </div>
     </footer>
     {% block extra_body %}{% endblock %}
+    <script>
+        // Admin menu toggle
+        const adminToggle = document.getElementById('admin-toggle');
+        const adminMenu = document.getElementById('admin-menu');
+        if (adminToggle && adminMenu) {
+            adminToggle.addEventListener('click', () => {
+                adminMenu.classList.toggle('hidden');
+                const icon = adminToggle.querySelector('i:last-child');
+                icon.classList.toggle('rotate-180');
+            });
+        }
+    </script>
 </body>
 </html>

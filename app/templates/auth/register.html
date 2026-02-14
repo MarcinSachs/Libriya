@@ -12,7 +12,15 @@
       <p class="text-gray-600 mb-8 text-lg">
         {{ _('Create your account to start managing your library') }}
       </p>
-
+      <!-- About Invitation Codes Card -->
+    <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200 mt-8 mb-12 w-full">
+      <h4 class="font-semibold text-text-dark mb-3 flex items-center gap-2">
+        <i class='bx bx-info-circle text-accent text-xl'></i> {{ _('About Invitation Codes') }}
+      </h4>
+      <p class="text-gray-700 text-sm leading-relaxed">
+        {{ _('Libriya uses invitation codes to maintain quality and security. If you don\'t have a code, contact your library manager to request one.') }}
+      </p>
+    </div>
       <!-- Registration Form Card -->
       <div class="glass-card rounded-2xl p-8 shadow-lg">
         <form method="POST" novalidate class="space-y-6">
@@ -140,17 +148,8 @@
         </form>
       </div>
     </div>
-    <!-- About Invitation Codes Card (centered below form) -->
-    <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200 mt-8 w-full">
-      <h4 class="font-semibold text-text-dark mb-3 flex items-center gap-2">
-        <i class='bx bx-info-circle text-accent text-xl'></i> {{ _('About Invitation Codes') }}
-      </h4>
-      <p class="text-gray-700 text-sm leading-relaxed">
-        {{ _('Libriya uses invitation codes to maintain quality and security. If you don\'t have a code, contact your library manager to request one.') }}
-      </p>
-    </div>
+    
 
-    <!-- Right Column - Info Cards removed: Member Benefits and community info deleted -->
   </div>
 </div>
 
