@@ -190,7 +190,7 @@
                 <div class="flex items-center">
                     <a href="/" class="flex items-center gap-2">
                         <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Libriya" class="w-10 h-10">
-                        <span class="font-serif text-3xl font-bold {% if login_page %}text-text-dark{% else %}text-primary{% endif %} hidden sm:block">Libriya</span>
+                        <span class="text-3xl font-bold {% if login_page %}text-text-dark{% else %}text-primary{% endif %} hidden sm:block">Libriya</span>
                     </a>
                 </div>
 
@@ -294,23 +294,7 @@
         </main>
     </div>
 
-    <!-- Footer -->
-    <footer class="{% if login_page %}bg-white border-t border-gray-200{% else %}bg-gradient-to-r from-primary to-accent mt-12{% endif %} py-8 px-4">
-        <div class="max-w-7xl mx-auto text-center">
-            <p class="{% if login_page %}text-text-dark{% else %}text-white{% endif %} text-sm">
-                <span class="font-semibold">Libriya</span> &copy; 2024-2026 
-                <span class="mx-1">|</span>
-                A modern library management system
-            </p>
-            {% if not login_page %}
-            <div class="mt-4 flex justify-center gap-6 text-white text-sm">
-                <a href="#" class="hover:text-gray-200 transition">{{ _('Privacy') }}</a>
-                <a href="#" class="hover:text-gray-200 transition">{{ _('Terms') }}</a>
-                <a href="#" class="hover:text-gray-200 transition">{{ _('Contact') }}</a>
-            </div>
-            {% endif %}
-        </div>
-    </footer>
+    {# Footer removed: now provided by main_base.html #}
 
     <script src="{{ url_for('static', filename='js/pwa-manager.js') }}"></script>
     <script>

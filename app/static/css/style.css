@@ -1,3 +1,8 @@
+/* Serif font utility */
+.font-serif {
+    font-family: 'Cormorant Garamond', serif !important;
+}
+
 /* === Libriya - Modern Tailwind Design System === */
 
 [x-cloak] {
@@ -438,12 +443,7 @@ tbody tr:last-child td {
 }
 
 .navbar-brand.title-text {
-    font-family: 'Cormorant Garamond', serif;
-    /* Retaining style for application name */
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: var(--text-light) !important;
-    /* Application name text white */
+    /* Removed duplicate font-family for logo, use .font-serif only */
 }
 
 .navbar-brand.title-text img {
@@ -1169,10 +1169,7 @@ input[type=password] {
 }
 
 .default-credentials h4 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.5rem;
-    color: var(--primary-color);
-    margin-bottom: 10px;
+    /* Removed duplicate font-family for logo, use .font-serif only */
 }
 
 .default-credentials .section-title {
@@ -1277,11 +1274,7 @@ select.form-control[multiple] {
 .libriya-title {
     font-size: 2.5rem;
     color: var(--primary-color);
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: bolder;
-    margin-top: 0.5rem;
-    margin-bottom: 1.0rem;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    /* Removed duplicate font-family for logo, use .font-serif only */
 }
 
 /* Boxicons styling */
@@ -1448,4 +1441,9 @@ body>.flex {
 /* Utility to force text-primary color for important cases */
 .text-primary-force {
     color: #1a535c !important;
+}
+
+.text-primary {
+    --tw-text-opacity: 1;
+    color: rgb(26 83 92 / var(--tw-text-opacity, 1));
 }
