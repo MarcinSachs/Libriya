@@ -1,11 +1,10 @@
-{% extends "base/layout.html" %}
+{% extends "base/main_base.html" %}
 
 {% block content %}
-<div class="w-full py-12">
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-    
-    <!-- Left Column - Form -->
-    <div class="flex flex-col">
+<div class="w-full py-12 flex flex-col items-center">
+  <div class="w-full max-w-lg flex flex-col items-center">
+    <!-- Registration Form -->
+    <div class="flex flex-col w-full">
       <!-- Main Heading -->
       <h2 class="text-4xl lg:text-5xl font-bold mb-2 text-primary">
         {{ _('Join Us') }}
@@ -141,51 +140,17 @@
         </form>
       </div>
     </div>
-
-    <!-- Right Column - Info Cards -->
-    <div class="flex flex-col gap-6">
-      <!-- Hero Info Card -->
-      <div class="bg-gradient-to-br from-primary to-accent rounded-2xl p-8 text-white shadow-lg">
-        <i class='bx bxs-user-plus text-6xl mb-4 opacity-20'></i>
-        <h3 class="text-2xl font-bold mb-3">{{ _('Join Our Community') }}</h3>
-        <p class="text-blue-100 leading-relaxed">
-          {{ _('Become part of a thriving reader community. Access shared library resources, discover new books, and connect with fellow book enthusiasts.') }}
-        </p>
-      </div>
-
-      <!-- Invitation Code Info -->
-      <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200">
-        <h4 class="font-semibold text-text-dark mb-3 flex items-center gap-2">
-          <i class='bx bx-info-circle text-accent text-xl'></i> {{ _('About Invitation Codes') }}
-        </h4>
-        <p class="text-gray-700 text-sm leading-relaxed">
-          {{ _('Libriya uses invitation codes to maintain quality and security. If you don\'t have a code, contact your library manager to request one.') }}
-        </p>
-      </div>
-
-      <!-- Benefits -->
-      <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200">
-        <h4 class="font-semibold text-text-dark mb-4">✨ {{ _('Member Benefits') }}</h4>
-        <ul class="space-y-3 text-sm text-gray-700">
-          <li class="flex items-start gap-3">
-            <i class='bx bx-check-circle text-accent flex-shrink-0 mt-0.5'></i>
-            <span>{{ _('Access to all library catalogs') }}</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <i class='bx bx-check-circle text-accent flex-shrink-0 mt-0.5'></i>
-            <span>{{ _('Manage your book loans online') }}</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <i class='bx bx-check-circle text-accent flex-shrink-0 mt-0.5'></i>
-            <span>{{ _('Book recommendations and favorites') }}</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <i class='bx bx-check-circle text-accent flex-shrink-0 mt-0.5'></i>
-            <span>{{ _('Receive library notifications') }}</span>
-          </li>
-        </ul>
-      </div>
+    <!-- About Invitation Codes Card (centered below form) -->
+    <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200 mt-8 w-full">
+      <h4 class="font-semibold text-text-dark mb-3 flex items-center gap-2">
+        <i class='bx bx-info-circle text-accent text-xl'></i> {{ _('About Invitation Codes') }}
+      </h4>
+      <p class="text-gray-700 text-sm leading-relaxed">
+        {{ _('Libriya uses invitation codes to maintain quality and security. If you don\'t have a code, contact your library manager to request one.') }}
+      </p>
     </div>
+
+    <!-- Right Column - Info Cards removed: Member Benefits and community info deleted -->
   </div>
 </div>
 
