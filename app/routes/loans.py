@@ -75,7 +75,7 @@ def loans():
         recipient=current_user, is_read=False
     ).count()
 
-    return render_template("loans.html", loans=filtered_loans, users=all_users, active_page="loans", parent_page="admin", title=_("Loans"),
+    return render_template("loans/loans.html", loans=filtered_loans, users=all_users, active_page="loans", parent_page="admin", title=_("Loans"),
                            now=datetime.utcnow())
 
 
@@ -235,7 +235,7 @@ def user_loans(user_id):
     user_loans = User.query.get_or_404(user_id).loans
     user_loans = sorted(
         user_loans, key=lambda x: x.reservation_date, reverse=True)
-    return render_template("loans.html", loans=user_loans, active_page="", title="My Loans")
+    return render_template("loans/loans.html", loans=user_loans, active_page="", title="My Loans")
 
 
 @bp.route("/loans/add/", methods=["GET", "POST"])
@@ -274,7 +274,7 @@ def loan_add():
             flash(LOANS_BOOK_UNAVAILABLE, "danger")
         else:
             flash(LOANS_INVALID_BOOK_USER, "danger")
-    return render_template("loan_add.html", form=form, active_page="loans", parent_page="admin", title="Add Loan")
+    return render_template("loans/loan_add.html", form=form, active_page="loans", parent_page="admin", title="Add Loan")
 
 
 @bp.route('/user/loans/cancel/<int:loan_id>', methods=['POST'])

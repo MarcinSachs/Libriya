@@ -1,0 +1,32 @@
+{% extends "base/main_base.html" %}
+{% import 'base/macros.html' as macros %}
+{% block content %}
+
+<!-- Responsive Hero Section -->
+<div class="w-full min-h-[80vh] flex items-center justify-center">
+  <div class="max-w-md w-full mx-auto px-4 flex flex-col justify-center items-center">
+    {{ macros.display_flashes() }}
+    <h2 class="text-4xl lg:text-5xl font-bold mb-2 text-primary">{{ _('Welcome Back') }}</h2>
+    <div class="glass-card rounded-2xl p-8 shadow-lg mb-6 w-full mt-8">
+      <form method="POST" action="/login" class="space-y-6">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div>
+          <label for="username" class="block text-sm font-semibold mb-2 text-text-dark">{{ _('Username') }}</label>
+          <input type="text" id="username" name="username" required placeholder="{{ _('Enter your username') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition" />
+        </div>
+        <div>
+          <label for="password" class="block text-sm font-semibold mb-2 text-text-dark">{{ _('Password') }}</label>
+          <input type="password" id="password" name="password" required placeholder="{{ _('Enter your password') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition" />
+        </div>
+        <button type="submit" class="w-full py-3 px-4 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-lg hover:shadow-lg transform hover:-translate-y-1 transition">{{ _('Log In') }}</button>
+      </form>
+      <div class="text-center mt-4">
+        <a href="#" class="text-primary hover:text-accent underline transition text-sm">{{ _('Forgot Password?') }}</a>
+      </div>
+    </div>
+    <p class="text-center text-gray-600 text-sm">{{ _('Don\'t have an account?') }} <a href="{{ url_for('auth.register') }}" class="text-primary hover:text-accent font-semibold transition">{{ _('Register here') }}</a></p>
+  </div>
+    <!-- Right Column removed: Demo Credentials, Key Features, and professional solution info deleted -->
+  </div>
+</div>
+{% endblock %}

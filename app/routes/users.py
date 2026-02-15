@@ -51,7 +51,7 @@ def contact_messages():
             msg.read_by_admin = True
     db.session.commit()
 
-    return render_template('contact_messages.html', messages=messages, title=_('Contact Messages'),
+    return render_template('superadmin/contact_messages.html', messages=messages, title=_('Contact Messages'),
                            active_page='contact_messages', parent_page='admin')
 
 
@@ -125,7 +125,7 @@ def view_contact_message(message_id):
         flash(ERROR_PERMISSION_DENIED, "danger")
         return redirect(url_for('users.contact_messages'))
 
-    return render_template('view_message.html', message=message, title=_('Message'))
+    return render_template('superadmin/view_message.html', message=message, title=_('Message'))
 
 
 @bp.route("/users/")
@@ -143,7 +143,7 @@ def users():
             all_users = db.session.query(User).join(User.libraries).filter(
                 Library.id.in_(manager_library_ids)).distinct().all()
 
-    return render_template("users.html", users=all_users, active_page="users", parent_page="admin")
+    return render_template("users/users.html", users=all_users, active_page="users", parent_page="admin")
 
 
 @bp.route("/users/add/", methods=["GET", "POST"])
@@ -164,7 +164,7 @@ def user_add():
         if current_user.role == 'manager':
             if not current_user.libraries:
                 flash(USERS_NO_LIBRARY_MANAGED, "danger")
-                return render_template("user_add.html", form=form, parent_page="admin", active_page="users")
+                return render_template("users/user_add.html", form=form, parent_page="admin", active_page="users")
             # Add user to all libraries managed by this manager
             for library in current_user.libraries:
                 user.libraries.append(library)
@@ -183,7 +183,7 @@ def user_add():
         else:
             flash(USER_ADDED % {'username': user.username}, "success")
         return redirect(url_for("users.users"))
-    return render_template("user_add.html", form=form, parent_page="admin", active_page="users")
+    return render_template("users/user_add.html", form=form, parent_page="admin", active_page="users")
 
 
 @bp.route("/users/edit/<int:user_id>", methods=["GET", "POST"])
@@ -271,7 +271,7 @@ def user_edit(user_id):
         return redirect(url_for("users.users"))
 
     return render_template(
-        "user_edit.html",
+        "users/user_edit.html",
         form=form,
         user=user_to_edit,
         all_libraries=manageable_libraries,
@@ -335,7 +335,7 @@ def user_profile(user_id):
     favorite_books = user.favorites
 
     return render_template(
-        "user_profile.html",
+        "users/user_profile.html",
         user=user,
         loans=all_loans,
         active_loans=active_loans,
@@ -383,7 +383,7 @@ def user_settings():
         filename='uploads/' + user.image_file
     )
     return render_template(
-        "user_settings.html",
+        "users/user_settings.html",
         form=form,
         title="My Settings",
         image_file_url=image_file_url,

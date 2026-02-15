@@ -1,0 +1,18 @@
+{% extends "base/main_base.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4">
+    <h2 class="text-2xl font-bold text-gray-800">{{ _('Add a new user') }}</h2>
+    <hr class="my-4">
+
+    {{ macros.display_flashes() }}
+
+    <form method="POST" action="" enctype="multipart/form-data" novalidate>
+        {{ form.hidden_tag() }}
+        {{ macros.form_field(form.username, field_type='text', icon='bx-user', placeholder=form.username.render_kw.placeholder if form.username.render_kw and 'placeholder' in form.username.render_kw else None) }}
+        {{ macros.form_field(form.email, field_type='email', icon='bx-mail-send', placeholder=form.email.render_kw.placeholder if form.email.render_kw and 'placeholder' in form.email.render_kw else None) }}
+        {{ macros.form_field(form.password, field_type='password', icon='bx-lock-alt', placeholder=form.password.render_kw.placeholder if form.password.render_kw and 'placeholder' in form.password.render_kw else None) }}
+        {{ macros.form_field(form.confirm_password, field_type='password', icon='bx-lock-alt', placeholder=form.confirm_password.render_kw.placeholder if form.confirm_password.render_kw and 'placeholder' in form.confirm_password.render_kw else None) }}
+        {{ macros.form_submit(form.submit.label.text, cancel_url=url_for('users.users')) }}
+    </form>
+</div>
+{% endblock %}

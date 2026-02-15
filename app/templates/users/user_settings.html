@@ -1,0 +1,183 @@
+{% extends "base/main_base.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4">
+    <h2 class="text-2xl font-bold text-gray-800">{{ _('My Settings') }}</h2> 
+    <hr class="my-4">
+
+    {{ macros.display_flashes() }}
+
+    <form method="POST" action="" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="mb-3"> 
+            <label class="block font-medium text-gray-700 mb-2">{{ _('Current Profile Picture') }}</label> 
+            <div>
+                <img class="rounded-full" src="{{ url_for('static', filename='uploads/' + user.image_file) }}"
+                    style="width: 150px; height: 150px; object-fit: cover;">
+            </div>
+        </div>
+        <div class="mb-3"> 
+            {{ form.picture.label(class="block font-medium text-gray-700 mb-2") }} 
+            {{ form.picture(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#4ecdc4] focus:ring-2 focus:ring-[#4ecdc4] focus:ring-opacity-20 transition") }}
+            {% for error in form.picture.errors %}<span class="text-red-500">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="mb-3"> 
+            {{ form.email.label(class="block font-medium text-gray-700 mb-2") }} 
+            {{ form.email(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#4ecdc4] focus:ring-2 focus:ring-[#4ecdc4] focus:ring-opacity-20 transition") }}
+            {% for error in form.email.errors %}<span class="text-red-500">{{ error }}</span>{% endfor %} 
+        </div>
+        <p class="text-gray-600">{{ _('Leave the password fields blank if you don\'t want to change your password.') }}</p>
+        
+        <div class="mb-3"> 
+            {{ form.password.label(class="block font-medium text-gray-700 mb-2") }} 
+            {{ form.password(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#4ecdc4] focus:ring-2 focus:ring-[#4ecdc4] focus:ring-opacity-20 transition") }}
+            {% for error in form.password.errors %}<span class="text-red-500">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="mb-3"> 
+            {{ form.confirm_password.label(class="block font-medium text-gray-700 mb-2") }} 
+            {{ form.confirm_password(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#4ecdc4] focus:ring-2 focus:ring-[#4ecdc4] focus:ring-opacity-20 transition") }}
+            {% for error in form.confirm_password.errors %}<span class="text-red-500">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="mt-4 flex items-center gap-2"> 
+            {{ form.submit(class="bg-gradient-to-r from-[#1a535c] to-[#4ecdc4] text-white font-semibold px-6 py-2 rounded-lg hover:shadow-lg transition") }} 
+            <a href="{{ url_for('users.user_profile', user_id=current_user.id) }}" class="btn btn-outline">
+                {{ _('Cancel') }} 
+            </a> 
+        </div>
+    </form>
+
+    <!-- Offline Mode Section -->
+    <hr class="my-8">
+    <h4 class="text-lg font-semibold"><i class='bx bx-wifi-off'></i> {{ _('Offline Mode') }}</h4>
+    <p class="text-gray-600">{{ _('Download all your books and covers for offline access.') }}</p>
+    
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-4 py-3">
+            <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+                <div class="flex-1">
+                    <h5 class="font-semibold mb-1">{{ _('Offline Library') }}</h5>
+                    <p class="text-gray-600 text-sm mb-2" id="offline-cache-status">{{ _('Loading status...') }}</p>
+                    <p class="text-sm mb-0" id="offline-cache-progress"></p>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" class="btn btn-primary" id="download-offline-btn" onclick="downloadOfflineData()">
+                        <i class='bx bx-download'></i> {{ _('Download') }}
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" id="clear-offline-btn" onclick="clearOfflineData()">
+                        <i class='bx bx-trash'></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Size estimation -->
+            <div class="mt-3 text-sm">
+                <div class="flex justify-between text-gray-600">
+                    <span><i class='bx bx-data'></i> {{ _('Book data') }}:</span>
+                    <span id="data-size">~2 KB/{{ _('book') }}</span>
+                </div>
+                <div class="flex justify-between text-gray-600">
+                    <span><i class='bx bx-image'></i> {{ _('Micro covers') }}:</span>
+                    <span id="cover-size">~3 KB/{{ _('book') }}</span>
+                </div>
+                <div class="flex justify-between text-gray-600">
+                    <span><i class='bx bx-file'></i> {{ _('Detail pages') }}:</span>
+                    <span id="page-size">~15 KB/{{ _('book') }}</span>
+                </div>
+                <hr class="my-2">
+                <div class="flex justify-between font-bold">
+                    <span>{{ _('Estimated total') }}:</span>
+                    <span id="total-size">~20 KB/{{ _('book') }}</span>
+                </div>
+                <div class="flex justify-between text-green-500 font-bold" id="actual-size-row" style="display: none;">
+                    <span><i class='bx bx-check-circle'></i> {{ _('Actual size') }}:</span>
+                    <span id="actual-size">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update offline cache status on page load
+async function updateOfflineStatus() {
+    const statusEl = document.getElementById('offline-cache-status');
+    const progressEl = document.getElementById('offline-cache-progress');
+    
+    // Wait for pwaManager to be available
+    if (!window.pwaManager) {
+        progressEl.textContent = 'Oczekiwanie na PWA Manager...';
+        setTimeout(updateOfflineStatus, 500);
+        return;
+    }
+    
+    try {
+        progressEl.textContent = 'Pobieranie statusu cache...';
+        const status = await window.pwaManager.getOfflineCacheStatus();
+        progressEl.textContent = '';
+        
+        if (status.lastCache && status.lastCache.success) {
+            const date = new Date(status.lastCache.timestamp).toLocaleDateString();
+            statusEl.innerHTML = `<span class="text-success"><i class='bx bx-check-circle'></i> {{ _('Last download') }}: ${date}</span><br>` +
+                `📚 ${status.lastCache.booksCount} {{ _('books') }}, 🖼️ ${status.lastCache.coversCount} {{ _('covers') }}`;
+        } else {
+            statusEl.innerHTML = `<span class="text-warning"><i class='bx bx-info-circle'></i> {{ _('Not downloaded yet') }}</span>`;
+        }
+        
+        // Always show actual size
+        const actualSizeRow = document.getElementById('actual-size-row');
+        const actualSizeEl = document.getElementById('actual-size');
+        if (actualSizeRow && actualSizeEl) {
+            actualSizeRow.style.display = 'flex';
+            actualSizeEl.textContent = status.totalFormatted || '0 B';
+        }
+        
+    } catch (e) {
+        statusEl.innerHTML = `<span class="text-danger">{{ _('Error') }}: ${e.message}</span>`;
+        progressEl.textContent = '';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(updateOfflineStatus, 1000);
+});
+
+async function downloadOfflineData() {
+    const btn = document.getElementById('download-offline-btn');
+    const originalText = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> {{ _("Downloading...") }}';
+    
+    try {
+        const result = await window.pwaManager.preCacheOfflineData(true);
+        
+        if (result.success) {
+            const statusEl = document.getElementById('offline-cache-status');
+            statusEl.innerHTML = `<span class="text-success"><i class='bx bx-check-circle'></i> {{ _('Download complete!') }}</span><br>` +
+                `📚 ${result.booksCount} {{ _('books') }}, 🖼️ ${result.coversCount} {{ _('covers') }}`;
+            
+            // Update actual size after download
+            const status = await window.pwaManager.getOfflineCacheStatus();
+            if (status.totalBytes > 0) {
+                document.getElementById('actual-size-row').style.display = 'flex';
+                document.getElementById('actual-size').textContent = status.totalFormatted;
+            }
+        }
+    } catch (e) {
+        console.error('Download error:', e);
+    }
+    
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+}
+
+async function clearOfflineData() {
+    if (confirm('{{ _("Are you sure you want to clear offline data?") }}')) {
+        await window.pwaManager.clearOfflineData();
+        document.getElementById('offline-cache-status').innerHTML = 
+            `<span class="text-warning"><i class='bx bx-info-circle'></i> {{ _('Not downloaded yet') }}</span>`;
+        document.getElementById('offline-cache-progress').textContent = '{{ _("Cache cleared") }}';
+        document.getElementById('actual-size-row').style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

@@ -90,7 +90,7 @@ def my_messages():
     messages = ContactMessage.query.filter_by(user_id=current_user.id).order_by(
         ContactMessage.created_at.desc()).all()
 
-    return render_template('my_messages.html', form=form, messages=messages, title=_('My Messages'))
+    return render_template('superadmin/my_messages.html', form=form, messages=messages, title=_('My Messages'))
 
 
 @bp.route("/favicon.ico")
@@ -101,10 +101,22 @@ def favicon():
 @bp.route("/offline")
 def offline():
     """Offline page with translations"""
-    return render_template("offline.html", title=_("Offline"))
+    return render_template("base/offline.html", title=_("Offline"))
 
 
 @bp.route("/")
+def landing():
+    if current_user.is_authenticated:
+        return redirect(url_for("main.home"))
+    return render_template("landing/landing.html", landing_page=True)
+
+
+@bp.route("/index")
+def index():
+    return render_template("index.html")
+
+
+@bp.route("/dashboard")
 @login_required
 def home():
     status_filter = request.args.get('status')
@@ -158,7 +170,7 @@ def home():
         recipient=current_user, is_read=False
     ).count()
 
-    return render_template("index.html", books=books, genres=genres, active_page="books",
+    return render_template("books/index.html", books=books, genres=genres, active_page="books",
                            unread_notifications_count=unread_notifications_count)
 
 
@@ -176,7 +188,7 @@ def view_notifications():
         recipient=current_user, is_read=False
     ).count()
 
-    return render_template("notifications.html", notifications=notifications, title=_("Your Notifications"),
+    return render_template("superadmin/notifications.html", notifications=notifications, title=_("Your Notifications"),
                            unread_notifications_count=unread_notifications_count)
 
 

@@ -1,0 +1,1 @@
+// Placeholder for landing page JS if needed. Original JS from landing can be migrated here if required.

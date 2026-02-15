@@ -1,0 +1,67 @@
+{% extends "base/main_base.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4">
+    <div class="flex justify-between items-center mb-3">
+        <h2 class="text-2xl font-bold text-gray-800">{{ _('Your Notifications') }}</h2>
+        {% if unread_notifications_count > 0 %}
+        <form action="{{ url_for('main.mark_all_notifications_as_read') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button type="submit" class="btn btn-outline btn-sm">
+                <i class='bx bx-check-double'></i> {{ _('Mark All as Read') }}
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    <hr class="my-4">
+
+    {{ macros.display_flashes() }}
+
+    {% if notifications %}
+    <ul class="space-y-0">
+        {% for notification in notifications %}
+        <li class="flex flex-col md:flex-row justify-between items-start md:items-center px-4 py-3 border-b border-gray-200
+            {% if not notification.is_read %} bg-blue-50 {% endif %} flex-wrap">
+            <div class="flex-1">
+                <small class="text-gray-600">{{ notification.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                <p class="mb-0">{{ notification.message }}</p>
+                {% if notification.loan %}
+                    <small class="text-gray-600">
+                        {{ _('Related to loan:') }} <a href="{{ url_for('loans.loans') }}?user={{ notification.loan.user_id }}&status={{ notification.loan.status }}" class="no-underline">
+                            "{{ notification.loan.book.title }}" {{ _('by') }} {{ notification.loan.user.username }}
+                        </a>
+                    </small>
+                {% endif %}
+            </div>
+            <div class="flex gap-2 mt-2 md:mt-0">
+                {% if notification.type == 'contact_reply' %}
+                    <a href="{{ url_for('main.my_messages', notification_id=notification.id) }}#history-pane" class="bg-blue-200 text-blue-800 font-semibold text-sm px-3 py-1.5 rounded-lg hover:bg-blue-300 transition" title="{{ _('View Messages') }}">
+                        <i class='bx bx-envelope-open'></i>
+                    </a>
+                {% endif %}
+                {% if notification.type == 'contact_message' %}
+                    <a href="{{ url_for('users.contact_messages', notification_id=notification.id) }}" class="bg-blue-200 text-blue-800 font-semibold text-sm px-3 py-1.5 rounded-lg hover:bg-blue-300 transition" title="{{ _('View Messages') }}">
+                        <i class='bx bx-envelope-open'></i>
+                    </a>
+                {% endif %}
+                {% if not notification.is_read %}
+                <form action="{{ url_for('main.mark_notification_as_read', notification_id=notification.id) }}" method="POST"
+                    style="display: inline-block;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-success btn-sm" title="{{ _('Mark as Read') }}">
+                        <i class='bx bx-check'></i>
+                    </button>
+                </form>
+                {% else %}
+                <span class="inline-block bg-green-200 text-green-800 px-3 py-1.5 rounded-full text-xs font-semibold" title="{{ _('Marked as Read') }}">
+                    <i class='bx bx-check'></i>
+                </span>
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-gray-600">{{ _('No notifications yet.') }}</p>
+    {% endif %}
+</div>
+{% endblock %}

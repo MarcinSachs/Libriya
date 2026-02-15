@@ -1,0 +1,191 @@
+{% extends "base/main_base.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4">
+    <div class="flex items-center mb-4">
+        <img class="rounded-full" src="{{ url_for('static', filename='uploads/' + user.image_file) }}"
+            style="width: 64px; height: 64px; object-fit: cover;">
+        <div class="ml-3">
+            <h2 class="text-2xl font-bold text-gray-800 mb-0">{{ user.username }}</h2>
+            <p class="text-gray-600 mb-0">{{ user.email }}</p>
+        </div>
+    </div>
+    <hr class="my-4">
+
+    <!-- Loan Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 text-center h-full">
+            <div class="px-4 py-3">
+                <h5 class="font-semibold text-lg">{{ _('Total Loans') }}</h5>
+                <p class="text-3xl font-bold">{{ loans|length }}</p>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 text-center h-full">
+            <div class="px-4 py-3">
+                <h5 class="font-semibold text-lg">{{ _('Currently On Loan') }}</h5>
+                <p class="text-3xl font-bold">{{ active_loans|length }}</p>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 text-center h-full">
+            <div class="px-4 py-3">
+                <h5 class="font-semibold text-lg">{{ _('Pending Reservations') }}</h5>
+                <p class="text-3xl font-bold">{{ pending_loans|length }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Reservations -->
+    <h3 class="mt-20 text-xl font-bold">{{ _('Pending Reservations') }}</h3>
+    {% if pending_loans %}
+    <div class="overflow-x-auto">
+    <table class="w-full border-collapse border border-gray-200">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="px-4 py-3 text-left font-semibold">{{ _('Book Title') }}</th>
+                <th class="px-4 py-3 text-left font-semibold">{{ _('Reservation Date') }}</th>
+                <th class="px-4 py-3 text-left font-semibold">{{ _('Status') }}</th>
+                <th class="px-4 py-3 text-left font-semibold">{{ _('Actions') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in pending_loans %}
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+                <td class="px-4 py-3">{{ loan.book.title }}</td>
+                <td class="px-4 py-3">{{ loan.reservation_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td class="px-4 py-3"><span class="inline-block bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">{{ _('Pending Approval') }}</span></td>
+                <td class="px-4 py-3 flex items-center gap-2">
+                    <form action="{{ url_for('loans.user_cancel_reservation', loan_id=loan.id) }}" method="POST"
+                        style="display: inline-block;">
+                        <button type="submit" class="text-red-500 hover:text-red-700 transition" title="{{ _('Cancel My Reservation') }}">
+                            <i class="bx bx-x-circle text-lg"></i>
+                        </button>
+                    </form>
+                    <span class="text-gray-600 text-sm">{{ _('Waiting for admin approval') }}</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+    <p class="text-gray-600">{{ _('No pending reservations.') }}</p>
+    {% endif %}
+
+    <!-- Currently On Loan -->
+    <h3 class="mt-20 text-xl font-bold">{{ _('Currently On Loan') }}</h3>
+    {% if active_loans %}
+    <div class="overflow-x-auto">
+    <table class="w-full border-collapse border border-gray-200">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="px-4 py-3 text-left font-semibold">{{ _('Book Title') }}</th>
+                <th class="px-4 py-3 text-left font-semibold">{{ _('Issue Date') }}</th>
+                <th class="px-4 py-3 text-left font-semibold">{{ _('Actions') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in active_loans %}
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+                <td class="px-4 py-3">{{ loan.book.title }}</td>
+                <td class="px-4 py-3">{{ loan.issue_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td class="px-4 py-3">
+                    <span class="text-gray-600">{{ _('Return via admin') }}</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+    <p class="text-gray-600">{{ _('No books are currently on loan.') }}</p>
+    {% endif %}
+
+    <!-- Loan History -->
+    <h3 class="mt-20 text-xl font-bold">{{ _('Loan History') }}</h3>
+    {% if loan_history %}
+    <div class="overflow-x-auto">
+    <table class="w-full border-collapse border border-gray-200">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="px-4 py-3 text-left font-semibold">{{ _('Book Title') }}</th>
+                <th class="px-4 py-3 text-left font-semibold">{{ _('Reservation Date') }}</th>
+                <th class="px-4 py-3 text-left font-semibold">{{ _('Issue Date') }}</th>
+                <th class="px-4 py-3 text-left font-semibold">{{ _('Return Date') }}</th>
+                <th class="px-4 py-3 text-left font-semibold">{{ _('Status') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in loan_history %}
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+                <td class="px-4 py-3">{{ loan.book.title }}</td>
+                <td class="px-4 py-3">{{ loan.reservation_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td class="px-4 py-3">
+                    {% if loan.issue_date %}
+                        {{ loan.issue_date.strftime('%Y-%m-%d %H:%M') }}
+                    {% else %}
+                        <span class="text-gray-600">{{ _('Not issued') }}</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3">
+                    {% if loan.return_date %}
+                        {{ loan.return_date.strftime('%Y-%m-%d %H:%M') }}
+                    {% else %}
+                        <span class="text-gray-600">{{ _('N/A') }}</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3">
+                    {% if loan.status == 'returned' %}
+                        <span class="inline-block bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-xs font-semibold">{{ _('Returned') }}</span>
+                    {% elif loan.status == 'cancelled' %}
+                        <span class="inline-block bg-red-200 text-red-800 px-3 py-1 rounded-full text-xs font-semibold">{{ _('Cancelled') }}</span>
+                    {% else %}
+                        <span class="inline-block bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs font-semibold">{{ loan.status.replace('_', ' ').title() }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+    <p class="text-gray-600">{{ _('No loan history.') }}</p>
+    {% endif %}
+
+    <!-- Favorite Books -->
+    <h3 class="mt-20 text-xl font-bold">{{ _('Favorite Books') }}</h3>
+    {% if user.favorites %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for book in user.favorites %}
+        <form action="{{ url_for('books.book_detail', book_id=book.id) }}" method="GET" class="bg-white rounded-lg shadow-sm border border-gray-200 h-full overflow-hidden hover:shadow-md transition">
+            <button type="submit" class="w-full p-0 text-left">
+                {% if book.cover %}
+                    <img src="{{ url_for('static', filename='uploads/' + book.cover) }}" class="w-full"
+                        alt="{{ book.title }}" style="object-fit: cover; height: 200px;">
+                {% else %}
+                    <img src="{{ url_for('static', filename='img/default_book_cover.jpg') }}" class="w-full"
+                        alt="{{ _('No cover available') }}" style="object-fit: cover; height: 200px;">
+                {% endif %}
+                <div class="px-4 py-3 flex flex-col h-full">
+                    <h5 class="font-semibold text-lg">{{ book.title }}</h5>
+                    <p class="text-gray-600">
+                        {% for author in book.authors %}
+                        {{ author.name }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                </div>
+            </button>
+            <div class="bg-white border-t border-gray-200 px-4 py-3 flex justify-end">
+                <form action="{{ url_for('books.remove_favorite', book_id=book.id) }}" method="POST">
+                    <button type="submit" class="text-red-500 hover:text-red-700 transition" title="{{ _('Remove from Favorites') }}">
+                        <i class="bx bx-trash text-lg"></i>
+                    </button>
+                </form>
+            </div>
+        </form>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-600">{{ _('No favorite books yet.') }}</p>
+    {% endif %}
+
+</div>
+{% endblock %}

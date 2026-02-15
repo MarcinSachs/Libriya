@@ -1,53 +1,432 @@
-.input-group-text .bx-book-open {
-    margin-top: -5px;
+/* Serif font utility */
+.font-serif {
+    font-family: 'Cormorant Garamond', serif !important;
 }
 
-/* CSS variable definitions for color and shadow consistency */
+/* === Libriya - Modern Tailwind Design System === */
+
+[x-cloak] {
+    display: none !important;
+}
+
+/* ===== Core Utilities ===== */
+
+.glass-nav {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: none;
+    transition: box-shadow 0.3s ease;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hero-gradient {
+    background: linear-gradient(135deg, #1a535c 0%, #4ecdc4 100%);
+}
+
+/* ===== Cards & Components ===== */
+
+.bento-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    background: white;
+}
+
+.bento-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: #4ecdc4;
+}
+
+.info-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #1a535c;
+}
+
+.info-card i {
+    font-size: 1.5rem;
+    color: #1a535c;
+}
+
+/* ===== CSS variable definitions for color consistency ===== */
 :root {
     --primary-color: #1a535c;
-    /* Dark teal for header and accents */
     --accent-color: #4ecdc4;
-    /* Lighter teal for secondary accents */
     --text-dark: #333;
     --text-light: #f8f9fa;
-    /* Light text on dark background */
-    --gray-bg: #f8f9fa;
-    /* Very light page background */
-    --box-shadow-light: 0 .125rem .25rem rgba(0, 0, 0, .075);
-    --box-shadow-medium: 0 .5rem 1rem rgba(0, 0, 0, .15);
 }
 
-/* Global styles for the body */
+color: var(--primary-color);
+
+
+}
+}
+}
+
 body {
     font-family: 'Inter', sans-serif;
-    /* New, readable font */
-    color: var(--text-dark);
-    background-color: var(--gray-bg);
-    /* Subtle background for the entire page */
-    padding-top: 56px;
-    /* Top padding so content is not covered by fixed navbar */
+    color: #333;
+    background-color: #f8f9fa;
+    min-height: 100vh;
 }
 
-/* Specific styles for the login page background */
-body.login-background {
-    background: url('../images/library-bg.jpg') no-repeat center center fixed;
-    /* Upewnij się, że ten plik istnieje! */
-    background-size: cover;
-    background-color: #f0f2f5;
-    /* Fallback color */
-    padding-top: 0;
-    /* No top padding for full background on login page */
-    display: flex;
-    /* Make body a flex container */
-    flex-direction: column;
-    /* Stack children vertically */
+font-size: 1.1rem;
+font-family: 'Inter',
+sans-serif;
+color: #1a535c;
+font-weight: 700;
+line-height: 1.2;
+margin-bottom: 0.5rem;
 }
 
-h2 {
+}
+
+font-size: 3rem;
+letter-spacing: -0.02em;
+}
+
+
+font-size: 2.25rem;
+letter-spacing: -0.01em;
+}
+
+h6 {
+    font-size: 1.5rem;
+}
+
+font-size: 1rem;
+font-size: 1.25rem;
+}
+
+}
+
+font-size: 1.1rem;
+}
+
+
+font-size: 1rem;
+}
+
+.btn,
+a.btn,
+button.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 2rem;
+    border-radius: 1rem;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary,
+.bg-primary {
+    background-color: #1a535c !important;
+    color: #fff;
+}
+
+.btn-primary:hover:not(:disabled),
+.bg-primary:hover:not(:disabled) {
+    /* Usunięto efekt scale i box-shadow na hover, badge jest statyczny */
+}
+
+.btn-accent,
+.bg-accent {
+    background-color: #4ecdc4;
+    color: #fff;
+}
+
+.btn-accent:hover:not(:disabled),
+.bg-accent:hover:not(:disabled) {
+    /* Usunięto efekt scale i box-shadow na hover, aby nie było animacji */
+}
+
+.btn-outline {
+    background: transparent !important;
+    color: #1a535c;
+    border: 2px solid #1a535c !important;
+    box-shadow: none !important;
+}
+
+.btn-outline:hover:not(:disabled) {
+    background: rgba(26, 83, 92, 0.1) !important;
+    box-shadow: 0 4px 6px -1px rgba(26, 83, 92, 0.2) !important;
+    transform: scale(1.02) !important;
+}
+
+.glass-nav {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    box-shadow: none !important;
+    transition: box-shadow 0.3s ease !important;
+}
+
+.hero-gradient {
+    background: linear-gradient(135deg, #1a535c 0%, #4ecdc4 100%) !important;
+}
+
+.bento-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 3rem !important;
+}
+
+.bento-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    border-color: #4ecdc4 !important;
+}
+
+/* ===== Forms ===== */
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+textarea,
+select {
+    background-color: white !important;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="datetime-local"]:focus,
+input[type="time"]:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: #4ecdc4;
+    box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.5em 1.5em;
+    background-color: white !important;
+    padding-right: 2.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #1a535c;
+}
+
+.form-group {
     margin-bottom: 1.5rem;
-    margin-top: 1.5rem;
-    color: var(--primary-color);
 }
+
+.form-error {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* ===== Buttons ===== */
+
+.btn,
+a.btn,
+button.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 2rem;
+    border-radius: 1rem;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+button:disabled,
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background-color: #1a535c;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+}
+
+.btn-accent {
+    background-color: #4ecdc4;
+    color: white;
+}
+
+.btn-accent:hover:not(:disabled) {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+}
+
+.btn-outline {
+    background: transparent;
+    color: #1a535c;
+    border: 2px solid #1a535c;
+    box-shadow: none;
+}
+
+.btn-outline:hover:not(:disabled) {
+    background: rgba(26, 83, 92, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(26, 83, 92, 0.2);
+    transform: scale(1.02);
+}
+
+.btn-danger {
+    background-color: #dc2626;
+    color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+}
+
+.btn-success {
+    background-color: #16a34a;
+    color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+/* ===== Tables ===== */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+thead {
+    background: #f8f9fa;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: inherit;
+}
+
+td {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    color: #333;
+}
+
+tbody tr:hover {
+    background: #f8f9fa;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== Alerts ===== */
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    border-left: 4px solid;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.alert-success {
+    background: #ecfdf5;
+    border-color: #10b981;
+    color: #065f46;
+}
+
+.alert-error {
+    background: #fef2f2;
+    border-color: #ef4444;
+    color: #7f1d1d;
+}
+
+.alert-warning {
+    background: #fffbeb;
+    border-color: #f59e0b;
+    color: #78350f;
+}
+
+.alert-info {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    color: #1e3a8a;
+}
+
+.alert i {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+/* ===== Additional Existing Styles (keep important ones) ===== */
+
 
 /* Adjust main-content for login page to take full height and center content */
 .main-content.login-full-height {
@@ -62,9 +441,9 @@ h2 {
     padding-top: 0 !important;
     /* Remove any padding that might interfere with centering */
     padding-bottom: 0 !important;
-    margin-top: 56px;
+    margin-top: 80px;
     /* Push content down by navbar height */
-    min-height: calc(100vh - 56px);
+    min-height: calc(100vh - 80px);
     /* Take remaining height */
 }
 
@@ -76,12 +455,7 @@ h2 {
 }
 
 .navbar-brand.title-text {
-    font-family: 'Cormorant Garamond', serif;
-    /* Retaining style for application name */
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: var(--text-light) !important;
-    /* Application name text white */
+    /* Removed duplicate font-family for logo, use .font-serif only */
 }
 
 .navbar-brand.title-text img {
@@ -588,8 +962,8 @@ input[type=password]:focus {
     border-bottom: 2px solid #5fbae9;
 }
 
-input[type=text]:placeholder,
-input[type=password]:placeholder {
+input[type=text]::placeholder,
+input[type=password]::placeholder {
     color: #cccccc;
 }
 
@@ -807,10 +1181,7 @@ input[type=password] {
 }
 
 .default-credentials h4 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.5rem;
-    color: var(--primary-color);
-    margin-bottom: 10px;
+    /* Removed duplicate font-family for logo, use .font-serif only */
 }
 
 .default-credentials .section-title {
@@ -896,6 +1267,7 @@ input[type=password] {
 
 .form-control {
     height: 40px;
+    background-color: white !important;
 }
 
 textarea.comment-input {
@@ -910,16 +1282,14 @@ textarea.comment-input {
 select.form-control[multiple] {
     height: auto;
     min-height: 200px;
+    background-color: white !important;
+    color: #333 !important;
 }
 
 .libriya-title {
     font-size: 2.5rem;
     color: var(--primary-color);
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: bolder;
-    margin-top: 0.5rem;
-    margin-bottom: 1.0rem;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    /* Removed duplicate font-family for logo, use .font-serif only */
 }
 
 /* Boxicons styling */
@@ -1028,6 +1398,7 @@ i.bx {
     white-space: nowrap;
     flex-shrink: 0;
 }
+
 /* Barcode Scanner Styles */
 #interactive {
     background: #000;
@@ -1044,3 +1415,109 @@ i.bx {
     display: none !important;
 }
 
+/* === Footer Styles === */
+footer {
+    margin-top: auto;
+}
+
+/* Ensure body takes full viewport height and has flex layout */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+body>.flex {
+    flex: 1;
+}
+
+/* Wymuszenie braku animacji na badge REKOMENDOWANY/RECOMMENDED */
+.no-anim-badge {
+    display: block !important;
+    animation: none !important;
+    -webkit-animation: none !important;
+    -moz-animation: none !important;
+    -o-animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+}
+
+/* Wymuszenie koloru tła na hover dla .hover:bg-primary */
+.hover\:bg-primary:hover {
+    --tw-bg-opacity: 1;
+    background-color: rgb(26 83 92 / var(--tw-bg-opacity, 1));
+}
+
+/* Utility to disable all transitions (for static rotate-3) */
+. !transition-none {
+    transition: none !important;
+}
+
+/* Utility to force text-primary color for important cases */
+.text-primary-force {
+    color: #1a535c !important;
+}
+
+.text-primary {
+    --tw-text-opacity: 1;
+    color: rgb(26 83 92 / var(--tw-text-opacity, 1));
+}
+
+/* Force white background on all form selects */
+select,
+select.flex-1,
+.flex-1 select {
+    background-color: white !important;
+    color: #333 !important;
+}
+
+/* Additional specificity for wrapped selects */
+.flex.items-center select {
+    background-color: white !important;
+}
+
+/* Ultra-specific select styling - maximum priority */
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #333;
+}
+
+/* Final select rule with highest priority */
+*select,
+div select,
+form select {
+    background-color: white !important;
+}
+
+input[type="text"]::-webkit-outer-spin-button,
+input[type="text"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* BOMBOWY SELECTOR - wymuszenie białego background'u na WSZYSTKICH selectach */
+select {
+    background-color: white !important;
+    color: #333 !important;
+    border: 1px solid #d1d5db !important;
+}
+
+/* Agresywny CSS dla select[multiple] */
+select[multiple],
+select[multiple="multiple"] {
+    background-color: white !important;
+    color: #333 !important;
+    border: 1px solid #d1d5db !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+}
+
+/* Force white background on all form fields with bg-white class */
+input.bg-white,
+textarea.bg-white,
+select.bg-white {
+    background-color: white !important;
+}

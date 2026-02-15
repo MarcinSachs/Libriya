@@ -1,0 +1,178 @@
+{% extends "base/main_base.html" %}
+{% block content %}
+
+<div class="w-full">
+    {{ macros.display_flashes() }}
+
+    <!-- Books Count Info Card -->
+    <div class="info-card mb-6">
+        <i class='bx bxs-info-circle text-2xl'></i>
+        <p class="m-0">
+            {% set n = books|length %}
+            {{ ngettext('Library currently has %(n)s book.', 'Library currently has %(n)s books.', n, n=n) }}
+        </p>
+    </div>
+
+    <h2 class="text-3xl font-bold text-primary mb-6">{{ _('List of books') }}</h2>
+
+    <!-- Filtering Form -->
+    <form method="GET" action="{{ url_for('main.home') }}" class="mb-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <!-- Title Search -->
+            <div class="form-group">
+                <label for="title" class="block text-sm font-semibold mb-2">{{ _('Title') }}</label>
+                <input type="text" id="title" name="title"
+                    value="{{ request.args.get('title', '') }}" 
+                    placeholder="{{ _('Enter title to search') }}"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition" />
+            </div>
+
+            <!-- Status Filter -->
+            <div class="form-group">
+                <label for="status" class="block text-sm font-semibold mb-2">{{ _('Status') }}</label>
+                <select id="status" name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition">
+                    <option value="">{{ _('All') }}</option>
+                    <option value="available" {% if request.args.get('status')=='available' %}selected{% endif %}>{{ _('Available') }}</option>
+                    <option value="on_loan" {% if request.args.get('status')=='on_loan' %}selected{% endif %}>{{ _('On Loan/Reserved') }}</option>
+                </select>
+            </div>
+
+            <!-- Genre Filter -->
+            <div class="form-group">
+                <label for="genre" class="block text-sm font-semibold mb-2">{{ _('Genre') }}</label>
+                <select id="genre" name="genre" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition">
+                    <option value="">{{ _('All') }}</option>
+                    {% for genre in genres %}
+                    <option value="{{ genre.id }}" {% if request.args.get('genre')==genre.id|string %}selected{% endif %}>{{ _(genre.name) }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Sort By -->
+            <div class="form-group">
+                <label for="sort_by" class="block text-sm font-semibold mb-2">{{ _('Sort by') }}</label>
+                <select id="sort_by" name="sort_by" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition">
+                    <option value="title" {% if request.args.get('sort_by','title')=='title' %}selected{% endif %}>{{ _('Title A-Z') }}</option>
+                    <option value="title_desc" {% if request.args.get('sort_by')=='title_desc' %}selected{% endif %}>{{ _('Title Z-A') }}</option>
+                    <option value="year" {% if request.args.get('sort_by')=='year' %}selected{% endif %}>{{ _('Year (Oldest)') }}</option>
+                    <option value="year_desc" {% if request.args.get('sort_by')=='year_desc' %}selected{% endif %}>{{ _('Year (Newest)') }}</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Filter & Reset Buttons -->
+        <div class="flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class='bx bx-filter'></i> {{ _('Filter') }}
+            </button>
+            <a href="{{ url_for('main.home') }}" class="btn btn-outline">
+                {{ _('Reset') }}
+            </a>
+        </div>
+    </form>
+
+    <!-- Books Table -->
+    <div class="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
+        <table class="w-full">
+            <thead>
+                <tr class="bg-[#1a535c] text-white">
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Cover') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Title') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Author') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Genre') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Year') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Library') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Status') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Actions') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in books %}
+                <tr class="border-b border-gray-200 hover:bg-gray-50 transition" onclick="window.location='{{ url_for('books.book_detail', book_id=book.id) }}'; return true;" style="cursor: pointer;">
+                    <td class="px-4 py-3">
+                        {% if book.cover %}
+                        <img src="{{ url_for('static', filename='uploads/' + book.cover) }}"
+                            alt="{{ _('Book cover %(title)s', title=book.title) }}"
+                            class="w-12 h-16 object-cover rounded">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='images/default-book-cover.png') }}"
+                            alt="{{ _('Default book cover') }}"
+                            class="w-12 h-16 object-cover rounded">
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 font-medium text-text-dark">{{ book.title }}</td>
+                    <td class="px-4 py-3">{{ book.authors|map(attribute='name')|join(', ') }}</td>
+                    <td class="px-4 py-3">
+                        {% if book.genres %}
+                        {% for genre in book.genres %}
+                        {{ _(genre.name) }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                        {% else %}
+                        <span class="text-gray-500">{{ _('No genres') }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3">{{ book.year }}</td>
+                    <td class="px-4 py-3">{{ book.library.name }}</td>
+                    <td class="px-4 py-3">
+                        {% if book.status == 'available' %}
+                        <span class="badge badge-success">{{ _('Available') }}</span>
+                        {% elif book.status == 'reserved' %}
+                        <span class="badge badge-accent">{{ _('Reserved') }}</span>
+                        {% elif book.status == 'on_loan' %}
+                        <span class="badge" style="background: #fbbf24; color: #78350f;">{{ _('On Loan') }}</span>
+                        {% else %}
+                        <span class="badge" style="background: #d1d5db; color: #1f2937;">{{ book.status.replace('_', ' ').title() }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3" onclick="event.stopPropagation();">
+                        <div class="flex gap-2 flex-wrap">
+                            <!-- Add to Favorites -->
+                            <form action="{{ url_for('books.add_favorite', book_id=book.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="p-2 text-primary hover:bg-gray-200 rounded transition" title="{{ _('Add to favorites') }}">
+                                    <i class='bx bx-heart'></i>
+                                </button>
+                            </form>
+
+                            <!-- Request Reservation -->
+                            {% if book.status == 'available' %}
+                            <a href="{{ url_for('loans.request_reservation', book_id=book.id, user_id=current_user.id) }}"
+                                class="p-2 text-primary hover:bg-gray-200 rounded transition" title="{{ _('Request Reservation') }}">
+                                <i class="bx bx-file"></i>
+                            </a>
+                            {% else %}
+                            <button type="button" class="p-2 text-gray-400 cursor-not-allowed rounded" disabled title="{{ _('Book not available for reservation') }}">
+                                <i class="bx bx-block"></i>
+                            </button>
+                            {% endif %}
+
+                            <!-- Edit & Delete (Admin/Manager only) -->
+                            {% if current_user and (current_user.is_admin or current_user.is_manager) %}
+                            <a href="{{ url_for('books.book_edit', book_id=book.id)}}" 
+                                class="p-2 text-accent hover:bg-gray-200 rounded transition" title="{{ _('Edit Book') }}">
+                                <i class="bx bx-edit"></i>
+                            </a>
+                            <button type="button" class="p-2 text-red-500 hover:bg-gray-200 rounded transition delete-btn" 
+                                data-book-id="{{ book.id }}" data-book-title="{{ book.title }}"
+                                title="{{ _('Delete Book') }}">
+                                <i class="bx bx-trash"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add Book Button (Admin/Manager) -->
+    {% if current_user and (current_user.role == 'admin' or current_user.role == 'manager') %}
+    <div class="mt-8 flex justify-center">
+        <a href="{{ url_for('books.book_add') }}" class="btn btn-primary">
+            <i class='bx bx-plus'></i> {{ _('Add book') }}
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

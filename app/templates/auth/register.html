@@ -1,0 +1,156 @@
+{% extends "base/main_base.html" %}
+
+{% block content %}
+<div class="w-full py-12 flex flex-col items-center">
+  <div class="w-full max-w-lg flex flex-col items-center">
+    <!-- Registration Form -->
+    <div class="flex flex-col w-full">
+      <!-- Main Heading -->
+      <h2 class="text-4xl lg:text-5xl font-bold mb-2 text-primary">
+        {{ _('Join Us') }}
+      </h2>
+      <p class="text-gray-600 mb-8 text-lg">
+        {{ _('Create your account to start managing your library') }}
+      </p>
+      <!-- About Invitation Codes Card -->
+    <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200 mt-8 mb-12 w-full">
+      <h4 class="font-semibold text-text-dark mb-3 flex items-center gap-2">
+        <i class='bx bx-info-circle text-accent text-xl'></i> {{ _('About Invitation Codes') }}
+      </h4>
+      <p class="text-gray-700 text-sm leading-relaxed">
+        {{ _('Libriya uses invitation codes to maintain quality and security. If you don\'t have a code, contact your library manager to request one.') }}
+      </p>
+    </div>
+      <!-- Registration Form Card -->
+      <div class="glass-card rounded-2xl p-8 shadow-lg">
+        <form method="POST" novalidate class="space-y-6">
+          {{ form.hidden_tag() }}
+          
+          <!-- Invitation Code -->
+          <div class="form-group">
+            {{ form.invitation_code.label(class="block text-sm font-semibold mb-2 text-text-dark") }}
+            {% if form.invitation_code.errors %}
+                {{ form.invitation_code(class="w-full px-4 py-2 border-2 border-red-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-20 transition", placeholder=_("8-character code")) }}
+                <div class="text-red-500 text-sm mt-1">
+                    {% for error in form.invitation_code.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ form.invitation_code(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition", placeholder=_("8-character code")) }}
+            {% endif %}
+            <small class="text-gray-500 text-xs mt-1 block">{{ _('Enter the invitation code provided by your library manager') }}</small>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            {{ form.email.label(class="block text-sm font-semibold mb-2 text-text-dark") }}
+            {% if form.email.errors %}
+                {{ form.email(class="w-full px-4 py-2 border-2 border-red-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-20 transition", type="email") }}
+                <div class="text-red-500 text-sm mt-1">
+                    {% for error in form.email.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ form.email(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition", type="email") }}
+            {% endif %}
+          </div>
+
+          <!-- First Name & Last Name -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="form-group">
+              {{ form.first_name.label(class="block text-sm font-semibold mb-2 text-text-dark") }}
+              {% if form.first_name.errors %}
+                  {{ form.first_name(class="w-full px-4 py-2 border-2 border-red-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-20 transition") }}
+                  <div class="text-red-500 text-sm mt-1">
+                      {% for error in form.first_name.errors %}
+                          <span>{{ error }}</span>
+                      {% endfor %}
+                  </div>
+              {% else %}
+                  {{ form.first_name(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition") }}
+              {% endif %}
+            </div>
+            <div class="form-group">
+              {{ form.last_name.label(class="block text-sm font-semibold mb-2 text-text-dark") }}
+              {% if form.last_name.errors %}
+                  {{ form.last_name(class="w-full px-4 py-2 border-2 border-red-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-20 transition") }}
+                  <div class="text-red-500 text-sm mt-1">
+                      {% for error in form.last_name.errors %}
+                          <span>{{ error }}</span>
+                      {% endfor %}
+                  </div>
+              {% else %}
+                  {{ form.last_name(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition") }}
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Username -->
+          <div class="form-group">
+            {{ form.username.label(class="block text-sm font-semibold mb-2 text-text-dark") }}
+            {% if form.username.errors %}
+                {{ form.username(class="w-full px-4 py-2 border-2 border-red-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-20 transition") }}
+                <div class="text-red-500 text-sm mt-1">
+                    {% for error in form.username.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ form.username(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition") }}
+            {% endif %}
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            {{ form.password.label(class="block text-sm font-semibold mb-2 text-text-dark") }}
+            {% if form.password.errors %}
+                {{ form.password(class="w-full px-4 py-2 border-2 border-red-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-20 transition", type="password") }}
+                <div class="text-red-500 text-sm mt-1">
+                    {% for error in form.password.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ form.password(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition", type="password") }}
+            {% endif %}
+            <small class="text-gray-500 text-xs mt-1 block">{{ _('Minimum 8 characters') }}</small>
+          </div>
+
+          <!-- Password Confirmation -->
+          <div class="form-group">
+            {{ form.password_confirm.label(class="block text-sm font-semibold mb-2 text-text-dark") }}
+            {% if form.password_confirm.errors %}
+                {{ form.password_confirm(class="w-full px-4 py-2 border-2 border-red-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-20 transition", type="password") }}
+                <div class="text-red-500 text-sm mt-1">
+                    {% for error in form.password_confirm.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ form.password_confirm(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition", type="password") }}
+            {% endif %}
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-4">
+            {{ form.submit(class="w-full py-3 px-4 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-lg hover:shadow-lg transform hover:-translate-y-1 transition") }}
+          </div>
+
+          <!-- Already have account -->
+          <p class="text-center text-gray-600 text-sm mt-6">
+            {{ _('Already have an account?') }} 
+            <a href="{{ url_for('auth.login') }}" class="text-primary hover:text-accent font-semibold transition">
+              {{ _('Log in here') }}
+            </a>
+          </p>
+        </form>
+      </div>
+    </div>
+    
+
+  </div>
+</div>
+
+{% endblock %}

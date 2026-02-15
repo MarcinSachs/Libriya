@@ -188,7 +188,7 @@ def book_detail(book_id):
 
         return redirect(url_for('books.book_detail', book_id=book.id))
 
-    return render_template("book_detail.html", book=book, active_page="books",
+    return render_template("books/book_detail.html", book=book, active_page="books",
                            user_comment=user_comment, comment_form=comment_form)
 
 
@@ -211,7 +211,6 @@ def book_add():
         # If manager has only one library, set it as default
         if len(current_user.libraries) == 1:
             form.library.data = current_user.libraries[0].id
-
 
     if form.validate_on_submit():
         # Try to get description from form, or from Open Library/BN if available
@@ -324,7 +323,7 @@ def book_add():
         flash(BOOK_ADDED % {'title': new_book.title}, "success")
         return redirect(url_for("main.home"))
 
-    return render_template("book_add.html", form=form)
+    return render_template("books/book_add.html", form=form)
 
 
 @bp.route("/book_delete/<int:book_id>", methods=["POST"])
@@ -464,7 +463,7 @@ def book_edit(book_id):
         return redirect(url_for("main.home"))
 
     # Render template for GET request or form validation error
-    return render_template("book_edit.html", form=form, book=book, active_page="books", title=_("Edit Book"))
+    return render_template("books/book_edit.html", form=form, book=book, active_page="books", title=_("Edit Book"))
 
 
 @bp.route('/favorites/add/<int:book_id>', methods=['POST'])
