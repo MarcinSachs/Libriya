@@ -17,14 +17,20 @@ class PWAManager {
 
     async init() {
         console.log('[PWA] Initializing PWA Manager');
+        console.log('[PWA] Secure context:', window.isSecureContext);
+        console.log('[PWA] Protocol:', window.location.protocol);
+        console.log('[PWA] Hostname:', window.location.hostname);
+        console.log('[PWA] User agent:', navigator.userAgent);
 
         // Check if Service Worker is supported and we're on secure context
         if ('serviceWorker' in navigator) {
             if (window.isSecureContext) {
                 this.registerServiceWorker();
             } else {
-                console.warn('[PWA] Service Worker requires HTTPS. Offline features disabled.');
-                console.warn('[PWA] Use localhost or enable HTTPS for full PWA support.');
+                console.warn('[PWA] Not in secure context (HTTP detected). Service Worker disabled.');
+                console.warn('[PWA] Showing fallback install method for HTTP access.');
+                // On non-secure contexts (e.g., http://192.168.x.x), show install button as fallback
+                this.showInstallPromptFallback();
             }
         } else {
             console.warn('[PWA] Service Worker not supported in this browser');
@@ -36,6 +42,7 @@ class PWAManager {
 
         // Install prompt event listener
         window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('[PWA] beforeinstallprompt event triggered');
             e.preventDefault();
             this.deferredPrompt = e;
             this.showInstallPrompt();
@@ -43,13 +50,44 @@ class PWAManager {
 
         // App installed listener
         window.addEventListener('appinstalled', () => {
-            console.log('[PWA] App installed');
+            console.log('[PWA] App installed successfully');
             this.deferredPrompt = null;
             this.hideInstallPrompt();
         });
 
         // Update status on load
         this.updateOnlineStatus();
+    }
+
+    /**
+     * Show install prompt fallback for non-secure contexts
+     */
+    showInstallPromptFallback() {
+        // On non-secure contexts (HTTP), still show the button with external install link
+        const mobileInstallBtn = document.getElementById('mobile-install-app-btn');
+        
+        // Delay to ensure DOM is ready
+        setTimeout(() => {
+            if (mobileInstallBtn) {
+                mobileInstallBtn.style.display = 'inline-flex';
+                mobileInstallBtn.style.alignItems = 'center';
+                console.log('[PWA] Fallback install button shown for non-secure context');
+                
+                if (navigator.userAgent.includes('Android')) {
+                    // For Android, change onclick to show instructions
+                    mobileInstallBtn.onclick = () => {
+                        alert('To install this app on Android:\n\n1. Tap the menu (⋮) in Chrome\n2. Tap "Install app"\n3. Confirm installation');
+                    };
+                    console.log('[PWA] Android fallback method configured');
+                } else if (navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')) {
+                    // For iOS
+                    mobileInstallBtn.onclick = () => {
+                        alert('To install on iOS:\n\n1. Tap Share button (Up arrow)\n2. Tap "Add to Home Screen"\n3. Tap "Add"');
+                    };
+                    console.log('[PWA] iOS fallback method configured');
+                }
+            }
+        }, 100);
     }
 
     /**
@@ -201,10 +239,16 @@ class PWAManager {
      */
     showInstallPrompt() {
         const installBtn = document.getElementById('install-app-btn');
+        const mobileInstallBtn = document.getElementById('mobile-install-app-btn');
+        
         if (installBtn) {
             installBtn.style.display = 'inline-block';
-            console.log('[PWA] Install prompt available');
         }
+        if (mobileInstallBtn) {
+            mobileInstallBtn.style.display = 'inline-flex';
+            mobileInstallBtn.style.alignItems = 'center';
+        }
+        console.log('[PWA] Install prompt shown');
     }
 
     /**
@@ -212,8 +256,13 @@ class PWAManager {
      */
     hideInstallPrompt() {
         const installBtn = document.getElementById('install-app-btn');
+        const mobileInstallBtn = document.getElementById('mobile-install-app-btn');
+        
         if (installBtn) {
             installBtn.style.display = 'none';
+        }
+        if (mobileInstallBtn) {
+            mobileInstallBtn.style.display = 'none';
         }
     }
 
@@ -222,7 +271,16 @@ class PWAManager {
      */
     installApp() {
         if (!this.deferredPrompt) {
-            console.warn('[PWA] Install prompt not available');
+            console.warn('[PWA] Install prompt not available - showing manual instructions');
+            
+            // Fallback: Show manual installation instructions
+            if (navigator.userAgent.includes('Android')) {
+                alert('To install this app:\n\n1. Tap the menu (⋮) in Chrome\n2. Tap "Install app"\n3. Confirm installation\n\nOr:\n1. Tap Share (↗️)\n2. Tap "Add to Home Screen"');
+            } else if (navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')) {
+                alert('To install on iOS:\n\n1. Tap Share button (Up arrow ↗️)\n2. Scroll and tap "Add to Home Screen"\n3. Tap "Add" button');
+            } else {
+                alert('To install this app:\n\n1. Look for an install prompt in the address bar\n2. Or use your browser menu to "Install app"');
+            }
             return;
         }
 

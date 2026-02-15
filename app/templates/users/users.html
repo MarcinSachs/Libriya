@@ -1,6 +1,6 @@
 {% extends "base/main_base.html" %}
 {% block content %}
-<div class="max-w-7xl mx-auto px-4">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
@@ -14,8 +14,10 @@
         <i class='bx bxs-info-circle mr-2'></i>
         <span>{{ ngettext('Library currently has %(n)s user.', 'Library currently has %(n)s users.', n, n=n) }}</span>
     </div>
-    <h2 class="text-2xl font-bold text-gray-800">{{ _('Users') }}</h2> 
-    <div class="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
+    <h2 class="text-2xl font-bold text-gray-800">{{ _('Users') }}</h2>
+
+    <!-- Users Table (Desktop) -->
+    <div class="users-table-container overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
     <table class="w-full">
         <thead>
             <tr class="bg-[#1a535c] text-white">
@@ -45,6 +47,34 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
+
+    <!-- Users Grid (Mobile) -->
+    <div class="users-grid">
+        {% for user in users %}
+        <div class="user-card">
+            <div class="user-card-header">
+                <h3 class="user-card-title">{{ user.username }}</h3>
+                <span class="user-card-role">{{ user.role.capitalize() }}</span>
+            </div>
+            <div class="user-card-body">
+                <div class="user-card-info">
+                    <span class="user-card-label">{{ _('Email') }}:</span>
+                    <span class="user-card-value">{{ user.email }}</span>
+                </div>
+            </div>
+            <div class="user-card-actions">
+                <a href="{{ url_for('users.user_edit', user_id=user.id) }}" class="user-card-btn" title="{{ _('Edit User') }}">
+                    <i class="bx bxs-edit"></i> {{ _('Edit') }}
+                </a>
+                <form method="POST" action="{{ url_for('users.user_delete', user_id=user.id) }}" style="flex: 1;" onsubmit="return confirm('{{ _('Are you sure?') }}');">
+                    <button type="submit" class="user-card-btn user-card-btn-danger w-full" title="{{ _('Delete User') }}">
+                        <i class="bx bxs-trash"></i> {{ _('Delete') }}
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
     </div>
     <div class="mt-4">
         <a href="{{ url_for('users.user_add') }}" class="btn btn-primary">

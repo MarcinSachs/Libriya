@@ -1,8 +1,9 @@
 {% extends "base/main_base.html" %}
 {% block content %}
 
-<div class="w-full">
-    {{ macros.display_flashes() }}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="w-full">
+        {{ macros.display_flashes() }}
 
     <!-- Books Count Info Card -->
     <div class="info-card mb-6">
@@ -79,8 +80,8 @@
         </div>
     </form>
 
-    <!-- Books Table -->
-    <div class="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
+    <!-- Books Table (Desktop) -->
+    <div class="books-table-container overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
         <table class="w-full">
             <thead>
                 <tr class="bg-[#1a535c] text-white">
@@ -173,6 +174,86 @@
         </table>
     </div>
 
+    <!-- Books Grid (Mobile) -->
+    <div class="books-grid">
+        {% for book in books %}
+        <div class="book-card" onclick="window.location='{{ url_for('books.book_detail', book_id=book.id) }}'; return true;">
+            <!-- Cover -->
+            <div class="book-card-header">
+                {% if book.cover %}
+                <img src="{{ url_for('static', filename='uploads/' + book.cover) }}"
+                    alt="{{ _('Book cover %(title)s', title=book.title) }}">
+                {% else %}
+                <img src="{{ url_for('static', filename='images/default-book-cover.png') }}"
+                    alt="{{ _('Default book cover') }}">
+                {% endif %}
+            </div>
+
+            <!-- Content -->
+            <div class="book-card-body">
+                <!-- Title -->
+                <h3 class="book-card-title">{{ book.title }}</h3>
+
+                <!-- Author -->
+                <p class="book-card-author">{{ book.authors|map(attribute='name')|join(', ') }}</p>
+
+                <!-- Meta Info -->
+                <div class="book-card-meta">
+                    {% if book.year %}
+                    <span>{{ book.year }}</span>
+                    {% endif %}
+                    {% if book.library %}
+                    <span>{{ book.library.name }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- Status -->
+                <div class="book-card-status">
+                    {% if book.status == 'available' %}
+                    <span class="badge badge-success text-xs">{{ _('Available') }}</span>
+                    {% elif book.status == 'reserved' %}
+                    <span class="badge badge-accent text-xs">{{ _('Reserved') }}</span>
+                    {% elif book.status == 'on_loan' %}
+                    <span class="badge text-xs" style="background: #fbbf24; color: #78350f;">{{ _('On Loan') }}</span>
+                    {% else %}
+                    <span class="badge text-xs" style="background: #d1d5db; color: #1f2937;">{{ book.status.replace('_', ' ').title() }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- Actions -->
+                <div class="book-card-actions" onclick="event.stopPropagation();">
+                    <!-- Add to Favorites -->
+                    <form action="{{ url_for('books.add_favorite', book_id=book.id) }}" method="POST" style="flex: 1;">
+                        <button type="submit" class="w-full text-sm" title="{{ _('Add to favorites') }}">
+                            <i class='bx bx-heart'></i> <span class="hidden sm:inline">{{ _('Like') }}</span>
+                        </button>
+                    </form>
+
+                    <!-- Request Reservation -->
+                    {% if book.status == 'available' %}
+                    <a href="{{ url_for('loans.request_reservation', book_id=book.id, user_id=current_user.id) }}"
+                        class="text-sm" title="{{ _('Request Reservation') }}">
+                        <i class="bx bx-file"></i> <span class="hidden sm:inline">{{ _('Reserve') }}</span>
+                    </a>
+                    {% else %}
+                    <button type="button" class="text-sm text-gray-400 cursor-not-allowed" disabled>
+                        <i class="bx bx-block"></i>
+                    </button>
+                    {% endif %}
+
+                    <!-- Edit (Admin/Manager only) -->
+                    {% if current_user and (current_user.is_admin or current_user.is_manager) %}
+                    <a href="{{ url_for('books.book_edit', book_id=book.id)}}" 
+                        class="text-sm" title="{{ _('Edit Book') }}">
+                        <i class="bx bx-edit"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
     <!-- Add Book Button (Admin/Manager) -->
     {% if current_user and (current_user.role == 'admin' or current_user.role == 'manager') %}
     <div class="mt-8 flex justify-center">
@@ -262,5 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+    </div>
+</div>
 
 {% endblock %}

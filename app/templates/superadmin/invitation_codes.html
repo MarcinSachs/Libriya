@@ -25,7 +25,7 @@
     </div>
 
     {% if codes %}
-    <div class="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200 invitation-codes-table-container">
         <table class="w-full">
             <thead>
                 <tr class="bg-[#1a535c] text-white">
@@ -93,6 +93,80 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+
+    <!-- Mobile Card Grid Layout -->
+    <div class="invitation-codes-grid">
+        {% for code in codes %}
+        <div class="invitation-code-card">
+            <div class="invitation-code-card-body">
+                <div class="invitation-code-card-code">
+                    <code>{{ code.code }}</code>
+                </div>
+                <div class="invitation-code-card-row">
+                    <span class="invitation-code-card-label">{{ _('Library') }}</span>
+                    <span class="invitation-code-card-value">{{ code.library.name if code.library else '-' }}</span>
+                </div>
+                <div class="invitation-code-card-row">
+                    <span class="invitation-code-card-label">{{ _('Created By') }}</span>
+                    <span class="invitation-code-card-value">{{ code.created_by.username if code.created_by else '-' }}</span>
+                </div>
+                <div class="invitation-code-card-row">
+                    <span class="invitation-code-card-label">{{ _('Created') }}</span>
+                    <span class="invitation-code-card-value">{{ code.created_at.strftime('%d.%m.%Y') if code.created_at else '-' }}</span>
+                </div>
+                <div class="invitation-code-card-row">
+                    <span class="invitation-code-card-label">{{ _('Expires') }}</span>
+                    <span class="invitation-code-card-value">
+                        {% if code.expires_at %}
+                            {% set days_left = ((code.expires_at - now()).days) %}
+                            {% if days_left < 0 %}
+                                <span class="text-red-600">{{ _('Expired') }}</span>
+                            {% else %}
+                                {{ code.expires_at.strftime('%d.%m.%Y') }} ({{ days_left }} {{ _('days') }})
+                            {% endif %}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="invitation-code-card-row">
+                    <span class="invitation-code-card-label">{{ _('Status') }}</span>
+                    <span class="invitation-code-card-status">
+                        {% if code.is_valid() %}
+                            {% if code.used_by_id %}
+                                <span class="bg-green-200 text-green-800 px-2 py-1 rounded text-sm">{{ _('Used') }}</span>
+                            {% else %}
+                                <span class="bg-blue-200 text-blue-800 px-2 py-1 rounded text-sm">{{ _('Active') }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded text-sm">{{ _('Expired') }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% if code.used_by_id %}
+                <div class="invitation-code-card-row">
+                    <span class="invitation-code-card-label">{{ _('Used By') }}</span>
+                    <span class="invitation-code-card-value">{{ code.used_by.username }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="invitation-code-card-actions">
+                <button class="invitation-code-card-btn copy-code" data-code-id="{{ code.id }}" title="{{ _('Copy code to clipboard') }}">
+                    <i class='bx bx-copy'></i> {{ _('Copy') }}
+                </button>
+                {% if not code.used_by_id and code.is_valid() %}
+                <form method="POST" action="{{ url_for('invitations.deactivate_code', code_id=code.id) }}" 
+                      style="display: inline;" 
+                      onsubmit="return confirm('{{ _('Deactivate this code?') }}')">
+                    <button class="invitation-code-card-btn invitation-code-card-btn-danger" type="submit" title="{{ _('Deactivate Code') }}">
+                        <i class='bx bx-trash'></i> {{ _('Delete') }}
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
     </div>
     {% endif %}
 </div>
