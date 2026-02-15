@@ -92,13 +92,12 @@ pytest tests/
 
 - **Backend:** Flask, SQLAlchemy, Alembic, EasyOCR, APScheduler
 - **Frontend:** HTML5, JavaScript, Service Worker, manifest.json, Bootstrap
-- **API:** REST (zarządzanie książkami, wyszukiwanie, OCR, powiadomienia)
+- **API:** REST (zarządzanie książkami, wyszukiwanie, powiadomienia)
 - **PWA:** Service Worker, cache okładek i metadanych, instalacja na urządzeniu, tryb offline
 
 ### Przykładowe endpointy API
 
 - `GET /api/v1/isbn/<isbn>` – wyszukiwanie książki po ISBN
-- `POST /api/v1/ocr/isbn` – rozpoznawanie ISBN z obrazu (OCR)
 - `GET /api/books` – lista książek
 - `POST /api/books` – dodanie książki
 - `GET /api/books/<id>` – szczegóły książki
@@ -114,10 +113,7 @@ Patrz plik `config.py`:
 - `MAX_COVER_SIZE` – limit rozmiaru okładki
 - `LANGUAGES` – obsługiwane języki
 
-### OCR
 
-EasyOCR (Python, bez zewnętrznych zależności):
-- automatyczne pobieranie modelu przy pierwszym uruchomieniu (~200MB)
 - działa na Windows, Linux, macOS, serwerach
 
 ## Crowdin – tłumaczenia
@@ -228,24 +224,6 @@ Chcesz pomóc? Forkuj repozytorium i wyślij Pull Request. Każdy wkład mile wi
 
 ## Recent Improvements (v2.0)
 
-### ISBN Scanner with OCR Recognition
-- **Dual-Mode Barcode Scanning:** 
-  - Traditional QR/barcode scanning (html5-qrcode library)
-  - **NEW:** OCR text recognition for printed ISBN numbers
-- **Backend OCR Processing:**
-  - Powered by EasyOCR (pure Python, no system dependencies)
-  - Works on Windows, Linux, and server environments
-  - Intelligent image preprocessing (contrast enhancement, thresholding)
-  - Multiple recognition strategies for reliability
-- **ISBN Extraction:**
-  - Detects both ISBN-10 (with/without dashes) and ISBN-13 formats
-  - Recognizes patterns like "83-225-0046-7"
-  - Optimized for fast detection (300ms frame interval)
-- **Seamless Integration:**
-  - Auto-searches for book when ISBN is detected
-  - Works on mobile devices with camera access
-  - Responsive visual feedback (green highlight on detection)
-
 ### ISBN Search & Cover Retrieval Enhancement
 - **Dual API Integration:** Searches Biblioteka Narodowa first, then falls back to Open Library
 - **Intelligent Cover Management:** 
@@ -298,7 +276,6 @@ pytest tests/
 ### Book Search
 - `GET /api/v1/isbn/<isbn>` - Search book by ISBN (includes cover data)
 - `GET /api/v1/search/title` - Search books by title
-- `POST /api/v1/ocr/isbn` - Extract ISBN from image via OCR (mobile scanner)
 
 ### Book Management
 - `GET /api/books` - List all books (with location filtering)
@@ -315,14 +292,6 @@ See `config.py` for available configuration options:
 - `UPLOAD_FOLDER` - Location for uploaded cover images
 - `MAX_COVER_SIZE` - Maximum cover image size (default: 5MB)
 - `LANGUAGES` - Supported languages (default: ['en', 'pl'])
-
-### OCR Configuration
-
-The ISBN scanner uses **EasyOCR** for optical character recognition:
-- **Pure Python implementation** - No system dependencies required (unlike Tesseract)
-- **Works everywhere:** Windows, Linux, macOS, and server environments
-- **First-time setup:** Downloads recognition model (~200MB) automatically on first use
-- **Subsequent runs:** Model cached locally for instant startup
 - **Performance:** Optimized for CPU-only systems with reduced thread usage
 
 ## Crowdin Integration

@@ -144,68 +144,8 @@
 <script src="{{ url_for('static', filename='js/vendor/html5-qrcode.min.js') }}"></script>
 <script>
     // Live video barcode scanner using Html5Qrcode
-    // OCR processing is handled on the backend via API
     var html5QrCode = null;
     var scannerActive = false;
-    var lastFrameTime = 0;
-    var FRAME_INTERVAL = 300; // Send frame every 300ms (faster OCR attempts)
-    var ocrProcessing = false;
-    
-    function performBackendOCR(canvas) {
-        if (ocrProcessing) return;
-        
-        var now = Date.now();
-        if (now - lastFrameTime < FRAME_INTERVAL) {
-            return;
-        }
-        lastFrameTime = now;
-        
-        ocrProcessing = true;
-        
-        // Convert canvas to blob and send to backend with lower quality for faster processing
-        canvas.toBlob(function(blob) {
-            if (!blob) {
-                console.debug('OCR: Failed to create blob from canvas');
-                ocrProcessing = false;
-                return;
-            }
-            
-            var formData = new FormData();
-            formData.append('image', blob, 'frame.jpg');
-            
-            fetch('/api/v1/ocr/isbn', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.isbn) {
-                    console.log('✓ ISBN found via OCR:', data.isbn);
-                    
-                    var isbnInput = document.getElementById('isbn');
-                    if (isbnInput && !isbnInput.value) {
-                        isbnInput.value = data.isbn;
-                        isbnInput.style.backgroundColor = '#d4edda';
-                        
-                        // Stop scanner and auto-search
-                        stopScanner();
-                        setTimeout(function() {
-                            var findBtn = document.getElementById('find-by-isbn');
-                            if (findBtn) {
-                                findBtn.click();
-                            }
-                        }, 500);
-                    }
-                }
-            })
-            .catch(error => {
-                console.debug('OCR error:', error);
-            })
-            .finally(() => {
-                ocrProcessing = false;
-            });
-        }, 'image/jpeg', 0.7);
-    }
     
     function startScanner() {
         if (scannerActive) return;
@@ -252,7 +192,6 @@
             }
         ).then(function() {
             scannerActive = true;
-            lastOCRTime = 0;
             
             var interactive = document.getElementById('interactive');
             if (interactive) {
@@ -265,29 +204,6 @@
                 startBtn.classList.remove('btn-info');
                 startBtn.classList.add('btn-danger');
             }
-            
-            // Start frame capture loop for backend OCR
-            var frameInterval = setInterval(function() {
-                if (!scannerActive) {
-                    clearInterval(frameInterval);
-                    return;
-                }
-                
-                try {
-                    var video = document.querySelector('#interactive video');
-                    if (video && video.videoWidth > 0 && video.videoHeight > 0) {
-                        var canvas = document.createElement('canvas');
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        var ctx = canvas.getContext('2d');
-                        ctx.drawImage(video, 0, 0);
-                        
-                        performBackendOCR(canvas);
-                    }
-                } catch(e) {
-                    console.debug('Frame capture error:', e);
-                }
-            }, 250); // Check every 250ms for OCR attempt
         }).catch(function(err) {
             console.error('Camera error:', err);
             alert("{{ _('Could not access camera. Please check permissions.') }}");
