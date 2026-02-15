@@ -8,7 +8,7 @@ from sqlalchemy import or_
 import os
 
 from app import db, csrf
-from app.models import Book, Genre, Notification, User, ContactMessage
+from app.models import Book, Genre, Notification, User, ContactMessage, Author
 from app.forms import ContactForm
 from app.services.book_service import BookSearchService
 from app.services.cover_service import CoverService
@@ -137,7 +137,15 @@ def home():
     # --- END OF FILTERING ---
 
     if title_filter:
-        query = query.filter(Book.title.ilike(f"%{title_filter}%"))
+        # Search in title, description, and author names
+        search_term = f"%{title_filter}%"
+        query = query.outerjoin(Book.authors).filter(
+            or_(
+                Book.title.ilike(search_term),
+                Book.description.ilike(search_term),
+                Author.name.ilike(search_term)
+            )
+        ).distinct()
 
     if status_filter:
         if status_filter == 'available':

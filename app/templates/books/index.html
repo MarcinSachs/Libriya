@@ -20,10 +20,10 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <!-- Title Search -->
             <div class="form-group">
-                <label for="title" class="block text-sm font-semibold mb-2">{{ _('Title') }}</label>
+                <label for="title" class="block text-sm font-semibold mb-2">{{ _('Search') }}</label>
                 <input type="text" id="title" name="title"
                     value="{{ request.args.get('title', '') }}" 
-                    placeholder="{{ _('Enter title to search') }}"
+                    placeholder="{{ _('Title, author, or description') }}"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition" />
             </div>
 

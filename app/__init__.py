@@ -8,6 +8,7 @@ from flask import session, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
+from markupsafe import Markup
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -49,6 +50,15 @@ def create_app(config_class=Config):
         return best_lang or app.config["BABEL_DEFAULT_LOCALE"]
 
     babel.init_app(app, locale_selector=get_locale)
+
+    # Register custom Jinja2 filters
+    def linebreaksbr(text):
+        """Convert line breaks to HTML <br> tags"""
+        if text is None:
+            return ""
+        return Markup(str(text).replace('\n', '<br>\n').replace('\r', ''))
+
+    app.jinja_env.filters['linebreaksbr'] = linebreaksbr
 
     # Initialize premium features manager
     from app.services.premium.manager import PremiumManager
