@@ -207,7 +207,7 @@ input[type="datetime-local"],
 input[type="time"],
 textarea,
 select {
-    background-color: white;
+    background-color: white !important;
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
     padding: 0.75rem 1rem;
@@ -233,6 +233,18 @@ select:focus {
 textarea {
     resize: vertical;
     min-height: 120px;
+}
+
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.5em 1.5em;
+    background-color: white !important;
+    padding-right: 2.5rem;
 }
 
 label {
@@ -1255,6 +1267,7 @@ input[type=password] {
 
 .form-control {
     height: 40px;
+    background-color: white !important;
 }
 
 textarea.comment-input {
@@ -1269,6 +1282,8 @@ textarea.comment-input {
 select.form-control[multiple] {
     height: auto;
     min-height: 200px;
+    background-color: white !important;
+    color: #333 !important;
 }
 
 .libriya-title {
@@ -1446,4 +1461,63 @@ body>.flex {
 .text-primary {
     --tw-text-opacity: 1;
     color: rgb(26 83 92 / var(--tw-text-opacity, 1));
+}
+
+/* Force white background on all form selects */
+select,
+select.flex-1,
+.flex-1 select {
+    background-color: white !important;
+    color: #333 !important;
+}
+
+/* Additional specificity for wrapped selects */
+.flex.items-center select {
+    background-color: white !important;
+}
+
+/* Ultra-specific select styling - maximum priority */
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #333;
+}
+
+/* Final select rule with highest priority */
+*select,
+div select,
+form select {
+    background-color: white !important;
+}
+
+input[type="text"]::-webkit-outer-spin-button,
+input[type="text"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* BOMBOWY SELECTOR - wymuszenie białego background'u na WSZYSTKICH selectach */
+select {
+    background-color: white !important;
+    color: #333 !important;
+    border: 1px solid #d1d5db !important;
+}
+
+/* Agresywny CSS dla select[multiple] */
+select[multiple],
+select[multiple="multiple"] {
+    background-color: white !important;
+    color: #333 !important;
+    border: 1px solid #d1d5db !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+}
+
+/* Force white background on all form fields with bg-white class */
+input.bg-white,
+textarea.bg-white,
+select.bg-white {
+    background-color: white !important;
 }
