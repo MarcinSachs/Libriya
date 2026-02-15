@@ -65,14 +65,14 @@ class PWAManager {
     showInstallPromptFallback() {
         // On non-secure contexts (HTTP), still show the button with external install link
         const mobileInstallBtn = document.getElementById('mobile-install-app-btn');
-        
+
         // Delay to ensure DOM is ready
         setTimeout(() => {
             if (mobileInstallBtn) {
                 mobileInstallBtn.style.display = 'inline-flex';
                 mobileInstallBtn.style.alignItems = 'center';
                 console.log('[PWA] Fallback install button shown for non-secure context');
-                
+
                 if (navigator.userAgent.includes('Android')) {
                     // For Android, change onclick to show instructions
                     mobileInstallBtn.onclick = () => {
@@ -240,7 +240,7 @@ class PWAManager {
     showInstallPrompt() {
         const installBtn = document.getElementById('install-app-btn');
         const mobileInstallBtn = document.getElementById('mobile-install-app-btn');
-        
+
         if (installBtn) {
             installBtn.style.display = 'inline-block';
         }
@@ -257,7 +257,7 @@ class PWAManager {
     hideInstallPrompt() {
         const installBtn = document.getElementById('install-app-btn');
         const mobileInstallBtn = document.getElementById('mobile-install-app-btn');
-        
+
         if (installBtn) {
             installBtn.style.display = 'none';
         }
@@ -272,7 +272,7 @@ class PWAManager {
     installApp() {
         if (!this.deferredPrompt) {
             console.warn('[PWA] Install prompt not available - showing manual instructions');
-            
+
             // Fallback: Show manual installation instructions
             if (navigator.userAgent.includes('Android')) {
                 alert('To install this app:\n\n1. Tap the menu (⋮) in Chrome\n2. Tap "Install app"\n3. Confirm installation\n\nOr:\n1. Tap Share (↗️)\n2. Tap "Add to Home Screen"');
