@@ -89,9 +89,21 @@
                     </div>
                 </div>
                 <!-- Mobile menu button + language -->
-                <div class="md:hidden flex items-center gap-4">
-                    <a href="{{ url_for('main.set_language', lang='pl') }}" class="text-xs font-bold text-primary border border-primary px-2 py-1 rounded"><span class="fi fi-pl"></span> PL</a>
-                    <a href="{{ url_for('main.set_language', lang='en') }}" class="text-xs font-bold text-primary border border-primary px-2 py-1 rounded"><span class="fi fi-gb"></span> EN</a>
+                <div class="md:hidden flex items-center gap-3">
+                    <!-- Mobile Language Dropdown -->
+                    <div class="relative group pb-2">
+                        <button class="flex items-center gap-1 text-primary hover:text-accent transition">
+                            <i class="bx bx-globe text-lg"></i>
+                        </button>
+                        <div class="absolute right-0 top-full mt-0 w-32 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition z-50">
+                            <a href="{{ url_for('main.set_language', lang='pl') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg flex items-center gap-2">
+                                <span class="fi fi-pl"></span> PL
+                            </a>
+                            <a href="{{ url_for('main.set_language', lang='en') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg flex items-center gap-2">
+                                <span class="fi fi-gb"></span> EN
+                            </a>
+                        </div>
+                    </div>
                     {% block mobile_menu_button %}{% endblock %}
                 </div>
             </div>
@@ -172,6 +184,77 @@
     </footer>
     {% block extra_body %}{% endblock %}
     <script>
+        // Mobile menu toggle for landing page
+        const mobileMenuBtn = document.querySelector('.md\\:hidden button i.bx-menu')?.parentElement;
+        
+        if (mobileMenuBtn) {
+            const navContainer = document.querySelector('nav');
+            let mobileMenuPanel = null;
+            
+            mobileMenuBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                if (!mobileMenuPanel) {
+                    // Create mobile menu panel
+                    mobileMenuPanel = document.createElement('div');
+                    mobileMenuPanel.id = 'mobile-nav-menu';
+                    mobileMenuPanel.className = 'fixed top-20 left-0 right-0 bg-white border-b border-gray-200 z-40 shadow-lg p-4';
+                    
+                    const linksContainer = document.createElement('div');
+                    linksContainer.className = 'space-y-2 max-w-7xl mx-auto';
+                    
+                    // Add nav links from landing page
+                    const links = [
+                        { text: 'Features', href: '#features' },
+                        { text: 'For Whom', href: '#multi-tenant' },
+                        { text: 'Premium', href: '#premium' }
+                    ];
+                    
+                    links.forEach(linkData => {
+                        const link = document.createElement('a');
+                        link.href = linkData.href;
+                        link.textContent = linkData.text;
+                        link.className = 'block px-4 py-2 text-gray-700 hover:bg-gray-bg rounded-lg transition font-semibold';
+                        linksContainer.appendChild(link);
+                    });
+                    
+                    // Add divider
+                    const divider = document.createElement('hr');
+                    divider.className = 'my-2 border-gray-200';
+                    linksContainer.appendChild(divider);
+                    
+                    // Add login button
+                    const loginBtn = document.createElement('a');
+                    loginBtn.href = '/login';
+                    loginBtn.textContent = 'Sign In';
+                    loginBtn.className = 'block w-full px-4 py-2 bg-primary text-white rounded-lg font-semibold text-center hover:shadow-lg transition';
+                    linksContainer.appendChild(loginBtn);
+                    
+                    mobileMenuPanel.appendChild(linksContainer);
+                    navContainer.insertAdjacentElement('afterend', mobileMenuPanel);
+                } else {
+                    // Toggle visibility
+                    mobileMenuPanel.classList.toggle('hidden');
+                }
+            });
+            
+            // Close mobile menu when clicking a link
+            mobileMenuPanel?.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (link.href.includes('#')) {
+                        mobileMenuPanel.classList.add('hidden');
+                    }
+                });
+            });
+            
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (mobileMenuPanel && !mobileMenuPanel.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                    mobileMenuPanel.classList.add('hidden');
+                }
+            });
+        }
+
         // Admin menu toggle
         const adminToggle = document.getElementById('admin-toggle');
         const adminMenu = document.getElementById('admin-menu');
