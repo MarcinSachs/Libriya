@@ -3,6 +3,17 @@
     font-family: 'Cormorant Garamond', serif !important;
 }
 
+/* === Text Selection === */
+::selection {
+    background-color: #4ecdc4;
+    color: #ffffff;
+}
+
+::-moz-selection {
+    background-color: #4ecdc4;
+    color: #ffffff;
+}
+
 /* === Libriya - Modern Tailwind Design System === */
 
 [x-cloak] {
