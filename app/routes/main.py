@@ -8,7 +8,7 @@ from sqlalchemy import or_
 import os
 
 from app import db, csrf
-from app.models import Book, Genre, Notification, User, ContactMessage
+from app.models import Book, Genre, Notification, User, ContactMessage, Author
 from app.forms import ContactForm
 from app.services.book_service import BookSearchService
 from app.services.cover_service import CoverService
@@ -19,6 +19,9 @@ from app.utils.messages import (
 )
 
 bp = Blueprint("main", __name__)
+
+
+# --- HELPER FUNCTIONS ---
 
 
 # --- KONTAKT ---
@@ -137,7 +140,15 @@ def home():
     # --- END OF FILTERING ---
 
     if title_filter:
-        query = query.filter(Book.title.ilike(f"%{title_filter}%"))
+        # Search in title, description, and author names with stemming support
+        search_term = f"%{title_filter}%"
+        query = query.outerjoin(Book.authors).filter(
+            or_(
+                Book.title.ilike(search_term),
+                Book.description.ilike(search_term),
+                Author.name.ilike(search_term)
+            )
+        ).distinct()
 
     if status_filter:
         if status_filter == 'available':
@@ -162,6 +173,7 @@ def home():
         query = query.order_by(Book.title.asc())
 
     books = query.all()
+
     genres = Genre.query.all()
     genres = sorted(genres, key=lambda g: _(g.name))
 
@@ -172,6 +184,61 @@ def home():
 
     return render_template("books/index.html", books=books, genres=genres, active_page="books",
                            unread_notifications_count=unread_notifications_count)
+
+
+@bp.route("/api/v1/search", methods=['GET'])
+@login_required
+def api_search_books():
+    """
+    API endpoint for live search with dynamic filtering.
+    Returns JSON with matching books.
+    """
+    search_query = request.args.get('q', '').strip()
+    limit = request.args.get('limit', 10, type=int)
+
+    if len(search_query) < 2:
+        return jsonify({'books': []})
+
+    # Same filtering as home() route
+    query = Book.query
+
+    # --- LOCATION BASED FILTERING ---
+    if current_user.role != 'admin':
+        user_library_ids = [lib.id for lib in current_user.libraries]
+        if not user_library_ids:
+            return jsonify({'books': []})
+        query = query.filter(Book.library_id.in_(user_library_ids))
+    # --- END OF FILTERING ---
+
+    # Search in title, description, and author names
+    search_term = f"%{search_query}%"
+    query = query.outerjoin(Book.authors).filter(
+        or_(
+            Book.title.ilike(search_term),
+            Book.description.ilike(search_term),
+            Author.name.ilike(search_term)
+        )
+    ).distinct().order_by(Book.title.asc()).limit(limit)
+
+    books = query.all()
+
+    # Convert to JSON-serializable format
+    result = {
+        'books': [
+            {
+                'id': book.id,
+                'title': book.title,
+                'author': ', '.join([a.name for a in book.authors]) if book.authors else 'Unknown',
+                'description': (book.description[:100] + '...') if book.description and len(book.description) > 100 else book.description,
+                'year': book.year,
+                'status': book.status,
+                'url': url_for('books.book_detail', book_id=book.id)
+            }
+            for book in books
+        ]
+    }
+
+    return jsonify(result)
 
 
 @bp.route("/notifications/")

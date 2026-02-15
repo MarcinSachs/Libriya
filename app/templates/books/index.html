@@ -18,13 +18,21 @@
     <!-- Filtering Form -->
     <form method="GET" action="{{ url_for('main.home') }}" class="mb-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <!-- Title Search -->
-            <div class="form-group">
-                <label for="title" class="block text-sm font-semibold mb-2">{{ _('Title') }}</label>
+            <!-- Title Search with Live Results -->
+            <div class="form-group relative">
+                <label for="title" class="block text-sm font-semibold mb-2">{{ _('Search') }}</label>
                 <input type="text" id="title" name="title"
                     value="{{ request.args.get('title', '') }}" 
-                    placeholder="{{ _('Enter title to search') }}"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition" />
+                    placeholder="{{ _('Title, author, or description') }}"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition"
+                    autocomplete="off"
+                    data-search="live" />
+                
+                <!-- Live Search Dropdown Results -->
+                <div id="search-results" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden max-h-64 overflow-y-auto z-50">
+                    <ul id="results-list" class="list-none p-0 m-0">
+                    </ul>
+                </div>
             </div>
 
             <!-- Status Filter -->
@@ -174,5 +182,85 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('title');
+    const resultsContainer = document.getElementById('search-results');
+    const resultsList = document.getElementById('results-list');
+    let debounceTimer;
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        const query = this.value.trim();
+
+        // Hide results if less than 2 characters
+        if (query.length < 2) {
+            resultsContainer.classList.add('hidden');
+            resultsList.innerHTML = '';
+            return;
+        }
+
+        // Debounce API call (300ms)
+        debounceTimer = setTimeout(function() {
+            fetchSearchResults(query);
+        }, 300);
+    });
+
+    // Hide results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.form-group')) {
+            resultsContainer.classList.add('hidden');
+        }
+    });
+
+    async function fetchSearchResults(query) {
+        try {
+            const response = await fetch(`/api/v1/search?q=${encodeURIComponent(query)}&limit=8`);
+            const data = await response.json();
+            
+            resultsList.innerHTML = '';
+            
+            if (!data.books || data.books.length === 0) {
+                resultsList.innerHTML = '<li class="px-4 py-2 text-gray-500 text-sm">{{ _("No results found") }}</li>';
+                resultsContainer.classList.remove('hidden');
+                return;
+            }
+
+            data.books.forEach(book => {
+                const li = document.createElement('li');
+                li.className = 'border-b border-gray-200 last:border-b-0 hover:bg-gray-100 transition';
+                li.innerHTML = `
+                    <a href="${book.url}" class="block px-4 py-3 no-underline hover:no-underline">
+                        <div class="font-semibold text-sm text-gray-900">${escapeHtml(book.title)}</div>
+                        <div class="text-xs text-gray-600 mt-1">
+                            <span>${escapeHtml(book.author)}</span>
+                            {% if false %}<span class="mx-2">•</span><span class="text-gray-500">${book.year || 'N/A'}</span>{% endif %}
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1 line-clamp-2">${escapeHtml(book.description || '')}</div>
+                    </a>
+                `;
+                resultsList.appendChild(li);
+            });
+
+            resultsContainer.classList.remove('hidden');
+        } catch (error) {
+            console.error('Search error:', error);
+            resultsList.innerHTML = '<li class="px-4 py-2 text-red-500 text-sm">{{ _("Error loading results") }}</li>';
+        }
+    }
+
+    // Helper function to escape HTML
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+});
+</script>
 
 {% endblock %}
