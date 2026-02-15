@@ -195,13 +195,13 @@ def api_search_books():
     """
     search_query = request.args.get('q', '').strip()
     limit = request.args.get('limit', 10, type=int)
-    
+
     if len(search_query) < 2:
         return jsonify({'books': []})
-    
+
     # Same filtering as home() route
     query = Book.query
-    
+
     # --- LOCATION BASED FILTERING ---
     if current_user.role != 'admin':
         user_library_ids = [lib.id for lib in current_user.libraries]
@@ -209,7 +209,7 @@ def api_search_books():
             return jsonify({'books': []})
         query = query.filter(Book.library_id.in_(user_library_ids))
     # --- END OF FILTERING ---
-    
+
     # Search in title, description, and author names
     search_term = f"%{search_query}%"
     query = query.outerjoin(Book.authors).filter(
@@ -219,9 +219,9 @@ def api_search_books():
             Author.name.ilike(search_term)
         )
     ).distinct().order_by(Book.title.asc()).limit(limit)
-    
+
     books = query.all()
-    
+
     # Convert to JSON-serializable format
     result = {
         'books': [
@@ -237,7 +237,7 @@ def api_search_books():
             for book in books
         ]
     }
-    
+
     return jsonify(result)
 
 
