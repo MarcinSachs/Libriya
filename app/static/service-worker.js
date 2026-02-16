@@ -1,15 +1,18 @@
-const CACHE_NAME = 'libriya-v14';
+const CACHE_NAME = 'libriya-v16';
 const THUMBNAIL_CACHE = 'libriya-thumbnails-v1';
 const MICRO_CACHE = 'libriya-micro-v1';
 const DATA_CACHE = 'libriya-data-v1';
 
 // Static assets to cache during install
 const STATIC_ASSETS = [
+    '/static/offline.html',
     '/offline',
     '/static/css/style.css',
     '/static/js/pwa-manager.js',
     '/static/manifest.json',
-    '/static/images/logo.svg'
+    '/static/images/logo.svg',
+    '/',
+    '/dashboard'
 ];
 
 // Pages that should NEVER be cached (forms with CSRF)
@@ -99,8 +102,18 @@ self.addEventListener('fetch', (event) => {
     // Only GET requests
     if (request.method !== 'GET') return;
 
-    // Only same origin
-    if (url.origin !== location.origin) return;
+    // Allow same origin OR different local network/localhost addresses (same port)
+    const isSameOrigin = url.origin === location.origin;
+    const isLocalRequest = (
+        location.hostname === 'localhost' ||
+        location.hostname === '127.0.0.1' ||
+        location.hostname.startsWith('192.168.') ||
+        location.hostname.startsWith('10.') ||
+        location.hostname.startsWith('172.')
+    );
+    const isSamePort = url.port === location.port;
+
+    if (!isSameOrigin && !(isLocalRequest && isSamePort)) return;
 
     // === IGNORE language switch route ===
     if (pathname.startsWith('/set_language/')) {
@@ -169,9 +182,13 @@ self.addEventListener('fetch', (event) => {
                     return cached;
                 }
 
-                // Fallback to offline page (dynamic with translations)
-                console.log('[SW] No cache found, showing /offline');
-                const offlinePage = await getCached(location.origin + '/offline');
+                // Fallback to static offline page
+                // Najpierw próbuj /offline (dynamiczny, tłumaczony przez Jinja2)
+                console.log('[SW] No cache found, trying /offline then /static/offline.html');
+                let offlinePage = await getCached(location.origin + '/offline');
+                if (!offlinePage) {
+                    offlinePage = await getCached(location.origin + '/static/offline.html');
+                }
                 return offlinePage || new Response('Offline', { status: 503 });
             })
         );

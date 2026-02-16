@@ -1,0 +1,72 @@
+<div class="text-left mb-4">
+    <h5 class="text-lg font-bold text-green-600 mb-3">
+        <i class='bx bx-check-circle'></i> Co możesz zrobić:
+    </h5>
+    <ul class="space-y-2">
+        <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
+            📚 <strong>Przeglądaj bibliotekę</strong> - Zobacz wszystkie swoje książki
+        </li>
+        <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
+            📖 <strong>Szczegóły książek</strong> - Czytaj informacje i metadane
+        </li>
+        <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
+            🖼️ <strong>Okładki książek</strong> - Przeglądaj miniaturki z cache
+        </li>
+        <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
+            📋 <strong>Wypożyczenia</strong> - Sprawdzaj historię wypożyczeń
+        </li>
+        <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
+            👤 <strong>Twój profil</strong> - Dane Twojego konta
+        </li>
+    </ul>
+</div>
+<div class="text-left mb-4">
+    <h5 class="text-lg font-bold text-red-600 mb-3">
+        <i class='bx bx-x-circle'></i> Niedostępne offline:
+    </h5>
+    <ul class="space-y-2">
+        <li class="bg-red-50 border border-red-200 text-red-800 px-4 py-2 rounded-lg">
+            🔍 <strong>Wyszukiwanie</strong> - Wymaga połączenia
+        </li>
+        <li class="bg-red-50 border border-red-200 text-red-800 px-4 py-2 rounded-lg">
+            ➕ <strong>Dodawanie książek</strong> - Wymaga połączenia
+        </li>
+        <li class="bg-red-50 border border-red-200 text-red-800 px-4 py-2 rounded-lg">
+            💾 <strong>Zapisy zmian</strong> - Zsynchronizują się online
+        </li>
+    </ul>
+</div>
+<h5 class="text-lg font-bold mb-3">
+    <i class='bx bx-lightning'></i> Szybkie linki
+</h5>
+<div class="link-buttons mb-4">
+    <a href="{{ url_for('main.home') }}" class="link-button">
+        <i class='bx bx-home'></i>
+        Strona główna
+    </a>
+    <a href="{{ url_for('main.loans') }}" class="link-button">
+        <i class='bx bx-time-five'></i>
+        Wypożyczenia
+    </a>
+    <a href="{{ url_for('main.libraries') }}" class="link-button">
+        <i class='bx bx-library'></i>
+        Biblioteki
+    </a>
+    <a href="{{ url_for('users.user_settings') }}" class="link-button">
+        <i class='bx bx-cog'></i>
+        Ustawienia
+    </a>
+</div>
+<div class="bg-[#1a535c] text-white rounded-lg p-4 mb-4">
+    <p class="mb-3">
+        <i class='bx bx-info-circle'></i>
+        Połączenie zostanie przywrócone automatycznie. Możesz też spróbować poniżej.
+    </p>
+    <button class="btn btn-outline" onclick="window.location.reload()">
+        <i class='bx bx-refresh'></i> Odśwież stronę
+    </button>
+</div>
+<div class="mt-3 text-green-600 text-sm">
+    <i class='bx bx-server'></i>
+    Dane aplikacji są buforowane. Zajmują minimalnie pamięci.
+</div>

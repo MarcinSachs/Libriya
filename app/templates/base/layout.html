@@ -88,9 +88,13 @@
                     </div>
 
                     <!-- Install App Button -->
-                    <button id="install-app-btn" onclick="window.pwaManager && window.pwaManager.installApp()" class="hidden px-3 py-2 border {% if login_page %}border-text-dark text-text-dark hover:bg-text-dark hover:text-white{% else %}border-white text-white hover:bg-white hover:text-primary{% endif %} rounded transition">
+                    {% if current_user.is_authenticated %}
+                    {% if current_user.is_authenticated %}
+                    <button id="install-app-btn" onclick="window.pwaManager && window.pwaManager.installApp()" class="px-3 py-2 border {% if login_page %}border-text-dark text-text-dark hover:bg-text-dark hover:text-white{% else %}border-white text-white hover:bg-white hover:text-primary{% endif %} rounded transition" style="display: none;">
                         <i class="bx bx-download"></i> {{ _('Install App') }}
                     </button>
+                    {% endif %}
+                    {% endif %}
 
                     {% if current_user.is_authenticated %}
                     <!-- User Dropdown -->
@@ -196,8 +200,11 @@
         // Mobile menu toggle
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const sidebar = document.getElementById('sidebar');
+        console.log('[MENU] Mobile menu button:', mobileMenuBtn);
+        console.log('[MENU] Sidebar:', sidebar);
         if (mobileMenuBtn && sidebar) {
             mobileMenuBtn.addEventListener('click', () => {
+                console.log('[MENU] Hamburger clicked!');
                 sidebar.classList.toggle('hidden');
             });
 
@@ -207,6 +214,8 @@
                     sidebar.classList.add('hidden');
                 });
             });
+        } else {
+            console.warn('[MENU] Mobile menu not initialized - mobileMenuBtn or sidebar is null');
         }
 
         // Register Service Worker for PWA support

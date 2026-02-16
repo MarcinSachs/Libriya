@@ -717,16 +717,13 @@ tbody tr:last-child td {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    /* Use Bootstrap's variables for padding to ensure consistency */
     padding: var(--bs-btn-padding-y, .375rem) var(--bs-btn-padding-x, .75rem);
-    height: auto;
-    /* Let content and padding determine height */
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
     box-sizing: border-box;
-    /* Ensure padding is included in the element's total width and height */
     font-size: var(--bs-btn-font-size);
-    /* Ensure font size is consistent with Bootstrap's default button font size */
     line-height: var(--bs-btn-line-height);
-    /* Ensure line height is consistent */
 }
 
 /* For specific browser quirks on <input type="submit"> - explicitly override user agent styles */

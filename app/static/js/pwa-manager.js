@@ -22,14 +22,30 @@ class PWAManager {
         console.log('[PWA] Hostname:', window.location.hostname);
         console.log('[PWA] User agent:', navigator.userAgent);
 
-        // Check if Service Worker is supported and we're on secure context
+        // Hide install buttons if running as standalone/PWA
+        if (this.isRunningStandalone()) {
+            this.hideInstallPrompt();
+        }
+
+        // Check if Service Worker is supported
         if ('serviceWorker' in navigator) {
-            if (window.isSecureContext) {
+            // Allow Service Worker on:
+            // 1. Secure context (HTTPS)
+            // 2. localhost (development)
+            // 3. Local network IPs (development on LAN)
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const isLocalIP = (
+                window.location.hostname.startsWith('192.168.') ||
+                window.location.hostname.startsWith('10.') ||
+                window.location.hostname.startsWith('172.')
+            );
+            const canUseServiceWorker = window.isSecureContext || isLocalhost || isLocalIP;
+
+            if (canUseServiceWorker) {
                 this.registerServiceWorker();
             } else {
-                console.warn('[PWA] Not in secure context (HTTP detected). Service Worker disabled.');
+                console.warn('[PWA] Not in secure context and not on local network. Service Worker disabled.');
                 console.warn('[PWA] Showing fallback install method for HTTP access.');
-                // On non-secure contexts (e.g., http://192.168.x.x), show install button as fallback
                 this.showInstallPromptFallback();
             }
         } else {
@@ -45,7 +61,10 @@ class PWAManager {
             console.log('[PWA] beforeinstallprompt event triggered');
             e.preventDefault();
             this.deferredPrompt = e;
-            this.showInstallPrompt();
+            // Only show if not running as standalone
+            if (!this.isRunningStandalone()) {
+                this.showInstallPrompt();
+            }
         });
 
         // App installed listener
@@ -57,6 +76,17 @@ class PWAManager {
 
         // Update status on load
         this.updateOnlineStatus();
+    }
+
+    /**
+     * Returns true if app is running as standalone (PWA)
+     */
+    isRunningStandalone() {
+        return (
+            window.matchMedia('(display-mode: standalone)').matches ||
+            window.navigator.standalone === true ||
+            document.referrer.startsWith('android-app://')
+        );
     }
 
     /**

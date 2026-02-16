@@ -38,8 +38,8 @@
             {% for error in form.confirm_password.errors %}<span class="text-red-500">{{ error }}</span>{% endfor %}
         </div>
         <div class="mt-4 flex items-center gap-2"> 
-            {{ form.submit(class="bg-gradient-to-r from-[#1a535c] to-[#4ecdc4] text-white font-semibold px-6 py-2 rounded-lg hover:shadow-lg transition") }} 
-            <a href="{{ url_for('users.user_profile', user_id=current_user.id) }}" class="btn btn-outline">
+            {{ form.submit(class="btn btn-primary w-[150px] h-12") }} 
+            <a href="{{ url_for('users.user_profile', user_id=current_user.id) }}" class="btn btn-outline w-[150px] h-12">
                 {{ _('Cancel') }} 
             </a> 
         </div>

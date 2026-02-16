@@ -25,7 +25,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20 items-center">
                 <div class="flex items-center gap-3">
-                    <a href="/" class="flex items-center gap-2">
+                    <a href="{% if current_user.is_authenticated %}/dashboard{% else %}/{% endif %}" class="flex items-center gap-2">
                         <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Libriya Logo" class="h-10 w-auto">
                         <span class="flex flex-col leading-tight">
                             <span class="font-serif text-3xl font-bold text-primary">Libriya</span>
@@ -106,12 +106,16 @@
                     </div>
                     
                     <!-- Mobile Install App Button -->
+                    {% if current_user.is_authenticated %}
+                    {% if current_user.is_authenticated %}
                     <button id="mobile-install-app-btn" onclick="if(window.pwaManager) window.pwaManager.installApp(); else alert('To install: Chrome menu → Install app')" 
                             class="p-2 text-primary hover:text-accent transition"
                             title="{{ _('Install App') }}"
-                            style="display: inline-flex; align-items: center;">
+                            style="display: none; align-items: center;">
                         <i class="bx bx-download text-lg"></i>
                     </button>
+                    {% endif %}
+                    {% endif %}
                     
                     <!-- Mobile User Dropdown (Authenticated) -->
                     {% if current_user.is_authenticated %}
@@ -264,7 +268,7 @@
         // Mobile menu toggle for landing page
         const landingMenuBtn = document.querySelector('.md\\:hidden button i.bx-menu')?.parentElement;
         
-        if (landingMenuBtn && !mobileMenuBtn) {
+        if (landingMenuBtn && (!mobileMenuBtn || !mobileSidebar)) {
             const navContainer = document.querySelector('nav');
             let mobileMenuPanel = null;
             
