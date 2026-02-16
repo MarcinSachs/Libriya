@@ -122,6 +122,16 @@ def index():
 @bp.route("/dashboard")
 @login_required
 def home():
+    # Automatyczne generowanie tłumaczonego offline.html przy każdym wejściu na dashboard
+    try:
+        from flask import render_template
+        import os
+        html = render_template('base/offline.html', title=_('Offline'))
+        static_path = os.path.join(os.path.dirname(__file__), '..', 'static', 'offline.html')
+        with open(static_path, 'w', encoding='utf-8') as f:
+            f.write(html)
+    except Exception as e:
+        current_app.logger.warning(f'Nie udało się wygenerować offline.html: {e}')
     status_filter = request.args.get('status')
     genre_filter_id = request.args.get('genre', type=int)
     title_filter = request.args.get('title')

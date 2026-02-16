@@ -1,67 +1,469 @@
+
+
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Libriya</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jesteś offline – Libriya</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <style>
-        body { background: #f8fafc; color: #1a535c; font-family: 'Inter', Arial, sans-serif; }
-        .offline-container { max-width: 420px; margin: 60px auto; background: #fff; border-radius: 1.5rem; box-shadow: 0 4px 24px rgba(0,0,0,0.07); padding: 2.5rem 2rem; text-align: center; }
-        .offline-logo { width: 64px; margin-bottom: 1rem; }
-        .offline-title { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .offline-desc { color: #555; margin-bottom: 1.5rem; }
-        .offline-list { text-align: left; margin: 1.5rem 0 1rem 0; }
-        .offline-list li { margin-bottom: 0.5rem; }
-        .offline-btn { margin-top: 2rem; }
-    </style>
+    <meta name="theme-color" content="#1a535c">
+    <meta name="description" content="A library management application for organizing and tracking books">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="/static/css/style.css?v=770" rel="stylesheet">
+    
 </head>
-<body>
-    <div class="offline-container">
-        <img src="/static/images/logo.svg" alt="Libriya" class="offline-logo">
-        <div class="offline-title">Jesteś offline</div>
-        <div class="offline-desc">
-            Brak połączenia z internetem.<br>
-            Możesz korzystać z aplikacji w trybie offline w ograniczonym zakresie.
+<body class="font-sans text-text-dark bg-gray-bg selection:bg-accent selection:text-white">
+    <!-- Unified Navbar -->
+    <nav class="fixed w-full z-50 glass-nav border-b border-gray-200" style="top:0; margin-top:0; padding-top:0;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex items-center gap-3">
+                    <a href="/dashboard" class="flex items-center gap-2">
+                        <img src="/static/images/logo.svg" alt="Libriya Logo" class="h-10 w-auto">
+                        <span class="flex flex-col leading-tight">
+                            <span class="font-serif text-3xl font-bold text-primary">Libriya</span>
+                            <span class="text-xs font-light text-gray-500 tracking-wide -mt-1 ml-1">home for your books</span>
+                        </span>
+                        
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-10">
+                    
+                    
+                    <!-- User Dropdown -->
+                    <div class="relative group pb-2">
+                        <button class="flex items-center gap-2 text-primary hover:text-accent transition">
+                            <img class="w-8 h-8 rounded-full object-cover" 
+                                src="/static/uploads/default.jpg" 
+                                alt="manager">
+                            <span class="text-sm font-medium">manager</span>
+                            
+                        </button>
+                        <div class="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
+                            <a href="/notifications/" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg">
+                                <i class="bx bx-bell align-middle me-2"></i>Powiadomienia
+                                
+                            </a>
+                            <a href="/user/profile/14" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-user-circle align-middle me-2"></i>Profil i Wypożyczenia
+                            </a>
+                            <a href="/user/settings" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-cog align-middle me-2"></i>Ustawienia
+                            </a>
+                            <a href="/my-messages" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-envelope align-middle me-2"></i>Wiadomości
+                            </a>
+                            <hr class="my-1">
+                            <a href="/logout" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg">
+                                <i class="bx bx-log-out align-middle me-2"></i>Wyloguj się
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Language Selector -->
+                    <div class="relative group pb-2">
+                        <button class="flex items-center gap-1 font-semibold text-gray-700 hover:text-primary transition-colors">
+                            <i class="bx bx-globe"></i>
+                            <span>Język</span>
+                        </button>
+                        <div class="absolute right-0 top-full mt-0 w-32 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
+                            <a href="/set_language/pl" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg flex items-center gap-2">
+                                <span class="fi fi-pl"></span> PL
+                            </a>
+                            <a href="/set_language/en" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg flex items-center gap-2">
+                                <span class="fi fi-gb"></span> EN
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mobile menu button + language -->
+                <div class="md:hidden flex items-center gap-3">
+                    <!-- Mobile Language Dropdown -->
+                    <div class="relative group pb-2">
+                        <button class="flex items-center gap-1 text-primary hover:text-accent transition">
+                            <i class="bx bx-globe text-lg"></i>
+                        </button>
+                        <div class="absolute right-0 top-full mt-0 w-32 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition z-50">
+                            <a href="/set_language/pl" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg flex items-center gap-2">
+                                <span class="fi fi-pl"></span> PL
+                            </a>
+                            <a href="/set_language/en" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg flex items-center gap-2">
+                                <span class="fi fi-gb"></span> EN
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Mobile Install App Button -->
+                    
+                    
+                    <button id="mobile-install-app-btn" onclick="if(window.pwaManager) window.pwaManager.installApp(); else alert('To install: Chrome menu → Install app')" 
+                            class="p-2 text-primary hover:text-accent transition"
+                            title="Zainstaluj Aplikacje"
+                            style="display: none; align-items: center;">
+                        <i class="bx bx-download text-lg"></i>
+                    </button>
+                    
+                    
+                    
+                    <!-- Mobile User Dropdown (Authenticated) -->
+                    
+                    <div class="relative group pb-2">
+                        <button class="flex items-center gap-2 text-primary hover:text-accent transition">
+                            <img class="w-8 h-8 rounded-full object-cover" 
+                                src="/static/uploads/default.jpg" 
+                                alt="manager">
+                            
+                        </button>
+                        <div class="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition z-50">
+                            <a href="/notifications/" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg">
+                                <i class="bx bx-bell align-middle me-2"></i>Powiadomienia
+                                
+                            </a>
+                            <a href="/user/profile/14" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-user-circle align-middle me-2"></i>Profil i Wypożyczenia
+                            </a>
+                            <a href="/user/settings" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-cog align-middle me-2"></i>Ustawienia
+                            </a>
+                            <a href="/my-messages" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-envelope align-middle me-2"></i>Wiadomości
+                            </a>
+                            <hr class="my-1">
+                            <a href="/logout" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg">
+                                <i class="bx bx-log-out align-middle me-2"></i>Wyloguj się
+                            </a>
+                        </div>
+                    </div>
+                    
+                    
+                    <!-- Mobile Menu Button -->
+                    <button id="mobile-menu-btn" class="p-2 rounded hover:bg-gray-100 transition">
+                        <i class="bx bx-menu text-2xl text-primary"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-        <ul class="offline-list">
-            <li>✅ Przeglądanie pobranych książek, okładek i stron</li>
-            <li>✅ Przeglądanie ustawień użytkownika (jeśli były otwierane online)</li>
-            <li>✅ Przeglądanie pobranych bibliotek i wypożyczeń</li>
-            <li>❌ Dodawanie/edycja/usuwanie książek</li>
-            <li>❌ Dodawanie do ulubionych, zmiana opisu</li>
-            <li>❌ Synchronizacja z serwerem</li>
-        </ul>
-        <div class="offline-desc">
-            Po odzyskaniu połączenia dane zostaną zsynchronizowane automatycznie lub po odświeżeniu strony.
+    </nav>
+    <main class="pt-32">
+        <div class="flex">
+            
+            <!-- Sidebar -->
+            <aside id="mobile-sidebar" class="hidden lg:flex w-full lg:w-64 bg-white border-r border-gray-200 flex-col py-6 px-4 h-[calc(100vh-128px)] overflow-y-auto fixed lg:relative top-20 left-0 z-40 lg:z-auto lg:top-auto lg:left-auto">
+                <nav class="space-y-2">
+                    <!-- Books -->
+                    <a href="/dashboard" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-bg hover:text-primary transition">
+                        <i class="bx bxs-book text-lg"></i>
+                        <span class="font-medium">Książki</span>
+                    </a>
+
+                    <!-- Administration Section -->
+                    
+                    <div>
+                        <button id="admin-toggle" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-bg hover:text-primary transition">
+                            <span class="flex items-center gap-3">
+                                <i class="bx bxs-dashboard text-lg"></i>
+                                <span class="font-medium">Administracja</span>
+                            </span>
+                            <i class="bx bx-chevron-down transition-transform "></i>
+                        </button>
+                        <div id="admin-menu" class="hidden ml-4 mt-2 space-y-1 border-l-2 border-gray-200 pl-2">
+                            <!-- Libraries -->
+                            
+                            <a href="/libraries/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
+                                <i class="bx bxs-building text-base"></i>
+                                <span>Biblioteki</span>
+                            </a>
+                            
+
+                            <!-- Users -->
+                            <a href="/users/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
+                                <i class="bx bxs-group text-base"></i>
+                                <span>Użytkownicy</span>
+                            </a>
+
+                            <!-- Loans -->
+                            <a href="/loans/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
+                                <i class="bx bxs-check-circle text-base"></i>
+                                <span>Wypożyczenia</span>
+                            </a>
+
+                            <!-- Invitation Codes -->
+                            <a href="/invitation-codes/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
+                                <i class="bx bxs-key text-base"></i>
+                                <span>Kody zaproszeń</span>
+                            </a>
+
+                            <!-- Messages -->
+                            <a href="/contact_messages" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
+                                <i class="bx bxs-message-detail text-base"></i>
+                                <span>Wiadomości</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                </nav>
+            </aside>
+            
+
+            <!-- Main Content -->
+            <div class="flex-1 overflow-x-hidden">
+        
+<style>
+    .link-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+    
+    .link-button {
+        padding: 0.75rem;
+        background: #f0f0f0;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #1a535c;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+    
+    .link-button:hover {
+        background: #1a535c;
+        color: white;
+        border-color: #1a535c;
+        text-decoration: none;
+    }
+    
+    .link-button i {
+        font-size: 1.3rem;
+    }
+</style>
+<div class="max-w-4xl mx-auto px-4 py-4">
+    <div class="bg-white rounded-lg shadow-lg border-0 overflow-hidden">
+        <div class="text-center p-5">
+            <div class="mb-4">
+                <i class='bx bx-wifi-off' style="font-size: 4rem; color: #1a535c;"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-[#1a535c] mb-3">Jesteś offline</h1>
+            <p class="text-gray-600 mb-4">Ale nie martw się! Libriya nadal działa</p>
+            
+            <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg inline-block mb-4">
+                <i class='bx bx-alert-circle'></i> Brak połączenia z internetem
+            </div>
+            
+            <!-- Available Features -->
+            <div class="text-left mb-4">
+                <h5 class="text-lg font-bold text-green-600 mb-3">
+                    <i class='bx bx-check-circle'></i> Co możesz zrobić:
+                </h5>
+                <ul class="space-y-2">
+                    <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
+                        📚 <strong>Przeglądaj bibliotekę</strong> - Zobacz wszystkie swoje książki
+                    </li>
+                    <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
+                        📖 <strong>Szczegóły książki</strong> - Czytaj informacje i metadane
+                    </li>
+                    <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
+                        🖼️ <strong>Okładki książek</strong> - Przeglądaj miniaturki z pamięci podręcznej
+                    </li>
+                    <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
+                        📋 <strong>Wypożyczenia</strong> - Sprawdź historię wypożyczeń
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Unavailable Features -->
+            <div class="text-left mb-4">
+                <h5 class="text-lg font-bold text-red-600 mb-3">
+                    <i class='bx bx-x-circle'></i> Niedostępne offline:
+                </h5>
+                <ul class="space-y-2">
+                    <li class="bg-red-50 border border-red-200 text-red-800 px-4 py-2 rounded-lg">
+                        🔍 <strong>Szukaj</strong> - Wymaga połączenia
+                    </li>
+                    <li class="bg-red-50 border border-red-200 text-red-800 px-4 py-2 rounded-lg">
+                        ➕ <strong>Dodawanie książek</strong> - Wymaga połączenia
+                    </li>
+                    <li class="bg-red-50 border border-red-200 text-red-800 px-4 py-2 rounded-lg">
+                        💾 <strong>Zapisywanie zmian</strong> - Zsynchronizuje się po połączeniu
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Quick Links -->
+            <h5 class="text-lg font-bold mb-3">
+                <i class='bx bx-lightning'></i> Szybkie linki
+            </h5>
+            <div class="link-buttons mb-4">
+                <a href="/" class="link-button">
+                    <i class='bx bx-home'></i>
+                    Strona główna
+                </a>
+                <a href="/loans/" class="link-button">
+                    <i class='bx bx-time-five'></i>
+                    Wypożyczenia
+                </a>
+                <a href="/libraries/" class="link-button">
+                    <i class='bx bx-library'></i>
+                    Biblioteki
+                </a>
+                <a href="/user/settings" class="link-button">
+                    <i class='bx bx-cog'></i>
+                    Ustawienia
+                </a>
+            </div>
+            
+            <!-- Reconnect -->
+            <div class="bg-[#1a535c] text-white rounded-lg p-4 mb-4">
+                <p class="mb-3">
+                    <i class='bx bx-info-circle'></i>
+                    Połączenie zostanie przywrócone automatycznie. Możesz też spróbować poniżej.
+                </p>
+                <button class="btn btn-outline" onclick="window.location.reload()">
+                    <i class='bx bx-refresh'></i> Odśwież stronę
+                </button>
+            </div>
+            
+            <div class="mt-3 text-green-600 text-sm">
+                <i class='bx bx-server'></i>
+                Dane aplikacji są w pamięci podręcznej. Zajmują minimalnie miejsca.
+            </div>
         </div>
-        <a href="/dashboard" class="btn btn-primary offline-btn">Strona główna</a>
-        <div id="offline-extra" class="offline-desc" style="margin-top:2rem;"></div>
     </div>
+</div>
+
+            </div>
+        </div>
+    </main>
+    <!-- Unified Footer -->
+    <footer class="bg-white py-0.5 border-t border-gray-100 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-[40px]" style="min-height:2.5rem;">
+            <p class="text-gray-400 text-base text-center w-full">&copy; 2026 Libriya. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="/static/js/pwa-manager.js"></script>
     <script>
-    // Wyświetl wersję aplikacji i datę ostatniej synchronizacji, jeśli są dostępne
-    (function() {
-        let html = '';
-        // Wersja aplikacji (możesz podmienić na dynamiczną jeśli masz window.appVersion)
-        html += '<div><b>Wersja aplikacji:</b> <span id="app-version">3.0</span></div>';
-        // Data ostatniej synchronizacji (jeśli była pobierana offline)
-        try {
-            const info = localStorage.getItem('offlineCacheInfo');
-            if (info) {
-                const parsed = JSON.parse(info);
-                if (parsed.timestamp) {
-                    html += '<div><b>Ostatnia synchronizacja:</b> ' + new Date(parsed.timestamp).toLocaleString() + '</div>';
+        // Mobile menu toggle for authenticated users
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        
+        if (mobileMenuBtn && mobileSidebar) {
+            mobileMenuBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                mobileSidebar.classList.toggle('hidden');
+            });
+
+            // Close sidebar when clicking a link on mobile
+            mobileSidebar.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth < 1024) {  // lg breakpoint
+                        mobileSidebar.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth < 1024 && mobileSidebar && !mobileSidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                    mobileSidebar.classList.add('hidden');
                 }
-                if (parsed.booksCount) {
-                    html += '<div><b>Pobrane książki:</b> ' + parsed.booksCount + '</div>';
+            });
+        }
+        
+        // Mobile menu toggle for landing page
+        const landingMenuBtn = document.querySelector('.md\\:hidden button i.bx-menu')?.parentElement;
+        
+        if (landingMenuBtn && (!mobileMenuBtn || !mobileSidebar)) {
+            const navContainer = document.querySelector('nav');
+            let mobileMenuPanel = null;
+            
+            landingMenuBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                if (!mobileMenuPanel) {
+                    // Create mobile menu panel
+                    mobileMenuPanel = document.createElement('div');
+                    mobileMenuPanel.id = 'mobile-nav-menu';
+                    mobileMenuPanel.className = 'fixed top-20 left-0 right-0 bg-white border-b border-gray-200 z-40 shadow-lg p-4';
+                    
+                    const linksContainer = document.createElement('div');
+                    linksContainer.className = 'space-y-2 max-w-7xl mx-auto';
+                    
+                    // Add nav links from landing page
+                    const links = [
+                        { text: 'Features', href: '#features' },
+                        { text: 'For Whom', href: '#multi-tenant' },
+                        { text: 'Premium', href: '#premium' }
+                    ];
+                    
+                    links.forEach(linkData => {
+                        const link = document.createElement('a');
+                        link.href = linkData.href;
+                        link.textContent = linkData.text;
+                        link.className = 'block px-4 py-2 text-gray-700 hover:bg-gray-bg rounded-lg transition font-semibold';
+                        linksContainer.appendChild(link);
+                    });
+                    
+                    // Add divider
+                    const divider = document.createElement('hr');
+                    divider.className = 'my-2 border-gray-200';
+                    linksContainer.appendChild(divider);
+                    
+                    // Add login button
+                    const loginBtn = document.createElement('a');
+                    loginBtn.href = '/login';
+                    loginBtn.textContent = 'Sign In';
+                    loginBtn.className = 'block w-full px-4 py-2 bg-primary text-white rounded-lg font-semibold text-center hover:shadow-lg transition';
+                    linksContainer.appendChild(loginBtn);
+                    
+                    mobileMenuPanel.appendChild(linksContainer);
+                    navContainer.insertAdjacentElement('afterend', mobileMenuPanel);
+                } else {
+                    // Toggle visibility
+                    mobileMenuPanel.classList.toggle('hidden');
                 }
-                if (parsed.coversCount) {
-                    html += '<div><b>Pobrane okładki:</b> ' + parsed.coversCount + '</div>';
+            });
+            
+            // Close mobile menu when clicking a link
+            mobileMenuPanel?.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (link.href.includes('#')) {
+                        mobileMenuPanel.classList.add('hidden');
+                    }
+                });
+            });
+            
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (mobileMenuPanel && !mobileMenuPanel.contains(e.target) && !landingMenuBtn.contains(e.target)) {
+                    mobileMenuPanel.classList.add('hidden');
                 }
-            }
-        } catch(e) {}
-        document.getElementById('offline-extra').innerHTML = html;
-    })();
+            });
+        }
+
+        // Admin menu toggle
+        const adminToggle = document.getElementById('admin-toggle');
+        const adminMenu = document.getElementById('admin-menu');
+        if (adminToggle && adminMenu) {
+            adminToggle.addEventListener('click', () => {
+                adminMenu.classList.toggle('hidden');
+                const icon = adminToggle.querySelector('i:last-child');
+                icon.classList.toggle('rotate-180');
+            });
+        }
     </script>
 </body>
 </html>
