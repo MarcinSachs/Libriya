@@ -58,6 +58,9 @@
                                 <a href="{{ url_for('admin.tenant_detail', tenant_id=tenant.id) }}" class="px-3 py-1 text-sm font-semibold text-primary hover:bg-primary hover:text-white rounded transition">
                                     {{ _('View') }}
                                 </a>
+                                <a href="{{ url_for('admin.manage_tenant_premium', tenant_id=tenant.id) }}" class="px-3 py-1 text-sm font-semibold text-purple-600 hover:bg-purple-100 rounded transition" title="{{ _('Manage Premium Features') }}">
+                                    <i class="bx bx-star text-base"></i>
+                                </a>
                                 <a href="{{ url_for('admin.tenant_edit', tenant_id=tenant.id) }}" class="px-3 py-1 text-sm font-semibold text-blue-600 hover:bg-blue-100 rounded transition">
                                     <i class="bx bx-edit text-base"></i>
                                 </a>

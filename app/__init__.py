@@ -75,11 +75,29 @@ def create_app(config_class=Config):
         Middleware sprawdzający dostęp do tenantu
         Zapobiega dostępowi do innego tenantu
         Zapobiega super-adminowi dostępu do normalnych stron (tylko /admin/*)
+        Inicjalizuje PremiumContext dla zalogowanego użytkownika
         """
         from flask_login import current_user
+        from app.services.premium.context import PremiumContext
         
         if not current_user.is_authenticated:
-            return  # Niezalogowani mogą być na landing page
+            # Niezalogowani mogą być na landing page, ale czyść kontekst premium
+            PremiumContext.clear()
+            return  
+        
+        # Inicjalizuj PremiumContext dla zalogowanego użytkownika
+        if current_user.tenant_id:
+            # Tenant user - załaduj premium features dla jego tenantu
+            from app.models import Tenant
+            tenant = Tenant.query.get(current_user.tenant_id)
+            if tenant:
+                enabled_features = set(tenant.get_enabled_premium_features())
+                PremiumContext.set_for_tenant(current_user.tenant_id, enabled_features)
+            else:
+                PremiumContext.clear()
+        else:
+            # Super-admin - super-admini mają dostęp do wszystkich features globalnie
+            PremiumContext.set_for_tenant(None, set())  # No specific tenant context
         
         # Pozwól na static files i logout dla wszystkich
         if request.path.startswith('/static') or request.path.startswith('/auth/logout'):

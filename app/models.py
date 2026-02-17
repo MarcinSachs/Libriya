@@ -10,11 +10,35 @@ class Tenant(db.Model):
     subdomain = db.Column(db.String(100), unique=True, nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     
+    # Premium features - tenant-specific
+    premium_bookcover_enabled = db.Column(db.Boolean, default=False, nullable=False)
+    premium_biblioteka_narodowa_enabled = db.Column(db.Boolean, default=False, nullable=False)
+    
     libraries = db.relationship('Library', backref='tenant', lazy=True)
     users = db.relationship('User', backref='tenant', lazy=True)
     
     def __str__(self):
         return f"{self.name} ({self.subdomain})"
+    
+    def get_enabled_premium_features(self):
+        """Return list of enabled premium features for this tenant."""
+        features = []
+        if self.premium_bookcover_enabled:
+            features.append('bookcover_api')
+        if self.premium_biblioteka_narodowa_enabled:
+            features.append('biblioteka_narodowa')
+        return features
+    
+    def is_premium_enabled(self, feature_id):
+        """Check if a specific premium feature is enabled for this tenant."""
+        feature_map = {
+            'bookcover_api': 'premium_bookcover_enabled',
+            'biblioteka_narodowa': 'premium_biblioteka_narodowa_enabled',
+        }
+        field_name = feature_map.get(feature_id)
+        if field_name:
+            return getattr(self, field_name, False)
+        return False
 
 
 # Define the association table for book-author relationship

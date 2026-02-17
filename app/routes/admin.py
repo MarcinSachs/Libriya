@@ -176,3 +176,72 @@ def dashboard():
         active_page='admin-dashboard',
         parent_page='admin'
     )
+
+
+# ============================================================
+# PREMIUM FEATURES MANAGEMENT
+# ============================================================
+
+@bp.route('/tenants/<int:tenant_id>/premium', methods=['GET'])
+@login_required
+@admin_required
+def manage_tenant_premium(tenant_id):
+    """Manage premium features for a specific tenant"""
+    tenant = Tenant.query.get_or_404(tenant_id)
+    
+    # Get available premium features from registry
+    from app.services.premium.manager import PremiumManager
+    available_features = PremiumManager.list_features()
+    
+    # Map to tenant's enabled features
+    enabled_features = tenant.get_enabled_premium_features()
+    
+    features_with_status = []
+    for feature_id, info in available_features.items():
+        features_with_status.append({
+            'feature_id': feature_id,
+            'name': info['name'],
+            'description': info['description'],
+            'enabled': feature_id in enabled_features,
+            'requires_config': info['requires_config'],
+        })
+    
+    return render_template(
+        'admin/tenant_premium.html',
+        tenant=tenant,
+        features=features_with_status,
+        title=_('Manage Premium Features'),
+        active_page='admin-tenants',
+        parent_page='admin'
+    )
+
+
+@bp.route('/tenants/<int:tenant_id>/premium/<feature_id>/toggle', methods=['POST'])
+@login_required
+@admin_required
+def toggle_tenant_premium_feature(tenant_id, feature_id):
+    """Toggle a premium feature for a tenant (AJAX endpoint)"""
+    tenant = Tenant.query.get_or_404(tenant_id)
+    
+    # Validate feature_id
+    valid_features = {
+        'bookcover_api': 'premium_bookcover_enabled',
+        'biblioteka_narodowa': 'premium_biblioteka_narodowa_enabled',
+    }
+    
+    if feature_id not in valid_features:
+        return jsonify({'success': False, 'error': 'Invalid feature ID'}), 400
+    
+    field_name = valid_features[feature_id]
+    current_value = getattr(tenant, field_name)
+    new_value = not current_value
+    setattr(tenant, field_name, new_value)
+    
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'feature_id': feature_id,
+        'enabled': new_value,
+        'message': _(f'Premium feature {feature_id} has been {"enabled" if new_value else "disabled"}')
+    })
