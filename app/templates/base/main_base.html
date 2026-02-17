@@ -166,7 +166,7 @@
         <div class="flex">
             {% if current_user.is_authenticated %}
             <!-- Sidebar -->
-            <aside id="mobile-sidebar" class="hidden lg:flex w-full lg:w-64 bg-white border-r border-gray-200 flex-col py-6 px-4 h-[calc(100vh-128px)] overflow-y-auto fixed lg:relative top-20 left-0 z-40 lg:z-auto lg:top-auto lg:left-auto">
+            <aside id="mobile-sidebar" class="hidden lg:flex w-full lg:w-64 bg-white border-r border-gray-200 flex-col py-6 px-6 h-[calc(100vh-128px)] overflow-y-auto fixed lg:relative top-20 left-0 z-40 lg:z-auto lg:top-auto lg:left-auto">
                 <nav class="space-y-2">
                     <!-- Books (dla tenant users) -->
                     {% if not current_user.is_super_admin %}
@@ -241,9 +241,11 @@
             </aside>
             {% endif %}
 
-            <!-- Main Content -->
+                <!-- Main Content -->
             <div class="flex-1 overflow-x-hidden">
+                <div class="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
         {% block content %}{% endblock %}
+                </div>
             </div>
         </div>
     </main>
