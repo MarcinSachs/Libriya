@@ -165,7 +165,8 @@ def book_detail(book_id):
     book = Book.query.get_or_404(book_id)
     user_comment = Comment.query.filter_by(
         book_id=book.id,
-        user_id=current_user.id
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id
     ).first()
 
     comment_form = CommentForm(obj=user_comment)
@@ -202,11 +203,11 @@ def book_add():
     if current_user.role == 'admin':
         form.library.choices = [
             (lib.id, lib.name)
-            for lib in Library.query.order_by('name').all()
+            for lib in Library.query.filter_by(tenant_id=current_user.tenant_id).order_by('name').all()
         ]
     else:  # manager
         form.library.choices = [
-            (lib.id, lib.name) for lib in current_user.libraries
+            (lib.id, lib.name) for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id
         ]
         # If manager has only one library, set it as default
         if len(current_user.libraries) == 1:
@@ -383,11 +384,11 @@ def book_edit(book_id):
     if current_user.role == 'admin':
         form.library.choices = [
             (lib.id, lib.name)
-            for lib in Library.query.order_by('name').all()
+            for lib in Library.query.filter_by(tenant_id=current_user.tenant_id).order_by('name').all()
         ]
     else:  # manager
         form.library.choices = [
-            (lib.id, lib.name) for lib in current_user.libraries
+            (lib.id, lib.name) for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id
         ]
 
     if request.method == 'GET':
@@ -653,10 +654,10 @@ def get_offline_books_data():
     try:
         # Admin gets all books, others get only books from their libraries
         if current_user.role == 'admin':
-            books = Book.query.all()
+            books = Book.query.filter_by(tenant_id=current_user.tenant_id).all()
         else:
-            user_library_ids = [lib.id for lib in current_user.libraries]
-            books = Book.query.filter(Book.library_id.in_(user_library_ids)).all()
+            user_library_ids = [lib.id for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
+            books = Book.query.filter(Book.library_id.in_(user_library_ids), Book.tenant_id == current_user.tenant_id).all()
 
         books_data = []
         for book in books:

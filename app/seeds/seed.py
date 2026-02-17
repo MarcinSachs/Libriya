@@ -1,6 +1,3 @@
-from flask_babel import _
-from app import create_app, db
-from app.models import Genre, Library, User
 import sys
 import os
 
@@ -8,6 +5,10 @@ import os
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
+
+from flask_babel import _
+from app import create_app, db
+from app.models import Genre, Library, User, Tenant
 
 
 genres = [
@@ -35,9 +36,19 @@ genres = [
 def seed_database():
     app = create_app()  # Create the Flask app
     with app.app_context():
+        # --- Ensure Default Tenant Exists ---
+        default_tenant = db.session.query(Tenant).filter_by(name='default').first()
+        if not default_tenant:
+            default_tenant = Tenant(name='default')
+            db.session.add(default_tenant)
+            db.session.commit()
+            print("Default tenant created.")
+        else:
+            print("Default tenant already exists.")
+
         # --- Seed Library ---
         if db.session.query(Library).count() == 0:
-            default_library = Library(name="Główna Biblioteka")
+            default_library = Library(name="Główna Biblioteka", tenant_id=default_tenant.id)
             db.session.add(default_library)
             db.session.commit()
             print("Default library created.")
@@ -50,7 +61,8 @@ def seed_database():
             admin_user = User(
                 username='admin',
                 email='admin@example.com',
-                role='admin'
+                role='admin',
+                tenant_id=default_tenant.id
             )
             admin_user.set_password('admin')
             # Add user to the default library
@@ -66,7 +78,8 @@ def seed_database():
             manager_user = User(
                 username='manager',
                 email='manager@example.com',
-                role='manager'
+                role='manager',
+                tenant_id=default_tenant.id
             )
             manager_user.set_password('manager')
             # Add manager to the default library
@@ -82,7 +95,8 @@ def seed_database():
             regular_user = User(
                 username='user',
                 email='user@example.com',
-                role='user'
+                role='user',
+                tenant_id=default_tenant.id
             )
             regular_user.set_password('user')
             # Add user to the default library

@@ -4,6 +4,13 @@ from flask_login import UserMixin
 import datetime
 
 
+class Tenant(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    libraries = db.relationship('Library', backref='tenant', lazy=True)
+    users = db.relationship('User', backref='tenant', lazy=True)
+
+
 # Define the association table for book-author relationship
 book_authors = db.Table('book_authors',
                         db.Column('book_id', db.Integer, db.ForeignKey(
@@ -37,6 +44,7 @@ user_libraries = db.Table('user_libraries',
 class Library(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
     books = db.relationship('Book', back_populates='library', lazy=True)
     users = db.relationship('User', secondary=user_libraries, lazy='subquery',
                             back_populates='libraries')
@@ -49,6 +57,7 @@ class Library(db.Model):
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     library_id = db.Column(db.Integer, db.ForeignKey('library.id'), nullable=False)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
     isbn = db.Column(db.String(13), unique=True, nullable=True, index=True)
     title = db.Column(db.String(200), nullable=False, index=True)
     authors = db.relationship(
@@ -131,6 +140,7 @@ class User(UserMixin, db.Model):
     last_name = db.Column(db.String(50), nullable=True)
     loans = db.relationship('Loan', back_populates='user', lazy=True)
     role = db.Column(db.String(20), nullable=False, default='user')  # 'user', 'manager', 'admin'
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
 
     @property
     def is_admin(self):
@@ -152,6 +162,10 @@ class User(UserMixin, db.Model):
 
     comments = db.relationship('Comment', back_populates='user', lazy=True, cascade='all, delete-orphan')
 
+    @staticmethod
+    def for_tenant(tenant_id):
+        return User.query.filter_by(tenant_id=tenant_id)
+
     def __str__(self):
         return self.username
 
@@ -166,6 +180,7 @@ class Loan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
     reservation_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     issue_date = db.Column(db.DateTime)
     return_date = db.Column(db.DateTime)
@@ -178,6 +193,10 @@ class Loan(db.Model):
     # Add relation to the notifications
     notifications = db.relationship(
         'Notification', back_populates='loan', lazy=True, cascade='all, delete-orphan')
+
+    @staticmethod
+    def for_tenant(tenant_id):
+        return Loan.query.filter_by(tenant_id=tenant_id)
 
     def __str__(self):
         return f"Loan {self.id}: {self.book.title} to {self.user.username} - Status: {self.status}"
@@ -216,6 +235,10 @@ class LibraryAccessRequest(db.Model):
     user = db.relationship('User', backref='access_requests')
     library = db.relationship('Library', backref='access_requests')
 
+    @staticmethod
+    def for_tenant(tenant_id):
+        return LibraryAccessRequest.query.join(Library).filter(Library.tenant_id == tenant_id)
+
     def __str__(self):
         return f"Request from {self.user.username} for {self.library.name} - Status: {self.status}"
 
@@ -230,6 +253,10 @@ class Comment(db.Model):
 
     user = db.relationship('User', back_populates='comments')
     book = db.relationship('Book', back_populates='comments')
+
+    @staticmethod
+    def for_tenant(tenant_id):
+        return Comment.query.join(Book).filter(Book.tenant_id == tenant_id)
 
     def __str__(self):
         return f"Comment by {self.user.username} on {self.book.title} at {self.timestamp}"
@@ -247,6 +274,10 @@ class InvitationCode(db.Model):
     # Do której biblioteki
     library_id = db.Column(db.Integer, db.ForeignKey('library.id'), nullable=False)
     library = db.relationship('Library', backref='invitation_codes')
+
+    # Do którego tenanta
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
+    tenant = db.relationship('Tenant', backref='invitation_codes')
 
     # Śledzenie użycia
     used_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
@@ -295,5 +326,35 @@ class ContactMessage(db.Model):
     read_by_admin = db.Column(db.Boolean, default=False)
     is_resolved = db.Column(db.Boolean, default=False)
 
+    @staticmethod
+    def for_tenant(tenant_id):
+        return ContactMessage.query.join(Library).filter(Library.tenant_id == tenant_id)
+
     def __str__(self):
         return f"ContactMessage from {self.user_id} in library {self.library_id} at {self.created_at}"
+
+# Poprawka logiki logowania multi-tenant:
+# W pliku routes/auth.py:
+#
+# 1. Pobierz tenant_name z formularza logowania (np. <input name="tenant"> lub select)
+# 2. Znajdź tenant po nazwie
+# 3. Szukaj użytkownika po loginie/emailu i tenant_id
+# 4. Sprawdź hasło i loguj użytkownika
+#
+# Przykład (do wstawienia w login_post):
+#
+# tenant_name = request.form.get('tenant')
+# tenant = Tenant.query.filter_by(name=tenant_name).first()
+# if not tenant:
+#     flash('Nieprawidłowy tenant', 'danger')
+#     return redirect(url_for('auth.login'))
+# if '@' in username:
+#     user = User.query.filter_by(email=username, tenant_id=tenant.id).first()
+# else:
+#     user = User.query.filter_by(username=username, tenant_id=tenant.id).first()
+#
+# ...dalej sprawdzaj hasło i loguj użytkownika...
+#
+# UWAGA: Dodaj pole wyboru tenant w formularzu logowania (np. select z listą tenantów)
+#
+# Ten kod nie wymaga zmian w models.py, tylko w routes/auth.py oraz w szablonie logowania.

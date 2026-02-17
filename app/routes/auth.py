@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_user, login_required, logout_user
+from flask_login import login_user, login_required, logout_user, current_user
 from flask_babel import _
 
 from app.models import User, InvitationCode
@@ -17,7 +17,6 @@ bp = Blueprint("auth", __name__)
 
 @bp.route("/login/")
 def login():
-    from flask_login import current_user
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
     return render_template("auth/login.html", login_page=True, title='Log In')
@@ -28,12 +27,10 @@ def login():
 def login_post():
     username = request.form.get('username')
     password = request.form.get('password')
-    # Pozwól na logowanie przez email lub username
     if '@' in username:
         user = User.query.filter_by(email=username).first()
     else:
         user = User.query.filter_by(username=username).first()
-
     if user and user.check_password(password):
         login_user(user)
         flash(AUTH_LOGIN_SUCCESS, 'success')
@@ -54,7 +51,6 @@ def logout():
 @bp.route('/register', methods=['GET', 'POST'])
 @limiter.limit("5 per hour")
 def register():
-    from flask_login import current_user
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
 
@@ -67,7 +63,9 @@ def register():
         user = User(
             username=form.username.data,
             email=form.email.data,
-            library_id=code.library_id
+            tenant_id=code.tenant_id,
+            libraries=[code.library],
+            role='user'  # lub na podstawie zaproszenia
         )
         user.set_password(form.password.data)
         user.first_name = form.first_name.data
