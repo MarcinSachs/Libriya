@@ -223,3 +223,37 @@ class ContactForm(FlaskForm):
     subject = StringField(_('Subject'), validators=[DataRequired(), Length(max=200)])
     message = TextAreaField(_('Message'), validators=[DataRequired(), Length(max=2000)])
     submit = SubmitField(_('Send'))
+
+
+# Formularz tenantu
+class TenantForm(FlaskForm):
+    name = StringField(
+        _('Tenant Name'),
+        validators=[DataRequired(), Length(min=2, max=100)]
+    )
+    subdomain = StringField(
+        _('Subdomain'),
+        validators=[DataRequired(), Length(min=2, max=100)],
+        description=_('URL-friendly name (e.g., "mylib"). Only alphanumeric and hyphens.')
+    )
+    submit = SubmitField(_('Save Tenant'))
+
+    def validate_subdomain(self, field):
+        """Validate subdomain format and uniqueness"""
+        import re
+        # Check format (alphanumeric and hyphens only)
+        if not re.match(r'^[a-z0-9-]+$', field.data):
+            raise ValidationError(_('Subdomain can only contain lowercase letters, numbers, and hyphens.'))
+        
+        # Check uniqueness
+        from app.models import Tenant
+        existing = Tenant.query.filter_by(subdomain=field.data).first()
+        if existing:
+            raise ValidationError(_('This subdomain is already taken.'))
+
+    def validate_name(self, field):
+        """Validate tenant name uniqueness"""
+        from app.models import Tenant
+        existing = Tenant.query.filter_by(name=field.data).first()
+        if existing:
+            raise ValidationError(_('This tenant name already exists.'))

@@ -6,7 +6,7 @@ from app.models import User, Tenant
 print("=== TENANTS ===")
 tenants = Tenant.query.all()
 for t in tenants:
-    print(f"ID: {t.id}, Name: {t.name}")
+    print(f"ID: {t.id}, Name: {t.name}, Subdomain: {t.subdomain}")
 
 print("\n=== USERS ===")
 users = User.query.all()

@@ -1,0 +1,123 @@
+{% extends "base/main_base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-4xl font-bold text-primary">{{ _('Manage Tenants') }}</h1>
+            <p class="text-gray-600 mt-2">{{ _('View and manage all library tenants') }}</p>
+        </div>
+        <a href="{{ url_for('admin.tenant_add') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:shadow-lg transition">
+            <i class="bx bx-plus text-lg"></i>
+            {{ _('Add Tenant') }}
+        </a>
+    </div>
+
+    <!-- Tenants Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        {% if tenants.items %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">{{ _('Name') }}</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">{{ _('Subdomain') }}</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">{{ _('Users') }}</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">{{ _('Libraries') }}</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">{{ _('Created') }}</th>
+                        <th class="px-6 py-4 text-right text-sm font-semibold text-gray-700">{{ _('Actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tenant in tenants.items %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
+                        <td class="px-6 py-4">
+                            <div class="font-semibold text-gray-800">{{ tenant.name }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <code class="bg-gray-100 px-3 py-1 rounded text-sm text-gray-700">{{ tenant.subdomain }}</code>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                                <i class="bx bx-user-circle text-base"></i>
+                                {{ tenant.users|length }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                                <i class="bx bx-library text-base"></i>
+                                {{ tenant.libraries|length }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600">
+                            {{ tenant.created_at.strftime('%Y-%m-%d %H:%M') if tenant.created_at else '-' }}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{{ url_for('admin.tenant_detail', tenant_id=tenant.id) }}" class="px-3 py-1 text-sm font-semibold text-primary hover:bg-primary hover:text-white rounded transition">
+                                    {{ _('View') }}
+                                </a>
+                                <a href="{{ url_for('admin.tenant_edit', tenant_id=tenant.id) }}" class="px-3 py-1 text-sm font-semibold text-blue-600 hover:bg-blue-100 rounded transition">
+                                    <i class="bx bx-edit text-base"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+            <div class="text-sm text-gray-600">
+                {% if tenants.items %}
+                    {% set start = (tenants.page-1)*tenants.per_page+1 %}
+                    {% set end = [tenants.page*tenants.per_page, tenants.total]|min %}
+                    {{ _('Showing %(start)d-%(end)d of %(total)d', 
+                        start=start,
+                        end=end,
+                        total=tenants.total) }}
+                {% else %}
+                    {{ _('No tenants to display') }}
+                {% endif %}
+            </div>
+            <div class="flex gap-2">
+                {% if tenants.has_prev %}
+                <a href="{{ url_for('admin.tenants_list', page=tenants.prev_num) }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
+                    {{ _('Previous') }}
+                </a>
+                {% endif %}
+                
+                {% for page_num in tenants.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num == tenants.page %}
+                        <span class="px-4 py-2 bg-primary text-white rounded font-semibold">{{ page_num }}</span>
+                        {% else %}
+                        <a href="{{ url_for('admin.tenants_list', page=page_num) }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
+                            {{ page_num }}
+                        </a>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                
+                {% if tenants.has_next %}
+                <a href="{{ url_for('admin.tenants_list', page=tenants.next_num) }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
+                    {{ _('Next') }}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="px-6 py-12 text-center">
+            <i class="bx bx-inbox text-5xl text-gray-300 mb-4 block"></i>
+            <p class="text-gray-600 text-lg">{{ _('No tenants found') }}</p>
+            <a href="{{ url_for('admin.tenant_add') }}" class="inline-block mt-4 px-6 py-2 bg-primary text-white font-semibold rounded-lg hover:shadow-lg transition">
+                {{ _('Create Your First Tenant') }}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

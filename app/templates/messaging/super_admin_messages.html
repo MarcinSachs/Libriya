@@ -1,0 +1,77 @@
+{% extends "base/main_base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header with Unread Badge -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-primary flex items-center gap-4">
+            {{ _('Messages from Tenant Admins') }}
+            {% if total_unread > 0 %}
+            <span class="inline-flex items-center justify-center bg-red-100 text-red-800 text-sm font-bold px-3 py-1 rounded-full">
+                {{ total_unread }}
+            </span>
+            {% endif %}
+        </h1>
+        <p class="text-gray-600 mt-2">{{ _('Manage communication with tenant administrators') }}</p>
+    </div>
+
+    {% if conversations %}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-gray-100 border-b border-gray-200">
+                <tr>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">{{ _('Tenant') }}</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">{{ _('Admin') }}</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">{{ _('Subject') }}</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">{{ _('Unread') }}</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">{{ _('Last Activity') }}</th>
+                    <th class="px-6 py-4 text-right text-sm font-semibold text-gray-900">{{ _('Action') }}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for conv in conversations %}
+                <tr class="hover:bg-gray-50 transition duration-150">
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-gray-900">{{ conv.tenant.name }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-700">{{ conv.admin.username }}</div>
+                        <div class="text-xs text-gray-500">{{ conv.admin.email }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-gray-900">{{ conv.subject }}</div>
+                        <div class="text-sm text-gray-500">{{ _('Created %(date)s', date=conv.created_at.strftime('%Y-%m-%d %H:%M')) }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if conv.unread_count > 0 %}
+                            <span class="inline-flex items-center justify-center bg-red-100 text-red-800 text-xs font-bold px-2.5 py-1 rounded-full">
+                                {{ conv.unread_count }}
+                            </span>
+                        {% else %}
+                            <span class="text-sm text-gray-500">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">
+                        {{ conv.messages[-1].created_at.strftime('%Y-%m-%d %H:%M') if conv.messages else '-' }}
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <a href="{{ url_for('messaging.super_admin_conversation', conversation_id=conv.id) }}" class="text-primary hover:text-accent font-medium text-sm transition duration-150">
+                            {{ _('View') }} →
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow-md p-12 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+        </svg>
+        <p class="mt-4 text-lg text-gray-700">{{ _('No messages yet') }}</p>
+        <p class="text-sm text-gray-500 mt-2">{{ _('Tenant admins will send support messages here') }}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

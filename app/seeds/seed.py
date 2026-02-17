@@ -39,11 +39,18 @@ def seed_database():
         # --- Ensure Default Tenant Exists ---
         default_tenant = db.session.query(Tenant).filter_by(name='default').first()
         if not default_tenant:
-            default_tenant = Tenant(name='default')
+            default_tenant = Tenant(
+                name='default',
+                subdomain='default'
+            )
             db.session.add(default_tenant)
             db.session.commit()
             print("Default tenant created.")
         else:
+            # Update subdomain if not set
+            if not default_tenant.subdomain:
+                default_tenant.subdomain = 'default'
+                db.session.commit()
             print("Default tenant already exists.")
 
         # --- Seed Library ---
@@ -56,20 +63,35 @@ def seed_database():
             default_library = db.session.query(Library).first()
             print("Default library already exists.")
 
-        # --- Seed Admin User ---
+        # --- Seed Super-Admin User (tenant_id=NULL) ---
+        if db.session.query(User).filter_by(username='superadmin').count() == 0:
+            super_admin = User(
+                username='superadmin',
+                email='superadmin@example.com',
+                role='admin',
+                tenant_id=None  # Super-admin has NO tenant assigned
+            )
+            super_admin.set_password('superadmin')
+            db.session.add(super_admin)
+            db.session.commit()
+            print("Super-admin user created (manages all tenants).")
+        else:
+            print("Super-admin user already exists.")
+
+        # --- Seed Admin User (tenant-specific admin, tenant_id=default_tenant.id) ---
         if db.session.query(User).filter_by(username='admin').count() == 0:
             admin_user = User(
                 username='admin',
                 email='admin@example.com',
                 role='admin',
-                tenant_id=default_tenant.id
+                tenant_id=default_tenant.id  # Admin for this specific tenant
             )
             admin_user.set_password('admin')
             # Add user to the default library
             admin_user.libraries.append(default_library)
             db.session.add(admin_user)
             db.session.commit()
-            print("Admin user created and assigned to the default library.")
+            print("Admin user created for default tenant.")
         else:
             print("Admin user already exists.")
 

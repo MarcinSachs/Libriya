@@ -1,0 +1,108 @@
+{% extends "base/main_base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-4xl font-bold text-primary">{{ _('Admin Dashboard') }}</h1>
+            <p class="text-gray-600 mt-2">{{ _('System administration and management') }}</p>
+        </div>
+        <a href="{{ url_for('admin.tenant_add') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:shadow-lg transition">
+            <i class="bx bx-plus text-lg"></i>
+            {{ _('Add New Tenant') }}
+        </a>
+    </div>
+
+    <!-- Statistics Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Total Tenants -->
+        <div class="bg-white rounded-lg shadow p-6 border-t-4 border-blue-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm font-medium">{{ _('Total Tenants') }}</p>
+                    <p class="text-3xl font-bold text-gray-800 mt-2">{{ total_tenants }}</p>
+                </div>
+                <div class="bg-blue-100 p-4 rounded-lg">
+                    <i class="bx bx-building text-3xl text-blue-500"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Users -->
+        <div class="bg-white rounded-lg shadow p-6 border-t-4 border-green-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm font-medium">{{ _('Total Users') }}</p>
+                    <p class="text-3xl font-bold text-gray-800 mt-2">{{ total_users }}</p>
+                </div>
+                <div class="bg-green-100 p-4 rounded-lg">
+                    <i class="bx bx-user-circle text-3xl text-green-500"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Libraries -->
+        <div class="bg-white rounded-lg shadow p-6 border-t-4 border-purple-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm font-medium">{{ _('Total Libraries') }}</p>
+                    <p class="text-3xl font-bold text-gray-800 mt-2">{{ total_libraries }}</p>
+                </div>
+                <div class="bg-purple-100 p-4 rounded-lg">
+                    <i class="bx bx-library text-3xl text-purple-500"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Tenants -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h2 class="text-xl font-bold text-gray-800">{{ _('Recent Tenants') }}</h2>
+            <a href="{{ url_for('admin.tenants_list') }}" class="text-primary hover:text-accent font-semibold text-sm">
+                {{ _('View All') }} →
+            </a>
+        </div>
+        
+        {% if recent_tenants %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">{{ _('Name') }}</th>
+                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">{{ _('Subdomain') }}</th>
+                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">{{ _('Created') }}</th>
+                        <th class="px-6 py-3 text-right text-sm font-semibold text-gray-700">{{ _('Actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tenant in recent_tenants %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
+                        <td class="px-6 py-4">
+                            <span class="font-semibold text-gray-800">{{ tenant.name }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <code class="bg-gray-100 px-2 py-1 rounded text-sm text-gray-700">{{ tenant.subdomain }}</code>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600">
+                            {{ tenant.created_at.strftime('%Y-%m-%d %H:%M') if tenant.created_at else '-' }}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{{ url_for('admin.tenant_detail', tenant_id=tenant.id) }}" class="text-primary hover:text-accent text-sm font-semibold">
+                                {{ _('View') }}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-6 py-8 text-center text-gray-600">
+            <p>{{ _('No tenants yet. ') }}<a href="{{ url_for('admin.tenant_add') }}" class="text-primary font-semibold hover:text-accent">{{ _('Create one') }}</a></p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

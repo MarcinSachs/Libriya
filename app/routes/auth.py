@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_babel import _
 
-from app.models import User, InvitationCode
+from app.models import User, InvitationCode, Tenant
 from app import db, limiter
 from app.forms import RegistrationForm
 from app.utils.audit_log import log_invitation_code_used
@@ -15,26 +15,126 @@ from datetime import datetime
 bp = Blueprint("auth", __name__)
 
 
+def get_tenant_from_request():
+    """
+    Dedukuj tenant z subdomeny
+    Zwraca Tenant object lub None
+    """
+    host_parts = request.host.split(':')[0].split('.')
+    
+    # localhost lub bez subdomeny
+    if len(host_parts) == 1 or host_parts[0] in ('localhost', 'www'):
+        return None
+    
+    subdomain = host_parts[0]
+    tenant = Tenant.query.filter_by(subdomain=subdomain).first()
+    return tenant
+
+
 @bp.route("/login/")
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
-    return render_template("auth/login.html", login_page=True, title='Log In')
+    
+    # Pobierz tenant z subdomeny (jeśli istnieje)
+    tenant = get_tenant_from_request()
+    
+    return render_template(
+        "auth/login.html", 
+        login_page=True, 
+        title='Log In',
+        tenant=tenant
+    )
 
 
 @bp.route("/login/", methods=['POST'])
 @limiter.limit("5 per minute")
 def login_post():
-    username = request.form.get('username')
+    email_or_username = request.form.get('email_or_username')
     password = request.form.get('password')
-    if '@' in username:
-        user = User.query.filter_by(email=username).first()
+    
+    # KROK 1: Dedukuj tenant z subdomeny
+    tenant_from_url = get_tenant_from_request()
+    
+    user = None
+    tenant = None
+    
+    # KROK 2: Szukaj użytkownika
+    if '@' in email_or_username:
+        # Szukaj po email
+        if tenant_from_url:
+            # Ze subdomeny - szukaj w konkretnym tenanie
+            user = User.query.filter_by(
+                email=email_or_username,
+                tenant_id=tenant_from_url.id
+            ).first()
+            tenant = tenant_from_url
+        else:
+            # Bez subdomeny - szukaj wszędzie
+            user = User.query.filter_by(email=email_or_username).first()
+            
+            if user:
+                # Sprawdź czy email nie istnieje w wielu tenantach
+                users_count = User.query.filter_by(
+                    email=email_or_username
+                ).count()
+                
+                if users_count > 1:
+                    # Email w wielu tenantach - błąd!
+                    flash(
+                        _("This email exists in multiple libraries. "
+                          "Please log in from your library's page."),
+                        'danger'
+                    )
+                    return redirect(url_for('auth.login'))
+                
+                tenant = user.tenant
     else:
-        user = User.query.filter_by(username=username).first()
+        # Szukaj po username
+        if tenant_from_url:
+            # Ze subdomeny - szukaj w konkretnym tenanie
+            user = User.query.filter_by(
+                username=email_or_username,
+                tenant_id=tenant_from_url.id
+            ).first()
+            tenant = tenant_from_url
+        else:
+            # Bez subdomeny - szukaj wszędzie
+            user = User.query.filter_by(username=email_or_username).first()
+            
+            if user:
+                # Sprawdź czy username nie istnieje w wielu tenantach
+                users_count = User.query.filter_by(
+                    username=email_or_username
+                ).count()
+                
+                if users_count > 1:
+                    flash(
+                        _("This username exists in multiple libraries. "
+                          "Please log in from your library's page."),
+                        'danger'
+                    )
+                    return redirect(url_for('auth.login'))
+                
+                tenant = user.tenant
+    
+    # KROK 3: Walidacja hasła
     if user and user.check_password(password):
         login_user(user)
-        flash(AUTH_LOGIN_SUCCESS, 'success')
-        return redirect(url_for('main.home'))
+        
+        # Super-admin (tenant_id=NULL) -> admin panel
+        if user.is_super_admin:
+            flash(AUTH_LOGIN_SUCCESS, 'success')
+            return redirect(url_for('admin.dashboard'))
+        
+        # Tenant-admin/user -> redirect do subdomeny tenanta
+        if tenant and tenant.subdomain:
+            redirect_url = f"http://{tenant.subdomain}.{request.host}/dashboard"
+            flash(AUTH_LOGIN_SUCCESS, 'success')
+            return redirect(redirect_url)
+        else:
+            flash(AUTH_LOGIN_SUCCESS, 'success')
+            return redirect(url_for('main.home'))
     else:
         flash(AUTH_INVALID_CREDENTIALS, 'danger')
         return redirect(url_for('auth.login'))

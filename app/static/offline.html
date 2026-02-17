@@ -16,7 +16,7 @@
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="/static/css/style.css?v=927" rel="stylesheet">
+    <link href="/static/css/style.css?v=257" rel="stylesheet">
     
 </head>
 <body class="font-sans text-text-dark bg-gray-bg selection:bg-accent selection:text-white">
@@ -51,7 +51,7 @@
                                 <i class="bx bx-bell align-middle me-2"></i>Notifications
                                 
                             </a>
-                            <a href="/user/profile/1" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                            <a href="/user/profile/2" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
                                 <i class="bx bx-user-circle align-middle me-2"></i>Profile & Loans
                             </a>
                             <a href="/user/settings" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
@@ -126,7 +126,7 @@
                                 <i class="bx bx-bell align-middle me-2"></i>Notifications
                                 
                             </a>
-                            <a href="/user/profile/1" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                            <a href="/user/profile/2" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
                                 <i class="bx bx-user-circle align-middle me-2"></i>Profile & Loans
                             </a>
                             <a href="/user/settings" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
@@ -157,13 +157,15 @@
             <!-- Sidebar -->
             <aside id="mobile-sidebar" class="hidden lg:flex w-full lg:w-64 bg-white border-r border-gray-200 flex-col py-6 px-4 h-[calc(100vh-128px)] overflow-y-auto fixed lg:relative top-20 left-0 z-40 lg:z-auto lg:top-auto lg:left-auto">
                 <nav class="space-y-2">
-                    <!-- Books -->
+                    <!-- Books (Hidden for Super-Admin) -->
+                    
                     <a href="/dashboard" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-bg hover:text-primary transition">
                         <i class="bx bxs-book text-lg"></i>
                         <span class="font-medium">Books</span>
                     </a>
+                    
 
-                    <!-- Administration Section -->
+                    <!-- Administration Section (Tenant Admin/Manager) -->
                     
                     <div>
                         <button id="admin-toggle" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-bg hover:text-primary transition">
@@ -207,6 +209,9 @@
                             </a>
                         </div>
                     </div>
+                    
+
+                    <!-- Super Admin Section (Only for Super-Admin) -->
                     
                 </nav>
             </aside>

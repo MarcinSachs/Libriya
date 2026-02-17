@@ -6,9 +6,15 @@ import datetime
 
 class Tenant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True, nullable=False)
+    name = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    subdomain = db.Column(db.String(100), unique=True, nullable=True, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    
     libraries = db.relationship('Library', backref='tenant', lazy=True)
     users = db.relationship('User', backref='tenant', lazy=True)
+    
+    def __str__(self):
+        return f"{self.name} ({self.subdomain})"
 
 
 # Define the association table for book-author relationship
@@ -140,7 +146,7 @@ class User(UserMixin, db.Model):
     last_name = db.Column(db.String(50), nullable=True)
     loans = db.relationship('Loan', back_populates='user', lazy=True)
     role = db.Column(db.String(20), nullable=False, default='user')  # 'user', 'manager', 'admin'
-    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=True)  # NULL for super-admin
 
     @property
     def is_admin(self):
@@ -149,6 +155,16 @@ class User(UserMixin, db.Model):
     @property
     def is_manager(self):
         return self.role == 'manager'
+    
+    @property
+    def is_super_admin(self):
+        """Super-admin has role='admin' and tenant_id=NULL"""
+        return self.role == 'admin' and self.tenant_id is None
+    
+    @property
+    def is_tenant_admin(self):
+        """Tenant admin has role='admin' and tenant_id is NOT NULL"""
+        return self.role == 'admin' and self.tenant_id is not None
 
     libraries = db.relationship('Library', secondary='user_libraries', lazy='subquery',
                                 back_populates='users')
@@ -332,6 +348,46 @@ class ContactMessage(db.Model):
 
     def __str__(self):
         return f"ContactMessage from {self.user_id} in library {self.library_id} at {self.created_at}"
+
+
+class AdminSuperAdminConversation(db.Model):
+    """Conversation between tenant admin and super-admin"""
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False, index=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    subject = db.Column(db.String(200), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, index=True)
+    
+    tenant = db.relationship('Tenant', backref='admin_conversations')
+    admin = db.relationship('User', backref='admin_super_admin_conversations')
+    messages = db.relationship('AdminSuperAdminMessage', backref='conversation', cascade='all, delete-orphan', lazy=True)
+    
+    def __str__(self):
+        return f"Conversation: {self.subject} (Tenant: {self.tenant.name})"
+    
+    @property
+    def unread_count(self):
+        """Count unread messages for super-admin"""
+        return AdminSuperAdminMessage.query.filter_by(
+            conversation_id=self.id,
+            read=False
+        ).count()
+
+
+class AdminSuperAdminMessage(db.Model):
+    """Individual message in conversation between admin and super-admin"""
+    id = db.Column(db.Integer, primary_key=True)
+    conversation_id = db.Column(db.Integer, db.ForeignKey('admin_super_admin_conversation.id'), nullable=False, index=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, index=True)
+    read = db.Column(db.Boolean, default=False)
+    
+    sender = db.relationship('User', foreign_keys=[sender_id])
+    
+    def __str__(self):
+        return f"Message from {self.sender.username}: {self.message[:50]}..."
+
 
 # Poprawka logiki logowania multi-tenant:
 # W pliku routes/auth.py:

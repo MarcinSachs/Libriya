@@ -68,6 +68,48 @@ def create_app(config_class=Config):
     from app.routes import register_blueprints
     register_blueprints(app)
 
+    # Register multi-tenant middleware
+    @app.before_request
+    def verify_tenant_access():
+        """
+        Middleware sprawdzający dostęp do tenantu
+        Zapobiega dostępowi do innego tenantu
+        Zapobiega super-adminowi dostępu do normalnych stron (tylko /admin/*)
+        """
+        from flask_login import current_user
+        
+        if not current_user.is_authenticated:
+            return  # Niezalogowani mogą być na landing page
+        
+        # Pozwól na static files i logout dla wszystkich
+        if request.path.startswith('/static') or request.path.startswith('/auth/logout'):
+            return
+        
+        # Pobierz tenant z subdomeny
+        host_parts = request.host.split(':')[0].split('.')
+        
+        # Super-admin restriction: only /admin/* and /messaging/admin/* routes allowed
+        if current_user.is_super_admin:
+            # Pozwól na /admin/*, /messaging/admin/*, /logout, /auth/logout
+            if not (request.path.startswith('/admin') or 
+                    request.path.startswith('/messaging/admin') or
+                    request.path == '/logout' or
+                    request.path == '/auth/logout'):
+                from flask import abort
+                abort(403)  # Super-admin nie ma dostępu do normalnych stron
+            return
+        
+        # Regular tenant users: verify tenant access by subdomain
+        if len(host_parts) > 1 and host_parts[0] not in ('localhost', 'www'):
+            subdomain = host_parts[0]
+            from app.models import Tenant
+            tenant = Tenant.query.filter_by(subdomain=subdomain).first()
+            
+            # Sprawdź czy użytkownik należy do tego tenantu
+            if tenant and current_user.tenant_id != tenant.id:
+                from flask import abort
+                abort(403)  # Forbidden
+
     # Add security headers
     @app.after_request
     def set_security_headers(response):

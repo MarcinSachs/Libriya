@@ -1,0 +1,76 @@
+{% extends "base/main_base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ _('Support - Contact Super Admin') }}</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">{{ _('Send messages to the super-admin for support and get responses') }}</p>
+        </div>
+        <a href="{{ url_for('messaging.admin_support_new') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200">
+            {{ _('New Message') }}
+        </a>
+    </div>
+
+    {% if conversations %}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                <tr>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">{{ _('Subject') }}</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">{{ _('Messages') }}</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">{{ _('Last Activity') }}</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">{{ _('Status') }}</th>
+                    <th class="px-6 py-4 text-right text-sm font-semibold text-gray-900 dark:text-white">{{ _('Action') }}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                {% for conv in conversations %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-150">
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-gray-900 dark:text-white">{{ conv.subject }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ _('Created %(date)s', date=conv.created_at.strftime('%Y-%m-%d %H:%M')) }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center justify-center bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-medium px-2.5 py-1 rounded-full">
+                            {{ conv.messages|length }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                        {{ conv.messages[-1].created_at.strftime('%Y-%m-%d %H:%M') if conv.messages else '-' }}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% set unread_msgs = conv.messages|selectattr('read', 'equalto', False)|list %}
+                        {% if unread_msgs|length > 0 %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                {{ _('%(count)d new', count=unread_msgs|length) }}
+                            </span>
+                        {% else %}
+                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ _('No new') }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <a href="{{ url_for('messaging.admin_support_conversation', conversation_id=conv.id) }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm transition duration-150">
+                            {{ _('View') }} →
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-12 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+        </svg>
+        <p class="mt-4 text-lg text-gray-700 dark:text-gray-300">{{ _('No messages yet') }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ _('Start a new conversation with the super-admin') }}</p>
+        <a href="{{ url_for('messaging.admin_support_new') }}" class="mt-4 inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200">
+            {{ _('Send First Message') }}
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
