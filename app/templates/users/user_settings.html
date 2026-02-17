@@ -45,6 +45,7 @@
         </div>
     </form>
 
+    {% if not current_user.is_super_admin %}
     <!-- Offline Mode Section -->
     <hr class="my-8">
     <h4 class="text-lg font-semibold"><i class='bx bx-wifi-off'></i> {{ _('Offline Mode') }}</h4>
@@ -145,7 +146,7 @@ async function downloadOfflineData() {
     const originalText = btn.innerHTML;
     
     btn.disabled = true;
-    btn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> {{ _("Downloading...") }}';
+    btn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> {{ "Downloading..." }}';
     
     try {
         const result = await window.pwaManager.preCacheOfflineData(true);
@@ -171,13 +172,14 @@ async function downloadOfflineData() {
 }
 
 async function clearOfflineData() {
-    if (confirm('{{ _("Are you sure you want to clear offline data?") }}')) {
+    if (confirm('{{ "Are you sure you want to clear offline data?" }}')) {
         await window.pwaManager.clearOfflineData();
         document.getElementById('offline-cache-status').innerHTML = 
             `<span class="text-warning"><i class='bx bx-info-circle'></i> {{ _('Not downloaded yet') }}</span>`;
-        document.getElementById('offline-cache-progress').textContent = '{{ _("Cache cleared") }}';
+        document.getElementById('offline-cache-progress').textContent = '{{ _('Cache cleared') }}';
         document.getElementById('actual-size-row').style.display = 'none';
     }
 }
 </script>
+{% endif %}
 {% endblock %}

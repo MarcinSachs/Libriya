@@ -117,13 +117,21 @@ def create_app(config_class=Config):
         if request.path.startswith('/static') or request.path == '/auth/logout':
             return
 
-        # Super-admin ma dostęp TYLKO do /admin/* i /auth/logout
+        # Super-admin ma dostęp TYLKO do /admin, /admin/*, /messaging/admin/*,
+        # oraz stron potrzebnych do zarządzania kontem: powiadomień i ustawień.
         if current_user.is_authenticated and current_user.is_super_admin:
-            if request.path.startswith('/admin/') or request.path == '/auth/logout':
+            if (
+                request.path == '/admin' or
+                request.path.startswith('/admin/') or
+                request.path.startswith('/messaging/admin') or
+                request.path.startswith('/notifications') or
+                request.path.startswith('/user/settings') or
+                request.path == '/auth/logout'
+            ):
                 return  # Pozwól
             else:
                 from flask import abort
-                abort(403)  # Zabrań dostępu poza /admin/* i /auth/logout
+                abort(403)  # Zabroń dostępu poza dozwoloną listę
 
         # Pobierz tenant z subdomeny
         host_parts = request.host.split(':')[0].split('.')

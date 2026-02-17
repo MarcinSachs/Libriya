@@ -37,7 +37,10 @@ def contact_messages():
             db.session.commit()
 
     # Admin widzi tylko wiadomości swojego tenanta
-    if current_user.role == 'admin':
+    if getattr(current_user, 'is_super_admin', False):
+        # Superadmin sees all contact messages across tenants
+        messages = ContactMessage.query.order_by(ContactMessage.created_at.desc()).all()
+    elif current_user.role == 'admin':
         messages = ContactMessage.for_tenant(current_user.tenant_id).order_by(ContactMessage.created_at.desc()).all()
     else:
         library_ids = [lib.id for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]

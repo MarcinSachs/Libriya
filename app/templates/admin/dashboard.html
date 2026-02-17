@@ -10,17 +10,17 @@
         </div>
         <a href="{{ url_for('admin.tenant_add') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:shadow-lg transition">
             <i class="bx bx-plus text-lg"></i>
-            {{ _('Add New Tenant') }}
+            {{ _('New Organization') }}
         </a>
     </div>
 
     <!-- Statistics Grid -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Total Tenants -->
+        <!-- Total Clients -->
         <div class="bg-white rounded-lg shadow p-6 border-t-4 border-blue-500">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-600 text-sm font-medium">{{ _('Total Tenants') }}</p>
+                    <p class="text-gray-600 text-sm font-medium">{{ _('Total Organizations') }}</p>
                     <p class="text-3xl font-bold text-gray-800 mt-2">{{ total_tenants }}</p>
                 </div>
                 <div class="bg-blue-100 p-4 rounded-lg">
@@ -59,7 +59,7 @@
     <!-- Recent Tenants -->
     <div class="bg-white rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 class="text-xl font-bold text-gray-800">{{ _('Recent Tenants') }}</h2>
+            <h2 class="text-xl font-bold text-gray-800">{{ _('Recent Organizations') }}</h2>
             <a href="{{ url_for('admin.tenants_list') }}" class="text-primary hover:text-accent font-semibold text-sm">
                 {{ _('View All') }} →
             </a>

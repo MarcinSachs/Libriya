@@ -25,7 +25,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20 items-center">
                 <div class="flex items-center gap-3">
-                    <a href="{% if current_user.is_authenticated %}/dashboard{% else %}/{% endif %}" class="flex items-center gap-2">
+                    <a href="{% if current_user.is_authenticated %}{% if current_user.is_super_admin %}{{ url_for('admin.dashboard') }}{% else %}{{ url_for('main.home') }}{% endif %}{% else %}/{% endif %}" class="flex items-center gap-2">
                         <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Libriya Logo" class="h-10 w-auto">
                         <span class="flex flex-col leading-tight">
                             <span class="font-serif text-3xl font-bold text-primary">Libriya</span>
@@ -56,6 +56,14 @@
                                 <span class="float-right bg-red-500 text-white text-xs px-2 py-1 rounded-full">{{ unread_notifications_count }}</span>
                                 {% endif %}
                             </a>
+                            {% if current_user.is_super_admin %}
+                            <a href="{{ url_for('messaging.super_admin_messages') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-envelope align-middle me-2"></i>{{ _('Messages') }}
+                            </a>
+                            <a href="{{ url_for('users.user_settings') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-cog align-middle me-2"></i>{{ _('Settings') }}
+                            </a>
+                            {% else %}
                             <a href="{{ url_for('users.user_profile', user_id=current_user.id) }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
                                 <i class="bx bx-user-circle align-middle me-2"></i>{{ _('Profile & Loans') }}
                             </a>
@@ -65,6 +73,7 @@
                             <a href="{{ url_for('main.my_messages') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
                                 <i class="bx bx-envelope align-middle me-2"></i>{{ _('Messages') }}
                             </a>
+                            {% endif %}
                             <hr class="my-1">
                             <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg">
                                 <i class="bx bx-log-out align-middle me-2"></i>{{ _('Logout') }}
@@ -137,6 +146,14 @@
                                 <span class="float-right bg-red-500 text-white text-xs px-2 py-1 rounded-full">{{ unread_notifications_count }}</span>
                                 {% endif %}
                             </a>
+                            {% if current_user.is_super_admin %}
+                            <a href="{{ url_for('messaging.super_admin_messages') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-envelope align-middle me-2"></i>{{ _('Messages') }}
+                            </a>
+                            <a href="{{ url_for('users.user_settings') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-cog align-middle me-2"></i>{{ _('Settings') }}
+                            </a>
+                            {% else %}
                             <a href="{{ url_for('users.user_profile', user_id=current_user.id) }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
                                 <i class="bx bx-user-circle align-middle me-2"></i>{{ _('Profile & Loans') }}
                             </a>
@@ -146,6 +163,7 @@
                             <a href="{{ url_for('main.my_messages') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
                                 <i class="bx bx-envelope align-middle me-2"></i>{{ _('Messages') }}
                             </a>
+                            {% endif %}
                             <hr class="my-1">
                             <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg">
                                 <i class="bx bx-log-out align-middle me-2"></i>{{ _('Logout') }}
@@ -181,6 +199,10 @@
                     <a href="{{ url_for('admin.tenants_list') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {% if active_page == 'tenants' %}bg-gray-bg text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg hover:text-primary{% endif %} transition">
                         <i class="bx bxs-business text-lg"></i>
                         <span class="font-medium">{{ _('Clients') }}</span>
+                    </a>
+                    <a href="{{ url_for('messaging.super_admin_messages') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {% if active_page == 'admin-messages' %}bg-gray-bg text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg hover:text-primary{% endif %} transition">
+                        <i class="bx bxs-message-square-dots text-lg"></i>
+                        <span class="font-medium">{{ _('Messages') }}</span>
                     </a>
                     {% endif %}
 
@@ -232,6 +254,12 @@
                             <a href="{{ url_for('users.contact_messages') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'contact_messages' %}bg-accent bg-opacity-10 text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
                                 <i class="bx bxs-message-detail text-base"></i>
                                 <span>{{ _('Messages') }}</span>
+                            </a>
+
+                            <!-- Contact Super Admin (tenant admin -> superadmin) -->
+                            <a href="{{ url_for('messaging.admin_support') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'admin-support' %}bg-accent bg-opacity-10 text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
+                                <i class="bx bxs-help-circle text-base"></i>
+                                <span>{{ _('Contact Super Admin') }}</span>
                             </a>
                             {% endif %}
                         </div>

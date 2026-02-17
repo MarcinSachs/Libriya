@@ -9,7 +9,7 @@
             <p class="text-gray-600 mt-2 text-lg">{{ tenant.name }}</p>
         </div>
         <a href="{{ url_for('admin.tenants_list') }}" class="inline-flex items-center gap-2 px-4 py-2 text-primary hover:text-accent transition rounded-lg hover:bg-gray-100">
-            <i class="bx bx-arrow-back"></i> Back to Tenants
+            <i class="bx bx-arrow-back"></i> Back to list
         </a>
     </div>
 
@@ -35,7 +35,7 @@
                     </button>
                     <p class="text-xs mt-2 text-center">
                         {% if feature.enabled %}
-                        <span class="text-green-600 font-semibold">✓ Enabled</span>
+                        <span class="text-green-600 font-semibold">Enabled</span>
                         {% else %}
                         <span class="text-gray-500">Disabled</span>
                         {% endif %}

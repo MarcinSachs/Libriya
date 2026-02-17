@@ -9,7 +9,8 @@ def role_required(*roles):
     def wrapper(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            if not current_user.is_authenticated or current_user.role not in roles:
+            # Allow superadmin regardless of specific role checks
+            if not current_user.is_authenticated or (current_user.role not in roles and not getattr(current_user, 'is_super_admin', False)):
                 flash(
                     _("You do not have the required privileges to access this page."), "danger")
                 return redirect(url_for('main.home'))
@@ -27,18 +28,18 @@ def tenant_required(f):
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
             abort(401)  # Unauthorized
-        
+
         # Pobierz tenant z subdomeny
         host_parts = request.host.split(':')[0].split('.')
-        
+
         if len(host_parts) > 1 and host_parts[0] not in ('localhost', 'www'):
             subdomain = host_parts[0]
             from app.models import Tenant
             tenant = Tenant.query.filter_by(subdomain=subdomain).first()
-            
+
             # Sprawdź czy użytkownik należy do tego tenantu
             if not tenant or current_user.tenant_id != tenant.id:
                 abort(403)  # Forbidden
-        
+
         return f(*args, **kwargs)
     return decorated_function

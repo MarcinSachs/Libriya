@@ -191,6 +191,7 @@ class User(UserMixin, db.Model):
     @property
     def is_tenant_admin(self):
         """Tenant admin has role='admin' (and tenant_id is NOT NULL)"""
+        return self.role == 'admin' and self.tenant_id is not None
     @property
     def is_super_admin_old(self):
         """Legacy: Super-admin had role='admin' and tenant_id=NULL (deprecated)"""

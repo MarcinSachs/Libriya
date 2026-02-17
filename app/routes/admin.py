@@ -50,7 +50,8 @@ def debug_admin():
 @admin_required
 def admin_index():
     """Redirect admin panel to tenants"""
-    return redirect(url_for('admin.tenants_list'))
+    # Default admin landing -> dashboard (system overview)
+    return redirect(url_for('admin.dashboard'))
 
 
 # ============================================================
@@ -181,7 +182,7 @@ def tenant_delete(tenant_id):
 # DASHBOARD
 # ============================================================
 
-@bp.route('/', methods=['GET'])
+@bp.route('/dashboard', methods=['GET'])
 @login_required
 @admin_required
 def dashboard():

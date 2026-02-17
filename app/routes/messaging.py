@@ -143,7 +143,7 @@ def super_admin_messages():
         'messaging/super_admin_messages.html',
         conversations=conversations,
         total_unread=total_unread,
-        title=_('Messages from Tenant Admins'),
+        title=_('Messages from Admins'),
         active_page='admin-messages',
         parent_page='admin'
     )
