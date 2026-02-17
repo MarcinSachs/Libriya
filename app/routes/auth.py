@@ -28,7 +28,11 @@ def login():
 def login_post():
     username = request.form.get('username')
     password = request.form.get('password')
-    user = User.query.filter_by(username=username).first()
+    # Pozwól na logowanie przez email lub username
+    if '@' in username:
+        user = User.query.filter_by(email=username).first()
+    else:
+        user = User.query.filter_by(username=username).first()
 
     if user and user.check_password(password):
         login_user(user)
