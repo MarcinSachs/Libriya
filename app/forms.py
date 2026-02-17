@@ -187,14 +187,6 @@ class RegistrationForm(FlaskForm):
         _('Username'),
         validators=[DataRequired(), Length(min=3, max=50)]
     )
-    first_name = StringField(
-        _('First Name'),
-        validators=[DataRequired(), Length(min=2, max=50)]
-    )
-    last_name = StringField(
-        _('Last Name'),
-        validators=[DataRequired(), Length(min=2, max=50)]
-    )
     password = PasswordField(
         _('Password'),
         validators=[DataRequired(), Length(min=8)]
@@ -214,6 +206,7 @@ class RegistrationForm(FlaskForm):
             raise ValidationError(_('Invitation code has expired or has already been used'))
 
     def validate_email(self, field):
+        from app.models import User
         user = User.query.filter_by(email=field.data).first()
         if user:
             raise ValidationError(_('Email already registered'))
