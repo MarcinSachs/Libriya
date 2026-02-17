@@ -1,3 +1,6 @@
+from app.models import Genre, Library, User, Tenant
+from app import create_app, db
+from flask_babel import _
 import sys
 import os
 
@@ -5,10 +8,6 @@ import os
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
-
-from flask_babel import _
-from app import create_app, db
-from app.models import Genre, Library, User, Tenant
 
 
 genres = [
@@ -63,20 +62,28 @@ def seed_database():
             default_library = db.session.query(Library).first()
             print("Default library already exists.")
 
-        # --- Seed Super-Admin User (tenant_id=NULL) ---
-        if db.session.query(User).filter_by(username='superadmin').count() == 0:
+        # --- Seed Super-Admin User (role='superadmin', tenant_id=NULL) ---
+        super_admin = db.session.query(User).filter_by(username='superadmin').first()
+        if not super_admin:
             super_admin = User(
                 username='superadmin',
                 email='superadmin@example.com',
-                role='admin',
+                role='superadmin',
                 tenant_id=None  # Super-admin has NO tenant assigned
             )
             super_admin.set_password('superadmin')
             db.session.add(super_admin)
             db.session.commit()
-            print("Super-admin user created (manages all tenants).")
+            print("Super-admin user created with role='superadmin'.")
         else:
-            print("Super-admin user already exists.")
+            # Fix if superadmin exists with wrong role or tenant_id
+            if super_admin.role != 'superadmin' or super_admin.tenant_id is not None:
+                super_admin.role = 'superadmin'
+                super_admin.tenant_id = None
+                db.session.commit()
+                print("Super-admin user role/tenant updated to correct values.")
+            else:
+                print("Super-admin user already exists with correct configuration.")
 
         # --- Seed Admin User (tenant-specific admin, tenant_id=default_tenant.id) ---
         if db.session.query(User).filter_by(username='admin').count() == 0:

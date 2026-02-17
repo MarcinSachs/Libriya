@@ -6,27 +6,65 @@
     <!-- Registration Form -->
     <div class="flex flex-col w-full">
       <!-- Main Heading -->
-      <h2 class="text-4xl lg:text-5xl font-bold mb-2 text-primary">
-        {{ _('Join Us') }}
-      </h2>
-      <p class="text-gray-600 mb-8 text-lg">
-        {{ _('Create your account to start managing your library') }}
-      </p>
-      <!-- About Invitation Codes Card -->
-    <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200 mt-8 mb-12 w-full">
-      <h4 class="font-semibold text-text-dark mb-3 flex items-center gap-2">
-        <i class='bx bx-info-circle text-accent text-xl'></i> {{ _('About Invitation Codes') }}
-      </h4>
-      <p class="text-gray-700 text-sm leading-relaxed">
-        {{ _('Libriya uses invitation codes to maintain quality and security. If you don\'t have a code, contact your library manager to request one.') }}
-      </p>
-    </div>
+      {% if creating_new_tenant %}
+        <h2 class="text-4xl lg:text-5xl font-bold mb-2 text-primary">
+          {{ _('Create Your Organization') }}
+        </h2>
+        <p class="text-gray-600 mb-8 text-lg">
+          {{ _('Set up your organization and start managing libraries today') }}
+        </p>
+        <!-- New Organization Info Card -->
+        <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200 mt-8 mb-12 w-full">
+          <h4 class="font-semibold text-text-dark mb-3 flex items-center gap-2">
+            <i class='bx bx-bulb text-accent text-xl'></i> {{ _('Creating New Organization') }}
+          </h4>
+          <p class="text-gray-700 text-sm leading-relaxed">
+            {{ _('You\'re setting up a new organization. You\'ll become the owner with full administrative access. You can create multiple libraries and invite team members.') }}
+          </p>
+        </div>
+      {% else %}
+        <h2 class="text-4xl lg:text-5xl font-bold mb-2 text-primary">
+          {{ _('Join Organization') }}
+        </h2>
+        <p class="text-gray-600 mb-8 text-lg">
+          {{ _('Join an existing organization') }}
+        </p>
+        <!-- Join Organization Info Card -->
+        <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200 mt-8 mb-12 w-full">
+          <h4 class="font-semibold text-text-dark mb-3 flex items-center gap-2">
+            <i class='bx bx-info-circle text-accent text-xl'></i> {{ _('About Invitation Codes') }}
+          </h4>
+          <p class="text-gray-700 text-sm leading-relaxed">
+            {{ _('You\'ve been invited to join an organization. Enter the invitation code provided by the organization administrator to create your account.') }}
+          </p>
+        </div>
+      {% endif %}
+      
       <!-- Registration Form Card -->
       <div class="glass-card rounded-2xl p-8 shadow-lg">
         <form method="POST" novalidate class="space-y-6">
           {{ form.hidden_tag() }}
           
-          <!-- Invitation Code -->
+          <!-- Organization Name (only for creating new tenant) -->
+          {% if creating_new_tenant %}
+          <div class="form-group">
+            {{ form.tenant_name.label(class="block text-sm font-semibold mb-2 text-text-dark") }}
+            {% if form.tenant_name.errors %}
+                {{ form.tenant_name(class="w-full px-4 py-2 border-2 border-red-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-20 transition") }}
+                <div class="text-red-500 text-sm mt-1">
+                    {% for error in form.tenant_name.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ form.tenant_name(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition", placeholder=_("e.g., My City Libraries")) }}
+            {% endif %}
+            <small class="text-gray-500 text-xs mt-1 block">{{ _('The name of your organization') }}</small>
+          </div>
+          {% endif %}
+          
+          <!-- Invitation Code (only for joining existing tenant) -->
+          {% if not creating_new_tenant %}
           <div class="form-group">
             {{ form.invitation_code.label(class="block text-sm font-semibold mb-2 text-text-dark") }}
             {% if form.invitation_code.errors %}
@@ -41,6 +79,7 @@
             {% endif %}
             <small class="text-gray-500 text-xs mt-1 block">{{ _('Enter the invitation code provided by your library manager') }}</small>
           </div>
+          {% endif %}
 
           <!-- Email -->
           <div class="form-group">
@@ -56,6 +95,38 @@
                 {{ form.email(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition", type="email") }}
             {% endif %}
           </div>
+
+          <!-- First Name (only for joining existing tenant) -->
+          {% if not creating_new_tenant %}
+          <div class="form-group">
+            {{ form.first_name.label(class="block text-sm font-semibold mb-2 text-text-dark") }}
+            {% if form.first_name.errors %}
+                {{ form.first_name(class="w-full px-4 py-2 border-2 border-red-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-20 transition") }}
+                <div class="text-red-500 text-sm mt-1">
+                    {% for error in form.first_name.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ form.first_name(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition") }}
+            {% endif %}
+          </div>
+
+          <!-- Last Name -->
+          <div class="form-group">
+            {{ form.last_name.label(class="block text-sm font-semibold mb-2 text-text-dark") }}
+            {% if form.last_name.errors %}
+                {{ form.last_name(class="w-full px-4 py-2 border-2 border-red-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-20 transition") }}
+                <div class="text-red-500 text-sm mt-1">
+                    {% for error in form.last_name.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ form.last_name(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition") }}
+            {% endif %}
+          </div>
+          {% endif %}
 
           <!-- Username -->
           <div class="form-group">
@@ -105,16 +176,31 @@
 
           <!-- Submit Button -->
           <div class="pt-4">
-            {{ form.submit(class="w-full py-3 px-4 bg-[#1a535c] hover:bg-[#0f3a45] text-white font-semibold rounded-lg hover:shadow-lg transform hover:-translate-y-1 transition") }}
+            {% if creating_new_tenant %}
+              <button type="submit" class="w-full py-3 px-4 bg-[#1a535c] hover:bg-[#0f3a45] text-white font-semibold rounded-lg hover:shadow-lg transform hover:-translate-y-1 transition">
+                {{ _('Create Organization') }}
+              </button>
+            {% else %}
+              <button type="submit" class="w-full py-3 px-4 bg-[#1a535c] hover:bg-[#0f3a45] text-white font-semibold rounded-lg hover:shadow-lg transform hover:-translate-y-1 transition">
+                {{ _('Join Organization') }}
+              </button>
+            {% endif %}
           </div>
 
-          <!-- Already have account -->
-          <p class="text-center text-gray-600 text-sm mt-6">
-            {{ _('Already have an account?') }} 
-            <a href="{{ url_for('auth.login') }}" class="text-primary hover:text-accent font-semibold transition">
-              {{ _('Log in here') }}
-            </a>
-          </p>
+          <!-- Already have account / Change option -->
+          <div class="text-center text-gray-600 text-sm mt-6 space-y-2">
+            <p>
+              {{ _('Already have an account?') }} 
+              <a href="{{ url_for('auth.login') }}" class="text-primary hover:text-accent font-semibold transition">
+                {{ _('Log in here') }}
+              </a>
+            </p>
+            <p>
+              <a href="{{ url_for('auth.register_choice') }}" class="text-accent hover:text-primary font-semibold transition text-xs">
+                {{ _('← Back to registration options') }}
+              </a>
+            </p>
+          </div>
         </form>
       </div>
     </div>

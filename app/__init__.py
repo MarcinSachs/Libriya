@@ -60,6 +60,25 @@ def create_app(config_class=Config):
 
     app.jinja_env.filters['linebreaksbr'] = linebreaksbr
 
+    # Helper function to get tenant from subdomain
+    def get_tenant_from_subdomain():
+        """Extract tenant from subdomain if present"""
+        from flask import request
+        from app.models import Tenant
+
+        host = request.host.split(':')[0]  # Remove port
+        host_parts = host.split('.')
+
+        # Check if it's a subdomain (not localhost or www)
+        if len(host_parts) > 1 and host_parts[0] not in ('localhost', 'www', '127'):
+            subdomain = host_parts[0]
+            tenant = Tenant.query.filter_by(subdomain=subdomain).first()
+            return tenant
+        return None
+
+    # Make it available in Flask app context
+    app.get_tenant_from_subdomain = get_tenant_from_subdomain
+
     # Initialize premium features manager
     from app.services.premium.manager import PremiumManager
     PremiumManager.init()
@@ -79,14 +98,9 @@ def create_app(config_class=Config):
         """
         from flask_login import current_user
         from app.services.premium.context import PremiumContext
-        
-        if not current_user.is_authenticated:
-            # Niezalogowani mogą być na landing page, ale czyść kontekst premium
-            PremiumContext.clear()
-            return  
-        
+
         # Inicjalizuj PremiumContext dla zalogowanego użytkownika
-        if current_user.tenant_id:
+        if current_user.is_authenticated and current_user.tenant_id:
             # Tenant user - załaduj premium features dla jego tenantu
             from app.models import Tenant
             tenant = Tenant.query.get(current_user.tenant_id)
@@ -98,33 +112,28 @@ def create_app(config_class=Config):
         else:
             # Super-admin - super-admini mają dostęp do wszystkich features globalnie
             PremiumContext.set_for_tenant(None, set())  # No specific tenant context
-        
+
         # Pozwól na static files i logout dla wszystkich
-        if request.path.startswith('/static') or request.path.startswith('/auth/logout'):
+        if request.path.startswith('/static') or request.path == '/auth/logout':
             return
-        
+
+        # Super-admin ma dostęp TYLKO do /admin/* i /auth/logout
+        if current_user.is_authenticated and current_user.is_super_admin:
+            if request.path.startswith('/admin/') or request.path == '/auth/logout':
+                return  # Pozwól
+            else:
+                from flask import abort
+                abort(403)  # Zabrań dostępu poza /admin/* i /auth/logout
+
         # Pobierz tenant z subdomeny
         host_parts = request.host.split(':')[0].split('.')
-        
-        # Super-admin restriction: only /admin/* and /messaging/admin/* routes allowed
-        if current_user.is_super_admin:
-            # Pozwól na /admin/*, /messaging/admin/*, /logout, /auth/logout
-            if not (request.path.startswith('/admin') or 
-                    request.path.startswith('/messaging/admin') or
-                    request.path == '/logout' or
-                    request.path == '/auth/logout'):
-                from flask import abort
-                abort(403)  # Super-admin nie ma dostępu do normalnych stron
-            return
-        
-        # Regular tenant users: verify tenant access by subdomain
         if len(host_parts) > 1 and host_parts[0] not in ('localhost', 'www'):
             subdomain = host_parts[0]
             from app.models import Tenant
             tenant = Tenant.query.filter_by(subdomain=subdomain).first()
-            
+
             # Sprawdź czy użytkownik należy do tego tenantu
-            if tenant and current_user.tenant_id != tenant.id:
+            if tenant and current_user.is_authenticated and current_user.tenant_id != tenant.id:
                 from flask import abort
                 abort(403)  # Forbidden
 

@@ -25,17 +25,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20 items-center">
                 <div class="flex items-center gap-3">
-                    <a href="{% if current_user.is_authenticated %}{% if current_user.is_super_admin %}/admin{% else %}/dashboard{% endif %}{% else %}/{% endif %}" class="flex items-center gap-2">
+                    <a href="{% if current_user.is_authenticated %}/dashboard{% else %}/{% endif %}" class="flex items-center gap-2">
                         <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Libriya Logo" class="h-10 w-auto">
                         <span class="flex flex-col leading-tight">
                             <span class="font-serif text-3xl font-bold text-primary">Libriya</span>
                             <span class="text-xs font-light text-gray-500 tracking-wide -mt-1 ml-1">{{ _('home for your books') }}</span>
                         </span>
-                        {% if request.endpoint == 'main.offline' or request.path == '/offline' %}
-                        <span title="Offline mode" class="ml-3 flex items-center text-red-600 text-lg">
-                            <i class="bx bx-wifi-off"></i>
-                        </span>
-                        {% endif %}
                     </a>
                 </div>
                 <div class="hidden md:flex items-center space-x-10">
@@ -55,7 +50,6 @@
                             {% endif %}
                         </button>
                         <div class="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
-                            {% if not current_user.is_super_admin %}
                             <a href="{{ url_for('main.view_notifications') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg">
                                 <i class="bx bx-bell align-middle me-2"></i>{{ _('Notifications') }}
                                 {% if unread_notifications_count and unread_notifications_count > 0 %}
@@ -72,8 +66,7 @@
                                 <i class="bx bx-envelope align-middle me-2"></i>{{ _('Messages') }}
                             </a>
                             <hr class="my-1">
-                            {% endif %}
-                            <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark {% if current_user.is_super_admin %}first:rounded-t-lg{% endif %} last:rounded-b-lg">
+                            <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg">
                                 <i class="bx bx-log-out align-middle me-2"></i>{{ _('Logout') }}
                             </a>
                         </div>
@@ -138,7 +131,6 @@
                             {% endif %}
                         </button>
                         <div class="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition z-50">
-                            {% if not current_user.is_super_admin %}
                             <a href="{{ url_for('main.view_notifications') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg">
                                 <i class="bx bx-bell align-middle me-2"></i>{{ _('Notifications') }}
                                 {% if unread_notifications_count and unread_notifications_count > 0 %}
@@ -155,8 +147,7 @@
                                 <i class="bx bx-envelope align-middle me-2"></i>{{ _('Messages') }}
                             </a>
                             <hr class="my-1">
-                            {% endif %}
-                            <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark {% if current_user.is_super_admin %}first:rounded-t-lg{% endif %} last:rounded-b-lg">
+                            <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg">
                                 <i class="bx bx-log-out align-middle me-2"></i>{{ _('Logout') }}
                             </a>
                         </div>
@@ -177,7 +168,7 @@
             <!-- Sidebar -->
             <aside id="mobile-sidebar" class="hidden lg:flex w-full lg:w-64 bg-white border-r border-gray-200 flex-col py-6 px-4 h-[calc(100vh-128px)] overflow-y-auto fixed lg:relative top-20 left-0 z-40 lg:z-auto lg:top-auto lg:left-auto">
                 <nav class="space-y-2">
-                    <!-- Books (Hidden for Super-Admin) -->
+                    <!-- Books (dla tenant users) -->
                     {% if not current_user.is_super_admin %}
                     <a href="{{ url_for('main.home') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {% if active_page == 'books' %}bg-gray-bg text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg hover:text-primary{% endif %} transition">
                         <i class="bx bxs-book text-lg"></i>
@@ -185,8 +176,16 @@
                     </a>
                     {% endif %}
 
-                    <!-- Administration Section (Tenant Admin/Manager) -->
-                    {% if (current_user.is_tenant_admin or current_user.role == 'manager') and current_user.tenant_id %}
+                    <!-- Super Admin Menu -->
+                    {% if current_user.is_super_admin %}
+                    <a href="{{ url_for('admin.tenants_list') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {% if active_page == 'tenants' %}bg-gray-bg text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg hover:text-primary{% endif %} transition">
+                        <i class="bx bxs-business text-lg"></i>
+                        <span class="font-medium">{{ _('Clients') }}</span>
+                    </a>
+                    {% endif %}
+
+                    <!-- Administration Section (tenant admins only) -->
+                    {% if current_user and current_user.role in ['admin', 'manager'] and not current_user.is_super_admin %}
                     <div>
                         <button id="admin-toggle" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg {% if parent_page == 'admin' %}bg-gray-bg text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg hover:text-primary{% endif %} transition">
                             <span class="flex items-center gap-3">
@@ -196,63 +195,46 @@
                             <i class="bx bx-chevron-down transition-transform {% if parent_page == 'admin' %}rotate-180{% endif %}"></i>
                         </button>
                         <div id="admin-menu" class="{% if parent_page != 'admin' %}hidden{% endif %} ml-4 mt-2 space-y-1 border-l-2 border-gray-200 pl-2">
-                            <!-- Libraries -->
-                            {% if current_user.role in ['admin', 'manager'] %}
+                            <!-- Libraries (tenant admins only) -->
+                            {% if not current_user.is_super_admin and current_user.role in ['admin', 'manager'] %}
                             <a href="{{ url_for('libraries.libraries') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'libraries' %}bg-accent bg-opacity-10 text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
                                 <i class="bx bxs-building text-base"></i>
                                 <span>{{ _('Libraries') }}</span>
                             </a>
                             {% endif %}
 
-                            <!-- Users -->
+                            <!-- Users (tenant admins only) -->
+                            {% if not current_user.is_super_admin and current_user.role in ['admin', 'manager'] %}
                             <a href="{{ url_for('users.users') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'users' %}bg-accent bg-opacity-10 text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
                                 <i class="bx bxs-group text-base"></i>
                                 <span>{{ _('Users') }}</span>
                             </a>
+                            {% endif %}
 
-                            <!-- Loans -->
+                            <!-- Loans (tenant admins only) -->
+                            {% if not current_user.is_super_admin and current_user.role in ['admin', 'manager'] %}
                             <a href="{{ url_for('loans.loans') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'loans' %}bg-accent bg-opacity-10 text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
                                 <i class="bx bxs-check-circle text-base"></i>
                                 <span>{{ _('Loans') }}</span>
                             </a>
+                            {% endif %}
 
-                            <!-- Invitation Codes -->
+                            <!-- Invitation Codes (tenant admins only) -->
+                            {% if not current_user.is_super_admin and current_user.role in ['admin', 'manager'] %}
                             <a href="{{ url_for('invitations.invitation_codes_list') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'invitations' %}bg-accent bg-opacity-10 text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
                                 <i class="bx bxs-key text-base"></i>
                                 <span>{{ _('Invitation Codes') }}</span>
                             </a>
+                            {% endif %}
 
-                            <!-- Messages -->
+                            <!-- Messages (tenant admins only) -->
+                            {% if not current_user.is_super_admin and current_user.role in ['admin', 'manager'] %}
                             <a href="{{ url_for('users.contact_messages') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'contact_messages' %}bg-accent bg-opacity-10 text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
                                 <i class="bx bxs-message-detail text-base"></i>
                                 <span>{{ _('Messages') }}</span>
                             </a>
-
-                            <!-- Support (Contact Super Admin) -->
-                            <a href="{{ url_for('messaging.admin_support') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'admin-support' %}bg-accent bg-opacity-10 text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
-                                <i class="bx bxs-phone text-base"></i>
-                                <span>{{ _('Support') }}</span>
-                            </a>
+                            {% endif %}
                         </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- Super Admin Section (Only for Super-Admin) -->
-                    {% if current_user.is_super_admin %}
-                    <div class="border-t border-gray-300 pt-4">
-                        <div class="mb-2 px-4 py-2 text-xs font-semibold text-red-600 uppercase">{{ _('Super Admin') }}</div>
-                        <a href="{{ url_for('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'admin-dashboard' %}bg-red-100 text-red-700 font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
-                            <i class="bx bxs-dashboard text-base"></i>
-                            <span>{{ _('Dashboard') }}</span>
-                        </a>
-                        <a href="{{ url_for('admin.tenants_list') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'admin-tenants' %}bg-red-100 text-red-700 font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
-                            <i class="bx bxs-building text-base"></i>
-                            <span>{{ _('Manage Tenants') }}</span>
-                        </a>
-                        <a href="{{ url_for('messaging.super_admin_messages') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg {% if active_page == 'admin-messages' %}bg-red-100 text-red-700 font-semibold{% else %}text-gray-700 hover:bg-gray-bg{% endif %} transition text-sm">
-                            <i class="bx bxs-envelope text-base"></i>
-                            <span>{{ _('Admin Messages') }}</span>
-                        </a>
                     </div>
                     {% endif %}
                 </nav>

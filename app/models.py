@@ -9,17 +9,19 @@ class Tenant(db.Model):
     name = db.Column(db.String(100), unique=True, nullable=False, index=True)
     subdomain = db.Column(db.String(100), unique=True, nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    status = db.Column(db.String(50), default='active', nullable=False)
+
     # Premium features - tenant-specific
     premium_bookcover_enabled = db.Column(db.Boolean, default=False, nullable=False)
     premium_biblioteka_narodowa_enabled = db.Column(db.Boolean, default=False, nullable=False)
-    
+
     libraries = db.relationship('Library', backref='tenant', lazy=True)
     users = db.relationship('User', backref='tenant', lazy=True)
-    
+
     def __str__(self):
         return f"{self.name} ({self.subdomain})"
-    
+
     def get_enabled_premium_features(self):
         """Return list of enabled premium features for this tenant."""
         features = []
@@ -28,7 +30,7 @@ class Tenant(db.Model):
         if self.premium_biblioteka_narodowa_enabled:
             features.append('biblioteka_narodowa')
         return features
-    
+
     def is_premium_enabled(self, feature_id):
         """Check if a specific premium feature is enabled for this tenant."""
         feature_map = {
@@ -163,7 +165,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(50), unique=True,
                          nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    password_hash = db.Column(db.String(128), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)  # INCREASED from 128 to 255 to accommodate PBKDF2 hashes
     image_file = db.Column(db.String(20), nullable=False,
                            default='default.jpg')
     first_name = db.Column(db.String(50), nullable=True)
@@ -174,21 +176,25 @@ class User(UserMixin, db.Model):
 
     @property
     def is_admin(self):
-        return self.role == 'admin'
+        """True if user is any type of admin (superadmin or tenant admin)"""
+        return self.role in ('admin', 'superadmin')
 
     @property
     def is_manager(self):
         return self.role == 'manager'
-    
+
     @property
     def is_super_admin(self):
-        """Super-admin has role='admin' and tenant_id=NULL"""
-        return self.role == 'admin' and self.tenant_id is None
-    
+        """Super-admin has role='superadmin'"""
+        return self.role == 'superadmin'
+
     @property
     def is_tenant_admin(self):
-        """Tenant admin has role='admin' and tenant_id is NOT NULL"""
-        return self.role == 'admin' and self.tenant_id is not None
+        """Tenant admin has role='admin' (and tenant_id is NOT NULL)"""
+    @property
+    def is_super_admin_old(self):
+        """Legacy: Super-admin had role='admin' and tenant_id=NULL (deprecated)"""
+        return self.role == 'admin' and self.tenant_id is None
 
     libraries = db.relationship('Library', secondary='user_libraries', lazy='subquery',
                                 back_populates='users')
@@ -290,6 +296,7 @@ class Comment(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=True)
 
     user = db.relationship('User', back_populates='comments')
     book = db.relationship('Book', back_populates='comments')
@@ -381,14 +388,15 @@ class AdminSuperAdminConversation(db.Model):
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
     subject = db.Column(db.String(200), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, index=True)
-    
+
     tenant = db.relationship('Tenant', backref='admin_conversations')
     admin = db.relationship('User', backref='admin_super_admin_conversations')
-    messages = db.relationship('AdminSuperAdminMessage', backref='conversation', cascade='all, delete-orphan', lazy=True)
-    
+    messages = db.relationship('AdminSuperAdminMessage', backref='conversation',
+                               cascade='all, delete-orphan', lazy=True)
+
     def __str__(self):
         return f"Conversation: {self.subject} (Tenant: {self.tenant.name})"
-    
+
     @property
     def unread_count(self):
         """Count unread messages for super-admin"""
@@ -401,14 +409,15 @@ class AdminSuperAdminConversation(db.Model):
 class AdminSuperAdminMessage(db.Model):
     """Individual message in conversation between admin and super-admin"""
     id = db.Column(db.Integer, primary_key=True)
-    conversation_id = db.Column(db.Integer, db.ForeignKey('admin_super_admin_conversation.id'), nullable=False, index=True)
+    conversation_id = db.Column(db.Integer, db.ForeignKey(
+        'admin_super_admin_conversation.id'), nullable=False, index=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
     message = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, index=True)
     read = db.Column(db.Boolean, default=False)
-    
+
     sender = db.relationship('User', foreign_keys=[sender_id])
-    
+
     def __str__(self):
         return f"Message from {self.sender.username}: {self.message[:50]}..."
 

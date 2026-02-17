@@ -14,16 +14,43 @@ bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
 def admin_required(f):
-    """Require super-admin access (only user with role='admin' and tenant_id=NULL)"""
+    """Require super-admin access (only user with role='superadmin')"""
     from functools import wraps
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Super-admin must have role='admin' and no tenant_id assigned
+        # Super-admin must have role='superadmin'
         if not current_user.is_authenticated or not current_user.is_super_admin:
             flash(_("You do not have access to the super-admin panel."), "danger")
             return redirect(url_for('main.home'))
         return f(*args, **kwargs)
     return decorated_function
+
+
+@bp.route('/debug-admin')
+def debug_admin():
+    """Debug current_user in admin context"""
+    import json
+    if not current_user.is_authenticated:
+        return json.dumps({'error': 'Not authenticated'})
+
+    return json.dumps({
+        'is_authenticated': current_user.is_authenticated,
+        'username': current_user.username,
+        'role': current_user.role,
+        'tenant_id': current_user.tenant_id,
+        'is_admin': current_user.is_admin,
+        'is_super_admin': current_user.is_super_admin,
+        'is_tenant_admin': current_user.is_tenant_admin,
+    }, indent=2)
+
+
+@bp.route('/')
+@login_required
+@admin_required
+def admin_index():
+    """Redirect admin panel to tenants"""
+    return redirect(url_for('admin.tenants_list'))
 
 
 # ============================================================
@@ -52,7 +79,7 @@ def tenants_list():
 def tenant_add():
     """Create new tenant"""
     form = TenantForm()
-    
+
     if form.validate_on_submit():
         tenant = Tenant(
             name=form.name.data,
@@ -60,10 +87,10 @@ def tenant_add():
         )
         db.session.add(tenant)
         db.session.commit()
-        
+
         flash(_("Tenant '%(name)s' created successfully!", name=tenant.name), 'success')
         return redirect(url_for('admin.tenant_detail', tenant_id=tenant.id))
-    
+
     return render_template(
         'admin/tenant_form.html',
         form=form,
@@ -79,12 +106,12 @@ def tenant_add():
 def tenant_detail(tenant_id):
     """View tenant details"""
     tenant = Tenant.query.get_or_404(tenant_id)
-    
+
     # Get tenant stats
     users_count = User.query.filter_by(tenant_id=tenant_id).count()
     libraries_count = Library.query.filter_by(tenant_id=tenant_id).count()
     books_count = Book.query.filter_by(tenant_id=tenant_id).count()
-    
+
     return render_template(
         'admin/tenant_detail.html',
         tenant=tenant,
@@ -104,19 +131,19 @@ def tenant_edit(tenant_id):
     """Edit tenant"""
     tenant = Tenant.query.get_or_404(tenant_id)
     form = TenantForm()
-    
+
     if form.validate_on_submit():
         tenant.name = form.name.data
         tenant.subdomain = form.subdomain.data.lower()
         db.session.commit()
-        
+
         flash(_("Tenant updated successfully!"), 'success')
         return redirect(url_for('admin.tenant_detail', tenant_id=tenant.id))
-    
+
     elif request.method == 'GET':
         form.name.data = tenant.name
         form.subdomain.data = tenant.subdomain
-    
+
     return render_template(
         'admin/tenant_form.html',
         form=form,
@@ -133,7 +160,7 @@ def tenant_edit(tenant_id):
 def tenant_delete(tenant_id):
     """Delete tenant"""
     tenant = Tenant.query.get_or_404(tenant_id)
-    
+
     # Prevent deletion if tenant has users or libraries
     if tenant.users or tenant.libraries:
         flash(
@@ -141,11 +168,11 @@ def tenant_delete(tenant_id):
             'danger'
         )
         return redirect(url_for('admin.tenant_detail', tenant_id=tenant_id))
-    
+
     name = tenant.name
     db.session.delete(tenant)
     db.session.commit()
-    
+
     flash(_("Tenant '%(name)s' deleted successfully!", name=name), 'success')
     return redirect(url_for('admin.tenants_list'))
 
@@ -162,10 +189,10 @@ def dashboard():
     total_tenants = Tenant.query.count()
     total_users = User.query.count()
     total_libraries = Library.query.count()
-    
+
     # Recent tenants
     recent_tenants = Tenant.query.order_by(Tenant.created_at.desc()).limit(5).all()
-    
+
     return render_template(
         'admin/dashboard.html',
         total_tenants=total_tenants,
@@ -188,14 +215,14 @@ def dashboard():
 def manage_tenant_premium(tenant_id):
     """Manage premium features for a specific tenant"""
     tenant = Tenant.query.get_or_404(tenant_id)
-    
+
     # Get available premium features from registry
     from app.services.premium.manager import PremiumManager
     available_features = PremiumManager.list_features()
-    
+
     # Map to tenant's enabled features
     enabled_features = tenant.get_enabled_premium_features()
-    
+
     features_with_status = []
     for feature_id, info in available_features.items():
         features_with_status.append({
@@ -205,7 +232,7 @@ def manage_tenant_premium(tenant_id):
             'enabled': feature_id in enabled_features,
             'requires_config': info['requires_config'],
         })
-    
+
     return render_template(
         'admin/tenant_premium.html',
         tenant=tenant,
@@ -222,23 +249,23 @@ def manage_tenant_premium(tenant_id):
 def toggle_tenant_premium_feature(tenant_id, feature_id):
     """Toggle a premium feature for a tenant (AJAX endpoint)"""
     tenant = Tenant.query.get_or_404(tenant_id)
-    
+
     # Validate feature_id
     valid_features = {
         'bookcover_api': 'premium_bookcover_enabled',
         'biblioteka_narodowa': 'premium_biblioteka_narodowa_enabled',
     }
-    
+
     if feature_id not in valid_features:
         return jsonify({'success': False, 'error': 'Invalid feature ID'}), 400
-    
+
     field_name = valid_features[feature_id]
     current_value = getattr(tenant, field_name)
     new_value = not current_value
     setattr(tenant, field_name, new_value)
-    
+
     db.session.commit()
-    
+
     return jsonify({
         'success': True,
         'feature_id': feature_id,

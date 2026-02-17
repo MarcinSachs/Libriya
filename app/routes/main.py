@@ -108,9 +108,18 @@ def offline():
 
 
 @bp.route("/")
+@csrf.exempt
 def landing():
     if current_user.is_authenticated:
         return redirect(url_for("main.home"))
+
+    # Jeśli na subdomain i user nie zalogowany - redirect do login
+    from app.routes.auth import get_tenant_from_request
+    tenant = get_tenant_from_request()
+    if tenant:
+        # Na subdomain - zmień redirect na login
+        return redirect(url_for("auth.login"))
+
     return render_template("landing/landing.html", landing_page=True)
 
 
