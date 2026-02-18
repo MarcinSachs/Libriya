@@ -104,6 +104,13 @@ class BookForm(FlaskForm):
         if 'obj' in kwargs and kwargs['obj'] is not None:
             self.genres.data = [g.id for g in kwargs['obj'].genres]
 
+    def validate_title(self, field):
+        field.data = sanitize_string(field.data, max_length=200)
+
+    def validate_description(self, field):
+        if field.data:
+            field.data = sanitize_string(field.data, max_length=2000)
+
 
 class UserForm(FlaskForm):
     username = StringField(_('Username'), validators=[DataRequired(), Length(min=3, max=50), validate_username_field])
@@ -148,6 +155,9 @@ class LibraryForm(FlaskForm):
     loan_overdue_days = IntegerField(_('Loan overdue days'), default=14, validators=[DataRequired()])
     submit = SubmitField(_('Submit'), render_kw={"class": "btn btn-primary"})
 
+    def validate_name(self, field):
+        field.data = sanitize_string(field.data, max_length=100)
+
 
 class LoanForm(FlaskForm):
     book_id = SelectField(
@@ -173,6 +183,9 @@ class CommentForm(FlaskForm):
         render_kw={"rows": 8}
     )
     submit = SubmitField(_('Add Comment'))
+
+    def validate_text(self, field):
+        field.data = sanitize_string(field.data, max_length=500)
 
 
 class RegistrationForm(FlaskForm):
@@ -266,6 +279,12 @@ class ContactForm(FlaskForm):
     message = TextAreaField(_('Message'), validators=[DataRequired(), Length(max=2000)])
     submit = SubmitField(_('Send'))
 
+    def validate_subject(self, field):
+        field.data = sanitize_string(field.data, max_length=200)
+
+    def validate_message(self, field):
+        field.data = sanitize_string(field.data, max_length=2000)
+
 
 # Formularz tenantu
 class TenantForm(FlaskForm):
@@ -301,7 +320,12 @@ class TenantForm(FlaskForm):
 
     def validate_name(self, field):
         """Validate tenant name uniqueness"""
+        # Sanitize tenant name before validation
+        field.data = sanitize_string(field.data, max_length=100)
         from app.models import Tenant
         existing = Tenant.query.filter_by(name=field.data).first()
         if existing:
             raise ValidationError(_('This tenant name already exists.'))
+
+
+
