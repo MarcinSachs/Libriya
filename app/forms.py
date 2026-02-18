@@ -279,16 +279,22 @@ class TenantForm(FlaskForm):
 
     def validate_subdomain(self, field):
         """Validate subdomain format and uniqueness"""
-        import re
-        # Check format (alphanumeric and hyphens only)
-        if not re.match(r'^[a-z0-9-]+$', field.data):
-            raise ValidationError(_('Subdomain can only contain lowercase letters, numbers, and hyphens.'))
+        from app.utils.subdomain import is_valid_subdomain, slugify_subdomain
+        # Normalize candidate (but keep original for explicit checks)
+        candidate = slugify_subdomain(field.data, max_length=20)
+
+        if not is_valid_subdomain(candidate):
+            raise ValidationError(_('Subdomain can only contain lowercase letters, numbers, and hyphens, 3-20 chars, cannot start/end with hyphen.'))
 
         # Check uniqueness
         from app.models import Tenant
-        existing = Tenant.query.filter_by(subdomain=field.data).first()
+        existing = Tenant.query.filter_by(subdomain=candidate).first()
         if existing:
             raise ValidationError(_('This subdomain is already taken.'))
+
+        # If slug differs from provided value, replace it so form uses canonical value
+        if candidate != field.data:
+            field.data = candidate
 
     def validate_name(self, field):
         """Validate tenant name uniqueness"""

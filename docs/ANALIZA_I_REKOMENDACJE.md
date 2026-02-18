@@ -73,20 +73,6 @@ tests/
 ```
 **Priorytet**: WYSOKI (dla produkcji)
 
-#### 6. **Brak Validacji Subdomeny**
-**Problem**: Subdomena może zawierać niedozwolone znaki
-**Rekomendacja**:
-```python
-# app/forms.py
-class TenantForm(FlaskForm):
-    subdomain = StringField('Subdomain', validators=[
-        DataRequired(),
-        Regexp('^[a-z0-9-]+$', message='Only lowercase letters, numbers and hyphens'),
-        Length(min=3, max=20)
-    ])
-```
-**Priorytet**: ŚREDNI
-
 #### 7. **Brak Cache'a na Често Odczytywane Dane**
 **Problem**: Premium features i tenant info są queryowane na każdy request
 **Wpływ**: Zbędne zapytania do DB

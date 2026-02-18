@@ -95,33 +95,45 @@ def init_db():
         from sqlalchemy import inspect
         inspector = inspect(db.engine)
 
-        if 'alembic_version' not in inspector.get_table_names():
-            print("   → No migrations found. Running initial setup...")
-            try:
-                upgrade()
-                print("   ✓ Database initialized successfully")
-            except Exception as e:
-                print(f"   ✗ Migration failed: {e}")
-                return False
-        else:
-            # Check for pending migrations
-            needs_migration, current_rev, head_rev = check_migrations_needed()
-
-            if needs_migration is None:
-                print("   ✗ Could not check migration status")
-                return False
-            elif needs_migration:
-                print(f"   → Current revision: {current_rev or 'none'}")
-                print(f"   → Head revision: {head_rev}")
-                print("   → Pending migrations found. Running upgrade...")
+        try:
+            if 'alembic_version' not in inspector.get_table_names():
+                print("   → No migrations found. Running initial setup...")
                 try:
                     upgrade()
-                    print("   ✓ Database upgraded successfully")
+                    print("   ✓ Database initialized successfully")
                 except Exception as e:
                     print(f"   ✗ Migration failed: {e}")
                     return False
             else:
-                print("   ✓ Database is up to date")
+                # Check for pending migrations
+                needs_migration, current_rev, head_rev = check_migrations_needed()
+
+                if needs_migration is None:
+                    print("   ✗ Could not check migration status")
+                    return False
+                elif needs_migration:
+                    print(f"   → Current revision: {current_rev or 'none'}")
+                    print(f"   → Head revision: {head_rev}")
+                    print("   → Pending migrations found. Running upgrade...")
+                    try:
+                        upgrade()
+                        print("   ✓ Database upgraded successfully")
+                    except Exception as e:
+                        print(f"   ✗ Migration failed: {e}")
+                        return False
+                else:
+                    print("   ✓ Database is up to date")
+        except Exception as e:
+            # Fallback for development/testing: if alembic metadata is broken (cycles/missing heads),
+            # create tables directly so developer can continue work.
+            print(f"   ⚠ Could not determine migration status: {e}")
+            print("   → Falling back to SQLAlchemy create_all() for development/testing environments.")
+            try:
+                db.create_all()
+                print("   ✓ Tables created using SQLAlchemy (fallback)")
+            except Exception as e2:
+                print(f"   ✗ Fallback create_all() failed: {e2}")
+                return False
 
     print("\n" + "=" * 60)
     print("Database ready!")
