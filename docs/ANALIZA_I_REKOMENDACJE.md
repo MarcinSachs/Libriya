@@ -142,45 +142,6 @@ __pycache__/
 
 ---
 
-## 🔧 Rekomendacje Techniczne
-
-### 1. **Migracja na PostgreSQL (Production)**
-```bash
-DATABASE_URL=postgresql://user:password@localhost/libriya
-```
-Zaleta: Lepsze performance niż SQLite dla produkcji
-
-### 2. **Dodać Redis dla Sesji/Cache**
-```python
-# config.py
-SESSION_TYPE = 'redis'
-REDIS_URL = 'redis://localhost:6379'
-```
-
-### 3. **Zaimplementować Rate Limiting Bardziej Zaawansowany**
-```python
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-
-limiter = Limiter(
-    key_func=get_remote_address,
-    storage_uri="redis://localhost:6379",
-    default_limits=["200 per day", "50 per hour"]
-)
-```
-
-### 4. **Monitorowanie i Logging**
-```bash
-pip install python-json-logger sentry-sdk
-```
-
-### 5. **API Versioning (jeśli planować REST API)**
-```python
-@bp.route('/api/v1/books')
-@bp.route('/api/v2/books')
-```
-
----
 
 ## 📝 Checklist Produkcji
 
@@ -246,9 +207,7 @@ Libriya to **solidnie zbudowana aplikacja** z dobrą architekturą multi-tenant.
 
 1. ✅ **Testy jednostkowe** (jest zero testów)
 2. ✅ **Audyt bezpieczeństwa** (rate limiting, validacja input)
-3. ✅ **Logging i monitoring** (śledzenie akcji)
-4. ✅ **Email verification** (dla produkcji)
-5. ✅ **Dokumentacja API** (jeśli planować REST API)
+
 
 **Rekomendacja**: Aplikacja jest **gotowa do alpha/beta**, ale **nie do production** bez wdrożenia testów i security audit.
 
