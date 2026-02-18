@@ -135,13 +135,44 @@ def create_app(config_class=Config):
 
         # Pobierz tenant z subdomeny
         host_parts = request.host.split(':')[0].split('.')
-        if len(host_parts) > 1 and host_parts[0] not in ('localhost', 'www'):
+        if len(host_parts) > 1 and host_parts[0] not in ('localhost', 'www', '127'):
             subdomain = host_parts[0]
             from app.models import Tenant
             tenant = Tenant.query.filter_by(subdomain=subdomain).first()
 
+            # If the current_user is logged in, ensure their tenant subdomain matches the request subdomain
+            if current_user.is_authenticated and getattr(current_user, 'tenant_id', None):
+                try:
+                    current_tenant = Tenant.query.get(current_user.tenant_id)
+                except Exception:
+                    current_tenant = None
+                if current_tenant and current_tenant.subdomain != subdomain:
+                    from flask import abort
+                    abort(403)
+
+            # Also check session-based user id for tests where Flask-Login may not be populated
+            session_user_id = session.get('_user_id')
+            if session_user_id:
+                try:
+                    session_user_id_int = int(session_user_id)
+                except Exception:
+                    session_user_id_int = None
+                if session_user_id_int:
+                    from app.models import User as AppUser
+                    session_user = AppUser.query.get(session_user_id_int)
+                    if session_user and session_user.tenant_id and tenant and session_user.tenant_id != tenant.id:
+                        from flask import abort
+                        abort(403)
+
+            # Jeśli subdomena nie istnieje - zwróć 404 tylko gdy ENFORCE_SUBDOMAIN_EXISTS=True
+            if not tenant:
+                if app.config.get('ENFORCE_SUBDOMAIN_EXISTS', True):
+                    from flask import abort
+                    abort(404)
+                # else: allow unknown subdomains (development/local use)
+
             # Sprawdź czy użytkownik należy do tego tenantu
-            if tenant and current_user.is_authenticated and current_user.tenant_id != tenant.id:
+            if current_user.is_authenticated and tenant and current_user.tenant_id != tenant.id:
                 from flask import abort
                 abort(403)  # Forbidden
 

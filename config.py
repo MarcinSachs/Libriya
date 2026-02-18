@@ -80,6 +80,10 @@ class Config(BaseSettings):
     PREMIUM_BOOKCOVER_ENABLED: bool = False
     PREMIUM_BIBLIOTEKA_NARODOWA_ENABLED: bool = False
 
+    # Enforce whether requests to unknown subdomains should return 404.
+    # Set to False during local development if you use custom hosts or wildcard domains.
+    ENFORCE_SUBDOMAIN_EXISTS: bool = True
+
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'

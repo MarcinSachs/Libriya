@@ -60,22 +60,6 @@ Aplikacja **Libriya** to zaawansowany system zarządzania bibliotekami w archite
 
 ### 🟠 WAŻNE (Średni priorytet)
 
-#### 4. **Brak Błędu 404 na Nieistniejące Subdomeny**
-**Problem**: Gdy użytkownik wejdzie na nieistniejącą subdomenę, zachowanie jest niejasne
-**Rekomendacja**:
-```python
-@app.before_request
-def validate_subdomain():
-    """Validate subdomain exists"""
-    host_parts = request.host.split(':')[0].split('.')
-    if len(host_parts) > 1 and host_parts[0] not in ('localhost', 'www'):
-        subdomain = host_parts[0]
-        tenant = Tenant.query.filter_by(subdomain=subdomain).first()
-        if not tenant:
-            abort(404)  # Dodać
-```
-**Priorytet**: ŚREDNI
-
 #### 5. **Brak Testów Jednostkowych**
 **Problem**: Aplikacja pozbawiona jest testów pytest/unittest
 **Wpływ**: Trudno wykrywać regresy po zmianach
