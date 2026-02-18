@@ -21,10 +21,10 @@
                         {{ _('Manage your <span class="text-primary">library</span> the modern way.')|safe }}
                     </h1>
                     <p class="text-xl text-gray-600 mb-4 max-w-xl leading-relaxed">
-                        {{ _('Libriya is a professional tool for cataloging collections, tracking loans, and managing a reader community. Perfect for home and institutions.') }}
+                        {{ _('Libriya is a professional tool for cataloging collections, tracking book loans, and managing a reader community. Perfect for home and institutions.') }}
                     </p>
                     <div class="flex flex-col sm:flex-row gap-5">
-                        <a href="{{ url_for('auth.login') }}" class="flex items-center justify-center gap-2 bg-primary text-white px-10 py-5 rounded-2xl font-bold text-xl hover:shadow-2xl hover:-translate-y-1 transition-all">
+                        <a href="{{ url_for('auth.register_choice') }}" class="flex items-center justify-center gap-2 bg-primary text-white px-10 py-5 rounded-2xl font-bold text-xl hover:shadow-2xl hover:-translate-y-1 transition-all">
                             {{ _('Start for free') }} <i class='bx bx-right-arrow-alt text-3xl'></i>
                         </a>
                         <a href="#features" class="flex items-center justify-center gap-2 border-2 border-gray-200 bg-white px-10 py-5 rounded-2xl font-bold text-xl hover:bg-gray-50 transition-all">
@@ -104,7 +104,7 @@
                         {{ _('Full History') }}
                     </h4>
                     <p class="text-gray-600 leading-relaxed">
-                        {{ _('Track every loan, return, and reservation. Audit log system ensures complete control over your collections.') }}
+                        {{ _('Track every book loan, return, and reservation. Audit log system ensures complete control over your collections.') }}
                     </p>
                 </div>
                 <!-- Card 3: PWA Support -->
@@ -261,7 +261,7 @@
                         <li class="flex items-center gap-4"><i class='bx bx-check text-accent text-2xl'></i> {{ _('Premium cover provider (BookCover)') }}</li>
                         <li class="flex items-center gap-4"><i class='bx bx-check text-accent text-2xl'></i> {{ _('Priority support') }}</li>
                     </ul>
-                    <a href="mailto:kontakt@libriya.pl" class="block w-full text-center bg-primary text-white py-5 rounded-2xl font-black text-xl hover:shadow-2xl hover:scale-[1.02] transition-all shadow-lg shadow-primary/30">
+                    <a href="mailto:support@libriya.app" class="block w-full text-center bg-primary text-white py-5 rounded-2xl font-black text-xl hover:shadow-2xl hover:scale-[1.02] transition-all shadow-lg shadow-primary/30">
                         {{ _('Contact') }}
                     </a>
                 </div>
