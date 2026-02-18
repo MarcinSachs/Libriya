@@ -8,6 +8,17 @@ from datetime import timedelta
 
 
 class Tenant(db.Model):
+    """Represents a tenant (organization/library system).
+
+    Attributes:
+        id (int): Primary key
+        name (str): Tenant display name
+        subdomain (str): Tenant subdomain used for routing
+        premium_bookcover_enabled (bool): Feature flag for bookcover API
+        premium_biblioteka_narodowa_enabled (bool): Feature flag for BN integration
+        created_at (datetime): Creation timestamp
+        updated_at (datetime): Last update timestamp
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False, index=True)
     subdomain = db.Column(db.String(100), unique=True, nullable=True, index=True)
@@ -77,6 +88,14 @@ user_libraries = db.Table('user_libraries',
 
 
 class Library(db.Model):
+    """Represents a library belonging to a tenant.
+
+    Attributes:
+        id (int): Primary key
+        name (str): Library name
+        tenant_id (int): Foreign key to `Tenant`
+        loan_overdue_days (int): Default allowed loan duration in days
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False, index=True)
     tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
@@ -90,6 +109,17 @@ class Library(db.Model):
 
 
 class Book(db.Model):
+    """Book entity stored in a library.
+
+    Attributes:
+        id (int): Primary key
+        library_id (int): FK to `Library`
+        tenant_id (int): FK to `Tenant`
+        isbn (str): ISBN number if present
+        title (str): Book title
+        year (int): Publication year
+        status (str): Availability status ('available', 'reserved', 'on_loan')
+    """
     id = db.Column(db.Integer, primary_key=True)
     library_id = db.Column(db.Integer, db.ForeignKey('library.id'), nullable=False)
     tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
@@ -144,6 +174,12 @@ class Location(db.Model):
 
 
 class Author(db.Model):
+    """Author of books.
+
+    Attributes:
+        id (int): Primary key
+        name (str): Author full name
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, index=True)
     books = db.relationship('Book', secondary=book_authors,
@@ -154,6 +190,12 @@ class Author(db.Model):
 
 
 class Genre(db.Model):
+    """Genre/category for books.
+
+    Attributes:
+        id (int): Primary key
+        name (str): Genre name
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, index=True)
     books = db.relationship('Book', secondary=book_genres,
@@ -164,6 +206,15 @@ class Genre(db.Model):
 
 
 class User(UserMixin, db.Model):
+    """Application user model.
+
+    Attributes:
+        id (int): Primary key
+        username (str): Unique login name
+        email (str): User email
+        role (str): Role identifier ('user','manager','admin','superadmin')
+        tenant_id (int|None): FK to `Tenant` (NULL for super-admin)
+    """
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True,
                          nullable=False, index=True)
@@ -230,6 +281,15 @@ class User(UserMixin, db.Model):
 
 
 class Loan(db.Model):
+    """Represents a loan/reservation of a book by a user.
+
+    Attributes:
+        id (int): Primary key
+        book_id (int): FK to `Book`
+        user_id (int): FK to `User`
+        tenant_id (int): FK to `Tenant`
+        status (str): Loan status ('pending','issued','returned')
+    """
     id = db.Column(db.Integer, primary_key=True)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -256,6 +316,15 @@ class Loan(db.Model):
 
 
 class Notification(db.Model):
+    """In-app notification sent between users.
+
+    Attributes:
+        id (int): Primary key
+        recipient_id (int): FK to receiving `User`
+        sender_id (int|None): FK to sending `User` (may be null)
+        message (str): Notification text
+        type (str): Notification type identifier
+    """
     id = db.Column(db.Integer, primary_key=True)
     recipient_id = db.Column(
         db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -279,6 +348,14 @@ class Notification(db.Model):
 
 
 class LibraryAccessRequest(db.Model):
+    """Request for library access created by a user.
+
+    Attributes:
+        id (int): Primary key
+        user_id (int): FK to requesting `User`
+        library_id (int): FK to `Library`
+        status (str): 'pending', 'approved', or 'rejected'
+    """
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     library_id = db.Column(db.Integer, db.ForeignKey('library.id'), nullable=False)
@@ -297,6 +374,15 @@ class LibraryAccessRequest(db.Model):
 
 
 class Comment(db.Model):
+    """User comment on a book.
+
+    Attributes:
+        id (int): Primary key
+        user_id (int): FK to authoring `User`
+        book_id (int): FK to `Book`
+        text (str): Comment text
+        timestamp (datetime): When comment was created
+    """
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
@@ -317,6 +403,15 @@ class Comment(db.Model):
 
 
 class InvitationCode(db.Model):
+    """Invitation code used to register users into a library/tenant.
+
+    Attributes:
+        id (int): Primary key
+        code (str): Short unique invitation code
+        library_id (int): FK to target `Library`
+        tenant_id (int): FK to target `Tenant`
+        used_by_id (int|None): FK to `User` that used the code
+    """
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(8), unique=True, nullable=False, index=True)
 
@@ -360,6 +455,16 @@ class InvitationCode(db.Model):
 
 # Model wiadomości kontaktowej
 class ContactMessage(db.Model):
+    """Message submitted via contact form for a library.
+
+    Attributes:
+        id (int): Primary key
+        user_id (int|None): FK to `User` if sender is logged in
+        library_id (int): FK to `Library`
+        subject (str): Message subject
+        message (str): Body text
+        created_at (datetime): Creation timestamp
+    """
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     user = db.relationship('User', foreign_keys=[user_id], backref='contact_messages')
