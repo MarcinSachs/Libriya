@@ -5,7 +5,7 @@ from flask_babel import _
 from app.models import User, InvitationCode, Tenant
 from app import db, limiter
 from app.forms import RegistrationForm
-from app.utils.audit_log import log_invitation_code_used
+from app.utils.audit_log import log_invitation_code_used, log_failed_login, log_action
 from app.utils.messages import (
     AUTH_LOGIN_SUCCESS, AUTH_INVALID_CREDENTIALS, AUTH_LOGOUT_SUCCESS,
     AUTH_REGISTRATION_SUCCESS
@@ -124,6 +124,11 @@ def login_post():
         if password_ok:
             login_user(user)
 
+            try:
+                log_action('USER_LOGIN', f'User {user.username} logged in', subject=user, additional_info={'user_id': user.id})
+            except Exception:
+                pass
+
             # Super-admin (role='superadmin') -> tenants management panel
             if user.is_super_admin:
                 flash(AUTH_LOGIN_SUCCESS, 'success')
@@ -134,6 +139,10 @@ def login_post():
             return redirect(url_for('main.landing'))
         else:
             flash(_('Invalid password. Please check and try again.'), 'danger')
+            try:
+                log_failed_login(email_or_username)
+            except Exception:
+                pass
             return redirect(url_for('auth.login'))
     else:
         flash(_('User not found. Please check your email or username.'), 'danger')
@@ -198,6 +207,10 @@ def debug_test_password(username):
 @login_required
 def logout():
     logout_user()
+    try:
+        log_action('USER_LOGOUT', f'User {current_user.username} logged out', subject=current_user, additional_info={'user_id': current_user.id})
+    except Exception:
+        pass
     flash(AUTH_LOGOUT_SUCCESS, 'info')
     return redirect(url_for('auth.login'))
 

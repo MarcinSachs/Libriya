@@ -1,6 +1,6 @@
 import os
 from pydantic_settings import BaseSettings
-from pydantic import model_validator
+from pydantic import model_validator, field_validator
 from typing import Any, Optional
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -16,6 +16,9 @@ class Config(BaseSettings):
     SQLALCHEMY_DATABASE_URI: Optional[str] = None
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
     SQLALCHEMY_ENGINE_OPTIONS: dict = {}
+
+    # Audit retention (days)
+    AUDIT_RETENTION_DAYS: int = 30
 
     @model_validator(mode='after')
     def set_database_config(self) -> 'Config':
@@ -39,6 +42,23 @@ class Config(BaseSettings):
 
     # File upload
     MAX_CONTENT_LENGTH: int = 16 * 1024 * 1024  # 16MB max request size
+
+    @field_validator('MAX_CONTENT_LENGTH', mode='before')
+    def _parse_max_content_length(cls, v):
+        """Allow MAX_CONTENT_LENGTH to be specified in .env with inline comments like '16777216  # 16MB in bytes'.
+        Strip comments and whitespace before parsing to int.
+        """
+        if v is None:
+            return v
+        if isinstance(v, str):
+            # Remove anything after a '#' (inline comment) and strip
+            v = v.split('#', 1)[0].strip()
+        try:
+            return int(v)
+        except Exception:
+            # Fallback to default if parsing fails
+            return 16 * 1024 * 1024
+
     UPLOAD_FOLDER: str = os.path.join(BASE_DIR, 'app/static/uploads')
 
     # Internationalization

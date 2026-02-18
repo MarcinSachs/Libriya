@@ -69,6 +69,13 @@ def admin_support_new():
         db.session.add(first_message)
         db.session.commit()
 
+        # Audit
+        try:
+            from app.utils.audit_log import log_action
+            log_action('SUPPORT_CONVERSATION_CREATED', f'Conversation {conversation.id} created by {current_user.username}', subject=conversation, additional_info={'tenant_id': conversation.tenant_id})
+        except Exception:
+            pass
+
         flash(_('Message sent to super-admin'), 'success')
         return redirect(url_for('messaging.admin_support_conversation', conversation_id=conversation.id))
 
@@ -107,6 +114,13 @@ def admin_support_conversation(conversation_id):
         )
         db.session.add(new_message)
         db.session.commit()
+
+        # Audit
+        try:
+            from app.utils.audit_log import log_action
+            log_action('SUPPORT_MESSAGE_SENT', f'Admin {current_user.username} sent message in conversation {conversation_id}', subject=new_message, additional_info={'conversation_id': conversation_id})
+        except Exception:
+            pass
 
         flash(_('Reply sent'), 'success')
         return redirect(url_for('messaging.admin_support_conversation', conversation_id=conversation_id))
@@ -178,6 +192,13 @@ def super_admin_conversation(conversation_id):
         )
         db.session.add(new_message)
         db.session.commit()
+
+        # Audit
+        try:
+            from app.utils.audit_log import log_action
+            log_action('SUPPORT_MESSAGE_SENT_BY_SUPERADMIN', f'Super-admin {current_user.username} replied in conversation {conversation_id}', subject=new_message, additional_info={'conversation_id': conversation_id})
+        except Exception:
+            pass
 
         flash(_('Reply sent to admin'), 'success')
         return redirect(url_for('messaging.super_admin_conversation', conversation_id=conversation_id))

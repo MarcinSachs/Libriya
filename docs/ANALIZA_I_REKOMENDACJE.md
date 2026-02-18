@@ -60,21 +60,6 @@ Aplikacja **Libriya** to zaawansowany system zarządzania bibliotekami w archite
 
 ### 🔴 KRYTYCZNE (Wysokий priorytet)
 
-#### 1. **Brak logowania (Audit Trail)**
-**Problem**: Aplikacja nie loguje akcji użytkowników (usuwanie użytkowników, zmiana ról, itd.)
-**Wpływ**: Brak możliwości śledzenia kto co zrobił
-**Rekomendacja**:
-```python
-# Istnieje audit_log.py, ale używany minimalnie
-# Rozszerzyć do wszystkich wrażliwych operacji:
-- User create/update/delete
-- Library create/delete
-- Role changes
-- Premium feature toggles
-- Login/logout
-```
-**Priorytet**: WYSOKI
-
 #### 2. **Brak Rate Limiting na Reset Hasła**
 **Problem**: Endpoint registracji ma limit, ale password reset nie
 **Wpływ**: Podatność na brute-force ataki

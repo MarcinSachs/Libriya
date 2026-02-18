@@ -424,28 +424,24 @@ class AdminSuperAdminMessage(db.Model):
         return f"Message from {self.sender.username}: {self.message[:50]}..."
 
 
-# Poprawka logiki logowania multi-tenant:
-# W pliku routes/auth.py:
-#
-# 1. Pobierz tenant_name z formularza logowania (np. <input name="tenant"> lub select)
-# 2. Znajdź tenant po nazwie
-# 3. Szukaj użytkownika po loginie/emailu i tenant_id
-# 4. Sprawdź hasło i loguj użytkownika
-#
-# Przykład (do wstawienia w login_post):
-#
-# tenant_name = request.form.get('tenant')
-# tenant = Tenant.query.filter_by(name=tenant_name).first()
-# if not tenant:
-#     flash('Nieprawidłowy tenant', 'danger')
-#     return redirect(url_for('auth.login'))
-# if '@' in username:
-#     user = User.query.filter_by(email=username, tenant_id=tenant.id).first()
-# else:
-#     user = User.query.filter_by(username=username, tenant_id=tenant.id).first()
-#
-# ...dalej sprawdzaj hasło i loguj użytkownika...
-#
-# UWAGA: Dodaj pole wyboru tenant w formularzu logowania (np. select z listą tenantów)
-#
-# Ten kod nie wymaga zmian w models.py, tylko w routes/auth.py oraz w szablonie logowania.
+class AuditLogFile(db.Model):
+    """Metadata for file-based audit logs.
+
+    One record per log file. Super-admin UI will list these entries so files can
+    be previewed, archived or purged according to retention policy.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=True, index=True)
+    filename = db.Column(db.String(500), nullable=False, unique=True, index=True)
+    start_ts = db.Column(db.DateTime, nullable=True)
+    end_ts = db.Column(db.DateTime, nullable=True)
+    size = db.Column(db.Integer, nullable=True)
+    archived = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False, index=True)
+
+    tenant = db.relationship('Tenant', backref='audit_log_files')
+
+    def __str__(self):
+        return f"AuditLogFile: {self.filename} (tenant={self.tenant_id})"
+
+

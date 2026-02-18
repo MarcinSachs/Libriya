@@ -1,192 +1,143 @@
 """
 Audit logging system for tracking sensitive operations in the application.
-Logs are stored in a rotating file to track user actions and system events.
+Now writes JSON-lines files per-tenant per-day and records metadata in AuditLogFile model.
 """
 
 import logging
 import os
-from logging.handlers import RotatingFileHandler
-from flask import request
+import json
+from logging.handlers import TimedRotatingFileHandler
+from flask import request, has_request_context
 from flask_login import current_user
+from pythonjsonlogger import jsonlogger
+from datetime import datetime
+from app import db
+from app.models import AuditLogFile
 
 
-def get_audit_logger():
-    """Initialize and return audit logger with rotating file handler."""
-    logger = logging.getLogger('audit')
-
-    if logger.hasHandlers():
-        return logger
-
-    logger.setLevel(logging.INFO)
-
-    # Create logs directory if it doesn't exist
-    logs_dir = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-        'logs'
-    )
-    if not os.path.exists(logs_dir):
-        os.makedirs(logs_dir)
-
-    # Create rotating file handler (max 10MB per file, keep 10 files)
-    handler = RotatingFileHandler(
-        os.path.join(logs_dir, 'audit.log'),
-        maxBytes=10 * 1024 * 1024,  # 10MB
-        backupCount=10
-    )
-
-    # Create formatter with detailed information
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-    return logger
+LOGS_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'logs')
 
 
-def log_audit_event(event_type: str, description: str, target_id: int = None,
-                    additional_info: dict = None, severity: str = 'INFO'):
-    """
-    Log an audit event.
+def ensure_logs_dir():
+    if not os.path.exists(LOGS_ROOT):
+        os.makedirs(LOGS_ROOT, exist_ok=True)
 
-    Args:
-        event_type (str): Type of event (e.g., 'USER_CREATED', 'PASSWORD_CHANGED')
-        description (str): Human-readable description of the event
-        target_id (int): ID of the affected resource
-        additional_info (dict): Additional context information
-        severity (str): Log severity level ('INFO', 'WARNING', 'ERROR')
-    """
-    logger = get_audit_logger()
 
-    # Build log message
-    user_info = (
-        f"User: {current_user.username} (ID: {current_user.id})"
-        if current_user.is_authenticated
-        else "User: Anonymous"
-    )
-    ip_address = request.remote_addr if request else "N/A"
+def _build_log_record(action: str, description: str, subject=None, additional_info: dict = None, tenant_id=None):
+    record = {
+        'timestamp': datetime.utcnow().isoformat() + 'Z',
+        'action': action,
+        'description': description,
+        'tenant_id': tenant_id,
+        'actor': None,
+        'subject_type': None,
+        'subject_id': None,
+        'ip': None,
+        'details': None,
+    }
 
-    log_message = f"{event_type} | {user_info} | IP: {ip_address} | {description}"
+    if has_request_context():
+        record['ip'] = request.remote_addr
 
-    if target_id:
-        log_message += f" | Target ID: {target_id}"
+    if current_user and getattr(current_user, 'is_authenticated', False):
+        record['actor'] = {'id': current_user.id, 'username': current_user.username}
+        if record['tenant_id'] is None:
+            record['tenant_id'] = getattr(current_user, 'tenant_id', None)
+
+    if subject is not None:
+        record['subject_type'] = subject.__class__.__name__ if hasattr(subject, '__class__') else str(type(subject))
+        record['subject_id'] = getattr(subject, 'id', None)
 
     if additional_info:
-        log_message += f" | Details: {str(additional_info)}"
+        # mask potential sensitive keys
+        masked = {}
+        for k, v in additional_info.items():
+            if k.lower() in ('password', 'token', 'secret'):
+                masked[k] = '***'
+            else:
+                masked[k] = v
+        record['details'] = masked
 
-    # Log at appropriate level
-    if severity == 'WARNING':
-        logger.warning(log_message)
-    elif severity == 'ERROR':
-        logger.error(log_message)
-    else:
-        logger.info(log_message)
+    return record
 
 
-# Specific audit logging functions for common operations
+def _log_to_file(record: dict):
+    # Determine tenant-specific path
+    tenant_part = f"tenant_{record['tenant_id']}" if record.get('tenant_id') else 'global'
+    date_part = datetime.utcnow().strftime('%Y-%m-%d')
+    tenant_dir = os.path.join(LOGS_ROOT, tenant_part)
+    os.makedirs(tenant_dir, exist_ok=True)
+
+    filename = os.path.join(tenant_dir, f"audit_{date_part}.log")
+
+    # Write JSON line directly (append)
+    with open(filename, 'a', encoding='utf-8') as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    # Update or create AuditLogFile metadata
+    try:
+        alf = AuditLogFile.query.filter_by(filename=filename).first()
+        stat = os.stat(filename)
+        if not alf:
+            alf = AuditLogFile(filename=filename, tenant_id=record.get('tenant_id'), start_ts=None, end_ts=None, size=stat.st_size)
+            db.session.add(alf)
+        else:
+            alf.size = stat.st_size
+            alf.tenant_id = record.get('tenant_id')
+        alf.end_ts = datetime.utcnow()
+        db.session.commit()
+    except Exception:
+        # Metadata write failures should not break normal flow; log to app logger
+        logging.getLogger('audit').exception('Failed to update AuditLogFile metadata')
+
+
+def log_action(action: str, description: str, subject=None, additional_info: dict = None, tenant_id=None):
+    """Generic audit action writer. Writes JSON-line to per-tenant daily file and updates metadata.
+
+    Example: log_action('USER_DELETED', 'Deleted user', subject=user, additional_info={'reason':'spam'})
+    """
+    ensure_logs_dir()
+    rec = _build_log_record(action, description, subject=subject, additional_info=additional_info, tenant_id=tenant_id)
+    _log_to_file(rec)
+
+
+# Backwards-compatible helpers
+
 def log_user_created(user_id: int, username: str, email: str):
-    """Log user creation."""
-    log_audit_event(
-        'USER_CREATED',
-        f"New user created: {username}",
-        user_id,
-        {'username': username, 'email': email}
-    )
+    log_action('USER_CREATED', f'New user created: {username}', subject=None, additional_info={'username': username, 'email': email}, tenant_id=None)
 
 
 def log_user_deleted(user_id: int, username: str):
-    """Log user deletion."""
-    log_audit_event(
-        'USER_DELETED',
-        f"User deleted: {username}",
-        user_id,
-        {'username': username},
-        severity='WARNING'
-    )
+    log_action('USER_DELETED', f'User deleted: {username}', subject=None, additional_info={'username': username}, tenant_id=None)
 
 
-def log_user_role_changed(user_id: int, username: str,
-                          old_role: str, new_role: str):
-    """Log role modification."""
-    log_audit_event(
-        'ROLE_MODIFIED',
-        f"User {username} role changed: {old_role} -> {new_role}",
-        user_id,
-        {'old_role': old_role, 'new_role': new_role},
-        severity='WARNING'
-    )
+def log_user_role_changed(user_id: int, username: str, old_role: str, new_role: str):
+    log_action('ROLE_MODIFIED', f'User {username} role changed: {old_role} -> {new_role}', subject=None, additional_info={'old_role': old_role, 'new_role': new_role}, tenant_id=None)
 
 
 def log_password_changed(user_id: int, username: str):
-    """Log password change."""
-    log_audit_event(
-        'PASSWORD_CHANGED',
-        f"Password changed for user: {username}",
-        user_id,
-        {'username': username}
-    )
+    log_action('PASSWORD_CHANGED', f'Password changed for user: {username}', subject=None, additional_info={'username': username}, tenant_id=None)
 
 
 def log_failed_login(username: str):
-    """Log failed login attempt."""
-    ip_address = request.remote_addr if request else "N/A"
-    logger = get_audit_logger()
-    logger.warning(
-        f"FAILED_LOGIN | Username: {username} | IP: {ip_address}"
-    )
+    log_action('FAILED_LOGIN', f'Failed login attempt for username: {username}', subject=None, additional_info={'username': username}, tenant_id=None)
 
 
 def log_book_deleted(book_id: int, title: str):
-    """Log book deletion."""
-    log_audit_event(
-        'BOOK_DELETED',
-        f"Book deleted: {title}",
-        book_id,
-        {'title': title},
-        severity='WARNING'
-    )
+    log_action('BOOK_DELETED', f'Book deleted: {title}', subject=None, additional_info={'title': title}, tenant_id=None)
 
 
-def log_library_operation(operation: str, library_id: int,
-                          library_name: str, description: str):
-    """Log library-related operations."""
-    log_audit_event(
-        f"LIBRARY_{operation.upper()}",
-        f"Library operation: {description}",
-        library_id,
-        {'library_name': library_name}
-    )
+def log_library_operation(operation: str, library_id: int, library_name: str, description: str):
+    log_action(f'LIBRARY_{operation.upper()}', f'Library operation: {description}', subject=None, additional_info={'library_name': library_name}, tenant_id=None)
 
 
-def log_invitation_code_generated(code: str, library_id: int,
-                                  library_name: str, days_valid: int):
-    """Log invitation code generation."""
-    log_audit_event(
-        'INVITATION_CODE_GENERATED',
-        f"Invitation code generated for {library_name}, valid for {days_valid} days",
-        library_id,
-        {'code': code, 'days_valid': days_valid}
-    )
+def log_invitation_code_generated(code: str, library_id: int, library_name: str, days_valid: int):
+    log_action('INVITATION_CODE_GENERATED', f'Invitation code generated for {library_name}', subject=None, additional_info={'code': code, 'days_valid': days_valid}, tenant_id=None)
 
 
-def log_invitation_code_used(code: str, user_id: int, username: str,
-                             library_name: str):
-    """Log invitation code usage (user registration)."""
-    log_audit_event(
-        'INVITATION_CODE_USED',
-        f"Invitation code used for registration: {username} -> {library_name}",
-        user_id,
-        {'code': code, 'username': username, 'library': library_name}
-    )
+def log_invitation_code_used(code: str, user_id: int, username: str, library_name: str):
+    log_action('INVITATION_CODE_USED', f'Invitation code used for registration: {username} -> {library_name}', subject=None, additional_info={'code': code, 'username': username, 'library': library_name}, tenant_id=None)
 
 
 def log_invitation_code_deactivated(code: str, library_name: str):
-    """Log invitation code deactivation."""
-    log_audit_event(
-        'INVITATION_CODE_DEACTIVATED',
-        f"Invitation code deactivated for {library_name}",
-        None,
-        {'code': code, 'library': library_name},
-        severity='WARNING'
-    )
+    log_action('INVITATION_CODE_DEACTIVATED', f'Invitation code deactivated for {library_name}', subject=None, additional_info={'code': code, 'library': library_name}, tenant_id=None)

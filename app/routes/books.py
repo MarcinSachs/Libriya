@@ -15,7 +15,7 @@ from app import db, csrf
 from app.forms import BookForm
 from app.models import Book, Author, Library, Location, Genre
 from app.utils import role_required
-from app.utils.audit_log import log_book_deleted
+from app.utils.audit_log import log_book_deleted, log_action
 from app.utils.messages import (
     SUCCESS_CREATED, SUCCESS_UPDATED, SUCCESS_DELETED, ERROR_PERMISSION_DENIED,
     BOOK_ADDED, BOOK_UPDATED, BOOK_DELETED, ERROR_NOT_FOUND,
@@ -309,6 +309,11 @@ def book_add():
                 current_app.logger.warning(f"Could not download cover: {e}")
         db.session.commit()
 
+        try:
+            log_action('BOOK_CREATED', f'Book {new_book.title} created by {current_user.username}', subject=new_book, additional_info={'book_id': new_book.id})
+        except Exception:
+            pass
+
         # Add location if any location field is provided
         if any([form.shelf.data, form.section.data, form.room.data, form.location_notes.data]):
             location = Location(
@@ -411,6 +416,11 @@ def book_edit(book_id):
         book.library_id = form.library.data  # Update library
         book.description = form.description.data.strip() if form.description.data else None
 
+        try:
+            log_action('BOOK_UPDATED', f'Book {book.title} updated by {current_user.username}', subject=book, additional_info={'book_id': book.id})
+        except Exception:
+            pass
+
         # Handle multiple authors
         book.authors.clear()
         author_names = [name.strip()
@@ -477,6 +487,11 @@ def add_favorite(book_id):
     else:
         user.favorites.append(book)
         db.session.commit()
+        # Audit
+        try:
+            log_action('FAVORITE_ADDED', f'User {current_user.username} added book {book.title} to favorites', subject=book, additional_info={'book_id': book.id, 'user_id': current_user.id})
+        except Exception:
+            pass
         flash(BOOK_ADDED_TO_FAVORITES, 'success')
     return redirect(url_for('main.home'))
 
@@ -489,6 +504,11 @@ def remove_favorite(book_id):
     if book in user.favorites:
         user.favorites.remove(book)
         db.session.commit()
+        # Audit
+        try:
+            log_action('FAVORITE_REMOVED', f'User {current_user.username} removed book {book.title} from favorites', subject=book, additional_info={'book_id': book.id, 'user_id': current_user.id})
+        except Exception:
+            pass
         flash(BOOK_REMOVED_FROM_FAVORITES, 'success')
     else:
         flash(BOOK_NOT_IN_FAVORITES, 'info')
@@ -532,6 +552,11 @@ def cleanup_cover():
         # Delete the file if it exists
         if os.path.exists(file_path) and os.path.isfile(file_path):
             os.remove(file_path)
+            # Audit
+            try:
+                log_action('COVER_CLEANUP', f'Cover file {filename} deleted by {current_user.username}', additional_info={'filename': filename, 'user_id': current_user.id})
+            except Exception:
+                pass
             return {'success': True, 'message': 'Cover file deleted'}
 
         return {'success': True, 'message': 'File does not exist (already deleted)'}

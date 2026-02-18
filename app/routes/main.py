@@ -59,6 +59,13 @@ def my_messages():
         db.session.add(msg)
         db.session.commit()
 
+        # Audit: contact message sent
+        try:
+            from app.utils.audit_log import log_action
+            log_action('CONTACT_MESSAGE_SENT', f'Contact message {msg.id} sent by {current_user.username}', subject=msg, additional_info={'library_id': msg.library_id})
+        except Exception:
+            pass
+
         # Create notification for admins and library managers
         library = msg.library
         # Notify all admins
@@ -289,6 +296,14 @@ def mark_notification_as_read(notification_id):
 
     notification.is_read = True
     db.session.commit()
+
+    # Audit: notification marked as read
+    try:
+        from app.utils.audit_log import log_action
+        log_action('NOTIFICATION_MARKED_READ', f'Notification {notification_id} marked as read by {current_user.username}', subject=notification, additional_info={'notification_id': notification_id})
+    except Exception:
+        pass
+
     flash(NOTIFICATION_MARKED_READ, "success")
     return redirect(url_for('main.view_notifications'))
 
@@ -303,6 +318,14 @@ def mark_all_notifications_as_read():
     for notification in notifications_to_mark:
         notification.is_read = True
     db.session.commit()
+
+    # Audit: mark all notifications read
+    try:
+        from app.utils.audit_log import log_action
+        log_action('NOTIFICATIONS_MARKED_ALL_READ', f'All notifications marked read by {current_user.username}', subject=None)
+    except Exception:
+        pass
+
     flash(NOTIFICATION_ALL_MARKED_READ, "success")
     return redirect(url_for('main.view_notifications'))
 

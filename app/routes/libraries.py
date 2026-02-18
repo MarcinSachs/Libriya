@@ -10,6 +10,7 @@ from app.utils.messages import (
     LIBRARY_ADDED, LIBRARY_UPDATED, LIBRARY_DELETED,
     LIBRARIES_CANNOT_DELETE_WITH_BOOKS, LIBRARIES_CANNOT_DELETE_WITH_USERS
 )
+from app.utils.audit_log import log_library_operation, log_action
 
 bp = Blueprint("libraries", __name__)
 
@@ -36,6 +37,11 @@ def library_add():
         new_library = Library(name=form.name.data, loan_overdue_days=form.loan_overdue_days.data, tenant_id=current_user.tenant_id)
         db.session.add(new_library)
         db.session.commit()
+        # Audit
+        try:
+            log_library_operation('created', new_library.id, new_library.name, f'Library created by {current_user.username}')
+        except Exception:
+            pass
         flash(LIBRARY_ADDED, "success")
         return redirect(url_for('libraries.libraries'))
     return render_template('libraries/library_form.html', form=form, title=_('Add Library'), active_page="libraries", parent_page="admin")
@@ -55,6 +61,11 @@ def library_edit(library_id):
         library.name = form.name.data
         library.loan_overdue_days = form.loan_overdue_days.data
         db.session.commit()
+        # Audit
+        try:
+            log_library_operation('updated', library.id, library.name, f'Library updated by {current_user.username}')
+        except Exception:
+            pass
         flash(LIBRARY_UPDATED, "success")
         return redirect(url_for('libraries.libraries'))
     return render_template('libraries/library_form.html', form=form, title=_('Edit Library'), active_page="libraries", parent_page="admin")
@@ -72,6 +83,11 @@ def library_delete(library_id):
     if library.users:
         flash(LIBRARIES_CANNOT_DELETE_WITH_USERS, "danger")
         return redirect(url_for('libraries.libraries'))
+    # Audit before deletion
+    try:
+        log_library_operation('deleted', library.id, library.name, f'Library deleted by {current_user.username}')
+    except Exception:
+        pass
     db.session.delete(library)
     db.session.commit()
     flash(LIBRARY_DELETED, "success")

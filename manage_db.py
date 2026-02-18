@@ -8,6 +8,7 @@ import sys
 from flask import Flask
 from flask_migrate import Migrate, upgrade, current, stamp
 from app import create_app, db
+from app.seeds.seed import seed_database
 
 
 def create_database_if_not_exists():
@@ -186,7 +187,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description='Database management script')
-    parser.add_argument('command', choices=['init', 'status', 'create-db'],
+    parser.add_argument('command', choices=['init', 'status', 'create-db', 'seed'],
                         help='Command to execute')
 
     args = parser.parse_args()
@@ -203,3 +204,11 @@ if __name__ == '__main__':
             sys.exit(1)
     elif args.command == 'status':
         show_status()
+    elif args.command == 'seed':
+        print("Seeding database with initial data...")
+        try:
+            seed_database()
+            print("✓ Seeding complete")
+        except Exception as e:
+            print(f"✗ Seed failed: {e}")
+            sys.exit(1)

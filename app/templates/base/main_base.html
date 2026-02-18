@@ -204,6 +204,10 @@
                         <i class="bx bxs-message-square-dots text-lg"></i>
                         <span class="font-medium">{{ _('Messages') }}</span>
                     </a>
+                    <a href="{{ url_for('admin.audit_logs_list') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {% if active_page == 'admin-audit-logs' %}bg-gray-bg text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg hover:text-primary{% endif %} transition">
+                        <i class="bx bx-file-find text-lg"></i>
+                        <span class="font-medium">{{ _('Audit Logs') }}</span>
+                    </a>
                     {% endif %}
 
                     <!-- Administration Section (tenant admins only) -->

@@ -14,3 +14,4 @@ flask-limiter
 isbnlib
 Pillow
 APScheduler
+python-json-logger
