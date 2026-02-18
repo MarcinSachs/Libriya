@@ -33,3 +33,14 @@ def sanitize_string(text, max_length=None):
     if max_length:
         return text[:max_length]
     return text
+
+
+# WTForms-compatible wrappers (callables receiving form, field)
+def validate_username_field(form, field):
+    """WTForms validator wrapper for username field."""
+    validate_username(field.data)
+
+
+def validate_email_field(form, field):
+    """WTForms validator wrapper for email field."""
+    validate_email_format(field.data)

@@ -7,6 +7,7 @@ from flask_wtf.file import FileField, FileAllowed, FileSize
 from wtforms.validators import (
     DataRequired, Email, Length, EqualTo, Optional, ValidationError, NumberRange
 )
+from app.utils.validators import validate_username_field, validate_email_field
 from datetime import datetime
 from flask_babel import lazy_gettext as _, gettext as _real
 from app.models import Genre
@@ -105,8 +106,8 @@ class BookForm(FlaskForm):
 
 
 class UserForm(FlaskForm):
-    username = StringField(_('Username'), validators=[DataRequired()])
-    email = StringField(_('Email'), validators=[DataRequired(), Email()],
+    username = StringField(_('Username'), validators=[DataRequired(), Length(min=3, max=50), validate_username_field])
+    email = StringField(_('Email'), validators=[DataRequired(), validate_email_field],
                         render_kw={'placeholder': _('user@example.com')})  # Translated placeholder in forms.py
     password = PasswordField(_('Password'), validators=[DataRequired()])
     confirm_password = PasswordField(_('Confirm Password'), validators=[
@@ -116,7 +117,7 @@ class UserForm(FlaskForm):
 
 class UserEditForm(FlaskForm):
     username = StringField(_('Username'), render_kw={'readonly': True})
-    email = StringField(_('Email'), validators=[DataRequired(), Email()])
+    email = StringField(_('Email'), validators=[DataRequired(), validate_email_field])
     role = SelectField(_('Role'), choices=[
         ('user', 'User'),
         ('manager', 'Manager'),
@@ -192,11 +193,11 @@ class RegistrationForm(FlaskForm):
 
     email = StringField(
         _('Email'),
-        validators=[DataRequired(), Email()]
+        validators=[DataRequired(), validate_email_field]
     )
     username = StringField(
         _('Username'),
-        validators=[DataRequired(), Length(min=3, max=50)]
+        validators=[DataRequired(), Length(min=3, max=50), validate_username_field]
     )
     password = PasswordField(
         _('Password'),
