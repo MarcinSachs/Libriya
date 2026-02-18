@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_babel import _
 
-from app.models import User, InvitationCode, Tenant
+from app.models import User, InvitationCode, Tenant, PasswordResetToken
 from app import db, limiter
 from app.forms import RegistrationForm
 from app.utils.audit_log import log_invitation_code_used, log_failed_login, log_action
@@ -11,6 +11,8 @@ from app.utils.messages import (
     AUTH_REGISTRATION_SUCCESS
 )
 from datetime import datetime
+from app.utils.mailer import send_password_reset_email
+import hashlib
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -334,3 +336,97 @@ def register():
             return render_template('auth/register.html', form=form, creating_new_tenant=creating_new_tenant)
 
     return render_template('auth/register.html', form=form, creating_new_tenant=creating_new_tenant)
+
+
+@bp.route('/password-reset', methods=['POST'])
+@limiter.limit("3 per hour")
+def password_reset():
+    """Handle password reset requests (rate-limited).
+
+    This endpoint accepts a POST with 'email_or_username' or 'email' and
+    responds with a generic message to avoid leaking account existence.
+    Generates a one-time token (DB-backed) and triggers the mailer (which is
+    mockable in tests)."""
+    email_or_username = request.form.get('email_or_username') or request.form.get('email')
+
+    user = None
+    if email_or_username:
+        if '@' in email_or_username:
+            user = User.query.filter_by(email=email_or_username).first()
+        else:
+            user = User.query.filter_by(username=email_or_username).first()
+
+    # If user exists, create a DB-backed token and send email (do not leak)
+    try:
+        if user:
+            token = PasswordResetToken.generate_token(user.id, expires_in=3600)
+            try:
+                # Build absolute reset URL
+                reset_url = url_for('auth.password_reset_confirm', token=token, _external=True)
+                send_password_reset_email(user, reset_url)
+                # Audit that reset link was issued
+                log_action('PASSWORD_RESET_SENT', f'Password reset link issued for user {user.username}', subject=user, additional_info={'user_id': user.id})
+            except Exception:
+                # Don't fail the whole request if mail sending fails
+                pass
+
+        # Always log the request (do not reveal existence)
+        try:
+            log_action('PASSWORD_RESET_REQUESTED', f'Password reset requested for {email_or_username}', subject=user if user else None, additional_info={'identifier': email_or_username, 'user_id': user.id if user else None})
+        except Exception:
+            pass
+
+    except Exception:
+        # Ensure we don't leak internal errors
+        try:
+            log_action('PASSWORD_RESET_REQUEST_ERROR', f'Error while handling password reset for {email_or_username}', additional_info={'identifier': email_or_username})
+        except Exception:
+            pass
+
+    flash(_('If an account with that email/username exists, a password reset link has been sent.'), 'info')
+    return redirect(url_for('auth.login'))
+
+
+@bp.route('/password-reset/confirm', methods=['GET', 'POST'])
+def password_reset_confirm():
+    """Consume a password reset token and set a new password.
+
+    GET: optional redirect to a frontend form (not required for tests).
+    POST: accepts 'token' and 'password'."""
+    if request.method == 'GET':
+        # Provide a simple page or redirect to login with token in querystring
+        token = request.args.get('token')
+        return render_template('auth/password_reset_confirm.html', token=token)
+
+    # POST
+    token = request.form.get('token')
+    new_password = request.form.get('password')
+
+    if not token or not new_password:
+        flash(_('Token and new password are required.'), 'danger')
+        return redirect(url_for('auth.login'))
+
+    entry = PasswordResetToken.verify_token(token)
+    if not entry:
+        flash(_('Invalid or expired token.'), 'danger')
+        return redirect(url_for('auth.login'))
+
+    # All good - update password and mark token used
+    try:
+        user = entry.user
+        user.set_password(new_password)
+        db.session.add(user)
+        entry.mark_used()
+        db.session.commit()
+
+        try:
+            log_action('PASSWORD_CHANGED', f'Password changed for user {user.username}', subject=user, additional_info={'user_id': user.id})
+        except Exception:
+            pass
+
+        flash(_('Your password has been changed. You can now log in.'), 'success')
+        return redirect(url_for('auth.login'))
+    except Exception as e:
+        db.session.rollback()
+        flash(_('An error occurred while resetting password.'), 'danger')
+        return redirect(url_for('auth.login'))

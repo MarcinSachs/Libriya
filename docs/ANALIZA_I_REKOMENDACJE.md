@@ -60,18 +60,6 @@ Aplikacja **Libriya** to zaawansowany system zarządzania bibliotekami w archite
 
 ### 🔴 KRYTYCZNE (Wysokий priorytet)
 
-#### 2. **Brak Rate Limiting na Reset Hasła**
-**Problem**: Endpoint registracji ma limit, ale password reset nie
-**Wpływ**: Podatność na brute-force ataki
-**Rekomendacja**:
-```python
-@bp.route('/password-reset', methods=['POST'])
-@limiter.limit("3 per hour")  # Dodać limit
-def password_reset():
-    pass
-```
-**Priorytet**: WYSOKI
-
 #### 3. **Brak Email Verification**
 **Problem**: Użytkownicy mogą rejestrować się z cualquiera emailem bez weryfikacji
 **Wpływ**: Spamowanie, duplikaty emaili

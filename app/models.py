@@ -2,6 +2,9 @@ from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 import datetime
+import secrets
+import hashlib
+from datetime import timedelta
 
 
 class Tenant(db.Model):
@@ -443,5 +446,53 @@ class AuditLogFile(db.Model):
 
     def __str__(self):
         return f"AuditLogFile: {self.filename} (tenant={self.tenant_id})"
+
+
+class PasswordResetToken(db.Model):
+    """One-time password reset tokens (DB-backed).
+
+    Stores only the sha256 hash of the token so the raw token is only returned
+    once to be sent by email. Tokens are single-use and expire after a period.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    token_hash = db.Column(db.String(128), nullable=False, unique=True, index=True)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+    user = db.relationship('User', backref='password_reset_tokens')
+
+    @classmethod
+    def generate_token(cls, user_id, expires_in=3600):
+        """Generate a token for user_id, store hash and return raw token."""
+        token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        now = datetime.datetime.utcnow()
+        expires_at = now + timedelta(seconds=expires_in)
+        entry = cls(user_id=user_id, token_hash=token_hash, expires_at=expires_at)
+        db.session.add(entry)
+        db.session.commit()
+        return token
+
+    @classmethod
+    def verify_token(cls, token):
+        """Verify raw token and return DB entry if valid and not used/expired."""
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        entry = cls.query.filter_by(token_hash=token_hash).first()
+        if not entry:
+            return None
+        if entry.used:
+            return None
+        if entry.expires_at < datetime.datetime.utcnow():
+            return None
+        return entry
+
+    def mark_used(self):
+        self.used = True
+        db.session.commit()
+
+    def __str__(self):
+        return f"PasswordResetToken(user_id={self.user_id}, used={self.used}, expires_at={self.expires_at})"
 
 
