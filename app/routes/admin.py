@@ -147,6 +147,10 @@ def tenant_edit(tenant_id):
         tenant.name = form.name.data
         tenant.subdomain = form.subdomain.data.lower()
         db.session.commit()
+        
+        # Invalidate cache for this tenant
+        from app.services.cache_service import invalidate_tenant_cache
+        invalidate_tenant_cache(tenant_id=tenant.id, subdomain=tenant.subdomain)
 
         # Audit: tenant updated
         try:
@@ -187,8 +191,13 @@ def tenant_delete(tenant_id):
         return redirect(url_for('admin.tenant_detail', tenant_id=tenant_id))
 
     name = tenant.name
+    subdomain = tenant.subdomain
     db.session.delete(tenant)
     db.session.commit()
+    
+    # Invalidate cache for this tenant
+    from app.services.cache_service import invalidate_tenant_cache
+    invalidate_tenant_cache(tenant_id=tenant_id, subdomain=subdomain)
 
     # Audit: tenant deleted
     try:
@@ -288,6 +297,10 @@ def toggle_tenant_premium_feature(tenant_id, feature_id):
     setattr(tenant, field_name, new_value)
 
     db.session.commit()
+    
+    # Invalidate cache for this tenant's premium features
+    from app.services.cache_service import invalidate_tenant_cache
+    invalidate_tenant_cache(tenant_id=tenant.id, subdomain=tenant.subdomain)
 
     # Audit: premium toggled
     try:

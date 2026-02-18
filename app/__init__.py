@@ -8,6 +8,7 @@ from flask import session, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
+from flask_caching import Cache
 from markupsafe import Markup
 
 db = SQLAlchemy()
@@ -17,6 +18,7 @@ login_manager.login_view = 'auth.login'
 babel = Babel()
 limiter = Limiter(key_func=get_remote_address)
 csrf = CSRFProtect()
+cache = Cache()
 
 
 def create_app(config_class=Config):
@@ -33,6 +35,7 @@ def create_app(config_class=Config):
     login_manager.login_message = _l("Please log in to access this page.")
     limiter.init_app(app)
     csrf.init_app(app)
+    cache.init_app(app)
 
     def get_locale():
         # 1. Check for language in cookie first
@@ -64,7 +67,7 @@ def create_app(config_class=Config):
     def get_tenant_from_subdomain():
         """Extract tenant from subdomain if present"""
         from flask import request
-        from app.models import Tenant
+        from app.services.cache_service import get_tenant_by_subdomain_cached
 
         host = request.host.split(':')[0]  # Remove port
         host_parts = host.split('.')
@@ -72,7 +75,7 @@ def create_app(config_class=Config):
         # Check if it's a subdomain (not localhost or www)
         if len(host_parts) > 1 and host_parts[0] not in ('localhost', 'www', '127'):
             subdomain = host_parts[0]
-            tenant = Tenant.query.filter_by(subdomain=subdomain).first()
+            tenant = get_tenant_by_subdomain_cached(subdomain)
             return tenant
         return None
 
@@ -101,14 +104,10 @@ def create_app(config_class=Config):
 
         # Inicjalizuj PremiumContext dla zalogowanego użytkownika
         if current_user.is_authenticated and current_user.tenant_id:
-            # Tenant user - załaduj premium features dla jego tenantu
-            from app.models import Tenant
-            tenant = Tenant.query.get(current_user.tenant_id)
-            if tenant:
-                enabled_features = set(tenant.get_enabled_premium_features())
-                PremiumContext.set_for_tenant(current_user.tenant_id, enabled_features)
-            else:
-                PremiumContext.clear()
+            # Tenant user - załaduj premium features dla jego tenantu (z cache)
+            from app.services.cache_service import get_premium_features_cached
+            enabled_features = get_premium_features_cached(current_user.tenant_id)
+            PremiumContext.set_for_tenant(current_user.tenant_id, enabled_features)
         else:
             # Super-admin - super-admini mają dostęp do wszystkich features globalnie
             PremiumContext.set_for_tenant(None, set())  # No specific tenant context
@@ -133,17 +132,18 @@ def create_app(config_class=Config):
                 from flask import abort
                 abort(403)  # Zabroń dostępu poza dozwoloną listę
 
-        # Pobierz tenant z subdomeny
+        # Pobierz tenant z subdomeny (z cache)
         host_parts = request.host.split(':')[0].split('.')
         if len(host_parts) > 1 and host_parts[0] not in ('localhost', 'www', '127'):
             subdomain = host_parts[0]
-            from app.models import Tenant
-            tenant = Tenant.query.filter_by(subdomain=subdomain).first()
+            from app.services.cache_service import get_tenant_by_subdomain_cached
+            tenant = get_tenant_by_subdomain_cached(subdomain)
 
             # If the current_user is logged in, ensure their tenant subdomain matches the request subdomain
             if current_user.is_authenticated and getattr(current_user, 'tenant_id', None):
                 try:
-                    current_tenant = Tenant.query.get(current_user.tenant_id)
+                    from app.services.cache_service import get_tenant_by_id_cached
+                    current_tenant = get_tenant_by_id_cached(current_user.tenant_id)
                 except Exception:
                     current_tenant = None
                 if current_tenant and current_tenant.subdomain != subdomain:
@@ -240,5 +240,5 @@ def register_cli_commands(app):
 
 @login_manager.user_loader
 def load_user(user_id):
-    from app.models import User
-    return User.query.get(int(user_id))
+    from app.services.cache_service import get_user_by_id_cached
+    return get_user_by_id_cached(int(user_id))

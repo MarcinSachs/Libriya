@@ -486,6 +486,11 @@ def password_reset_confirm():
         db.session.add(user)
         entry.mark_used()
         db.session.commit()
+        
+        # Invalidate cache for this user (password changed)
+        from app.services.cache_service import invalidate_user_cache
+        invalidate_user_cache(user.id)
+        
         try:
             log_action('PASSWORD_CHANGED', f'Password changed for user {user.username}', subject=user, additional_info={'user_id': user.id})
         except Exception:
@@ -549,6 +554,11 @@ def verify_email():
         db.session.add(user)
         entry.mark_used()
         db.session.commit()
+        
+        # Invalidate cache for this user (email verified)
+        from app.services.cache_service import invalidate_user_cache
+        invalidate_user_cache(user.id)
+        
         try:
             log_action('EMAIL_VERIFIED', f'Email verified for user {user.username}', subject=user, additional_info={'user_id': user.id})
         except Exception:

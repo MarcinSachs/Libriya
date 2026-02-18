@@ -84,6 +84,13 @@ class Config(BaseSettings):
     # Set to False during local development if you use custom hosts or wildcard domains.
     ENFORCE_SUBDOMAIN_EXISTS: bool = True
 
+    # Caching configuration
+    CACHE_TYPE: str = 'SimpleCache'  # in-memory cache suitable for single-server deployments
+    CACHE_DEFAULT_TIMEOUT: int = 3600  # 1 hour (can be overridden per cache key)
+    CACHE_TENANT_TIMEOUT: int = 3600  # Cache tenant lookups for 1 hour
+    CACHE_PREMIUM_FEATURES_TIMEOUT: int = 3600  # Cache premium features for 1 hour
+    CACHE_USER_TIMEOUT: int = 1800  # Cache user lookups for 30 minutes
+
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'
