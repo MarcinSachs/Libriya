@@ -306,7 +306,8 @@ class TenantForm(FlaskForm):
         candidate = slugify_subdomain(field.data, max_length=20)
 
         if not is_valid_subdomain(candidate):
-            raise ValidationError(_('Subdomain can only contain lowercase letters, numbers, and hyphens, 3-20 chars, cannot start/end with hyphen.'))
+            raise ValidationError(
+                _('Subdomain can only contain lowercase letters, numbers, and hyphens, 3-20 chars, cannot start/end with hyphen.'))
 
         # Check uniqueness
         from app.models import Tenant
@@ -326,6 +327,3 @@ class TenantForm(FlaskForm):
         existing = Tenant.query.filter_by(name=field.data).first()
         if existing:
             raise ValidationError(_('This tenant name already exists.'))
-
-
-

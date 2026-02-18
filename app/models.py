@@ -647,5 +647,3 @@ class EmailVerificationToken(db.Model):
 
     def __str__(self):
         return f"EmailVerificationToken(user_id={self.user_id}, used={self.used}, expires_at={self.expires_at})"
-
-

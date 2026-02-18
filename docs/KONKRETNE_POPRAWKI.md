@@ -1,37 +1,6 @@
 # 🔧 Konkretne Poprawki - Kod do Implementacji
 
 
-## 7. Error Handling Middleware
-
-### Plik: `app/__init__.py`
-
-```python
-@app.errorhandler(404)
-def not_found(error):
-    """Handle 404 errors"""
-    return render_template('errors/404.html'), 404
-
-@app.errorhandler(403)
-def forbidden(error):
-    """Handle 403 errors"""
-    flash(_('You do not have permission to access this page'), 'danger')
-    return render_template('errors/403.html'), 403
-
-@app.errorhandler(500)
-def internal_error(error):
-    """Handle 500 errors"""
-    db.session.rollback()
-    app.logger.error(f'Server error: {error}')
-    return render_template('errors/500.html'), 500
-
-@app.errorhandler(429)
-def ratelimit_handler(e):
-    """Handle rate limit exceeded"""
-    flash(_('Too many requests. Please try again later.'), 'danger')
-    return redirect(request.referrer or url_for('main.home')), 429
-```
-
----
 
 
 ## 10. Database Backup Script
