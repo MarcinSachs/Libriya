@@ -35,6 +35,55 @@ genres = [
 def seed_database():
     app = create_app()  # Create the Flask app
     with app.app_context():
+        # Ensure the `tenant` table has the `updated_at` column (some migrations may not have run)
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+        cols = [c['name'] for c in inspector.get_columns('tenant')] if 'tenant' in inspector.get_table_names() else []
+        if 'updated_at' not in cols:
+            # Add the column in a dialect-aware way
+            dialect = db.engine.dialect.name
+            if dialect == 'sqlite':
+                db.session.execute(text("ALTER TABLE tenant ADD COLUMN updated_at DATETIME"))
+            else:
+                # MySQL/MariaDB: set default CURRENT_TIMESTAMP and on update
+                db.session.execute(
+                    text("ALTER TABLE tenant ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+            db.session.commit()
+        # Ensure 'status' and premium feature columns exist
+        needed_cols = {
+            'status': "VARCHAR(50) DEFAULT 'active'",
+            'premium_bookcover_enabled': 'TINYINT(1) DEFAULT 0',
+            'premium_biblioteka_narodowa_enabled': 'TINYINT(1) DEFAULT 0'
+        }
+        for col, col_def in needed_cols.items():
+            if col not in cols:
+                dialect = db.engine.dialect.name
+                if dialect == 'sqlite':
+                    # SQLite: simple ADD COLUMN
+                    db.session.execute(text(f"ALTER TABLE tenant ADD COLUMN {col} {col_def}"))
+                else:
+                    # MySQL/MariaDB: ensure NOT NULL where appropriate
+                    db.session.execute(text(f"ALTER TABLE tenant ADD COLUMN {col} {col_def} NOT NULL"))
+        db.session.commit()
+        # Ensure `user` table has expected columns used by the seed
+        user_cols = [c['name'] for c in inspector.get_columns('user')] if 'user' in inspector.get_table_names() else []
+        user_needed = {
+            'is_email_verified': 'TINYINT(1) DEFAULT 0',
+            'image_file': "VARCHAR(50) DEFAULT 'default.jpg'",
+            'first_name': 'VARCHAR(50)',
+            'last_name': 'VARCHAR(50)',
+            'password_hash': 'VARCHAR(255) NOT NULL',
+            'role': "VARCHAR(20) DEFAULT 'user'"
+        }
+        for col, col_def in user_needed.items():
+            if col not in user_cols:
+                dialect = db.engine.dialect.name
+                if dialect == 'sqlite':
+                    db.session.execute(text(f"ALTER TABLE user ADD COLUMN {col} {col_def}"))
+                else:
+                    # MySQL/MariaDB: ensure NOT NULL where appropriate
+                    db.session.execute(text(f"ALTER TABLE user ADD COLUMN {col} {col_def}"))
+        db.session.commit()
         # --- Ensure Default Tenant Exists ---
         default_tenant = db.session.query(Tenant).filter_by(name='default').first()
         if not default_tenant:

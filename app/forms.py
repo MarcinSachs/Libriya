@@ -7,7 +7,7 @@ from flask_wtf.file import FileField, FileAllowed, FileSize
 from wtforms.validators import (
     DataRequired, Email, Length, EqualTo, Optional, ValidationError, NumberRange
 )
-from app.utils.validators import validate_username_field, validate_email_field, sanitize_string
+from app.utils.validators import validate_username_field, validate_email_field, sanitize_string, validate_subdomain_field
 from datetime import datetime
 from flask_babel import lazy_gettext as _, gettext as _real
 from app.models import Genre
@@ -126,9 +126,9 @@ class UserEditForm(FlaskForm):
     username = StringField(_('Username'), render_kw={'readonly': True})
     email = StringField(_('Email'), validators=[DataRequired(), validate_email_field])
     role = SelectField(_('Role'), choices=[
-        ('user', 'User'),
-        ('manager', 'Manager'),
-        ('admin', 'Admin')
+        ('user', _('User')),
+        ('manager', _('Manager')),
+        ('admin', _('Admin'))
     ], validators=[DataRequired()])
     submit = SubmitField(_('Submit'), render_kw={
                          "class": "btn btn-primary"})
@@ -294,30 +294,12 @@ class TenantForm(FlaskForm):
     )
     subdomain = StringField(
         _('Subdomain'),
-        validators=[DataRequired(), Length(min=2, max=100)],
-        description=_('URL-friendly name (e.g., "mylib"). Only alphanumeric and hyphens.')
+        validators=[DataRequired(), Length(min=3, max=20), validate_subdomain_field],
+        description=_('URL-friendly name (e.g., "mylib"). Only lowercase letters, numbers and hyphens.')
     )
     submit = SubmitField(_('Save Tenant'))
 
-    def validate_subdomain(self, field):
-        """Validate subdomain format and uniqueness"""
-        from app.utils.subdomain import is_valid_subdomain, slugify_subdomain
-        # Normalize candidate (but keep original for explicit checks)
-        candidate = slugify_subdomain(field.data, max_length=20)
-
-        if not is_valid_subdomain(candidate):
-            raise ValidationError(
-                _('Subdomain can only contain lowercase letters, numbers, and hyphens, 3-20 chars, cannot start/end with hyphen.'))
-
-        # Check uniqueness
-        from app.models import Tenant
-        existing = Tenant.query.filter_by(subdomain=candidate).first()
-        if existing:
-            raise ValidationError(_('This subdomain is already taken.'))
-
-        # If slug differs from provided value, replace it so form uses canonical value
-        if candidate != field.data:
-            field.data = candidate
+    # Per-field validation now uses `validate_subdomain_field` in validators.py
 
     def validate_name(self, field):
         """Validate tenant name uniqueness"""

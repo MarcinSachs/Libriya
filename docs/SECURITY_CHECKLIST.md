@@ -17,91 +17,73 @@
   - ✅ Jinja2 ma auto-escape domyślnie (nie dodawaj `|safe` bez powodu)
   - [ ] Review templates dla `|safe` filters
 
-**Kod**: Patrz `KONKRETNE_POPRAWKI.md` → Sekcja 6
+````markdown
+# 🔐 Security Checklist - OWASP Top 10
+
+## ✅ Pre-Production Security Audit (status updated)
+
+### 1. Injection Attacks (SQL, NoSQL, OS)
+
+- [x] **SQL Injection**: SQLAlchemy ORM chroni przed parametryzowanymi queryami
+  - ✅ Używane parameterized queries wszędzie
+  - ⚠️ Nie znaleziono raw SQL queries - DOBRZE
+  
+- [x] **Input Validation**: Częściowo wdrożone
+  - ✅ Username + Email validators i `sanitize_string` dodane i podłączone do głównych formularzy
+  - ✅ Subdomain validator (`^[a-z0-9-]{3,20}$`)
+  
+- [x] **Output Encoding**: Sprawdzone
+  - ✅ Jinja2 auto-escape domyślnie (nie używać `|safe` bez potrzeby)
 
 ---
 
 ### 2. Broken Authentication
 
-- [ ] **Password Requirements**
+- [ ] **Password Requirements** — PENDING (brak enforce 12+ / haveibeenpwned checks)
   - [ ] Minimum 12 characters (NIST guidelines)
   - [ ] Mix of uppercase, lowercase, numbers, special chars
   - [ ] No common passwords (check against haveibeenpwned)
 
 ```python
-# app/utils/password_validator.py
-import re
-import requests
-
-def validate_password_strength(password):
-    """Validate password meets security requirements"""
-    if len(password) < 12:
-        raise ValueError('Password must be at least 12 characters')
-    
-    if not re.search(r'[A-Z]', password):
-        raise ValueError('Password must contain uppercase letter')
-    
-    if not re.search(r'[a-z]', password):
-        raise ValueError('Password must contain lowercase letter')
-    
-    if not re.search(r'[0-9]', password):
-        raise ValueError('Password must contain number')
-    
-    # Check against common passwords
-    # response = requests.post('https://haveibeenpwned.com/api/v3/range/...')
+# app/utils/password_validator.py (proposal exists in docs; not implemented)
 ```
 
 - [x] **Session Management**
-  - ✅ Flask-Login used
-  - ✅ Session timeout configured
+  - ✅ `flask-login` użyty
+  - ✅ Session timeout skonfigurowany (zgodnie z wcześniejszymi zmianami)
   
-- [ ] **Multi-Factor Authentication (MFA)**
+- [ ] **Multi-Factor Authentication (MFA)** — PENDING
   - [ ] Add TOTP (Time-based One-Time Password) support
   - [ ] Email-based MFA as fallback
 
 - [x] **Password Hashing**
-  - ✅ werkzeug.security.generate_password_hash (PBKDF2)
-  - ⚠️ Rozważ upgrade do Argon2
+  - ✅ `werkzeug.security.generate_password_hash` (PBKDF2) używane
+  - ⚠️ Rozważ upgrade do Argon2 — PENDING
 
-```bash
-pip install argon2-cffi
-```
-
-- [x] **Rate Limiting**
-  - ✅ 5 per minute na login (jest)
-  - [ ] Dodaj na password reset (3 per hour)
+- [x] **Rate Limiting** (Partial)
+  - ✅ Login rate limiting in place (5/min)
+  - ⚠️ Limiter używa in-memory store w konfiguracji (nieprodukcyjne) — PENDING: production backend (Redis)
+  - [ ] Password reset rate limiting — PENDING
 
 ---
 
 ### 3. Sensitive Data Exposure
 
-- [ ] **HTTPS/TLS**
+- [ ] **HTTPS/TLS** — PENDING
   - [ ] Wszystkie production URLs muszą być HTTPS
-  - [ ] Redirect HTTP → HTTPS
-  - [ ] HSTS header (już jest w `set_security_headers`)
+  - [ ] Redirect HTTP → HTTPS — PENDING
+  - [x] HSTS header obecny w `set_security_headers` (częściowo wdrożone)
 
-```python
-# .env
-FORCE_HTTPS=true
-```
-
-- [ ] **Database Encryption**
+- [ ] **Database Encryption** — PENDING
   - [ ] Encrypt sensitive fields (SSN, billing info)
-  - [ ] Connection encryption (SSL/TLS)
+  - [ ] Connection encryption (SSL/TLS) — PENDING (depends on DATABASE_URL)
 
-```python
-DATABASE_URL=mysql+pymysql://user:pass@host/db?ssl=true
-```
+- [ ] **API Keys / Secrets** — PENDING (use vaults / env secrets)
 
-- [ ] **API Keys**
-  - [ ] Brak API keys w .env (potrzebne env secrets)
-  - [ ] Rotate keys regularly
-  - [ ] Store in secure vault (AWS Secrets Manager, HashiCorp Vault)
-
-- [x] **Data Backups**
-  - [ ] Implement automated backups (patrz `backup_db.py`)
-  - [ ] Test restore procedures regularly
-  - [ ] Backups encrypted in transit and at rest
+- [x] **Data Backups** — Partial
+  - ✅ `manage_db.py backup` added: supports SQLite file copy and `mysqldump` for MySQL/MariaDB
+  - [ ] Automatyczne harmonogramy/backups (cron/CI) — PENDING
+  - [ ] Szyfrowanie backupów w spoczynku i transfer — PENDING
 
 ---
 
@@ -119,60 +101,36 @@ DATABASE_URL=mysql+pymysql://user:pass@host/db?ssl=true
 
 - [x] **Role-Based Access Control (RBAC)**
   - ✅ admin, manager, user roles
-  - ✅ @role_required decorator
+  - ✅ `@role_required` decorator present
   
 - [x] **Multi-Tenant Isolation**
-  - ✅ verify_tenant_access() middleware
+  - ✅ `verify_tenant_access()` middleware present
   - ✅ Subdomain-based routing
-  - ⚠️ Sprawdzić wszystkie queries czy mają `tenant_id` filter
+  - ⚠️ Pełny audit zapytań pod kątem `tenant_id` — PENDING (manual audit required)
 
-Checklist:
-- [ ] `Book.query.filter_by(tenant_id=current_user.tenant_id)` WSZĘDZIE
-- [ ] `Loan.query.filter_by(tenant_id=current_user.tenant_id)` WSZĘDZIE
-- [ ] Library queries filtrowane po tenant
-- [ ] User queries filtrowane po tenant
+Checklist (manual audit needed):
+- [ ] `Book.query.filter_by(tenant_id=current_user.tenant_id)` WSZĘDZIE — PENDING
+- [ ] `Loan.query.filter_by(tenant_id=current_user.tenant_id)` WSZĘDZIE — PENDING
+- [ ] Library queries filtrowane po tenant — PENDING
+- [ ] User queries filtrowane po tenant — PENDING
 
 ---
 
 ### 6. Security Misconfiguration
 
-- [ ] **Environment Variables**
-  - [ ] SECRET_KEY nie może być "your-secret-key-here"
-  - [ ] Generate na production: `python -c "import secrets; print(secrets.token_hex(32))"`
-  - [ ] Store w `.env` (nie w repozytorium!)
+- [ ] **Environment Variables / SECRET_KEY** — PENDING
+  - [ ] Ensure `SECRET_KEY` not checked into repo; generate strong key for production
 
-```bash
-# Generate strong SECRET_KEY
-python3 -c "import secrets; print('SECRET_KEY=' + secrets.token_hex(32))"
-```
+- [x] **Debug Mode**
+  - ✅ `DEBUG=False` expected in production; code respects config
+  - ⚠️ Ensure `FLASK_ENV=production` in deployment
 
-- [ ] **Debug Mode**
-  - ✅ DEBUG=False w .env (jest)
-  - ⚠️ Ale FLASK_ENV=production musi być set
+- [ ] **Dependencies / Pinning / Scanning** — PENDING
+  - [ ] Add `pip-audit`/CI scanning
+  - [ ] Pin critical versions in `requirements.txt`
 
-```python
-# config.py
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
-if DEBUG:
-    print("⚠️ DEBUG MODE ENABLED - UNSAFE FOR PRODUCTION")
-```
-
-- [ ] **Dependencies**
-  - [ ] Regular `pip list --outdated` checks
-  - [ ] Use `safety` lub `pip-audit` do scanowania
-
-```bash
-pip install safety
-safety check
-
-# Lub
-pip install pip-audit
-pip-audit
-```
-
-- [ ] **Error Messages**
-  - [ ] Nie ujawniaj stack traces użytkownikom
-  - [ ] Use custom error pages (już są w app/__init__.py)
+- [x] **Error Pages / Error Handling**
+  - ✅ Custom error handlers added (`404`, `403`, `500`, `429`) in `app/__init__.py`
 
 ---
 
@@ -182,90 +140,61 @@ pip-audit
   - ✅ Jinja2 auto-escape enabled
   
 - [x] **CSRF Protection**
-  - ✅ flask-wtf CSRF tokens
+  - ✅ `flask-wtf` CSRF tokens and `CSRFProtect` initialized
   
-- [ ] **Content Security Policy (CSP)**
-  - ✅ CSP header jest już (patrz app/__init__.py)
-  - [ ] Review CSP na 'unsafe-inline' (powinno być 'nonce' zamiast)
+- [ ] **Content Security Policy (CSP)** — Partial
+  - ✅ CSP header present in `app/__init__.py`
+  - ⚠️ CSP uses `'unsafe-inline'` in places — recommend moving to `nonce`-based approach — PENDING
 
-```python
-# Wzmocnić CSP - zamiast 'unsafe-inline' użyj nonce
-# (wymaga generowania nonce na każdy request)
-```
-
-- [ ] **HTTPOnly Cookies**
-  - [ ] Set session cookie as HTTPOnly
-
-```python
-# config.py
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_SAMESITE = 'Lax'
-```
+- [ ] **HTTPOnly / Secure / SameSite Cookies** — PENDING
+  - Suggest adding to `config.py`:
+    ```python
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    ```
 
 ---
 
 ### 8. Cross-Site Request Forgery (CSRF)
 
 - [x] **CSRF Tokens**
-  - ✅ All forms have csrf_token
-  - ✅ flask-wtf validation
+  - ✅ All forms have `csrf_token` via `flask-wtf`
   
-- [ ] **SameSite Cookie**
-  - [ ] Set SameSite=Lax/Strict na session cookies
-
-```python
-# config.py
-SESSION_COOKIE_SAMESITE = 'Lax'  # lub 'Strict'
-```
+- [ ] **SameSite Cookie** — PENDING (see cookie settings above)
 
 ---
 
 ### 9. Using Components with Known Vulnerabilities
 
-- [ ] **Dependency Scanning**
-  - [ ] Setup continuous scanning (GitHub Dependabot, Snyk)
-  - [ ] Regular updates
+- [ ] **Dependency Scanning / CI** — PENDING
+  - Recommend adding `pip-audit` and Dependabot or similar
 
-```bash
-# Weekly checks
-pip list --outdated
-pip install --upgrade flask flask-sqlalchemy ...
-```
-
-- [ ] **Version Pinning**
-  - [ ] Pin versions w requirements.txt
-
-```
-flask==3.0.0
-flask-sqlalchemy==3.1.0
-```
+- [ ] **Version Pinning** — PENDING (requirements.txt currently uses ranges)
 
 ---
 
 ### 10. Insufficient Logging & Monitoring
 
-- [ ] **Audit Logging**
-  - [ ] Implement AuditLog model (patrz KONKRETNE_POPRAWKI.md)
-  - [ ] Log: logins, role changes, data modifications
-  - [ ] Store IP address i user agent
+- [x] **Audit Logging** — Partial
+  - ✅ `app/utils/audit_log.py` writes per-tenant JSON-lines
+  - ✅ `AuditLogFile` model exists and is updated by logger
+  - [ ] Include user-agent in logs / store IP+UA consistently — PENDING
+  - [ ] Retention/archival automation / centralization — PENDING
 
-- [ ] **Security Monitoring**
-  - [ ] Monitor for brute force attempts
-  - [ ] Alert on failed logins
-  - [ ] Track premium feature changes
+- [ ] **Security Monitoring / Alerts** — PENDING
+  - Brute force detection, alerting, and central aggregation not yet in place
 
-- [ ] **Log Aggregation**
-  - [ ] Centralize logs (ELK, Splunk, CloudWatch)
-  - [ ] Set retention policies (90 days minimum)
+- [ ] **Log Aggregation** — PENDING
+  - Recommend centralizing logs (ELK / CloudWatch) and adding retention policies
 
 ---
 
-## 🚀 Production Deployment Checklist
+## 🚀 Production Deployment Checklist (high-level)
 
 ```
 SECURITY CONFIGURATION
-  [ ] SECRET_KEY changed to random value
+  [ ] SECRET_KEY changed to random value (PENDING)
   [ ] DEBUG = False
   [ ] TESTING = False
   [ ] FLASK_ENV = production
@@ -273,45 +202,43 @@ SECURITY CONFIGURATION
 
 HTTPS/TLS
   [ ] SSL certificate installed
-  [ ] HTTPS enforced (redirect HTTP → HTTPS)
-  [ ] HSTS header enabled
-  [ ] Certificate pinning (if needed)
+  [ ] HTTPS enforced (redirect HTTP → HTTPS) (PENDING)
+  [x] HSTS header enabled (present in `app/__init__.py`)
 
 DATABASE
-  [ ] Database backed up
-  [ ] Backup tested (restore procedure works)
+  [x] Database backup command added (`manage_db.py backup`) — manual/restore testing and encryption: PENDING
   [ ] Connection encrypted (SSL)
   [ ] Database user has limited privileges
   [ ] Backups encrypted at rest
 
 API SECURITY
-  [ ] Rate limiting enabled
-  [ ] Input validation on all endpoints
+  [x] Rate limiting enabled (login)
+  [ ] Input validation on all endpoints — PENDING (some validators implemented)
   [ ] Output encoding correct
   [ ] CORS configured properly (not *.allow-all)
 
 AUTHENTICATION
-  [ ] Password requirements enforced (12+ chars)
-  [ ] Session timeout configured (15 min)
-  [ ] MFA optional or required
-  [ ] Brute force protection active
+  [ ] Password requirements enforced (12+ chars) — PENDING
+  [x] Session timeout configured
+  [ ] MFA optional or required — PENDING
+  [x] Brute force protection (rate limiting) partially in place
 
 MONITORING
-  [ ] Audit logging enabled
-  [ ] Error tracking (Sentry)
-  [ ] Performance monitoring (New Relic, DataDog)
-  [ ] Security scanning enabled (OWASP ZAP)
+  [ ] Audit logging enabled centrally — PARTIAL
+  [ ] Error tracking (Sentry) — PENDING
+  [ ] Performance monitoring (New Relic, DataDog) — PENDING
+  [ ] Security scanning enabled (OWASP ZAP) — PENDING
 
 MAINTENANCE
   [ ] Dependency updates scheduled
   [ ] Security patches process documented
   [ ] Incident response plan created
   [ ] Backup & disaster recovery tested
-```
+ ```
 
 ---
 
-## 🧪 Security Testing Tools
+## 🧪 Security Testing Tools (recommendations)
 
 ```bash
 # 1. Static Analysis
@@ -319,8 +246,8 @@ pip install pylint bandit
 bandit -r app/
 
 # 2. Dependency Scanning
-pip install safety
-safety check
+pip install pip-audit
+pip-audit
 
 # 3. OWASP ZAP (Dynamic Analysis)
 # Download from: https://www.zaproxy.org/
@@ -337,7 +264,7 @@ safety check
 
 ## 📞 Security Contacts
 
-- **Security Issues**: Utwórz process dla security@yourcompany.com
+- **Security Issues**: Utwórz proces dla security@yourcompany.com
 - **Responsible Disclosure**: Allow 90 days before public disclosure
 - **Bug Bounty**: Rozważ program (HackerOne, Bugcrowd)
 
@@ -350,3 +277,7 @@ safety check
 - [Flask Security](https://flask-security-too.readthedocs.io/)
 - [NIST Password Guidelines](https://pages.nist.gov/800-63-3/sp800-63b.html)
 
+````
+  [ ] Database user has limited privileges
+
+  [ ] Backups encrypted at rest

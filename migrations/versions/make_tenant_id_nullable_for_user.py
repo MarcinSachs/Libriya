@@ -9,13 +9,14 @@ down_revision = 'add_subdomain_to_tenant'
 branch_labels = None
 depends_on = None
 
+
 def upgrade():
     # Make tenant_id nullable for User (super-admin won't have a tenant assigned)
     with op.batch_alter_table('user', schema=None) as batch_op:
-        batch_op.alter_column('tenant_id', nullable=True)
+        batch_op.alter_column('tenant_id', existing_type=sa.Integer(), nullable=True)
 
 
 def downgrade():
     # Make tenant_id non-nullable again
     with op.batch_alter_table('user', schema=None) as batch_op:
-        batch_op.alter_column('tenant_id', nullable=False)
+        batch_op.alter_column('tenant_id', existing_type=sa.Integer(), nullable=False)

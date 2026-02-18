@@ -103,7 +103,13 @@ def init_db():
                     print("   ✓ Database initialized successfully")
                 except Exception as e:
                     print(f"   ✗ Migration failed: {e}")
-                    return False
+                    print("   → Falling back to SQLAlchemy create_all() to create schema for development/testing.")
+                    try:
+                        db.create_all()
+                        print("   ✓ Tables created using SQLAlchemy (fallback)")
+                    except Exception as e2:
+                        print(f"   ✗ Fallback create_all() failed: {e2}")
+                        return False
             else:
                 # Check for pending migrations
                 needs_migration, current_rev, head_rev = check_migrations_needed()
@@ -120,7 +126,13 @@ def init_db():
                         print("   ✓ Database upgraded successfully")
                     except Exception as e:
                         print(f"   ✗ Migration failed: {e}")
-                        return False
+                        print("   → Falling back to SQLAlchemy create_all() to create schema for development/testing.")
+                        try:
+                            db.create_all()
+                            print("   ✓ Tables created using SQLAlchemy (fallback)")
+                        except Exception as e2:
+                            print(f"   ✗ Fallback create_all() failed: {e2}")
+                            return False
                 else:
                     print("   ✓ Database is up to date")
         except Exception as e:
@@ -136,6 +148,7 @@ def init_db():
                 return False
 
     print("\n" + "=" * 60)
+    return True
 
 
 def backup_database():
