@@ -42,7 +42,8 @@ def test_full_audit_sweep_creates_logs(tmp_path):
         db.session.commit()
 
         # Create invitation
-        code = InvitationCode(code='ABCD1234', created_by_id=user.id, library_id=lib.id, tenant_id=tenant.id, expires_at=datetime.utcnow()+timedelta(days=7))
+        code = InvitationCode(code='ABCD1234', created_by_id=user.id, library_id=lib.id,
+                              tenant_id=tenant.id, expires_at=datetime.utcnow()+timedelta(days=7))
         db.session.add(code)
         db.session.commit()
 
