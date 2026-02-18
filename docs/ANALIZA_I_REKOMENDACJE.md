@@ -58,16 +58,6 @@ Aplikacja **Libriya** to zaawansowany system zarządzania bibliotekami w archite
 
 ## ⚠️ Problemy i Rekomendacje
 
-### 🔴 KRYTYCZNE (Wysokий priorytet)
-
-#### 3. **Brak Email Verification**
-**Problem**: Użytkownicy mogą rejestrować się z cualquiera emailem bez weryfikacji
-**Wpływ**: Spamowanie, duplikaty emaili
-**Rekomendacja**: Zaimplementować email verification token
-**Priorytet**: ŚREDNI (dla produkcji)
-
----
-
 ### 🟠 WAŻNE (Średni priorytet)
 
 #### 4. **Brak Błędu 404 na Nieistniejące Subdomeny**
