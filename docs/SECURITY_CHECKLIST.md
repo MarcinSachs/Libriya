@@ -8,10 +8,10 @@
   - ✅ Używane parameterized queries wszędzie
   - ⚠️ Nie znaleziono raw SQL queries - DOBRZE
   
-- [ ] **Input Validation**: Dodaj validators na wszystkie formularze
-  - [ ] Username: `^[a-zA-Z0-9_-]{3,20}$`
-  - [ ] Email: RFC 5322 format
-  - [ ] Subdomain: `^[a-z0-9-]{3,20}$`
+- [x] **Input Validation**: Dodaj validators na wszystkie formularze
+  - [x] Username: `^[a-zA-Z0-9_-]{3,20}$`
+  - [x] Email: RFC 5322 format
+  - [x] Subdomain: `^[a-z0-9-]{3,20}$`
   
 - [ ] **Output Encoding**: Sprawdź czy Jinja2 auto-escapes
   - ✅ Jinja2 ma auto-escape domyślnie (nie dodawaj `|safe` bez powodu)
