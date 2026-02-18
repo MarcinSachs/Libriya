@@ -56,7 +56,8 @@ def login():
 @limiter.limit("5 per minute")
 def login_post():
     # Support legacy tests/forms that send 'username' or 'email'
-    email_or_username = request.form.get('email_or_username') or request.form.get('username') or request.form.get('email') or ''
+    email_or_username = request.form.get('email_or_username') or request.form.get(
+        'username') or request.form.get('email') or ''
     password = request.form.get('password')
 
     # KROK 1: Dedukuj tenant z subdomeny
@@ -132,7 +133,8 @@ def login_post():
             if not getattr(user, 'is_email_verified', False):
                 # Per-user resend cooldown: do not resend more often than EMAIL_VERIFICATION_RESEND_COOLDOWN
                 try:
-                    last = EmailVerificationToken.query.filter_by(user_id=user.id).order_by(EmailVerificationToken.created_at.desc()).first()
+                    last = EmailVerificationToken.query.filter_by(user_id=user.id).order_by(
+                        EmailVerificationToken.created_at.desc()).first()
                 except Exception:
                     last = None
 
@@ -147,10 +149,12 @@ def login_post():
                 if elapsed < EMAIL_VERIFICATION_RESEND_COOLDOWN:
                     remaining_minutes = int((EMAIL_VERIFICATION_RESEND_COOLDOWN - elapsed) // 60) + 1
                     try:
-                        log_action('EMAIL_VERIFICATION_RESEND_BLOCKED', f'Resend throttled for {user.email}', subject=user, additional_info={'user_id': user.id})
+                        log_action('EMAIL_VERIFICATION_RESEND_BLOCKED',
+                                   f'Resend throttled for {user.email}', subject=user, additional_info={'user_id': user.id})
                     except Exception:
                         pass
-                    flash(_('A verification email was recently sent. Please check your inbox or wait {minutes} minutes.').format(minutes=remaining_minutes), 'warning')
+                    flash(_('A verification email was recently sent. Please check your inbox or wait {minutes} minutes.').format(
+                        minutes=remaining_minutes), 'warning')
                     return redirect(url_for('auth.login'))
 
                 # Resend verification email (non-blocking)
@@ -158,14 +162,17 @@ def login_post():
                     token = EmailVerificationToken.generate_token(user.id, expires_in=86400)
                     verify_url = url_for('auth.verify_email', token=token, _external=True)
                     from app.utils.mailer import send_generic_email
-                    send_generic_email(user.email, 'Verify your email address', f'Hello {user.username},\n\nPlease verify your email by clicking:\n\n{verify_url}\n\n--\nLibriya')
+                    send_generic_email(user.email, 'Verify your email address',
+                                       f'Hello {user.username},\n\nPlease verify your email by clicking:\n\n{verify_url}\n\n--\nLibriya')
                     try:
-                        log_action('EMAIL_VERIFICATION_RESEND', f'Resend verification email to {user.email}', subject=user, additional_info={'user_id': user.id})
+                        log_action('EMAIL_VERIFICATION_RESEND', f'Resend verification email to {user.email}', subject=user, additional_info={
+                                   'user_id': user.id})
                     except Exception:
                         pass
                 except Exception:
                     try:
-                        log_action('EMAIL_VERIFICATION_RESEND_ERROR', f'Error resending verification to {user.email}', subject=user, additional_info={'user_id': user.id})
+                        log_action('EMAIL_VERIFICATION_RESEND_ERROR', f'Error resending verification to {user.email}', subject=user, additional_info={
+                                   'user_id': user.id})
                     except Exception:
                         pass
 
@@ -176,7 +183,8 @@ def login_post():
             login_user(user)
 
             try:
-                log_action('USER_LOGIN', f'User {user.username} logged in', subject=user, additional_info={'user_id': user.id})
+                log_action('USER_LOGIN', f'User {user.username} logged in',
+                           subject=user, additional_info={'user_id': user.id})
             except Exception:
                 pass
 
@@ -259,7 +267,8 @@ def debug_test_password(username):
 def logout():
     logout_user()
     try:
-        log_action('USER_LOGOUT', f'User {current_user.username} logged out', subject=current_user, additional_info={'user_id': current_user.id})
+        log_action('USER_LOGOUT', f'User {current_user.username} logged out',
+                   subject=current_user, additional_info={'user_id': current_user.id})
     except Exception:
         pass
     flash(AUTH_LOGOUT_SUCCESS, 'info')
@@ -338,15 +347,18 @@ def register():
                     verify_url = url_for('auth.verify_email', token=token, _external=True)
                     # Import inside function so tests can monkeypatch app.utils.mailer
                     from app.utils.mailer import send_generic_email
-                    send_generic_email(user.email, 'Verify your email address', f'Hello {user.username},\n\nPlease verify your email by clicking:\n\n{verify_url}\n\n--\nLibriya')
+                    send_generic_email(user.email, 'Verify your email address',
+                                       f'Hello {user.username},\n\nPlease verify your email by clicking:\n\n{verify_url}\n\n--\nLibriya')
                     try:
-                        log_action('EMAIL_VERIFICATION_SENT', f'Verification email sent to {user.email}', subject=user, additional_info={'user_id': user.id})
+                        log_action('EMAIL_VERIFICATION_SENT', f'Verification email sent to {user.email}', subject=user, additional_info={
+                                   'user_id': user.id})
                     except Exception:
                         pass
                 except Exception:
                     # Do not prevent registration if email send fails
                     try:
-                        log_action('EMAIL_VERIFICATION_ERROR', f'Error sending verification email to {user.email}', subject=user, additional_info={'user_id': user.id})
+                        log_action('EMAIL_VERIFICATION_ERROR', f'Error sending verification email to {user.email}', subject=user, additional_info={
+                                   'user_id': user.id})
                     except Exception:
                         pass
 
@@ -389,14 +401,17 @@ def register():
                     token = EmailVerificationToken.generate_token(user.id, expires_in=86400)
                     verify_url = url_for('auth.verify_email', token=token, _external=True)
                     from app.utils.mailer import send_generic_email
-                    send_generic_email(user.email, 'Verify your email address', f'Hello {user.first_name or user.username},\n\nPlease verify your email by clicking:\n\n{verify_url}\n\n--\nLibriya')
+                    send_generic_email(user.email, 'Verify your email address',
+                                       f'Hello {user.first_name or user.username},\n\nPlease verify your email by clicking:\n\n{verify_url}\n\n--\nLibriya')
                     try:
-                        log_action('EMAIL_VERIFICATION_SENT', f'Verification email sent to {user.email}', subject=user, additional_info={'user_id': user.id})
+                        log_action('EMAIL_VERIFICATION_SENT', f'Verification email sent to {user.email}', subject=user, additional_info={
+                                   'user_id': user.id})
                     except Exception:
                         pass
                 except Exception:
                     try:
-                        log_action('EMAIL_VERIFICATION_ERROR', f'Error sending verification email to {user.email}', subject=user, additional_info={'user_id': user.id})
+                        log_action('EMAIL_VERIFICATION_ERROR', f'Error sending verification email to {user.email}', subject=user, additional_info={
+                                   'user_id': user.id})
                     except Exception:
                         pass
 
@@ -425,7 +440,8 @@ def register():
 @limiter.limit("3 per hour")
 def password_reset():
     """Handle password reset requests (rate-limited)."""
-    email_or_username = request.form.get('email_or_username') or request.form.get('email') or request.form.get('username') or ''
+    email_or_username = request.form.get('email_or_username') or request.form.get(
+        'email') or request.form.get('username') or ''
 
     user = None
     if email_or_username:
@@ -442,19 +458,22 @@ def password_reset():
                 # use module-level send_password_reset_email (allows tests to monkeypatch app.routes.auth.send_password_reset_email)
                 send_password_reset_email(user, reset_url)
                 try:
-                    log_action('PASSWORD_RESET_SENT', f'Password reset link issued for user {user.username}', subject=user, additional_info={'user_id': user.id})
+                    log_action('PASSWORD_RESET_SENT', f'Password reset link issued for user {user.username}', subject=user, additional_info={
+                               'user_id': user.id})
                 except Exception:
                     pass
             except Exception:
                 pass
 
         try:
-            log_action('PASSWORD_RESET_REQUESTED', f'Password reset requested for {email_or_username}', subject=user if user else None, additional_info={'identifier': email_or_username, 'user_id': user.id if user else None})
+            log_action('PASSWORD_RESET_REQUESTED', f'Password reset requested for {email_or_username}', subject=user if user else None, additional_info={
+                       'identifier': email_or_username, 'user_id': user.id if user else None})
         except Exception:
             pass
     except Exception:
         try:
-            log_action('PASSWORD_RESET_REQUEST_ERROR', f'Error while handling password reset for {email_or_username}', additional_info={'identifier': email_or_username})
+            log_action('PASSWORD_RESET_REQUEST_ERROR', f'Error while handling password reset for {email_or_username}', additional_info={
+                       'identifier': email_or_username})
         except Exception:
             pass
 
@@ -486,13 +505,14 @@ def password_reset_confirm():
         db.session.add(user)
         entry.mark_used()
         db.session.commit()
-        
+
         # Invalidate cache for this user (password changed)
         from app.services.cache_service import invalidate_user_cache
         invalidate_user_cache(user.id)
-        
+
         try:
-            log_action('PASSWORD_CHANGED', f'Password changed for user {user.username}', subject=user, additional_info={'user_id': user.id})
+            log_action('PASSWORD_CHANGED', f'Password changed for user {user.username}', subject=user, additional_info={
+                       'user_id': user.id})
         except Exception:
             pass
         flash(_('Your password has been changed. You can now log in.'), 'success')
@@ -521,14 +541,17 @@ def send_email_verification():
         token = EmailVerificationToken.generate_token(user.id, expires_in=86400)
         verify_url = url_for('auth.verify_email', token=token, _external=True)
         from app.utils.mailer import send_generic_email
-        send_generic_email(user.email, 'Verify your email address', f'Hello {user.username},\n\nPlease verify your email by clicking:\n\n{verify_url}\n\n--\nLibriya')
+        send_generic_email(user.email, 'Verify your email address',
+                           f'Hello {user.username},\n\nPlease verify your email by clicking:\n\n{verify_url}\n\n--\nLibriya')
         try:
-            log_action('EMAIL_VERIFICATION_SENT', f'Verification email sent to {user.email}', subject=user, additional_info={'user_id': user.id})
+            log_action('EMAIL_VERIFICATION_SENT',
+                       f'Verification email sent to {user.email}', subject=user, additional_info={'user_id': user.id})
         except Exception:
             pass
     except Exception:
         try:
-            log_action('EMAIL_VERIFICATION_ERROR', f'Error sending verification email to {identifier}', subject=user if user else None)
+            log_action('EMAIL_VERIFICATION_ERROR',
+                       f'Error sending verification email to {identifier}', subject=user if user else None)
         except Exception:
             pass
 
@@ -554,13 +577,14 @@ def verify_email():
         db.session.add(user)
         entry.mark_used()
         db.session.commit()
-        
+
         # Invalidate cache for this user (email verified)
         from app.services.cache_service import invalidate_user_cache
         invalidate_user_cache(user.id)
-        
+
         try:
-            log_action('EMAIL_VERIFIED', f'Email verified for user {user.username}', subject=user, additional_info={'user_id': user.id})
+            log_action('EMAIL_VERIFIED', f'Email verified for user {user.username}', subject=user, additional_info={
+                       'user_id': user.id})
         except Exception:
             pass
         flash(_('Your email has been verified.'), 'success')

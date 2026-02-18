@@ -73,31 +73,9 @@ tests/
 ```
 **Priorytet**: WYSOKI (dla produkcji)
 
-#### 7. **Brak Cache'a na Често Odczytywane Dane**
-**Problem**: Premium features i tenant info są queryowane na każdy request
-**Wpływ**: Zbędne zapytania do DB
-**Rekomendacja**: Flask-Caching z TTL
-```python
-from flask_caching import Cache
-cache = Cache(config={'CACHE_TYPE': 'simple'})
-
-@cache.cached(timeout=3600)
-def get_premium_features(tenant_id):
-    pass
-```
-**Priorytet**: NISKI (do optymalizacji)
-
----
 
 ### 🟡 DROBNOSTKI (Niski priorytet)
 
-#### 8. **Duplikacja Kodu w Templates**
-**Problem**: super_admin_messages.html i admin_support.html mają podobną strukturę
-**Rekomendacja**: Wydzielić shared template partial
-```html
-<!-- templates/messaging/_message_table.html -->
-{% include 'messaging/_message_table.html' with table_data=conversations %}
-```
 
 #### 9. **Brak Docstring'ów w Modelach**
 **Problem**: Modele mają minim dokumentacji

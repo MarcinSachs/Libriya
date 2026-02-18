@@ -95,7 +95,8 @@ def tenant_add():
 
         # Audit: tenant created
         try:
-            log_action('TENANT_CREATED', f"Tenant {tenant.name} created by {current_user.username}", subject=tenant, additional_info={'tenant_id': tenant.id})
+            log_action('TENANT_CREATED', f"Tenant {tenant.name} created by {current_user.username}", subject=tenant, additional_info={
+                       'tenant_id': tenant.id})
         except Exception:
             pass
 
@@ -147,14 +148,15 @@ def tenant_edit(tenant_id):
         tenant.name = form.name.data
         tenant.subdomain = form.subdomain.data.lower()
         db.session.commit()
-        
+
         # Invalidate cache for this tenant
         from app.services.cache_service import invalidate_tenant_cache
         invalidate_tenant_cache(tenant_id=tenant.id, subdomain=tenant.subdomain)
 
         # Audit: tenant updated
         try:
-            log_action('TENANT_UPDATED', f"Tenant {tenant.name} updated by {current_user.username}", subject=tenant, additional_info={'tenant_id': tenant.id})
+            log_action('TENANT_UPDATED', f"Tenant {tenant.name} updated by {current_user.username}", subject=tenant, additional_info={
+                       'tenant_id': tenant.id})
         except Exception:
             pass
 
@@ -194,14 +196,15 @@ def tenant_delete(tenant_id):
     subdomain = tenant.subdomain
     db.session.delete(tenant)
     db.session.commit()
-    
+
     # Invalidate cache for this tenant
     from app.services.cache_service import invalidate_tenant_cache
     invalidate_tenant_cache(tenant_id=tenant_id, subdomain=subdomain)
 
     # Audit: tenant deleted
     try:
-        log_action('TENANT_DELETED', f"Tenant {name} deleted by {current_user.username}", additional_info={'tenant_name': name, 'tenant_id': tenant_id})
+        log_action('TENANT_DELETED', f"Tenant {name} deleted by {current_user.username}",
+                   additional_info={'tenant_name': name, 'tenant_id': tenant_id})
     except Exception:
         pass
 
@@ -297,14 +300,15 @@ def toggle_tenant_premium_feature(tenant_id, feature_id):
     setattr(tenant, field_name, new_value)
 
     db.session.commit()
-    
+
     # Invalidate cache for this tenant's premium features
     from app.services.cache_service import invalidate_tenant_cache
     invalidate_tenant_cache(tenant_id=tenant.id, subdomain=tenant.subdomain)
 
     # Audit: premium toggled
     try:
-        log_action('PREMIUM_TOGGLED', f'Premium feature {feature_id} toggled for tenant {tenant.id} by {current_user.username}', subject=tenant, additional_info={'feature_id': feature_id, 'enabled': new_value, 'tenant_id': tenant.id})
+        log_action('PREMIUM_TOGGLED', f'Premium feature {feature_id} toggled for tenant {tenant.id} by {current_user.username}', subject=tenant, additional_info={
+                   'feature_id': feature_id, 'enabled': new_value, 'tenant_id': tenant.id})
     except Exception:
         pass
 
@@ -382,7 +386,8 @@ def audit_log_preview(log_id):
 
     # Log that super-admin previewed the file
     try:
-        log_action('AUDIT_LOG_PREVIEW', f'Super-admin previewed audit log file {alf.filename}', subject=None, additional_info={'audit_log_file_id': alf.id})
+        log_action('AUDIT_LOG_PREVIEW',
+                   f'Super-admin previewed audit log file {alf.filename}', subject=None, additional_info={'audit_log_file_id': alf.id})
     except Exception:
         pass
 
@@ -411,7 +416,8 @@ def audit_log_delete(log_id):
 
         # Audit the deletion
         try:
-            log_action('AUDIT_LOG_DELETED', f'Super-admin deleted audit log file {alf.filename}', subject=None, additional_info={'audit_log_file_id': alf.id})
+            log_action('AUDIT_LOG_DELETED',
+                       f'Super-admin deleted audit log file {alf.filename}', subject=None, additional_info={'audit_log_file_id': alf.id})
         except Exception:
             pass
 
