@@ -1,0 +1,130 @@
+{% extends "base/main_base.html" %}
+
+{% block content %}
+<div class="w-full py-16 flex flex-col items-center">
+  <div class="w-full max-w-4xl flex flex-col items-center">
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h1 class="text-5xl lg:text-6xl font-bold mb-4 text-primary">
+        {{ _('Welcome to Libriya') }}
+      </h1>
+      <p class="text-gray-600 text-lg leading-relaxed max-w-2xl mx-auto">
+        {{ _('Choose how you\'d like to get started') }}
+      </p>
+    </div>
+
+    <!-- Two Options Grid -->
+    <div class="grid md:grid-cols-2 gap-8 w-full">
+      
+      <!-- Option 1: New Customer -->
+      <div class="glass-card rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow cursor-pointer group">
+        <a href="{{ url_for('auth.register', mode='create') }}" class="block h-full flex flex-col">
+          <!-- Icon -->
+          <div class="mb-6 text-5xl flex justify-center">
+            <i class='bx bx-plus-circle text-accent group-hover:scale-110 transition-transform'></i>
+          </div>
+          
+          <!-- Title -->
+          <h2 class="text-2xl font-bold text-text-dark text-center mb-3 group-hover:text-accent transition-colors">
+            {{ _('Create New Organization Account') }}
+          </h2>
+          
+          <!-- Description -->
+          <p class="text-gray-600 text-center mb-6 leading-relaxed">
+            {{ _('You\'re a new customer setting up your organization. Create your account and become the owner with full control.') }}
+          </p>
+          
+          <!-- Features -->
+          <ul class="space-y-3 mb-6">
+            <li class="flex items-start gap-3">
+              <i class='bx bx-check text-green-500 text-xl flex-shrink-0 mt-0.5'></i>
+              <span class="text-sm text-gray-700">{{ _('Set up your organization') }}</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <i class='bx bx-check text-green-500 text-xl flex-shrink-0 mt-0.5'></i>
+              <span class="text-sm text-gray-700">{{ _('Create and manage multiple libraries') }}</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <i class='bx bx-check text-green-500 text-xl flex-shrink-0 mt-0.5'></i>
+              <span class="text-sm text-gray-700">{{ _('Invite team members to collaborate') }}</span>
+            </li>
+          </ul>
+          
+          <!-- Button -->
+          <div class="mt-auto">
+            <button class="w-full py-3 px-4 bg-[#1a535c] hover:bg-[#0f3a45] text-white font-semibold rounded-lg hover:shadow-lg transform hover:-translate-y-1 transition">
+              {{ _('Create Organization') }}
+            </button>
+          </div>
+        </a>
+      </div>
+
+      <!-- Option 2: Join with Invitation Code -->
+      <div class="glass-card rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow cursor-pointer group">
+        <a href="{{ url_for('auth.register', mode='join') }}" class="block h-full flex flex-col">
+          <!-- Icon -->
+          <div class="mb-6 text-5xl flex justify-center">
+            <i class='bx bx-user-plus text-accent group-hover:scale-110 transition-transform'></i>
+          </div>
+          
+          <!-- Title -->
+          <h2 class="text-2xl font-bold text-text-dark text-center mb-3 group-hover:text-accent transition-colors">
+            {{ _('Join Existing Organization') }}
+          </h2>
+          
+          <!-- Description -->
+          <p class="text-gray-600 text-center mb-6 leading-relaxed">
+            {{ _('You\'ve been invited to join an existing organization. Use your invitation code to create your account and join the team.') }}
+          </p>
+          
+          <!-- Features -->
+          <ul class="space-y-3 mb-6">
+            <li class="flex items-start gap-3">
+              <i class='bx bx-check text-green-500 text-xl flex-shrink-0 mt-0.5'></i>
+              <span class="text-sm text-gray-700">{{ _('You have an invitation code') }}</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <i class='bx bx-check text-green-500 text-xl flex-shrink-0 mt-0.5'></i>
+              <span class="text-sm text-gray-700">{{ _('8-character code from your organization admin') }}</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <i class='bx bx-check text-green-500 text-xl flex-shrink-0 mt-0.5'></i>
+              <span class="text-sm text-gray-700">{{ _('Collaborate with your team immediately') }}</span>
+            </li>
+          </ul>
+          
+          <!-- Button -->
+          <div class="mt-auto">
+            <button class="w-full py-3 px-4 bg-[#1a535c] hover:bg-[#0f3a45] text-white font-semibold rounded-lg hover:shadow-lg transform hover:-translate-y-1 transition">
+              {{ _('Join Organization') }}
+            </button>
+          </div>
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Have Invitation Code Card -->
+    <div class="mt-12 bg-blue-50 rounded-xl p-6 border border-blue-200 w-full max-w-2xl">
+      <h3 class="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+        <i class='bx bx-info-circle text-blue-500 text-xl'></i>
+        {{ _('Which Option is Right for You?') }}
+      </h3>
+      <ul class="text-sm text-blue-800 space-y-2 ml-7">
+        <li><strong>{{ _('Creating New Organization?') }}</strong> {{ _('Choose the first option if you\'re setting up a new organization account for the first time.') }}</li>
+        <li><strong>{{ _('Joining a Team?') }}</strong> {{ _('Choose the second option if you have an invitation code from an organization administrator.') }}</li>
+        <li><strong>{{ _('No Code?') }}</strong> {{ _('Contact your organization administrator to request an invitation code.') }}</li>
+      </ul>
+    </div>
+
+    <!-- Already have account -->
+    <p class="text-center text-gray-600 text-sm mt-8">
+      {{ _('Already have an account?') }} 
+      <a href="{{ url_for('auth.login') }}" class="text-primary hover:text-accent font-semibold transition">
+        {{ _('Log in here') }}
+      </a>
+    </p>
+  </div>
+</div>
+
+{% endblock %}

@@ -27,11 +27,11 @@ bp = Blueprint("loans", __name__)
 @login_required
 @role_required('admin', 'manager')
 def loans():
-    loan_query = Loan.query.join(Book).join(User)
+    loan_query = Loan.for_tenant(current_user.tenant_id).join(Book).join(User)
 
     # --- LIBRARY BASED FILTERING FOR MANAGERS ---
     if current_user.role == 'manager':
-        manager_lib_ids = [lib.id for lib in current_user.libraries]
+        manager_lib_ids = [lib.id for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
         if not manager_lib_ids:
             # If manager has no libraries, show no loans
             loan_query = loan_query.filter(Book.id == -1)

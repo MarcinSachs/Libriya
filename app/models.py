@@ -4,6 +4,45 @@ from flask_login import UserMixin
 import datetime
 
 
+class Tenant(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    subdomain = db.Column(db.String(100), unique=True, nullable=True, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    status = db.Column(db.String(50), default='active', nullable=False)
+
+    # Premium features - tenant-specific
+    premium_bookcover_enabled = db.Column(db.Boolean, default=False, nullable=False)
+    premium_biblioteka_narodowa_enabled = db.Column(db.Boolean, default=False, nullable=False)
+
+    libraries = db.relationship('Library', backref='tenant', lazy=True)
+    users = db.relationship('User', backref='tenant', lazy=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.subdomain})"
+
+    def get_enabled_premium_features(self):
+        """Return list of enabled premium features for this tenant."""
+        features = []
+        if self.premium_bookcover_enabled:
+            features.append('bookcover_api')
+        if self.premium_biblioteka_narodowa_enabled:
+            features.append('biblioteka_narodowa')
+        return features
+
+    def is_premium_enabled(self, feature_id):
+        """Check if a specific premium feature is enabled for this tenant."""
+        feature_map = {
+            'bookcover_api': 'premium_bookcover_enabled',
+            'biblioteka_narodowa': 'premium_biblioteka_narodowa_enabled',
+        }
+        field_name = feature_map.get(feature_id)
+        if field_name:
+            return getattr(self, field_name, False)
+        return False
+
+
 # Define the association table for book-author relationship
 book_authors = db.Table('book_authors',
                         db.Column('book_id', db.Integer, db.ForeignKey(
@@ -37,6 +76,7 @@ user_libraries = db.Table('user_libraries',
 class Library(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
     books = db.relationship('Book', back_populates='library', lazy=True)
     users = db.relationship('User', secondary=user_libraries, lazy='subquery',
                             back_populates='libraries')
@@ -49,6 +89,7 @@ class Library(db.Model):
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     library_id = db.Column(db.Integer, db.ForeignKey('library.id'), nullable=False)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
     isbn = db.Column(db.String(13), unique=True, nullable=True, index=True)
     title = db.Column(db.String(200), nullable=False, index=True)
     authors = db.relationship(
@@ -124,21 +165,38 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(50), unique=True,
                          nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    password_hash = db.Column(db.String(128), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)  # INCREASED from 128 to 255 to accommodate PBKDF2 hashes
     image_file = db.Column(db.String(20), nullable=False,
                            default='default.jpg')
     first_name = db.Column(db.String(50), nullable=True)
     last_name = db.Column(db.String(50), nullable=True)
     loans = db.relationship('Loan', back_populates='user', lazy=True)
     role = db.Column(db.String(20), nullable=False, default='user')  # 'user', 'manager', 'admin'
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=True)  # NULL for super-admin
 
     @property
     def is_admin(self):
-        return self.role == 'admin'
+        """True if user is any type of admin (superadmin or tenant admin)"""
+        return self.role in ('admin', 'superadmin')
 
     @property
     def is_manager(self):
         return self.role == 'manager'
+
+    @property
+    def is_super_admin(self):
+        """Super-admin has role='superadmin'"""
+        return self.role == 'superadmin'
+
+    @property
+    def is_tenant_admin(self):
+        """Tenant admin has role='admin' (and tenant_id is NOT NULL)"""
+        return self.role == 'admin' and self.tenant_id is not None
+
+    @property
+    def is_super_admin_old(self):
+        """Legacy: Super-admin had role='admin' and tenant_id=NULL (deprecated)"""
+        return self.role == 'admin' and self.tenant_id is None
 
     libraries = db.relationship('Library', secondary='user_libraries', lazy='subquery',
                                 back_populates='users')
@@ -151,6 +209,10 @@ class User(UserMixin, db.Model):
         'Notification', foreign_keys='Notification.sender_id', back_populates='sender', lazy=True)
 
     comments = db.relationship('Comment', back_populates='user', lazy=True, cascade='all, delete-orphan')
+
+    @staticmethod
+    def for_tenant(tenant_id):
+        return User.query.filter_by(tenant_id=tenant_id)
 
     def __str__(self):
         return self.username
@@ -166,6 +228,7 @@ class Loan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
     reservation_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     issue_date = db.Column(db.DateTime)
     return_date = db.Column(db.DateTime)
@@ -178,6 +241,10 @@ class Loan(db.Model):
     # Add relation to the notifications
     notifications = db.relationship(
         'Notification', back_populates='loan', lazy=True, cascade='all, delete-orphan')
+
+    @staticmethod
+    def for_tenant(tenant_id):
+        return Loan.query.filter_by(tenant_id=tenant_id)
 
     def __str__(self):
         return f"Loan {self.id}: {self.book.title} to {self.user.username} - Status: {self.status}"
@@ -216,6 +283,10 @@ class LibraryAccessRequest(db.Model):
     user = db.relationship('User', backref='access_requests')
     library = db.relationship('Library', backref='access_requests')
 
+    @staticmethod
+    def for_tenant(tenant_id):
+        return LibraryAccessRequest.query.join(Library).filter(Library.tenant_id == tenant_id)
+
     def __str__(self):
         return f"Request from {self.user.username} for {self.library.name} - Status: {self.status}"
 
@@ -227,9 +298,14 @@ class Comment(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=True)
 
     user = db.relationship('User', back_populates='comments')
     book = db.relationship('Book', back_populates='comments')
+
+    @staticmethod
+    def for_tenant(tenant_id):
+        return Comment.query.join(Book).filter(Book.tenant_id == tenant_id)
 
     def __str__(self):
         return f"Comment by {self.user.username} on {self.book.title} at {self.timestamp}"
@@ -247,6 +323,10 @@ class InvitationCode(db.Model):
     # Do której biblioteki
     library_id = db.Column(db.Integer, db.ForeignKey('library.id'), nullable=False)
     library = db.relationship('Library', backref='invitation_codes')
+
+    # Do którego tenanta
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
+    tenant = db.relationship('Tenant', backref='invitation_codes')
 
     # Śledzenie użycia
     used_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
@@ -295,5 +375,77 @@ class ContactMessage(db.Model):
     read_by_admin = db.Column(db.Boolean, default=False)
     is_resolved = db.Column(db.Boolean, default=False)
 
+    @staticmethod
+    def for_tenant(tenant_id):
+        return ContactMessage.query.join(Library).filter(Library.tenant_id == tenant_id)
+
     def __str__(self):
         return f"ContactMessage from {self.user_id} in library {self.library_id} at {self.created_at}"
+
+
+class AdminSuperAdminConversation(db.Model):
+    """Conversation between tenant admin and super-admin"""
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False, index=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    subject = db.Column(db.String(200), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, index=True)
+
+    tenant = db.relationship('Tenant', backref='admin_conversations')
+    admin = db.relationship('User', backref='admin_super_admin_conversations')
+    messages = db.relationship('AdminSuperAdminMessage', backref='conversation',
+                               cascade='all, delete-orphan', lazy=True)
+
+    def __str__(self):
+        return f"Conversation: {self.subject} (Tenant: {self.tenant.name})"
+
+    @property
+    def unread_count(self):
+        """Count unread messages for super-admin"""
+        return AdminSuperAdminMessage.query.filter_by(
+            conversation_id=self.id,
+            read=False
+        ).count()
+
+
+class AdminSuperAdminMessage(db.Model):
+    """Individual message in conversation between admin and super-admin"""
+    id = db.Column(db.Integer, primary_key=True)
+    conversation_id = db.Column(db.Integer, db.ForeignKey(
+        'admin_super_admin_conversation.id'), nullable=False, index=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, index=True)
+    read = db.Column(db.Boolean, default=False)
+
+    sender = db.relationship('User', foreign_keys=[sender_id])
+
+    def __str__(self):
+        return f"Message from {self.sender.username}: {self.message[:50]}..."
+
+
+# Poprawka logiki logowania multi-tenant:
+# W pliku routes/auth.py:
+#
+# 1. Pobierz tenant_name z formularza logowania (np. <input name="tenant"> lub select)
+# 2. Znajdź tenant po nazwie
+# 3. Szukaj użytkownika po loginie/emailu i tenant_id
+# 4. Sprawdź hasło i loguj użytkownika
+#
+# Przykład (do wstawienia w login_post):
+#
+# tenant_name = request.form.get('tenant')
+# tenant = Tenant.query.filter_by(name=tenant_name).first()
+# if not tenant:
+#     flash('Nieprawidłowy tenant', 'danger')
+#     return redirect(url_for('auth.login'))
+# if '@' in username:
+#     user = User.query.filter_by(email=username, tenant_id=tenant.id).first()
+# else:
+#     user = User.query.filter_by(username=username, tenant_id=tenant.id).first()
+#
+# ...dalej sprawdzaj hasło i loguj użytkownika...
+#
+# UWAGA: Dodaj pole wyboru tenant w formularzu logowania (np. select z listą tenantów)
+#
+# Ten kod nie wymaga zmian w models.py, tylko w routes/auth.py oraz w szablonie logowania.

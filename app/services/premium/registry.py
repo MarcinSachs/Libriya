@@ -139,18 +139,28 @@ class PremiumRegistry:
             return None
 
     def _is_enabled(self, feature_id: str) -> bool:
-        """Check if feature is enabled via environment variable or Flask config."""
+        """Check if feature is enabled via tenant context (database) or environment variable (fallback)."""
         import os
         from flask import current_app
+        from app.services.premium.context import PremiumContext
 
         feature = self._features.get(feature_id)
         if not feature:
             logger.warning(f"PremiumRegistry: Feature '{feature_id}' not registered")
             return False
 
+        # First, check if PremiumContext is available (request context)
+        try:
+            if PremiumContext.is_enabled(feature_id):
+                logger.debug(f"PremiumRegistry: Feature '{feature_id}' enabled (from tenant context)")
+                return True
+        except RuntimeError:
+            # No app context or request context, continue to env var check
+            pass
+
+        # Fallback to environment variables for non-request contexts (e.g., CLI commands, tests)
         env_var = feature['enabled_env_var']
 
-        # Try Flask config first (preferred), then fallback to environment variable
         try:
             is_enabled = current_app.config.get(env_var, False)
             logger.debug(f"PremiumRegistry: Feature '{feature_id}' enabled check (from config): {env_var}={is_enabled}")

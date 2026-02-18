@@ -24,7 +24,7 @@ def generate_invitation_code():
     """Generate a unique 8-character invitation code"""
     while True:
         code = secrets.token_hex(4).upper()  # 8 characters
-        if not InvitationCode.query.filter_by(code=code).first():
+        if not InvitationCode.query.filter_by(code=code, tenant_id=current_user.tenant_id).first():
             return code
 
 
@@ -32,13 +32,14 @@ def generate_invitation_code():
 @login_required
 @role_required('admin', 'manager')
 def invitation_codes_list():
-    """List invitation codes"""
+    """List invitation codes (multi-tenant filter)"""
     if current_user.role == 'admin':
-        codes = InvitationCode.query.order_by(InvitationCode.created_at.desc()).all()
+        codes = InvitationCode.query.filter_by(tenant_id=current_user.tenant_id).order_by(InvitationCode.created_at.desc()).all()
     else:  # manager - only for their libraries
         library_ids = [lib.id for lib in current_user.libraries]
         codes = InvitationCode.query.filter(
-            InvitationCode.library_id.in_(library_ids)
+            InvitationCode.library_id.in_(library_ids),
+            InvitationCode.tenant_id == current_user.tenant_id
         ).order_by(InvitationCode.created_at.desc()).all()
 
     return render_template('superadmin/invitation_codes.html', codes=codes, now=datetime.utcnow,
@@ -58,13 +59,13 @@ def generate_code():
         if not library_id:
             flash(INVITATIONS_SELECT_LIBRARY, 'danger')
             if current_user.role == 'admin':
-                libraries = Library.query.all()
+                libraries = Library.query.filter_by(tenant_id=current_user.tenant_id).all()
             else:
-                libraries = current_user.libraries
+                libraries = [lib for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
             return render_template('superadmin/generate_invitation.html', libraries=libraries)
 
         # Verify library access
-        library = Library.query.get_or_404(library_id)
+        library = Library.query.filter_by(id=library_id, tenant_id=current_user.tenant_id).first_or_404()
 
         if current_user.role == 'manager':
             # Manager can only generate codes for their libraries
@@ -94,9 +95,9 @@ def generate_code():
 
     # GET request
     if current_user.role == 'admin':
-        libraries = Library.query.all()
+        libraries = Library.query.filter_by(tenant_id=current_user.tenant_id).all()
     else:  # manager
-        libraries = current_user.libraries
+        libraries = [lib for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
 
     return render_template('superadmin/generate_invitation.html', libraries=libraries)
 
@@ -106,7 +107,7 @@ def generate_code():
 @role_required('admin', 'manager')
 def deactivate_code(code_id):
     """Deactivate an invitation code"""
-    code = InvitationCode.query.get_or_404(code_id)
+    code = InvitationCode.query.filter_by(id=code_id, tenant_id=current_user.tenant_id).first_or_404()
 
     # Verify access
     if current_user.role == 'manager':
@@ -134,7 +135,7 @@ def deactivate_code(code_id):
 @role_required('admin', 'manager')
 def copy_code(code_id):
     """API endpoint to get code for copying"""
-    code = InvitationCode.query.get_or_404(code_id)
+    code = InvitationCode.query.filter_by(id=code_id, tenant_id=current_user.tenant_id).first_or_404()
 
     # Verify access
     if current_user.role == 'manager':

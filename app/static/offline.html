@@ -16,7 +16,7 @@
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="/static/css/style.css?v=770" rel="stylesheet">
+    <link href="/static/css/style.css?v=793" rel="stylesheet">
     
 </head>
 <body class="font-sans text-text-dark bg-gray-bg selection:bg-accent selection:text-white">
@@ -31,7 +31,6 @@
                             <span class="font-serif text-3xl font-bold text-primary">Libriya</span>
                             <span class="text-xs font-light text-gray-500 tracking-wide -mt-1 ml-1">home for your books</span>
                         </span>
-                        
                     </a>
                 </div>
                 <div class="hidden md:flex items-center space-x-10">
@@ -42,8 +41,8 @@
                         <button class="flex items-center gap-2 text-primary hover:text-accent transition">
                             <img class="w-8 h-8 rounded-full object-cover" 
                                 src="/static/uploads/default.jpg" 
-                                alt="manager">
-                            <span class="text-sm font-medium">manager</span>
+                                alt="Test">
+                            <span class="text-sm font-medium">Test</span>
                             
                         </button>
                         <div class="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
@@ -51,7 +50,8 @@
                                 <i class="bx bx-bell align-middle me-2"></i>Powiadomienia
                                 
                             </a>
-                            <a href="/user/profile/14" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                            
+                            <a href="/user/profile/16" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
                                 <i class="bx bx-user-circle align-middle me-2"></i>Profil i Wypożyczenia
                             </a>
                             <a href="/user/settings" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
@@ -60,8 +60,9 @@
                             <a href="/my-messages" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
                                 <i class="bx bx-envelope align-middle me-2"></i>Wiadomości
                             </a>
+                            
                             <hr class="my-1">
-                            <a href="/logout" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg">
+                            <a href="/auth/logout" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg">
                                 <i class="bx bx-log-out align-middle me-2"></i>Wyloguj się
                             </a>
                         </div>
@@ -118,7 +119,7 @@
                         <button class="flex items-center gap-2 text-primary hover:text-accent transition">
                             <img class="w-8 h-8 rounded-full object-cover" 
                                 src="/static/uploads/default.jpg" 
-                                alt="manager">
+                                alt="Test">
                             
                         </button>
                         <div class="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition z-50">
@@ -126,7 +127,8 @@
                                 <i class="bx bx-bell align-middle me-2"></i>Powiadomienia
                                 
                             </a>
-                            <a href="/user/profile/14" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                            
+                            <a href="/user/profile/16" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
                                 <i class="bx bx-user-circle align-middle me-2"></i>Profil i Wypożyczenia
                             </a>
                             <a href="/user/settings" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
@@ -135,8 +137,9 @@
                             <a href="/my-messages" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
                                 <i class="bx bx-envelope align-middle me-2"></i>Wiadomości
                             </a>
+                            
                             <hr class="my-1">
-                            <a href="/logout" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg">
+                            <a href="/auth/logout" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg">
                                 <i class="bx bx-log-out align-middle me-2"></i>Wyloguj się
                             </a>
                         </div>
@@ -155,15 +158,20 @@
         <div class="flex">
             
             <!-- Sidebar -->
-            <aside id="mobile-sidebar" class="hidden lg:flex w-full lg:w-64 bg-white border-r border-gray-200 flex-col py-6 px-4 h-[calc(100vh-128px)] overflow-y-auto fixed lg:relative top-20 left-0 z-40 lg:z-auto lg:top-auto lg:left-auto">
+            <aside id="mobile-sidebar" class="hidden lg:flex w-full lg:w-64 bg-white border-r border-gray-200 flex-col py-6 px-6 h-[calc(100vh-128px)] overflow-y-auto fixed lg:relative top-20 left-0 z-40 lg:z-auto lg:top-auto lg:left-auto">
                 <nav class="space-y-2">
-                    <!-- Books -->
+                    <!-- Books (dla tenant users) -->
+                    
                     <a href="/dashboard" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-bg hover:text-primary transition">
                         <i class="bx bxs-book text-lg"></i>
                         <span class="font-medium">Książki</span>
                     </a>
+                    
 
-                    <!-- Administration Section -->
+                    <!-- Super Admin Menu -->
+                    
+
+                    <!-- Administration Section (tenant admins only) -->
                     
                     <div>
                         <button id="admin-toggle" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-bg hover:text-primary transition">
@@ -174,7 +182,7 @@
                             <i class="bx bx-chevron-down transition-transform "></i>
                         </button>
                         <div id="admin-menu" class="hidden ml-4 mt-2 space-y-1 border-l-2 border-gray-200 pl-2">
-                            <!-- Libraries -->
+                            <!-- Libraries (tenant admins only) -->
                             
                             <a href="/libraries/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
                                 <i class="bx bxs-building text-base"></i>
@@ -182,29 +190,43 @@
                             </a>
                             
 
-                            <!-- Users -->
+                            <!-- Users (tenant admins only) -->
+                            
                             <a href="/users/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
                                 <i class="bx bxs-group text-base"></i>
                                 <span>Użytkownicy</span>
                             </a>
+                            
 
-                            <!-- Loans -->
+                            <!-- Loans (tenant admins only) -->
+                            
                             <a href="/loans/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
                                 <i class="bx bxs-check-circle text-base"></i>
                                 <span>Wypożyczenia</span>
                             </a>
+                            
 
-                            <!-- Invitation Codes -->
+                            <!-- Invitation Codes (tenant admins only) -->
+                            
                             <a href="/invitation-codes/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
                                 <i class="bx bxs-key text-base"></i>
                                 <span>Kody zaproszeń</span>
                             </a>
+                            
 
-                            <!-- Messages -->
+                            <!-- Messages (tenant admins only) -->
+                            
                             <a href="/contact_messages" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
                                 <i class="bx bxs-message-detail text-base"></i>
                                 <span>Wiadomości</span>
                             </a>
+
+                            <!-- Contact Super Admin (tenant admin -> superadmin) -->
+                            <a href="/messaging/admin-support" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
+                                <i class="bx bxs-support text-base"></i>
+                                <span>Contact Super Admin</span>
+                            </a>
+                            
                         </div>
                     </div>
                     
@@ -212,8 +234,9 @@
             </aside>
             
 
-            <!-- Main Content -->
+                <!-- Main Content -->
             <div class="flex-1 overflow-x-hidden">
+                <div class="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
         
 <style>
     .link-buttons {
@@ -344,6 +367,7 @@
     </div>
 </div>
 
+                </div>
             </div>
         </div>
     </main>

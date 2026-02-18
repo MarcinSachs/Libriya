@@ -175,10 +175,21 @@ class CommentForm(FlaskForm):
 
 
 class RegistrationForm(FlaskForm):
+    # Field to track whether user is creating a new tenant or joining existing one
+    create_new_tenant = HiddenField(default='false')
+
+    # For creating new tenant on main domain
+    tenant_name = StringField(
+        _('Organization Name'),
+        validators=[Optional(), Length(min=3, max=100)]
+    )
+
+    # For joining existing tenant on subdomain
     invitation_code = StringField(
         _('Invitation Code'),
-        validators=[DataRequired(), Length(min=8, max=8)]
+        validators=[Optional(), Length(min=8, max=8)]
     )
+
     email = StringField(
         _('Email'),
         validators=[DataRequired(), Email()]
@@ -195,15 +206,42 @@ class RegistrationForm(FlaskForm):
         _('Confirm Password'),
         validators=[DataRequired(), EqualTo('password')]
     )
-    submit = SubmitField(_('Register'))
+    first_name = StringField(
+        _('First Name'),
+        validators=[Optional(), Length(min=1, max=50)]
+    )
+    last_name = StringField(
+        _('Last Name'),
+        validators=[Optional(), Length(min=1, max=50)]
+    )
+
+    def validate_tenant_name(self, field):
+        # Only validate if user is creating new tenant and field has data
+        if self.create_new_tenant.data == 'true' and field.data:
+            from app.models import Tenant
+            existing = Tenant.query.filter_by(name=field.data).first()
+            if existing:
+                raise ValidationError(_('Library name already exists'))
 
     def validate_invitation_code(self, field):
-        from app.models import InvitationCode
-        code = InvitationCode.query.filter_by(code=field.data).first()
-        if not code:
-            raise ValidationError(_('Invalid invitation code'))
-        if not code.is_valid():
-            raise ValidationError(_('Invitation code has expired or has already been used'))
+        # Only validate if user is joining existing tenant and field has data
+        if self.create_new_tenant.data == 'false' and field.data:
+            from app.models import InvitationCode
+            code = InvitationCode.query.filter_by(code=field.data).first()
+            if not code:
+                raise ValidationError(_('Invalid invitation code'))
+            if not code.is_valid():
+                raise ValidationError(_('Invitation code has expired or has already been used'))
+
+    def validate_first_name(self, field):
+        # First name is required when joining existing tenant
+        if self.create_new_tenant.data == 'false' and not field.data:
+            raise ValidationError(_('First name is required'))
+
+    def validate_last_name(self, field):
+        # Last name is required when joining existing tenant
+        if self.create_new_tenant.data == 'false' and not field.data:
+            raise ValidationError(_('Last name is required'))
 
     def validate_email(self, field):
         from app.models import User
@@ -212,6 +250,7 @@ class RegistrationForm(FlaskForm):
             raise ValidationError(_('Email already registered'))
 
     def validate_username(self, field):
+        from app.models import User
         user = User.query.filter_by(username=field.data).first()
         if user:
             raise ValidationError(_('Username already taken'))
@@ -223,3 +262,37 @@ class ContactForm(FlaskForm):
     subject = StringField(_('Subject'), validators=[DataRequired(), Length(max=200)])
     message = TextAreaField(_('Message'), validators=[DataRequired(), Length(max=2000)])
     submit = SubmitField(_('Send'))
+
+
+# Formularz tenantu
+class TenantForm(FlaskForm):
+    name = StringField(
+        _('Tenant Name'),
+        validators=[DataRequired(), Length(min=2, max=100)]
+    )
+    subdomain = StringField(
+        _('Subdomain'),
+        validators=[DataRequired(), Length(min=2, max=100)],
+        description=_('URL-friendly name (e.g., "mylib"). Only alphanumeric and hyphens.')
+    )
+    submit = SubmitField(_('Save Tenant'))
+
+    def validate_subdomain(self, field):
+        """Validate subdomain format and uniqueness"""
+        import re
+        # Check format (alphanumeric and hyphens only)
+        if not re.match(r'^[a-z0-9-]+$', field.data):
+            raise ValidationError(_('Subdomain can only contain lowercase letters, numbers, and hyphens.'))
+
+        # Check uniqueness
+        from app.models import Tenant
+        existing = Tenant.query.filter_by(subdomain=field.data).first()
+        if existing:
+            raise ValidationError(_('This subdomain is already taken.'))
+
+    def validate_name(self, field):
+        """Validate tenant name uniqueness"""
+        from app.models import Tenant
+        existing = Tenant.query.filter_by(name=field.data).first()
+        if existing:
+            raise ValidationError(_('This tenant name already exists.'))

@@ -36,14 +36,16 @@ def contact_messages():
             notification.is_read = True
             db.session.commit()
 
-    # Admin widzi wszystkie, manager tylko z własnych bibliotek
-    if current_user.role == 'admin':
+    # Admin widzi tylko wiadomości swojego tenanta
+    if getattr(current_user, 'is_super_admin', False):
+        # Superadmin sees all contact messages across tenants
         messages = ContactMessage.query.order_by(ContactMessage.created_at.desc()).all()
+    elif current_user.role == 'admin':
+        messages = ContactMessage.for_tenant(current_user.tenant_id).order_by(ContactMessage.created_at.desc()).all()
     else:
-        # Manager widzi tylko wiadomości z zarządzanych bibliotek
-        library_ids = [lib.id for lib in current_user.libraries]
-        messages = ContactMessage.query.filter(ContactMessage.library_id.in_(
-            library_ids)).order_by(ContactMessage.created_at.desc()).all()
+        library_ids = [lib.id for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
+        messages = ContactMessage.query.filter(ContactMessage.library_id.in_(library_ids),
+                                               Library.tenant_id == current_user.tenant_id).order_by(ContactMessage.created_at.desc()).all()
 
     # Mark all messages as read by admin
     for msg in messages:
@@ -59,7 +61,7 @@ def contact_messages():
 @login_required
 @role_required('admin', 'manager')
 def reply_to_message(message_id):
-    message = ContactMessage.query.get_or_404(message_id)
+    message = ContactMessage.query.filter_by(id=message_id, tenant_id=current_user.tenant_id).first_or_404()
 
     # Check if admin/manager has permission to reply
     if current_user.role == 'manager':
@@ -97,7 +99,7 @@ def reply_to_message(message_id):
 @login_required
 @role_required('admin', 'manager')
 def mark_message_resolved(message_id):
-    message = ContactMessage.query.get_or_404(message_id)
+    message = ContactMessage.query.filter_by(id=message_id, tenant_id=current_user.tenant_id).first_or_404()
 
     # Check if admin/manager has permission
     if current_user.role == 'manager':
@@ -118,7 +120,7 @@ def mark_message_resolved(message_id):
 @role_required('admin', 'manager')
 def view_contact_message(message_id):
     """View contact message for admin/manager"""
-    message = ContactMessage.query.get_or_404(message_id)
+    message = ContactMessage.query.filter_by(id=message_id, tenant_id=current_user.tenant_id).first_or_404()
 
     # Check if admin/manager has permission to view
     if current_user.role == 'manager' and message.library not in current_user.libraries:
@@ -133,15 +135,17 @@ def view_contact_message(message_id):
 @role_required('admin', 'manager')
 def users():
     if current_user.role == 'admin':
-        all_users = db.session.query(User).distinct().all()
+        all_users = User.for_tenant(current_user.tenant_id).distinct().all()
     else:  # manager
-        manager_library_ids = [lib.id for lib in current_user.libraries]
+        manager_library_ids = [lib.id for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
         if not manager_library_ids:
             # Show only self if not managing any library
             all_users = [current_user]
         else:
             all_users = db.session.query(User).join(User.libraries).filter(
-                Library.id.in_(manager_library_ids)).distinct().all()
+                Library.id.in_(manager_library_ids),
+                User.tenant_id == current_user.tenant_id
+            ).distinct().all()
 
     return render_template("users/users.html", users=all_users, active_page="users", parent_page="admin")
 
@@ -190,7 +194,10 @@ def user_add():
 @login_required
 @role_required('admin', 'manager')
 def user_edit(user_id):
-    user_to_edit = User.query.get_or_404(user_id)
+    user_to_edit = User.query.filter_by(id=user_id, tenant_id=current_user.tenant_id).first_or_404()
+    if user_to_edit.tenant_id != current_user.tenant_id:
+        flash(ERROR_PERMISSION_DENIED, "danger")
+        return redirect(url_for('users.users'))
 
     # --- Authorization Checks ---
     if current_user.role == 'manager':
@@ -212,7 +219,7 @@ def user_edit(user_id):
     if current_user.role == 'admin':
         manageable_libraries = Library.query.order_by('name').all()
     else:  # manager
-        manageable_libraries = current_user.libraries
+        manageable_libraries = Library.query.filter_by(tenant_id=current_user.tenant_id).order_by('name').all()
 
     # A manager should not be able to elevate a user to admin
     if current_user.role == 'manager':
@@ -286,6 +293,9 @@ def user_edit(user_id):
 @role_required('admin', 'manager')
 def user_delete(user_id):
     user_to_delete = User.query.get_or_404(user_id)
+    if user_to_delete.tenant_id != current_user.tenant_id:
+        flash(ERROR_PERMISSION_DENIED, "danger")
+        return redirect(url_for('users.users'))
 
     # --- Authorization Checks ---
     # Cannot delete yourself

@@ -22,25 +22,10 @@ const NO_CACHE_PAGES = ['/login', '/register', '/invitation'];
 self.addEventListener('install', (event) => {
     console.log('[SW] Installing v13');
     event.waitUntil(
-        caches.open(CACHE_NAME).then(async (cache) => {
-            try {
-                await cache.addAll(STATIC_ASSETS);
-                // Wymuś pobranie i cache’owanie strony głównej i dashboardu
-                const mainPages = ['/', '/dashboard'];
-                for (const page of mainPages) {
-                    try {
-                        const response = await fetch(page, { credentials: 'same-origin' });
-                        if (response.ok) {
-                            await cache.put(page, response.clone());
-                            console.log('[SW] Pre-cached page:', page);
-                        }
-                    } catch (e) {
-                        console.log('[SW] Failed to pre-cache', page, e);
-                    }
-                }
-            } catch (err) {
+        caches.open(CACHE_NAME).then((cache) => {
+            return cache.addAll(STATIC_ASSETS).catch((err) => {
                 console.log('[SW] Install failed:', err);
-            }
+            });
         })
     );
     self.skipWaiting();
