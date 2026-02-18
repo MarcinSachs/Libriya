@@ -8,6 +8,8 @@ from app.utils.audit_log import LOGS_ROOT, ensure_logs_dir
 
 
 def setup_test_app():
+    # Ensure the factory picks up the in-memory SQLite DB for tests
+    os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
     app = create_app()
     app.config['TESTING'] = True
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'

@@ -1,3 +1,4 @@
+import os
 import pytest
 from app import create_app, db
 from app.models import User
@@ -6,8 +7,11 @@ from app.models import User
 @pytest.fixture
 def app():
     """Create and configure a test app."""
+    # Ensure the app factory picks up the in-memory SQLite DB for tests
+    os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
     app = create_app()
     app.config['TESTING'] = True
+    # Keep as explicit override in case other code reads this value
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     app.config['WTF_CSRF_ENABLED'] = False
 

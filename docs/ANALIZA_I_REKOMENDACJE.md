@@ -77,36 +77,6 @@ tests/
 ### 🟡 DROBNOSTKI (Niski priorytet)
 
 
-#### 9. **Brak Docstring'ów w Modelach**
-**Problem**: Modele mają minim dokumentacji
-**Rekomendacja**:
-```python
-class Tenant(db.Model):
-    """
-    Represents a tenant (organization/library system).
-    
-    Attributes:
-        id (int): Primary key
-        name (str): Tenant name
-        subdomain (str): URL subdomain
-        premium_bookcover_enabled (bool): Feature flag
-        ...
-    """
-```
-
-#### 10. **Brak .gitignore Pełnego**
-**Problem**: Potencjalnie .env może być zacommitowany
-**Rekomendacja**: Upewnić się że .gitignore zawiera:
-```
-.env
-.env.local
-instance/
-__pycache__/
-*.pyc
-```
-
----
-
 ## 📊 Metryki Aplikacji
 
 | Metrika | Wartość | Status |
