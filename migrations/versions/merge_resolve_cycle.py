@@ -14,7 +14,7 @@ down_revision = (
     '873d72b6bc6f','8904ea11c501','add_admin_super_admin_messaging','123456789abc','add_contact_message_id',
     'add_contact_message_table','add_invitation_codes','add_library_loan_overdue_days','add_premium_features',
     'add_subdomain_to_tenant','add_user_names','b1c7781652f9','c2477abce1cb','ee2182cf18f2','f1215d41dff2','make_isbn_nullable',
-    'make_tenant_id_nullable_for_user','multi_tenant_2026','simple_password_hash_fix','update_contact_msg_conv'
+    'make_tenant_id_nullable_for_user','multi_tenant_2026','simple_password_hash_fix','update_contact_msg_conv','000000000001'
 )
 branch_labels = None
 depends_on = None
