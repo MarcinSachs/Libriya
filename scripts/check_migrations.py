@@ -5,6 +5,7 @@ import os
 ROOT = os.path.dirname(os.path.dirname(__file__))
 VERSIONS = os.path.join(ROOT, 'migrations', 'versions')
 
+
 def parse_file(path):
     with open(path, 'r', encoding='utf-8') as f:
         src = f.read()
@@ -16,11 +17,11 @@ def parse_file(path):
         line = line.strip()
         if line.startswith('revision') and '=' in line:
             try:
-                rev = ast.literal_eval(line.split('=',1)[1].strip())
+                rev = ast.literal_eval(line.split('=', 1)[1].strip())
             except Exception:
                 pass
         if line.startswith('down_revision') and '=' in line:
-            rhs = line.split('=',1)[1].strip()
+            rhs = line.split('=', 1)[1].strip()
             try:
                 down = ast.literal_eval(rhs)
             except Exception:
@@ -40,6 +41,7 @@ def parse_file(path):
                     if m2:
                         down = m2.group(1)
     return rev, down
+
 
 def main():
     files = sorted(glob.glob(os.path.join(VERSIONS, '*.py')))
@@ -90,6 +92,7 @@ def main():
 
     heads = known - referenced
     print(f"Heads ({len(heads)}): {sorted(heads)}")
+
 
 if __name__ == '__main__':
     main()

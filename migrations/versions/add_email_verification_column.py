@@ -17,7 +17,7 @@ depends_on = None
 def upgrade():
     # Add is_email_verified column with default False
     op.add_column('user', sa.Column('is_email_verified', sa.Boolean(), nullable=False, server_default=sa.true()))
-    
+
     # Mark all existing users as verified (they are already in the system)
     op.execute('UPDATE user SET is_email_verified = True')
 
