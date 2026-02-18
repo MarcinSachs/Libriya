@@ -72,6 +72,8 @@ def seed_database():
                 tenant_id=None  # Super-admin has NO tenant assigned
             )
             super_admin.set_password('superadmin')
+            # Mark seeded user as verified
+            super_admin.is_email_verified = True
             db.session.add(super_admin)
             db.session.commit()
             print("Super-admin user created with role='superadmin'.")
@@ -80,10 +82,10 @@ def seed_database():
             if super_admin.role != 'superadmin' or super_admin.tenant_id is not None:
                 super_admin.role = 'superadmin'
                 super_admin.tenant_id = None
-                db.session.commit()
-                print("Super-admin user role/tenant updated to correct values.")
-            else:
-                print("Super-admin user already exists with correct configuration.")
+            # Ensure seeded user is verified
+            super_admin.is_email_verified = True
+            db.session.commit()
+            print("Super-admin user already exists with correct configuration.")
 
         # --- Seed Admin User (tenant-specific admin, tenant_id=default_tenant.id) ---
         if db.session.query(User).filter_by(username='admin').count() == 0:
@@ -94,12 +96,17 @@ def seed_database():
                 tenant_id=default_tenant.id  # Admin for this specific tenant
             )
             admin_user.set_password('admin')
+            # Mark seeded user as verified
+            admin_user.is_email_verified = True
             # Add user to the default library
             admin_user.libraries.append(default_library)
             db.session.add(admin_user)
             db.session.commit()
             print("Admin user created for default tenant.")
         else:
+            existing_admin = db.session.query(User).filter_by(username='admin').first()
+            existing_admin.is_email_verified = True
+            db.session.commit()
             print("Admin user already exists.")
 
         # --- Seed Manager User ---
@@ -111,12 +118,17 @@ def seed_database():
                 tenant_id=default_tenant.id
             )
             manager_user.set_password('manager')
+            # Mark seeded user as verified
+            manager_user.is_email_verified = True
             # Add manager to the default library
             manager_user.libraries.append(default_library)
             db.session.add(manager_user)
             db.session.commit()
             print("Manager user created and assigned to the default library.")
         else:
+            existing_manager = db.session.query(User).filter_by(username='manager').first()
+            existing_manager.is_email_verified = True
+            db.session.commit()
             print("Manager user already exists.")
 
         # --- Seed Regular User ---
@@ -128,12 +140,17 @@ def seed_database():
                 tenant_id=default_tenant.id
             )
             regular_user.set_password('user')
+            # Mark seeded user as verified
+            regular_user.is_email_verified = True
             # Add user to the default library
             regular_user.libraries.append(default_library)
             db.session.add(regular_user)
             db.session.commit()
             print("Regular user created and assigned to the default library.")
         else:
+            existing_user = db.session.query(User).filter_by(username='user').first()
+            existing_user.is_email_verified = True
+            db.session.commit()
             print("Regular user already exists.")
 
         # --- Seed Genres ---

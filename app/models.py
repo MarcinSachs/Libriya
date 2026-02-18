@@ -169,6 +169,8 @@ class User(UserMixin, db.Model):
                          nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)  # INCREASED from 128 to 255 to accommodate PBKDF2 hashes
+    # Email verification status
+    is_email_verified = db.Column(db.Boolean, default=False, nullable=False)
     image_file = db.Column(db.String(20), nullable=False,
                            default='default.jpg')
     first_name = db.Column(db.String(50), nullable=True)
@@ -494,5 +496,51 @@ class PasswordResetToken(db.Model):
 
     def __str__(self):
         return f"PasswordResetToken(user_id={self.user_id}, used={self.used}, expires_at={self.expires_at})"
+
+
+class EmailVerificationToken(db.Model):
+    """DB-backed email verification tokens (single-use).
+
+    Pattern mirrors PasswordResetToken: store only the sha256 hash, expire and single-use.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    token_hash = db.Column(db.String(128), nullable=False, unique=True, index=True)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+    user = db.relationship('User', backref='email_verification_tokens')
+
+    @classmethod
+    def generate_token(cls, user_id, expires_in=86400):
+        """Generate token for email verification (default 24h expiry)."""
+        token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        now = datetime.datetime.utcnow()
+        expires_at = now + timedelta(seconds=expires_in)
+        entry = cls(user_id=user_id, token_hash=token_hash, expires_at=expires_at)
+        db.session.add(entry)
+        db.session.commit()
+        return token
+
+    @classmethod
+    def verify_token(cls, token):
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        entry = cls.query.filter_by(token_hash=token_hash).first()
+        if not entry:
+            return None
+        if entry.used:
+            return None
+        if entry.expires_at < datetime.datetime.utcnow():
+            return None
+        return entry
+
+    def mark_used(self):
+        self.used = True
+        db.session.commit()
+
+    def __str__(self):
+        return f"EmailVerificationToken(user_id={self.user_id}, used={self.used}, expires_at={self.expires_at})"
 
 

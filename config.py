@@ -17,6 +17,15 @@ class Config(BaseSettings):
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
     SQLALCHEMY_ENGINE_OPTIONS: dict = {}
 
+    # Email settings
+    MAIL_SERVER: Optional[str] = None
+    MAIL_PORT: Optional[int] = None
+    MAIL_USERNAME: Optional[str] = None
+    MAIL_PASSWORD: Optional[str] = None
+    MAIL_USE_TLS: bool = False
+    MAIL_USE_SSL: bool = False
+    MAIL_DEFAULT_SENDER: Optional[str] = None
+
     # Audit retention (days)
     AUDIT_RETENTION_DAYS: int = 30
 

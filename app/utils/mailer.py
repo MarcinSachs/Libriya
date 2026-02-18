@@ -2,46 +2,48 @@ from typing import Optional
 from flask import current_app
 import smtplib
 from email.message import EmailMessage
+import os
 
 
-def send_password_reset_email(user, reset_url: str) -> bool:
-    """Send password reset email to user using SMTP settings from app config.
-
-    Config variables used (set these in your environment or config):
-      - MAIL_SERVER
-      - MAIL_PORT
-      - MAIL_USERNAME
-      - MAIL_PASSWORD
-      - MAIL_USE_TLS (bool, optional)
-      - MAIL_USE_SSL (bool, optional)
-      - MAIL_DEFAULT_SENDER (email address)
-
-    Falls back to printing the URL when MAIL_SERVER is not configured (useful
-    for local development).
-    """
+def _send_email(to_address: str, subject: str, body: str) -> bool:
     app = current_app._get_current_object() if current_app else None
     sender = None
-    subject = 'Password reset request'
-    body = f"Hello {user.username},\n\nYou requested a password reset. Use the link below to reset your password:\n\n{reset_url}\n\nIf you did not request this, you can ignore this message.\n\n--\nLibriya"
 
     if app:
-        sender = app.config.get('MAIL_DEFAULT_SENDER')
-        mail_server = app.config.get('MAIL_SERVER')
-        mail_port = int(app.config.get('MAIL_PORT', 0) or 0)
-        mail_username = app.config.get('MAIL_USERNAME')
-        mail_password = app.config.get('MAIL_PASSWORD')
-        use_tls = bool(app.config.get('MAIL_USE_TLS', False))
-        use_ssl = bool(app.config.get('MAIL_USE_SSL', False))
+        # Prefer app config, fall back to environment variables so .env works
+        sender = app.config.get('MAIL_DEFAULT_SENDER') or os.environ.get('MAIL_DEFAULT_SENDER')
+        mail_server = app.config.get('MAIL_SERVER') or os.environ.get('MAIL_SERVER')
+        mail_port = app.config.get('MAIL_PORT') or os.environ.get('MAIL_PORT')
+        mail_username = app.config.get('MAIL_USERNAME') or os.environ.get('MAIL_USERNAME')
+        mail_password = app.config.get('MAIL_PASSWORD') or os.environ.get('MAIL_PASSWORD')
+        use_tls = app.config.get('MAIL_USE_TLS') if 'MAIL_USE_TLS' in app.config else os.environ.get('MAIL_USE_TLS')
+        use_ssl = app.config.get('MAIL_USE_SSL') if 'MAIL_USE_SSL' in app.config else os.environ.get('MAIL_USE_SSL')
+
+        try:
+            mail_port = int(mail_port) if mail_port else 0
+        except Exception:
+            mail_port = 0
+
+        # Normalize boolean-like values coming from env
+        def _to_bool(v):
+            if v is None:
+                return False
+            if isinstance(v, bool):
+                return v
+            return str(v).lower() in ('1', 'true', 'yes', 'on')
+
+        use_tls = _to_bool(use_tls)
+        use_ssl = _to_bool(use_ssl)
 
         if not mail_server or not mail_port:
             # Not configured - fallback to printing for development
-            print(f"[mailer] MAIL_SERVER not configured. Password reset for {user.email}: {reset_url}")
+            print(f"[mailer] MAIL_SERVER not configured. Email to {to_address}: {subject}\n{body}")
             return True
 
         msg = EmailMessage()
         msg['Subject'] = subject
         msg['From'] = sender or mail_username or 'no-reply@localhost'
-        msg['To'] = user.email
+        msg['To'] = to_address
         msg.set_content(body)
 
         try:
@@ -61,10 +63,19 @@ def send_password_reset_email(user, reset_url: str) -> bool:
                     server.send_message(msg)
             return True
         except Exception as e:
-            # In production you might want to log this exception
             print(f"[mailer] Error sending email: {e}")
             raise
 
     # No Flask context - fallback
-    print(f"[mailer] No app context. Password reset for {user.email}: {reset_url}")
+    print(f"[mailer] No app context. Email to {to_address}: {subject}\n{body}")
     return True
+
+
+def send_generic_email(to_address: str, subject: str, body: str) -> bool:
+    return _send_email(to_address, subject, body)
+
+
+def send_password_reset_email(user, reset_url: str) -> bool:
+    subject = 'Password reset request'
+    body = f"Hello {user.username},\n\nYou requested a password reset. Use the link below to reset your password:\n\n{reset_url}\n\nIf you did not request this, you can ignore this message.\n\n--\nLibriya"
+    return _send_email(user.email, subject, body)
