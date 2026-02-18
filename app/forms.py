@@ -7,7 +7,7 @@ from flask_wtf.file import FileField, FileAllowed, FileSize
 from wtforms.validators import (
     DataRequired, Email, Length, EqualTo, Optional, ValidationError, NumberRange
 )
-from app.utils.validators import validate_username_field, validate_email_field
+from app.utils.validators import validate_username_field, validate_email_field, sanitize_string
 from datetime import datetime
 from flask_babel import lazy_gettext as _, gettext as _real
 from app.models import Genre
@@ -235,12 +235,14 @@ class RegistrationForm(FlaskForm):
                 raise ValidationError(_('Invitation code has expired or has already been used'))
 
     def validate_first_name(self, field):
-        # First name is required when joining existing tenant
+        # Sanitize input and require first name when joining existing tenant
+        field.data = sanitize_string(field.data, max_length=50)
         if self.create_new_tenant.data == 'false' and not field.data:
             raise ValidationError(_('First name is required'))
 
     def validate_last_name(self, field):
-        # Last name is required when joining existing tenant
+        # Sanitize input and require last name when joining existing tenant
+        field.data = sanitize_string(field.data, max_length=50)
         if self.create_new_tenant.data == 'false' and not field.data:
             raise ValidationError(_('Last name is required'))
 
