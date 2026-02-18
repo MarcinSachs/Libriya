@@ -1,7 +1,7 @@
 """
 Merge migration to resolve cycles in history
 Revision ID: merge_resolve_cycle
-Revises: 1495638fbb48,1b3373e73a8c,27ad0c4ba539,42404df2530c,42bd4f2a029b,58947c6ef9f7,6e53fc0c06b1,80c2cb49fa42,873d72b6bc6f,8904ea11c501,8ed4ae693faa,add_admin_super_admin_messaging,add_audit_logfile,123456789abc,add_contact_message_id,add_contact_message_table,add_invitation_codes,add_library_loan_overdue_days,add_password_reset_token,add_premium_features,add_subdomain_to_tenant,add_tenant_status,add_tenant_updated_at,add_user_names,b1c7781652f9,c2477abce1cb,ee2182cf18f2,f1215d41dff2,fcb34a5dd116,make_isbn_nullable,make_tenant_id_nullable_for_user,merge_add_passwordreset_and_tenantstatus,multi_tenant_2026,simple_password_hash_fix,update_contact_msg_conv
+Revises: 1495638fbb48,27ad0c4ba539,42404df2530c,42bd4f2a029b,58947c6ef9f7,6e53fc0c06b1,80c2cb49fa42,873d72b6bc6f,8904ea11c501,add_admin_super_admin_messaging,add_book_description,add_contact_message_id_to_notification,add_contact_message_table,add_invitation_codes,add_library_loan_overdue_days,add_premium_features_to_tenant,add_subdomain_to_tenant,add_user_names,b1c7781652f9,c2477abce1cb,ee2182cf18f2,f1215d41dff2,make_isbn_nullable,make_tenant_id_nullable_for_user,multi_tenant_2026,simple_password_hash_fix,update_contact_message_for_conversations
 Create Date: 2026-02-18
 """
 from alembic import op
@@ -10,12 +10,11 @@ import sqlalchemy as sa
 # revision identifiers, used by Alembic.
 revision = 'merge_resolve_cycle'
 down_revision = (
-    '1495638fbb48','1b3373e73a8c','27ad0c4ba539','42404df2530c','42bd4f2a029b','58947c6ef9f7','6e53fc0c06b1','80c2cb49fa42',
-    '873d72b6bc6f','8904ea11c501','8ed4ae693faa','add_admin_super_admin_messaging','add_audit_logfile','123456789abc','add_contact_message_id',
-    'add_contact_message_table','add_invitation_codes','add_library_loan_overdue_days','add_password_reset_token','add_premium_features',
-    'add_subdomain_to_tenant','add_tenant_status','add_tenant_updated_at','add_user_names','b1c7781652f9','c2477abce1cb','ee2182cf18f2',
-    'f1215d41dff2','fcb34a5dd116','make_isbn_nullable','make_tenant_id_nullable_for_user','merge_add_passwordreset_and_tenantstatus',
-    'multi_tenant_2026','simple_password_hash_fix','update_contact_msg_conv'
+    '1495638fbb48','27ad0c4ba539','42404df2530c','42bd4f2a029b','58947c6ef9f7','6e53fc0c06b1','80c2cb49fa42',
+    '873d72b6bc6f','8904ea11c501','add_admin_super_admin_messaging','add_book_description','add_contact_message_id_to_notification',
+    'add_contact_message_table','add_invitation_codes','add_library_loan_overdue_days','add_premium_features_to_tenant',
+    'add_subdomain_to_tenant','add_user_names','b1c7781652f9','c2477abce1cb','ee2182cf18f2','f1215d41dff2','make_isbn_nullable',
+    'make_tenant_id_nullable_for_user','multi_tenant_2026','simple_password_hash_fix','update_contact_message_for_conversations'
 )
 branch_labels = None
 depends_on = None
