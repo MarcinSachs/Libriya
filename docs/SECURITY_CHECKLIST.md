@@ -39,10 +39,20 @@
 
 ### 2. Broken Authentication
 
-- [ ] **Password Requirements** — PENDING (brak enforce 12+ / haveibeenpwned checks)
-  - [ ] Minimum 12 characters (NIST guidelines)
-  - [ ] Mix of uppercase, lowercase, numbers, special chars
-  - [ ] No common passwords (check against haveibeenpwned)
+- [x] **Password Requirements** — Partially implemented
+  - [x] Minimum 12 characters enforced (`validate_password_field`)
+  - [x] Mix of uppercase, lowercase, numbers, special chars enforced
+  - [ ] No common passwords (haveibeenpwned) — optional
+    - Behavior: HIBP checks are disabled outside production. When `APP_ENV` (or `FLASK_ENV`) is `production`, HIBP will be enabled by default unless `ENABLE_PWNED_CHECK` is explicitly set in the environment.
+    - To enable in production explicitly, set in your `.env`:
+
+      ```text
+      APP_ENV=production
+      ENABLE_PWNED_CHECK=True  # optional; prod enables by default if not set
+      HIBP_TIMEOUT=5.0
+      HIBP_CACHE_TTL=86400
+      ```
+    - Uses k-anonymity (only SHA1 prefix sent); requires outbound network access and a caching layer (recommended) to avoid rate limits.
 
 ```python
 # app/utils/password_validator.py (proposal exists in docs; not implemented)

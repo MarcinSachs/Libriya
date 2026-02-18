@@ -91,8 +91,44 @@ class Config(BaseSettings):
     CACHE_PREMIUM_FEATURES_TIMEOUT: int = 3600  # Cache premium features for 1 hour
     CACHE_USER_TIMEOUT: int = 1800  # Cache user lookups for 30 minutes
 
+    # Application environment: development | staging | production
+    APP_ENV: str = os.getenv('FLASK_ENV', 'development')
+
+    # Have I Been Pwned (HIBP) / pwned-passwords settings
+    # Disabled by default for safety; config controls enabling only in production.
+    ENABLE_PWNED_CHECK: bool = False
+    HIBP_TIMEOUT: float = 5.0
+    HIBP_CACHE_TTL: int = 86400  # 24 hours in seconds
+
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'
         case_sensitive = False
         extra = 'ignore'  # Ignore extra fields from .env
+
+        @model_validator(mode='after')
+        def enforce_hibp_production_only(self) -> 'Config':
+            """Ensure HIBP checks are only enabled in production by default.
+
+            - If `APP_ENV` is not 'production', force `ENABLE_PWNED_CHECK` to False to
+                avoid accidental outbound requests in development/testing.
+            - If `APP_ENV` is 'production' and the environment didn't explicitly set
+                `ENABLE_PWNED_CHECK`, enable it by default (safe production opt-in).
+            """
+            env = getattr(self, 'APP_ENV', None) or os.getenv('FLASK_ENV') or 'development'
+            self.APP_ENV = env
+
+            # If not running in production, always disable HIBP checks regardless of .env
+            if env.lower() != 'production':
+                self.ENABLE_PWNED_CHECK = False
+                return self
+
+            # Running in production: if the operator explicitly set ENABLE_PWNED_CHECK
+            # in the environment, respect it; otherwise enable by default in prod.
+            if 'ENABLE_PWNED_CHECK' in os.environ:
+                # pydantic already loaded the env value into self.ENABLE_PWNED_CHECK
+                return self
+
+            # No explicit env value: enable in production by default
+            self.ENABLE_PWNED_CHECK = True
+            return self

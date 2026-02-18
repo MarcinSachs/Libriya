@@ -8,6 +8,7 @@ from wtforms.validators import (
     DataRequired, Email, Length, EqualTo, Optional, ValidationError, NumberRange
 )
 from app.utils.validators import validate_username_field, validate_email_field, sanitize_string, validate_subdomain_field
+from app.utils.password_validator import validate_password_field
 from datetime import datetime
 from flask_babel import lazy_gettext as _, gettext as _real
 from app.models import Genre
@@ -116,7 +117,7 @@ class UserForm(FlaskForm):
     username = StringField(_('Username'), validators=[DataRequired(), Length(min=3, max=50), validate_username_field])
     email = StringField(_('Email'), validators=[DataRequired(), validate_email_field],
                         render_kw={'placeholder': _('user@example.com')})  # Translated placeholder in forms.py
-    password = PasswordField(_('Password'), validators=[DataRequired()])
+    password = PasswordField(_('Password'), validators=[DataRequired(), validate_password_field])
     confirm_password = PasswordField(_('Confirm Password'), validators=[
                                      DataRequired(), EqualTo('password')])
     submit = SubmitField(_('Add User'), render_kw={"class": "btn btn-primary"})
@@ -141,7 +142,7 @@ class UserSettingsForm(FlaskForm):
         FileSize(max_size=2 * 1024 * 1024,
                  message=_('File size must be less than 2MB.'))
     ])
-    password = PasswordField(_('New Password'), validators=[Optional()])
+    password = PasswordField(_('New Password'), validators=[Optional(), validate_password_field])
     confirm_password = PasswordField(
         _('Confirm New Password'),
         validators=[EqualTo('password', message=_('Passwords must match.'))]
