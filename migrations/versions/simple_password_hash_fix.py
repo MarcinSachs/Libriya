@@ -31,6 +31,8 @@ def downgrade():
                               existing_type=sa.String(length=255),
                               type_=mysql.VARCHAR(length=128),
                               existing_nullable=False)
+
+
 """Simple fix for password_hash column size
 
 Revision ID: simple_password_hash_fix
@@ -38,9 +40,6 @@ Revises: add_premium_features
 Create Date: 2026-02-17 20:05:00.000000
 
 """
-from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
 revision = 'simple_password_hash_fix'
