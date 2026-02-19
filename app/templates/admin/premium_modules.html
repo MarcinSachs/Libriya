@@ -33,7 +33,7 @@
                                     <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
                                         <td class="px-6 py-4">
                                             <span class="font-semibold text-gray-800">{{ module.name }}</span><br>
-                                            <small class="text-gray-500">{{ module.module_id }}</small>
+                                            <small class="text-gray-500">{{ module.module_id.replace('_', ' ') }}</small>
                                         </td>
                                         <td class="px-6 py-4">
                                             {% if module.enabled %}

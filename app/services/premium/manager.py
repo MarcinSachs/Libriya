@@ -34,10 +34,10 @@ class PremiumManager:
             return
 
         logger.info("PremiumManager: Initializing premium features...")
-        
+
         # Discover and validate all premium modules
         modules = PremiumModuleLoader.discover_modules()
-        
+
         for module_id in modules:
             if PremiumModuleLoader.validate_license(module_id):
                 logger.info(f"✅ PremiumManager: Premium module '{module_id}' available")
@@ -46,7 +46,6 @@ class PremiumManager:
 
         PremiumManager._initialized = True
         logger.info("PremiumManager: Initialization complete")
-
 
     @staticmethod
     def is_enabled(feature_id: str) -> bool:
@@ -99,7 +98,7 @@ class PremiumManager:
             if method is None:
                 logger.warning(f"PremiumManager: Method '{method_name}' not found in '{class_name}'")
                 return None
-            
+
             result = method(**kwargs)
             logger.debug(f"PremiumManager: Called {feature_id}.{class_name}.{method_name}")
             return result
@@ -116,37 +115,32 @@ class PremiumManager:
     def list_features() -> Dict[str, Dict[str, Any]]:
         """
         List all available premium features (alias for list_modules for compatibility).
-        
+
         Returns:
             Dict with format expected by admin panel
         """
         modules = PremiumModuleLoader.list_available_modules()
-        
-        # Map modules to feature format for admin panel compatibility
+
         features = {}
-        module_names = {
-            'metadata': {'name': 'Biblioteka Narodowa Metadata', 'description': 'Premium metadata from Polish National Library API'},
-            'covers': {'name': 'Bookcover API (Goodreads)', 'description': 'Premium covers from bookcover.longitood.com'},
-        }
-        
         for module_id, info in modules.items():
-            meta = module_names.get(module_id, {})
+            display_name = info.get('display_name')
+            if not display_name:
+                display_name = module_id.replace('_', ' ').title()
             features[module_id] = {
                 'feature_id': module_id,
-                'name': meta.get('name', module_id.title()),
-                'description': meta.get('description', ''),
-                'enabled': info.get('enabled', False),
+                'name': display_name,
+                'description': info.get('description', ''),
+                'enabled': info.get('enabled', True),
                 'expiry_date': info.get('expiry_date'),
                 'requires_config': {},
             }
-        
         return features
 
     @staticmethod
     def reload() -> None:
         """
         Reload all premium modules and their licenses.
-        
+
         Useful after uploading new modules or updating licenses.
         """
         logger.info("PremiumManager: Reloading premium modules...")
