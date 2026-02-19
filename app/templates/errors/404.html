@@ -1,0 +1,27 @@
+{% extends "base/main_base.html" %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen bg-gray-50">
+    <div class="text-center">
+        <div class="mb-6">
+            <h1 class="text-6xl font-bold text-yellow-600">404</h1>
+            <p class="text-2xl font-semibold text-gray-800 mt-4">{{ _('Page Not Found') }}</p>
+        </div>
+        
+        <p class="text-gray-600 mb-8 max-w-md">
+            {{ _('The page you are looking for does not exist or has been moved.') }}
+        </p>
+        
+        <div class="flex gap-4 justify-center">
+            <a href="{{ url_for('main.home') }}" class="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:shadow-lg transition">
+                {{ _('Back to Home') }}
+            </a>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.home') }}" class="px-6 py-3 bg-secondary text-white font-semibold rounded-lg hover:shadow-lg transition">
+                {{ _('Dashboard') }}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

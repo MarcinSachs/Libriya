@@ -1,0 +1,185 @@
+{% extends "base/main_base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-4xl font-bold text-primary">{{ title }}</h1>
+            <p class="text-gray-600 mt-2">{{ _('Manage and upload premium modules') }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Installed Modules List -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200 bg-primary text-white rounded-t-lg">
+                    <h2 class="text-xl font-bold">📦 {{ _('Installed Premium Modules') }}</h2>
+                </div>
+                <div class="p-6">
+                    {% if modules %}
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">{{ _('Module') }}</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">{{ _('Status') }}</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">{{ _('Expiry Date') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for module in modules %}
+                                    <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
+                                        <td class="px-6 py-4">
+                                            <span class="font-semibold text-gray-800">{{ module.name }}</span><br>
+                                            <small class="text-gray-500">{{ module.module_id }}</small>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            {% if module.enabled %}
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                                    ✅ {{ _('Active') }}
+                                                </span>
+                                            {% else %}
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                                    ❌ {{ _('Inactive') }}
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-600">
+                                            {% if module.expiry_date != 'N/A' %}
+                                                {{ module.expiry_date }}
+                                            {% else %}
+                                                <span class="text-gray-500">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <p class="text-blue-800 text-sm">
+                                <strong>ℹ️ {{ _('No premium modules installed') }}</strong><br>
+                                {{ _('Upload a premium module ZIP to get started.') }}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Panel -->
+        <div class="space-y-6">
+            <!-- Upload Section -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200 bg-success text-white rounded-t-lg">
+                    <h2 class="font-semibold text-gray-800"><i class='bx bx-upload'></i> {{ _('Upload Module') }}</h2>
+                </div>
+                <div class="p-6 space-y-4">
+                    <form id="uploadForm" enctype="multipart/form-data" class="space-y-4">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <div>
+                            <label for="moduleZip" class="block text-sm font-semibold text-gray-700 mb-2">
+                                {{ _('Select ZIP File') }}
+                            </label>
+                            <input type="file" 
+                                   class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" 
+                                   id="moduleZip" 
+                                   name="file" 
+                                   accept=".zip" 
+                                   required>
+                            <small class="text-gray-600 block mt-2">
+                                ZIP {{ _('must contain a folder with') }} <code class="bg-gray-100 px-1 rounded">license.json</code> {{ _('and module files') }}
+                            </small>
+                        </div>
+                        <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:shadow-lg transition">
+                            <i class="bx bx-upload mr-2"></i>{{ _('Upload Module') }}
+                        </button>
+                    </form>
+
+                    <div class="border-t border-gray-200 pt-4">
+                        <button id="reloadBtn" class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition flex items-center justify-center gap-2">
+                            <i class="bx bx-sync mr-2"></i>{{ _('Reload Modules') }}
+                        </button>
+                    </div>
+
+                    <!-- Status Messages -->
+                    <div id="statusMessage"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    const fileInput = document.getElementById('moduleZip');
+    formData.append('file', fileInput.files[0]);
+
+    const statusDiv = document.getElementById('statusMessage');
+    statusDiv.innerHTML = '<div class="flex items-center gap-2 text-gray-700"><div class="animate-spin"><i class="bx bx-loader text-lg"></i></div>Uploading...</div>';
+
+    try {
+        const response = await fetch('{{ url_for("admin.premium_modules_upload") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+            }
+        });
+
+        // Debug: log raw response
+        const text = await response.text();
+        console.log('Response status:', response.status);
+        console.log('Response text:', text);
+        
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            statusDiv.innerHTML = `<div class="bg-red-50 border border-red-200 rounded p-4"><p class="text-red-800 text-sm"><strong>❌ Server error:</strong> Invalid response<br><small>${text.substring(0, 100)}</small></p></div>`;
+            return;
+        }
+
+        if (response.ok) {
+            statusDiv.innerHTML = `<div class="bg-green-50 border border-green-200 rounded p-4"><p class="text-green-800 text-sm"><strong>✅ ${data.success}</strong><br>Modules: ${data.modules.join(', ')}</p></div>`;
+            fileInput.value = '';
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            statusDiv.innerHTML = `<div class="bg-red-50 border border-red-200 rounded p-4"><p class="text-red-800 text-sm"><strong>❌ ${data.error}</strong></p></div>`;
+        }
+    } catch (error) {
+        statusDiv.innerHTML = `<div class="bg-red-50 border border-red-200 rounded p-4"><p class="text-red-800 text-sm"><strong>❌ Upload failed:</strong> ${error.message}</p></div>`;
+    }
+});
+
+document.getElementById('reloadBtn').addEventListener('click', async () => {
+    const statusDiv = document.getElementById('statusMessage');
+    statusDiv.innerHTML = '<div class="flex items-center gap-2 text-gray-700"><div class="animate-spin"><i class="bx bx-loader text-lg"></i></div>Reloading...</div>';
+
+    try {
+        const response = await fetch('{{ url_for("admin.premium_modules_reload") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+            }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            statusDiv.innerHTML = `<div class="bg-green-50 border border-green-200 rounded p-4"><p class="text-green-800 text-sm"><strong>✅ ${data.success}</strong></p></div>`;
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            statusDiv.innerHTML = `<div class="bg-red-50 border border-red-200 rounded p-4"><p class="text-red-800 text-sm"><strong>❌ ${data.error}</strong></p></div>`;
+        }
+    } catch (error) {
+        statusDiv.innerHTML = `<div class="bg-red-50 border border-red-200 rounded p-4"><p class="text-red-800 text-sm"><strong>❌ Reload failed:</strong> ${error.message}</p></div>`;
+    }
+});
+</script>
+{% endblock %}

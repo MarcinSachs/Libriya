@@ -227,6 +227,5 @@ backup_*.sql.gz
 # Covers
 app/static/uploads/*
 
-# Premium module licenses (production files - should not be in repo)
-app/services/premium/*/license.json
-app/services/premium/*/license.json.example
+# Premium modules (uploaded by clients after purchase - should not be in public repo)
+app/services/premium/*/
