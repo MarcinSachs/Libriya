@@ -4,7 +4,8 @@ import tempfile
 from datetime import datetime, timedelta
 from app import create_app, db
 from app.models import User, Tenant, Library, Book, InvitationCode, ContactMessage
-from app.utils.audit_log import LOGS_ROOT, ensure_logs_dir
+from app.utils import audit_log
+import logging
 
 
 def setup_test_app():
@@ -53,7 +54,19 @@ def test_full_audit_sweep_creates_logs(tmp_path):
         db.session.commit()
 
         # Ensure logs dir
-        ensure_logs_dir()
+        audit_log.ensure_logs_dir()
+
+        # --- CLEANUP LOGS BEFORE TEST ---
+        tenant_dir = os.path.join(audit_log.LOGS_ROOT, f'tenant_{tenant.id}')
+        global_dir = os.path.join(audit_log.LOGS_ROOT, 'global')
+        for d in [tenant_dir, global_dir]:
+            if os.path.exists(d):
+                for f in os.listdir(d):
+                    if f.startswith('audit_'):
+                        try:
+                            os.remove(os.path.join(d, f))
+                        except Exception:
+                            pass
 
         # Trigger several audit actions
         from app.utils.audit_log import log_action, log_user_created, log_user_deleted
@@ -64,9 +77,30 @@ def test_full_audit_sweep_creates_logs(tmp_path):
         log_action('INVITATION_CREATED', f'Invitation {code.code} generated', subject=code)
         log_action('CONTACT_MESSAGE', f'Contact message {cm.id} created', subject=cm)
 
+        # --- FLUSH ALL LOGGERS ---
+        for handler in logging.root.handlers:
+            try:
+                handler.flush()
+            except Exception:
+                pass
+        # Dodatkowo flush handlerów z audit_log jeśli są
+        if hasattr(audit_log, 'logger'):
+            for handler in getattr(audit_log.logger, 'handlers', []):
+                try:
+                    handler.flush()
+                except Exception:
+                    pass
+
+        # Debug: pokaż ścieżki i pliki
+        print('LOGS_ROOT:', audit_log.LOGS_ROOT)
+        print('tenant_dir:', tenant_dir)
+        print('global_dir:', global_dir)
+        if os.path.exists(tenant_dir):
+            print('tenant_dir files:', os.listdir(tenant_dir))
+        if os.path.exists(global_dir):
+            print('global_dir files:', os.listdir(global_dir))
+
         # Check that log files exist in tenant-specific dir or fallback to global
-        tenant_dir = os.path.join(LOGS_ROOT, f'tenant_{tenant.id}')
-        global_dir = os.path.join(LOGS_ROOT, 'global')
         target_dir = None
         if os.path.exists(tenant_dir):
             target_dir = tenant_dir
@@ -75,14 +109,18 @@ def test_full_audit_sweep_creates_logs(tmp_path):
 
         assert target_dir is not None, f'No logs directory found for tenant or global (checked {tenant_dir} and {global_dir})'
 
-        files = os.listdir(target_dir)
-        assert any(f.startswith('audit_') for f in files)
-
-        # Read content
-        logfile = os.path.join(target_dir, files[0])
-        with open(logfile, 'r', encoding='utf-8') as fh:
-            lines = [json.loads(l) for l in fh.readlines() if l.strip()]
-        actions = [l['action'] for l in lines]
+        # Zbierz pliki z obu katalogów
+        files = []
+        for d in [tenant_dir, global_dir]:
+            if os.path.exists(d):
+                files.extend([os.path.join(d, f) for f in os.listdir(d) if f.startswith('audit_')])
+        assert files, 'No audit log files found after actions.'
+        # Przeszukaj wszystkie pliki logów
+        actions = []
+        for logfile in files:
+            with open(logfile, 'r', encoding='utf-8') as fh:
+                lines = [json.loads(l) for l in fh.readlines() if l.strip()]
+                actions.extend([l['action'] for l in lines])
         assert 'TEST_ACTION' in actions
         assert 'USER_CREATED' in actions
         assert 'BOOK_CREATED' in actions

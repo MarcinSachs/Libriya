@@ -176,11 +176,11 @@ def downgrade():
                         pass
 
                     db.create_all()
-                    print('   ✓ Tables created')
+                    print('   Tables created (OK)')
                     break
                 except Exception as e:
                     if 'database is locked' in str(e).lower() and attempt < attempts:
-                        print(f"   ⚠ Database is locked, retrying ({attempt}/{attempts})...")
+                        print(f"   WARNING: Database is locked, retrying ({attempt}/{attempts})...")
                         time.sleep(1)
                         # attempt to dispose and reconnect
                         try:

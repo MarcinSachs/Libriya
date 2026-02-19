@@ -99,23 +99,24 @@ class ISBNValidator:
             isbn: ISBN string
 
         Returns:
-            Formatted ISBN-13 string
+            Formatted ISBN-13 string, or empty string if input is invalid
         """
         normalized = ISBNValidator.normalize(isbn)
-        cleaned = re.sub(r'[^\d]', '', normalized)
+        cleaned = re.sub(r'[^\dX]', '', normalized)
 
         if len(cleaned) == 13:
+            # Format as ISBN-13 with hyphens
             return f"{cleaned[0:3]}-{cleaned[3]}-{cleaned[4:7]}-{cleaned[7:12]}-{cleaned[12]}"
-        elif len(cleaned) == 10:
+        elif len(cleaned) == 10 and ISBNValidator.validate_isbn_10(cleaned):
             # Convert ISBN-10 to ISBN-13
-            isbn_13 = "978" + cleaned[:-1]
+            isbn_13_body = "978" + cleaned[:-1]
             total = sum(int(digit) * (1 if i % 2 == 0 else 3)
-                        for i, digit in enumerate(isbn_13))
+                        for i, digit in enumerate(isbn_13_body))
             check_digit = (10 - (total % 10)) % 10
-            isbn_13 = isbn_13 + str(check_digit)
+            isbn_13 = isbn_13_body + str(check_digit)
             return f"{isbn_13[0:3]}-{isbn_13[3]}-{isbn_13[4:7]}-{isbn_13[7:12]}-{isbn_13[12]}"
-
-        return cleaned
+        # If not valid ISBN-10 or ISBN-13, return empty string
+        return ""
 
     @staticmethod
     def to_isbn_13(isbn: str) -> str:
