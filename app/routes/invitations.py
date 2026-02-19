@@ -8,7 +8,7 @@ from app import db
 from app.models import InvitationCode, Library
 from app.utils import role_required
 from app.utils.audit_log import (
-    log_invitation_code_generated, log_invitation_code_deactivated
+    log_invitation_code_generated, log_invitation_code_deactivated, log_action
 )
 from app.utils.messages import (
     INVITATION_CODE_GENERATED, INVITATION_CODE_DEACTIVATED,
@@ -141,5 +141,11 @@ def copy_code(code_id):
     if current_user.role == 'manager':
         if code.library_id not in [lib.id for lib in current_user.libraries]:
             return jsonify({'error': 'Unauthorized'}), 403
+
+    # Audit: invitation code accessed for copy
+    try:
+        log_action('INVITATION_CODE_ACCESSED', f'Invitation code {code.code} accessed by {current_user.username}', subject=code, additional_info={'code_id': code.id, 'library_id': code.library_id, 'user_id': current_user.id})
+    except Exception:
+        pass
 
     return jsonify({'code': code.code})

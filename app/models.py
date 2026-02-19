@@ -2,9 +2,23 @@ from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 import datetime
+import secrets
+import hashlib
+from datetime import timedelta
 
 
 class Tenant(db.Model):
+    """Represents a tenant (organization/library system).
+
+    Attributes:
+        id (int): Primary key
+        name (str): Tenant display name
+        subdomain (str): Tenant subdomain used for routing
+        premium_bookcover_enabled (bool): Feature flag for bookcover API
+        premium_biblioteka_narodowa_enabled (bool): Feature flag for BN integration
+        created_at (datetime): Creation timestamp
+        updated_at (datetime): Last update timestamp
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False, index=True)
     subdomain = db.Column(db.String(100), unique=True, nullable=True, index=True)
@@ -74,6 +88,14 @@ user_libraries = db.Table('user_libraries',
 
 
 class Library(db.Model):
+    """Represents a library belonging to a tenant.
+
+    Attributes:
+        id (int): Primary key
+        name (str): Library name
+        tenant_id (int): Foreign key to `Tenant`
+        loan_overdue_days (int): Default allowed loan duration in days
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False, index=True)
     tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
@@ -87,6 +109,17 @@ class Library(db.Model):
 
 
 class Book(db.Model):
+    """Book entity stored in a library.
+
+    Attributes:
+        id (int): Primary key
+        library_id (int): FK to `Library`
+        tenant_id (int): FK to `Tenant`
+        isbn (str): ISBN number if present
+        title (str): Book title
+        year (int): Publication year
+        status (str): Availability status ('available', 'reserved', 'on_loan')
+    """
     id = db.Column(db.Integer, primary_key=True)
     library_id = db.Column(db.Integer, db.ForeignKey('library.id'), nullable=False)
     tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
@@ -141,6 +174,12 @@ class Location(db.Model):
 
 
 class Author(db.Model):
+    """Author of books.
+
+    Attributes:
+        id (int): Primary key
+        name (str): Author full name
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, index=True)
     books = db.relationship('Book', secondary=book_authors,
@@ -151,6 +190,12 @@ class Author(db.Model):
 
 
 class Genre(db.Model):
+    """Genre/category for books.
+
+    Attributes:
+        id (int): Primary key
+        name (str): Genre name
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, index=True)
     books = db.relationship('Book', secondary=book_genres,
@@ -161,11 +206,22 @@ class Genre(db.Model):
 
 
 class User(UserMixin, db.Model):
+    """Application user model.
+
+    Attributes:
+        id (int): Primary key
+        username (str): Unique login name
+        email (str): User email
+        role (str): Role identifier ('user','manager','admin','superadmin')
+        tenant_id (int|None): FK to `Tenant` (NULL for super-admin)
+    """
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True,
                          nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)  # INCREASED from 128 to 255 to accommodate PBKDF2 hashes
+    # Email verification status
+    is_email_verified = db.Column(db.Boolean, default=False, nullable=False)
     image_file = db.Column(db.String(20), nullable=False,
                            default='default.jpg')
     first_name = db.Column(db.String(50), nullable=True)
@@ -225,6 +281,15 @@ class User(UserMixin, db.Model):
 
 
 class Loan(db.Model):
+    """Represents a loan/reservation of a book by a user.
+
+    Attributes:
+        id (int): Primary key
+        book_id (int): FK to `Book`
+        user_id (int): FK to `User`
+        tenant_id (int): FK to `Tenant`
+        status (str): Loan status ('pending','issued','returned')
+    """
     id = db.Column(db.Integer, primary_key=True)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -251,6 +316,15 @@ class Loan(db.Model):
 
 
 class Notification(db.Model):
+    """In-app notification sent between users.
+
+    Attributes:
+        id (int): Primary key
+        recipient_id (int): FK to receiving `User`
+        sender_id (int|None): FK to sending `User` (may be null)
+        message (str): Notification text
+        type (str): Notification type identifier
+    """
     id = db.Column(db.Integer, primary_key=True)
     recipient_id = db.Column(
         db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -274,6 +348,14 @@ class Notification(db.Model):
 
 
 class LibraryAccessRequest(db.Model):
+    """Request for library access created by a user.
+
+    Attributes:
+        id (int): Primary key
+        user_id (int): FK to requesting `User`
+        library_id (int): FK to `Library`
+        status (str): 'pending', 'approved', or 'rejected'
+    """
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     library_id = db.Column(db.Integer, db.ForeignKey('library.id'), nullable=False)
@@ -292,6 +374,15 @@ class LibraryAccessRequest(db.Model):
 
 
 class Comment(db.Model):
+    """User comment on a book.
+
+    Attributes:
+        id (int): Primary key
+        user_id (int): FK to authoring `User`
+        book_id (int): FK to `Book`
+        text (str): Comment text
+        timestamp (datetime): When comment was created
+    """
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
@@ -312,6 +403,15 @@ class Comment(db.Model):
 
 
 class InvitationCode(db.Model):
+    """Invitation code used to register users into a library/tenant.
+
+    Attributes:
+        id (int): Primary key
+        code (str): Short unique invitation code
+        library_id (int): FK to target `Library`
+        tenant_id (int): FK to target `Tenant`
+        used_by_id (int|None): FK to `User` that used the code
+    """
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(8), unique=True, nullable=False, index=True)
 
@@ -355,6 +455,16 @@ class InvitationCode(db.Model):
 
 # Model wiadomości kontaktowej
 class ContactMessage(db.Model):
+    """Message submitted via contact form for a library.
+
+    Attributes:
+        id (int): Primary key
+        user_id (int|None): FK to `User` if sender is logged in
+        library_id (int): FK to `Library`
+        subject (str): Message subject
+        message (str): Body text
+        created_at (datetime): Creation timestamp
+    """
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     user = db.relationship('User', foreign_keys=[user_id], backref='contact_messages')
@@ -424,28 +534,116 @@ class AdminSuperAdminMessage(db.Model):
         return f"Message from {self.sender.username}: {self.message[:50]}..."
 
 
-# Poprawka logiki logowania multi-tenant:
-# W pliku routes/auth.py:
-#
-# 1. Pobierz tenant_name z formularza logowania (np. <input name="tenant"> lub select)
-# 2. Znajdź tenant po nazwie
-# 3. Szukaj użytkownika po loginie/emailu i tenant_id
-# 4. Sprawdź hasło i loguj użytkownika
-#
-# Przykład (do wstawienia w login_post):
-#
-# tenant_name = request.form.get('tenant')
-# tenant = Tenant.query.filter_by(name=tenant_name).first()
-# if not tenant:
-#     flash('Nieprawidłowy tenant', 'danger')
-#     return redirect(url_for('auth.login'))
-# if '@' in username:
-#     user = User.query.filter_by(email=username, tenant_id=tenant.id).first()
-# else:
-#     user = User.query.filter_by(username=username, tenant_id=tenant.id).first()
-#
-# ...dalej sprawdzaj hasło i loguj użytkownika...
-#
-# UWAGA: Dodaj pole wyboru tenant w formularzu logowania (np. select z listą tenantów)
-#
-# Ten kod nie wymaga zmian w models.py, tylko w routes/auth.py oraz w szablonie logowania.
+class AuditLogFile(db.Model):
+    """Metadata for file-based audit logs.
+
+    One record per log file. Super-admin UI will list these entries so files can
+    be previewed, archived or purged according to retention policy.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=True, index=True)
+    filename = db.Column(db.String(500), nullable=False, unique=True, index=True)
+    start_ts = db.Column(db.DateTime, nullable=True)
+    end_ts = db.Column(db.DateTime, nullable=True)
+    size = db.Column(db.Integer, nullable=True)
+    archived = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False, index=True)
+
+    tenant = db.relationship('Tenant', backref='audit_log_files')
+
+    def __str__(self):
+        return f"AuditLogFile: {self.filename} (tenant={self.tenant_id})"
+
+
+class PasswordResetToken(db.Model):
+    """One-time password reset tokens (DB-backed).
+
+    Stores only the sha256 hash of the token so the raw token is only returned
+    once to be sent by email. Tokens are single-use and expire after a period.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    token_hash = db.Column(db.String(128), nullable=False, unique=True, index=True)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+    user = db.relationship('User', backref='password_reset_tokens')
+
+    @classmethod
+    def generate_token(cls, user_id, expires_in=3600):
+        """Generate a token for user_id, store hash and return raw token."""
+        token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        now = datetime.datetime.utcnow()
+        expires_at = now + timedelta(seconds=expires_in)
+        entry = cls(user_id=user_id, token_hash=token_hash, expires_at=expires_at)
+        db.session.add(entry)
+        db.session.commit()
+        return token
+
+    @classmethod
+    def verify_token(cls, token):
+        """Verify raw token and return DB entry if valid and not used/expired."""
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        entry = cls.query.filter_by(token_hash=token_hash).first()
+        if not entry:
+            return None
+        if entry.used:
+            return None
+        if entry.expires_at < datetime.datetime.utcnow():
+            return None
+        return entry
+
+    def mark_used(self):
+        self.used = True
+        db.session.commit()
+
+    def __str__(self):
+        return f"PasswordResetToken(user_id={self.user_id}, used={self.used}, expires_at={self.expires_at})"
+
+
+class EmailVerificationToken(db.Model):
+    """DB-backed email verification tokens (single-use).
+
+    Pattern mirrors PasswordResetToken: store only the sha256 hash, expire and single-use.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    token_hash = db.Column(db.String(128), nullable=False, unique=True, index=True)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+    user = db.relationship('User', backref='email_verification_tokens')
+
+    @classmethod
+    def generate_token(cls, user_id, expires_in=86400):
+        """Generate token for email verification (default 24h expiry)."""
+        token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        now = datetime.datetime.utcnow()
+        expires_at = now + timedelta(seconds=expires_in)
+        entry = cls(user_id=user_id, token_hash=token_hash, expires_at=expires_at)
+        db.session.add(entry)
+        db.session.commit()
+        return token
+
+    @classmethod
+    def verify_token(cls, token):
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        entry = cls.query.filter_by(token_hash=token_hash).first()
+        if not entry:
+            return None
+        if entry.used:
+            return None
+        if entry.expires_at < datetime.datetime.utcnow():
+            return None
+        return entry
+
+    def mark_used(self):
+        self.used = True
+        db.session.commit()
+
+    def __str__(self):
+        return f"EmailVerificationToken(user_id={self.user_id}, used={self.used}, expires_at={self.expires_at})"

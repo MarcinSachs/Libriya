@@ -1,17 +1,14 @@
 """
 Premium features management system.
 
-Dynamically loads and manages premium modules without requiring changes to core application.
-Includes license validation for access control.
+Dynamically loads and manages premium modules with license validation.
+Modules are loaded from subdirectories in app/services/premium/
 """
 
 from app.services.premium.manager import PremiumManager
-from app.services.premium.registry import premium_registry
-from app.services.premium.license import license_manager, PremiumLicense
+from app.services.premium.loader import PremiumModuleLoader
 
 __all__ = [
     'PremiumManager',
-    'premium_registry',
-    'license_manager',
-    'PremiumLicense',
+    'PremiumModuleLoader',
 ]

@@ -8,10 +8,13 @@
             <h1 class="text-4xl font-bold text-primary">{{ _('Admin Dashboard') }}</h1>
             <p class="text-gray-600 mt-2">{{ _('System administration and management') }}</p>
         </div>
-        <a href="{{ url_for('admin.tenant_add') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:shadow-lg transition">
-            <i class="bx bx-plus text-lg"></i>
-            {{ _('New Organization') }}
-        </a>
+        <div class="flex gap-2">
+            <a href="{{ url_for('admin.tenant_add') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:shadow-lg transition">
+                <i class="bx bx-plus text-lg"></i>
+                {{ _('New Organization') }}
+            </a>
+
+        </div>
     </div>
 
     <!-- Statistics Grid -->

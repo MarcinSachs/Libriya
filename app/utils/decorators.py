@@ -11,6 +11,11 @@ def role_required(*roles):
         def decorated_function(*args, **kwargs):
             # Allow superadmin regardless of specific role checks
             if not current_user.is_authenticated or (current_user.role not in roles and not getattr(current_user, 'is_super_admin', False)):
+                # For AJAX requests, return JSON
+                if request.is_json or request.path.startswith('/admin/premium'):
+                    from flask import jsonify
+                    return jsonify({'error': _("You do not have the required privileges to access this page.")}), 403
+                
                 flash(
                     _("You do not have the required privileges to access this page."), "danger")
                 return redirect(url_for('main.home'))

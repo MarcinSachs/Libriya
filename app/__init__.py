@@ -4,10 +4,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_babel import _, Babel, lazy_gettext as _l
-from flask import session, request
+from flask import session, request, render_template, flash, redirect, url_for
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
+from flask_caching import Cache
 from markupsafe import Markup
 
 db = SQLAlchemy()
@@ -17,6 +18,7 @@ login_manager.login_view = 'auth.login'
 babel = Babel()
 limiter = Limiter(key_func=get_remote_address)
 csrf = CSRFProtect()
+cache = Cache()
 
 
 def create_app(config_class=Config):
@@ -31,8 +33,18 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     # Ustaw komunikat logowania z tłumaczeniem dynamicznym
     login_manager.login_message = _l("Please log in to access this page.")
-    limiter.init_app(app)
+    
+    # Initialize Limiter with environment-based storage (Opcja 1)
+    # Development: uses memory:// (SimpleCache)
+    # Production: uses Redis if RATELIMIT_STORAGE_URL is set
+    storage_url = app.config.get('RATELIMIT_STORAGE_URL')
+    if storage_url:
+        limiter.init_app(app, storage_uri=storage_url)
+    else:
+        limiter.init_app(app)  # Defaults to memory://
+    
     csrf.init_app(app)
+    cache.init_app(app)
 
     def get_locale():
         # 1. Check for language in cookie first
@@ -64,7 +76,7 @@ def create_app(config_class=Config):
     def get_tenant_from_subdomain():
         """Extract tenant from subdomain if present"""
         from flask import request
-        from app.models import Tenant
+        from app.services.cache_service import get_tenant_by_subdomain_cached
 
         host = request.host.split(':')[0]  # Remove port
         host_parts = host.split('.')
@@ -72,7 +84,7 @@ def create_app(config_class=Config):
         # Check if it's a subdomain (not localhost or www)
         if len(host_parts) > 1 and host_parts[0] not in ('localhost', 'www', '127'):
             subdomain = host_parts[0]
-            tenant = Tenant.query.filter_by(subdomain=subdomain).first()
+            tenant = get_tenant_by_subdomain_cached(subdomain)
             return tenant
         return None
 
@@ -89,6 +101,69 @@ def create_app(config_class=Config):
 
     # Register multi-tenant middleware
     @app.before_request
+    def enforce_https():
+        """Enforce HTTPS in production by redirecting HTTP requests"""
+        # Only enforce in production and when not running in debug mode
+        if (not app.debug and 
+            not request.is_secure and 
+            request.headers.get('X-Forwarded-Proto', 'http') == 'http' and
+            app.config.get('HTTPS_REDIRECT', True)):
+            # Redirect HTTP to HTTPS
+            url = request.url.replace('http://', 'https://', 1)
+            return redirect(url, code=301)
+
+    @app.before_request
+    def handle_tenant_routing():
+        """
+        Handle tenant-specific routing logic.
+        
+        For subdomain-based tenants:
+        - If authenticated user accesses '/', redirect to home/dashboard
+        - If unauthenticated user accesses non-auth pages, redirect to login
+        """
+        from flask_login import current_user
+        from app.services.cache_service import get_tenant_by_subdomain_cached
+
+        # Allow static files and logout for everyone
+        if request.path.startswith('/static') or request.path == '/auth/logout':
+            return
+
+        # Get tenant from subdomain
+        host_parts = request.host.split(':')[0].split('.')
+        tenant = None
+        
+        if len(host_parts) > 1 and host_parts[0] not in ('localhost', 'www', '127'):
+            subdomain = host_parts[0]
+            try:
+                tenant = get_tenant_by_subdomain_cached(subdomain)
+            except Exception as e:
+                # Log error but don't break the request if database is unavailable
+                app.logger.debug(f"Error fetching tenant for subdomain '{subdomain}': {e}")
+                tenant = None
+
+        # Tenant-specific routing logic
+        if tenant:
+            # 1. If authenticated user tries to access landing page on subdomain, redirect to home
+            if current_user.is_authenticated and request.endpoint == 'main.landing':
+                return redirect(url_for('main.home'))
+
+            # 2. If NOT authenticated and NOT on auth/static pages, redirect to login
+            # List of allowed endpoints for unauthenticated users on subdomain
+            allowed_endpoints = [
+                'auth.login',
+                'auth.register',
+                'auth.register_choice',
+                'auth.password_reset',
+                'auth.password_reset_confirm',
+                'auth.verify_email',
+                'auth.verify_email_send',
+                'static'
+            ]
+            
+            if not current_user.is_authenticated and request.endpoint not in allowed_endpoints:
+                return redirect(url_for('auth.login'))
+
+    @app.before_request
     def verify_tenant_access():
         """
         Middleware sprawdzający dostęp do tenantu
@@ -101,14 +176,15 @@ def create_app(config_class=Config):
 
         # Inicjalizuj PremiumContext dla zalogowanego użytkownika
         if current_user.is_authenticated and current_user.tenant_id:
-            # Tenant user - załaduj premium features dla jego tenantu
-            from app.models import Tenant
-            tenant = Tenant.query.get(current_user.tenant_id)
-            if tenant:
-                enabled_features = set(tenant.get_enabled_premium_features())
+            try:
+                # Tenant user - załaduj premium features dla jego tenantu (z cache)
+                from app.services.cache_service import get_premium_features_cached
+                enabled_features = get_premium_features_cached(current_user.tenant_id)
                 PremiumContext.set_for_tenant(current_user.tenant_id, enabled_features)
-            else:
-                PremiumContext.clear()
+            except Exception as e:
+                # If database is unavailable, just set empty context
+                app.logger.debug(f"Error loading premium features: {e}")
+                PremiumContext.set_for_tenant(None, set())
         else:
             # Super-admin - super-admini mają dostęp do wszystkich features globalnie
             PremiumContext.set_for_tenant(None, set())  # No specific tenant context
@@ -133,17 +209,54 @@ def create_app(config_class=Config):
                 from flask import abort
                 abort(403)  # Zabroń dostępu poza dozwoloną listę
 
-        # Pobierz tenant z subdomeny
-        host_parts = request.host.split(':')[0].split('.')
-        if len(host_parts) > 1 and host_parts[0] not in ('localhost', 'www'):
-            subdomain = host_parts[0]
-            from app.models import Tenant
-            tenant = Tenant.query.filter_by(subdomain=subdomain).first()
+        # Pobierz tenant z subdomeny (z cache)
+        try:
+            host_parts = request.host.split(':')[0].split('.')
+            if len(host_parts) > 1 and host_parts[0] not in ('localhost', 'www', '127'):
+                subdomain = host_parts[0]
+                from app.services.cache_service import get_tenant_by_subdomain_cached
+                tenant = get_tenant_by_subdomain_cached(subdomain)
 
-            # Sprawdź czy użytkownik należy do tego tenantu
-            if tenant and current_user.is_authenticated and current_user.tenant_id != tenant.id:
-                from flask import abort
-                abort(403)  # Forbidden
+                # If the current_user is logged in, ensure their tenant subdomain matches the request subdomain
+                if current_user.is_authenticated and getattr(current_user, 'tenant_id', None):
+                    try:
+                        from app.services.cache_service import get_tenant_by_id_cached
+                        current_tenant = get_tenant_by_id_cached(current_user.tenant_id)
+                    except Exception:
+                        current_tenant = None
+                    if current_tenant and current_tenant.subdomain != subdomain:
+                        from flask import abort
+                        abort(403)
+
+                # Also check session-based user id for tests where Flask-Login may not be populated
+                session_user_id = session.get('_user_id')
+                if session_user_id:
+                    try:
+                        session_user_id_int = int(session_user_id)
+                    except Exception:
+                        session_user_id_int = None
+                    if session_user_id_int:
+                        from app.models import User as AppUser
+                        session_user = AppUser.query.get(session_user_id_int)
+                        if session_user and session_user.tenant_id and tenant and session_user.tenant_id != tenant.id:
+                            from flask import abort
+                            abort(403)
+
+                # Jeśli subdomena nie istnieje - zwróć 404 tylko gdy ENFORCE_SUBDOMAIN_EXISTS=True
+                if not tenant:
+                    if app.config.get('ENFORCE_SUBDOMAIN_EXISTS', True):
+                        from flask import abort
+                        abort(404)
+                    # else: allow unknown subdomains (development/local use)
+
+                # Sprawdź czy użytkownik należy do tego tenantu
+                if current_user.is_authenticated and tenant and current_user.tenant_id != tenant.id:
+                    from flask import abort
+                    abort(403)  # Forbidden
+        except Exception as e:
+            # Log error but don't break the request if database is unavailable
+            # This allows the app to continue working even if the database is temporarily down
+            app.logger.debug(f"Error in verify_tenant_access: {e}")
 
     # Add security headers
     @app.after_request
@@ -172,6 +285,31 @@ def create_app(config_class=Config):
             response.headers['Service-Worker-Allowed'] = '/'
 
         return response
+
+    # Error handlers
+    @app.errorhandler(404)
+    def not_found(error):
+        """Handle 404 errors"""
+        return render_template('errors/404.html'), 404
+
+    @app.errorhandler(403)
+    def forbidden(error):
+        """Handle 403 errors"""
+        flash(_('You do not have permission to access this page'), 'danger')
+        return render_template('errors/403.html'), 403
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        """Handle 500 errors"""
+        db.session.rollback()
+        app.logger.error(f'Server error: {error}')
+        return render_template('errors/500.html'), 500
+
+    @app.errorhandler(429)
+    def ratelimit_handler(e):
+        """Handle rate limit exceeded"""
+        flash(_('Too many requests. Please try again later.'), 'danger')
+        return redirect(request.referrer or url_for('main.home')), 429
 
     # Register CLI commands
     register_cli_commands(app)
@@ -209,5 +347,5 @@ def register_cli_commands(app):
 
 @login_manager.user_loader
 def load_user(user_id):
-    from app.models import User
-    return User.query.get(int(user_id))
+    from app.services.cache_service import get_user_by_id_cached
+    return get_user_by_id_cached(int(user_id))

@@ -7,6 +7,8 @@ from flask_wtf.file import FileField, FileAllowed, FileSize
 from wtforms.validators import (
     DataRequired, Email, Length, EqualTo, Optional, ValidationError, NumberRange
 )
+from app.utils.validators import validate_username_field, validate_email_field, sanitize_string, validate_subdomain_field
+from app.utils.password_validator import validate_password_field
 from datetime import datetime
 from flask_babel import lazy_gettext as _, gettext as _real
 from app.models import Genre
@@ -103,12 +105,19 @@ class BookForm(FlaskForm):
         if 'obj' in kwargs and kwargs['obj'] is not None:
             self.genres.data = [g.id for g in kwargs['obj'].genres]
 
+    def validate_title(self, field):
+        field.data = sanitize_string(field.data, max_length=200)
+
+    def validate_description(self, field):
+        if field.data:
+            field.data = sanitize_string(field.data, max_length=2000)
+
 
 class UserForm(FlaskForm):
-    username = StringField(_('Username'), validators=[DataRequired()])
-    email = StringField(_('Email'), validators=[DataRequired(), Email()],
+    username = StringField(_('Username'), validators=[DataRequired(), Length(min=3, max=50), validate_username_field])
+    email = StringField(_('Email'), validators=[DataRequired(), validate_email_field],
                         render_kw={'placeholder': _('user@example.com')})  # Translated placeholder in forms.py
-    password = PasswordField(_('Password'), validators=[DataRequired()])
+    password = PasswordField(_('Password'), validators=[DataRequired(), validate_password_field])
     confirm_password = PasswordField(_('Confirm Password'), validators=[
                                      DataRequired(), EqualTo('password')])
     submit = SubmitField(_('Add User'), render_kw={"class": "btn btn-primary"})
@@ -116,11 +125,11 @@ class UserForm(FlaskForm):
 
 class UserEditForm(FlaskForm):
     username = StringField(_('Username'), render_kw={'readonly': True})
-    email = StringField(_('Email'), validators=[DataRequired(), Email()])
+    email = StringField(_('Email'), validators=[DataRequired(), validate_email_field])
     role = SelectField(_('Role'), choices=[
-        ('user', 'User'),
-        ('manager', 'Manager'),
-        ('admin', 'Admin')
+        ('user', _('User')),
+        ('manager', _('Manager')),
+        ('admin', _('Admin'))
     ], validators=[DataRequired()])
     submit = SubmitField(_('Submit'), render_kw={
                          "class": "btn btn-primary"})
@@ -133,7 +142,7 @@ class UserSettingsForm(FlaskForm):
         FileSize(max_size=2 * 1024 * 1024,
                  message=_('File size must be less than 2MB.'))
     ])
-    password = PasswordField(_('New Password'), validators=[Optional()])
+    password = PasswordField(_('New Password'), validators=[Optional(), validate_password_field])
     confirm_password = PasswordField(
         _('Confirm New Password'),
         validators=[EqualTo('password', message=_('Passwords must match.'))]
@@ -146,6 +155,9 @@ class LibraryForm(FlaskForm):
     name = StringField(_('Library Name'), validators=[DataRequired()])
     loan_overdue_days = IntegerField(_('Loan overdue days'), default=14, validators=[DataRequired()])
     submit = SubmitField(_('Submit'), render_kw={"class": "btn btn-primary"})
+
+    def validate_name(self, field):
+        field.data = sanitize_string(field.data, max_length=100)
 
 
 class LoanForm(FlaskForm):
@@ -173,6 +185,9 @@ class CommentForm(FlaskForm):
     )
     submit = SubmitField(_('Add Comment'))
 
+    def validate_text(self, field):
+        field.data = sanitize_string(field.data, max_length=500)
+
 
 class RegistrationForm(FlaskForm):
     # Field to track whether user is creating a new tenant or joining existing one
@@ -192,11 +207,11 @@ class RegistrationForm(FlaskForm):
 
     email = StringField(
         _('Email'),
-        validators=[DataRequired(), Email()]
+        validators=[DataRequired(), validate_email_field]
     )
     username = StringField(
         _('Username'),
-        validators=[DataRequired(), Length(min=3, max=50)]
+        validators=[DataRequired(), Length(min=3, max=50), validate_username_field]
     )
     password = PasswordField(
         _('Password'),
@@ -234,12 +249,14 @@ class RegistrationForm(FlaskForm):
                 raise ValidationError(_('Invitation code has expired or has already been used'))
 
     def validate_first_name(self, field):
-        # First name is required when joining existing tenant
+        # Sanitize input and require first name when joining existing tenant
+        field.data = sanitize_string(field.data, max_length=50)
         if self.create_new_tenant.data == 'false' and not field.data:
             raise ValidationError(_('First name is required'))
 
     def validate_last_name(self, field):
-        # Last name is required when joining existing tenant
+        # Sanitize input and require last name when joining existing tenant
+        field.data = sanitize_string(field.data, max_length=50)
         if self.create_new_tenant.data == 'false' and not field.data:
             raise ValidationError(_('Last name is required'))
 
@@ -263,6 +280,12 @@ class ContactForm(FlaskForm):
     message = TextAreaField(_('Message'), validators=[DataRequired(), Length(max=2000)])
     submit = SubmitField(_('Send'))
 
+    def validate_subject(self, field):
+        field.data = sanitize_string(field.data, max_length=200)
+
+    def validate_message(self, field):
+        field.data = sanitize_string(field.data, max_length=2000)
+
 
 # Formularz tenantu
 class TenantForm(FlaskForm):
@@ -272,26 +295,17 @@ class TenantForm(FlaskForm):
     )
     subdomain = StringField(
         _('Subdomain'),
-        validators=[DataRequired(), Length(min=2, max=100)],
-        description=_('URL-friendly name (e.g., "mylib"). Only alphanumeric and hyphens.')
+        validators=[DataRequired(), Length(min=3, max=20), validate_subdomain_field],
+        description=_('URL-friendly name (e.g., "mylib"). Only lowercase letters, numbers and hyphens.')
     )
     submit = SubmitField(_('Save Tenant'))
 
-    def validate_subdomain(self, field):
-        """Validate subdomain format and uniqueness"""
-        import re
-        # Check format (alphanumeric and hyphens only)
-        if not re.match(r'^[a-z0-9-]+$', field.data):
-            raise ValidationError(_('Subdomain can only contain lowercase letters, numbers, and hyphens.'))
-
-        # Check uniqueness
-        from app.models import Tenant
-        existing = Tenant.query.filter_by(subdomain=field.data).first()
-        if existing:
-            raise ValidationError(_('This subdomain is already taken.'))
+    # Per-field validation now uses `validate_subdomain_field` in validators.py
 
     def validate_name(self, field):
         """Validate tenant name uniqueness"""
+        # Sanitize tenant name before validation
+        field.data = sanitize_string(field.data, max_length=100)
         from app.models import Tenant
         existing = Tenant.query.filter_by(name=field.data).first()
         if existing:

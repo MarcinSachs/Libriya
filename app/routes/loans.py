@@ -8,6 +8,7 @@ from app import db
 from app.forms import LoanForm
 from app.models import Book, Loan, User, Library, Notification
 from app.utils import role_required, create_notification
+from app.utils.audit_log import log_action
 from app.utils.messages import (
     LOAN_CREATED, LOAN_UPDATED, LOAN_COMPLETED, BOOK_RESERVED,
     BOOK_ALREADY_RESERVED, ERROR_PERMISSION_DENIED,
@@ -112,6 +113,12 @@ def request_reservation(book_id, user_id):
         create_notification(admins, current_user, message,
                             'reservation_request', loan=new_loan)
 
+        # Audit: reservation requested
+        try:
+            log_action('LOAN_REQUESTED', f'User {user.username} requested reservation for book {book.title}', subject=new_loan, additional_info={'book_id': book.id, 'user_id': user.id})
+        except Exception:
+            pass
+
         flash(LOANS_BOOK_RESERVED, "success")
     elif book.status == 'reserved':
         flash(LOANS_BOOK_ALREADY_RESERVED, "danger")
@@ -131,6 +138,11 @@ def borrow_book(book_id, user_id):
         new_loan = Loan(book=book, user=user)
         db.session.add(new_loan)
         db.session.commit()
+        # Audit: book borrowed
+        try:
+            log_action('LOAN_BORROWED', f'Book {book.title} borrowed by {user.username}', subject=new_loan, additional_info={'book_id': book.id, 'user_id': user.id})
+        except Exception:
+            pass
         flash(LOANS_BORROWED_SUCCESS, "success")
     else:
         flash(LOANS_BOOK_NOT_AVAILABLE, "danger")
@@ -146,6 +158,11 @@ def return_book(book_id):
         loan.return_date = datetime.utcnow()
         loan.status = 'returned'
         db.session.commit()
+        # Audit: book returned
+        try:
+            log_action('LOAN_RETURNED', f'Book {loan.book.title} returned by {loan.user.username}', subject=loan, additional_info={'loan_id': loan.id})
+        except Exception:
+            pass
         flash(LOANS_RETURNED_SUCCESS, "success")
     else:
         # ZMIANA KOMUNIKATU
@@ -166,6 +183,11 @@ def approve_loan(loan_id):
             loan.issue_date = datetime.utcnow()
             loan.book.status = 'on_loan'
             db.session.commit()
+
+            try:
+                log_action('LOAN_APPROVED', f'Loan {loan.id} approved by {current_user.username}', subject=loan, additional_info={'loan_id': loan.id})
+            except Exception:
+                pass
 
             # --- Create notification for users ---
             message = _(
@@ -193,6 +215,11 @@ def cancel_loan(loan_id):
             loan.book.status = 'available'
         loan.status = 'cancelled'
         db.session.commit()
+
+        try:
+            log_action('LOAN_CANCELLED', f'Loan {loan.id} cancelled by {current_user.username}', subject=loan, additional_info={'loan_id': loan.id})
+        except Exception:
+            pass
 
         # --- Create notification for users ---
         message = _("Your reservation for \"%(title)s\" has been cancelled by an administrator.",
@@ -222,6 +249,11 @@ def return_loan(loan_id):
                     title=loan.book.title)
         create_notification(loan.user, current_user,
                             message, 'loan_returned', loan=loan)
+
+        try:
+            log_action('LOAN_RETURNED_ADMIN', f'Loan {loan.id} returned by admin {current_user.username}', subject=loan, additional_info={'loan_id': loan.id})
+        except Exception:
+            pass
 
         flash(LOANS_ADMIN_RETURNED % {'title': loan.book.title}, 'success')
     else:
@@ -262,6 +294,11 @@ def loan_add():
             db.session.add(new_loan)
             db.session.commit()
 
+            try:
+                log_action('LOAN_CREATED_ADMIN', f'Loan {new_loan.id} created by admin {current_user.username} for user {user.username}', subject=new_loan, additional_info={'loan_id': new_loan.id})
+            except Exception:
+                pass
+
             # --- Create notification for user ---
             message = _("A loan for \"%(title)s\" has been directly issued to you by an administrator.",
                         title=book.title)
@@ -291,6 +328,11 @@ def user_cancel_reservation(loan_id):
             loan.book.status = 'available'
         loan.status = 'cancelled'
         db.session.commit()
+
+        try:
+            log_action('LOAN_CANCELLED_USER', f'Loan {loan.id} cancelled by user {current_user.username}', subject=loan, additional_info={'loan_id': loan.id})
+        except Exception:
+            pass
 
         # --- Create notyfication for admin ---
         admins = User.query.filter_by(is_admin=True).all()

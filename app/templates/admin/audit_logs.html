@@ -1,0 +1,115 @@
+{% extends "base/main_base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-primary">{{ _('Audit Logs') }}</h1>
+            <p class="text-gray-600">{{ _('File-based audit logs produced by the system') }}</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <form method="POST" action="{{ url_for('admin.audit_logs_retention_run') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:shadow-lg transition">
+                    <i class="bx bx-refresh text-lg"></i>
+                    {{ _('Run Retention') }}
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        {% if logs.items %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">{{ _('Filename') }}</th>
+                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">{{ _('Tenant') }}</th>
+                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">{{ _('Size') }}</th>
+                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">{{ _('Created') }}</th>
+                        <th class="px-6 py-3 text-right text-sm font-semibold text-gray-700">{{ _('Actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs.items %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 text-sm text-gray-800">{{ log.basename if log.basename else log.filename }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">{{ log.tenant.name if log.tenant else _('Global') }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">{{ (log.size // 1024) if log.size else '-' }} KB</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">{{ log.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{{ url_for('admin.audit_log_preview', log_id=log.id) }}" class="px-3 py-1 text-sm font-semibold text-primary hover:bg-primary hover:text-white rounded transition">{{ _('Preview') }}</a>
+                                <form method="POST" action="{{ url_for('admin.audit_log_delete', log_id=log.id) }}" class="inline delete-audit-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="px-3 py-1 text-sm font-semibold text-red-600 hover:bg-red-100 rounded transition">{{ _('Delete') }}</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+            <div class="text-sm text-gray-600">
+                {% set start = (logs.page-1)*logs.per_page+1 %}
+                {% set end = [logs.page*logs.per_page, logs.total]|min %}
+                {{ _('Showing %(start)d-%(end)d of %(total)d', start=start, end=end, total=logs.total) }}
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="flex gap-2">
+                    {% if logs.has_prev %}
+                    <a href="{{ url_for('admin.audit_logs_list', page=logs.prev_num) }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">{{ _('Previous') }}</a>
+                    {% endif %}
+                    {% for page_num in logs.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num == logs.page %}
+                            <span class="px-4 py-2 bg-primary text-white rounded font-semibold">{{ page_num }}</span>
+                            {% else %}
+                            <a href="{{ url_for('admin.audit_logs_list', page=page_num) }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">{{ page_num }}</a>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if logs.has_next %}
+                    <a href="{{ url_for('admin.audit_logs_list', page=logs.next_num) }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">{{ _('Next') }}</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <div class="px-6 py-12 text-center">
+            <i class="bx bx-inbox text-5xl text-gray-300 mb-4 block"></i>
+            <p class="text-gray-600 text-lg">{{ _('No audit logs found') }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var retentionMsg = {{ _('Run audit log retention now?') | tojson }};
+    var deleteMsg = {{ _('Are you sure you want to delete this audit log file?') | tojson }};
+
+    var btn = document.getElementById('retention-btn');
+    if (btn) {
+        btn.addEventListener('click', function(e){
+            if (!confirm(retentionMsg)) {
+                e.preventDefault();
+            }
+        });
+    }
+
+    var deleteForms = document.querySelectorAll('form.delete-audit-form');
+    deleteForms.forEach(function(f){
+        f.addEventListener('submit', function(e){
+            if (!confirm(deleteMsg)) {
+                e.preventDefault();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

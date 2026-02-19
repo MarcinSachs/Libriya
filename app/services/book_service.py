@@ -56,10 +56,11 @@ class BookSearchService:
         book_data = None
 
         # 1. Try Biblioteka Narodowa FIRST (if enabled)
-        if PremiumManager.is_enabled('biblioteka_narodowa'):
+        if PremiumManager.is_enabled('metadata'):
             logger.debug(f"BookSearchService: Trying Biblioteka Narodowa for ISBN {normalized_isbn}")
             book_data = PremiumManager.call(
-                'biblioteka_narodowa',
+                'metadata',
+                'BibliotekaNarodowaService',
                 'search_by_isbn',
                 isbn=normalized_isbn
             )
