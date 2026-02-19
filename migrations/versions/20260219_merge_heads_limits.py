@@ -13,8 +13,10 @@ down_revision = ('20260219_add_tenant_limits', 'merge_all_heads_fix')
 branch_labels = None
 depends_on = None
 
+
 def upgrade():
     pass
+
 
 def downgrade():
     pass

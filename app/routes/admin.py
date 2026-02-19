@@ -88,7 +88,6 @@ def tenant_add():
     """Create new tenant"""
     form = TenantForm()
 
-
     if form.validate_on_submit():
         tenant = Tenant(
             name=form.name.data,
@@ -149,7 +148,6 @@ def tenant_edit(tenant_id):
     """Edit tenant"""
     tenant = Tenant.query.get_or_404(tenant_id)
     form = TenantForm()
-
 
     if form.validate_on_submit():
         tenant.name = form.name.data
@@ -471,9 +469,9 @@ def audit_logs_retention_run():
 def premium_modules_list():
     """List all installed premium modules and their status"""
     from app.services.premium.manager import PremiumManager
-    
+
     modules = PremiumManager.list_features()
-    
+
     modules_info = []
     for module_id, info in modules.items():
         modules_info.append({
@@ -482,7 +480,7 @@ def premium_modules_list():
             'enabled': info.get('enabled', False),
             'expiry_date': info.get('expiry_date', 'N/A'),
         })
-    
+
     return render_template(
         'admin/premium_modules.html',
         modules=modules_info,
@@ -500,58 +498,58 @@ def premium_modules_upload():
     import zipfile
     import shutil
     from app.services.premium.loader import PremiumModuleLoader
-    
+
     logger.info(f"Premium upload request from {current_user.username}")
     logger.info(f"Files in request: {request.files.keys()}")
-    
+
     try:
         # Check if file was provided
         if 'file' not in request.files:
             logger.error("No 'file' field in request")
             return jsonify({'error': _('No file provided')}), 400
-        
+
         file = request.files['file']
         logger.info(f"File received: {file.filename}, size: {file.content_length}")
-        
+
         if file.filename == '':
             logger.error("Empty filename")
             return jsonify({'error': _('No file selected')}), 400
-        
+
         if not file.filename.endswith('.zip'):
             logger.error(f"Invalid file type: {file.filename}")
             return jsonify({'error': _('Only ZIP files are allowed')}), 400
-        
+
         # Create backup of current premium modules
         premium_dir = PremiumModuleLoader.PREMIUM_DIR
         logger.info(f"Premium directory: {premium_dir}")
         backup_dir = os.path.join(premium_dir, '.backup')
-        
+
         if os.path.exists(backup_dir):
             shutil.rmtree(backup_dir)
-        
+
         # Backup current state
         for folder in os.listdir(premium_dir):
             folder_path = os.path.join(premium_dir, folder)
             if os.path.isdir(folder_path) and not folder.startswith('_'):
                 os.makedirs(backup_dir, exist_ok=True)
                 shutil.copytree(folder_path, os.path.join(backup_dir, folder))
-        
+
         # Save and extract ZIP
         temp_zip = os.path.join(premium_dir, f'.temp_{file.filename}')
         file.save(temp_zip)
-        
+
         try:
             with zipfile.ZipFile(temp_zip, 'r') as zip_ref:
                 zip_ref.extractall(premium_dir)
-            
+
             os.remove(temp_zip)
-            
+
             # Reload modules to validate licenses
             PremiumModuleLoader.reload_all()
-            
+
             # Try to discover and validate
             modules = PremiumModuleLoader.discover_modules()
-            
+
             if not modules:
                 # Restore backup if nothing was loaded
                 if os.path.exists(backup_dir):
@@ -562,21 +560,21 @@ def premium_modules_upload():
                             shutil.rmtree(target_path)
                         shutil.copytree(folder_path, target_path)
                     shutil.rmtree(backup_dir)
-                
+
                 return jsonify({'error': _('No valid premium modules found in ZIP')}), 400
-            
+
             # Log the action
             log_action('PREMIUM_UPLOAD', f'Uploaded premium modules: {", ".join(modules.keys())}', subject=None)
-            
+
             # Clean up backup
             if os.path.exists(backup_dir):
                 shutil.rmtree(backup_dir)
-            
+
             return jsonify({
                 'success': _('Premium modules uploaded successfully'),
                 'modules': list(modules.keys())
             }), 200
-        
+
         except zipfile.BadZipFile:
             if os.path.exists(temp_zip):
                 os.remove(temp_zip)
@@ -591,13 +589,13 @@ def premium_modules_upload():
                         shutil.rmtree(target_path)
                     shutil.copytree(folder_path, target_path)
                 shutil.rmtree(backup_dir)
-            
+
             if os.path.exists(temp_zip):
                 os.remove(temp_zip)
-            
+
             logger.error(f"Premium module upload error: {e}")
             return jsonify({'error': _('Failed to extract premium modules: %(error)s', error=str(e))}), 500
-    
+
     except Exception as e:
         logger.error(f"Premium module upload error: {e}")
         return jsonify({'error': _('Server error during upload')}), 500
@@ -610,13 +608,13 @@ def premium_modules_reload():
     """Reload premium modules (clear cache and re-discover)"""
     try:
         from app.services.premium.manager import PremiumManager
-        
+
         PremiumManager.reload()
-        
+
         log_action('PREMIUM_RELOAD', 'Reloaded premium modules', subject=None)
-        
+
         return jsonify({'success': _('Premium modules reloaded')}), 200
-    
+
     except Exception as e:
         logger.error(f"Premium module reload error: {e}")
         return jsonify({'error': str(e)}), 500

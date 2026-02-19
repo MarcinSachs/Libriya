@@ -40,12 +40,14 @@ def library_add():
         return redirect(url_for('libraries.libraries'))
 
     if form.validate_on_submit():
-        new_library = Library(name=form.name.data, loan_overdue_days=form.loan_overdue_days.data, tenant_id=current_user.tenant_id)
+        new_library = Library(name=form.name.data, loan_overdue_days=form.loan_overdue_days.data,
+                              tenant_id=current_user.tenant_id)
         db.session.add(new_library)
         db.session.commit()
         # Audit
         try:
-            log_library_operation('created', new_library.id, new_library.name, f'Library created by {current_user.username}')
+            log_library_operation('created', new_library.id, new_library.name,
+                                  f'Library created by {current_user.username}')
         except Exception:
             pass
         flash(LIBRARY_ADDED, "success")

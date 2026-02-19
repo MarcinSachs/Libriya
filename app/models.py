@@ -26,7 +26,6 @@ class Tenant(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     status = db.Column(db.String(50), default='active', nullable=False)
 
-
     # Premium features - tenant-specific
     premium_bookcover_enabled = db.Column(db.Boolean, default=False, nullable=False)
     premium_biblioteka_narodowa_enabled = db.Column(db.Boolean, default=False, nullable=False)

@@ -315,7 +315,8 @@ def book_add():
         db.session.commit()
 
         try:
-            log_action('BOOK_CREATED', f'Book {new_book.title} created by {current_user.username}', subject=new_book, additional_info={'book_id': new_book.id})
+            log_action('BOOK_CREATED', f'Book {new_book.title} created by {current_user.username}',
+                       subject=new_book, additional_info={'book_id': new_book.id})
         except Exception:
             pass
 
@@ -422,7 +423,8 @@ def book_edit(book_id):
         book.description = form.description.data.strip() if form.description.data else None
 
         try:
-            log_action('BOOK_UPDATED', f'Book {book.title} updated by {current_user.username}', subject=book, additional_info={'book_id': book.id})
+            log_action('BOOK_UPDATED', f'Book {book.title} updated by {current_user.username}',
+                       subject=book, additional_info={'book_id': book.id})
         except Exception:
             pass
 
@@ -494,7 +496,8 @@ def add_favorite(book_id):
         db.session.commit()
         # Audit
         try:
-            log_action('FAVORITE_ADDED', f'User {current_user.username} added book {book.title} to favorites', subject=book, additional_info={'book_id': book.id, 'user_id': current_user.id})
+            log_action('FAVORITE_ADDED', f'User {current_user.username} added book {book.title} to favorites', subject=book, additional_info={
+                       'book_id': book.id, 'user_id': current_user.id})
         except Exception:
             pass
         flash(BOOK_ADDED_TO_FAVORITES, 'success')
@@ -511,7 +514,8 @@ def remove_favorite(book_id):
         db.session.commit()
         # Audit
         try:
-            log_action('FAVORITE_REMOVED', f'User {current_user.username} removed book {book.title} from favorites', subject=book, additional_info={'book_id': book.id, 'user_id': current_user.id})
+            log_action('FAVORITE_REMOVED', f'User {current_user.username} removed book {book.title} from favorites', subject=book, additional_info={
+                       'book_id': book.id, 'user_id': current_user.id})
         except Exception:
             pass
         flash(BOOK_REMOVED_FROM_FAVORITES, 'success')
@@ -559,7 +563,8 @@ def cleanup_cover():
             os.remove(file_path)
             # Audit
             try:
-                log_action('COVER_CLEANUP', f'Cover file {filename} deleted by {current_user.username}', additional_info={'filename': filename, 'user_id': current_user.id})
+                log_action('COVER_CLEANUP', f'Cover file {filename} deleted by {current_user.username}', additional_info={
+                           'filename': filename, 'user_id': current_user.id})
             except Exception:
                 pass
             return {'success': True, 'message': 'Cover file deleted'}
@@ -687,7 +692,8 @@ def get_offline_books_data():
             books = Book.query.filter_by(tenant_id=current_user.tenant_id).all()
         else:
             user_library_ids = [lib.id for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
-            books = Book.query.filter(Book.library_id.in_(user_library_ids), Book.tenant_id == current_user.tenant_id).all()
+            books = Book.query.filter(Book.library_id.in_(user_library_ids),
+                                      Book.tenant_id == current_user.tenant_id).all()
 
         books_data = []
         for book in books:
