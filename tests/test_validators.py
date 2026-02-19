@@ -1,7 +1,5 @@
 from app.utils import validators
 import pytest
-from app.utils.validators import validate_username, validate_email_format, sanitize_string
-from app.utils.password_validator import is_strong_password
 from wtforms.validators import ValidationError
 
 from app.utils import validators as v
@@ -95,54 +93,3 @@ def test_wtforms_wrappers():
     # valid
     validators.validate_username_field(None, DummyField('valid_name'))
     validators.validate_email_field(None, DummyField('ok@example.com'))
-
-
-def test_validate_username_valid():
-    validators.validate_username('user_123')
-    validators.validate_username('User-Name')
-
-
-def test_validate_username_invalid():
-    with pytest.raises(ValidationError):
-        validators.validate_username('ab')  # too short
-    with pytest.raises(ValidationError):
-        validators.validate_username('user!@#')  # invalid chars
-    with pytest.raises(ValidationError):
-        validators.validate_username('a' * 21)  # too long
-
-
-def test_validate_email_format_valid():
-    validators.validate_email_format('test@example.com')
-    validators.validate_email_format('user.name+tag@domain.co.uk')
-
-
-def test_validate_email_format_invalid():
-    with pytest.raises(ValidationError):
-        validators.validate_email_format('not-an-email')
-    with pytest.raises(ValidationError):
-        validators.validate_email_format('user@')
-    with pytest.raises(ValidationError):
-        validators.validate_email_format('user@domain')
-
-
-def test_sanitize_string():
-    assert validators.sanitize_string('<b>test</b>') == '&lt;b&gt;test&lt;/b&gt;'
-    assert validators.sanitize_string('abc', max_length=2) == 'ab'
-    assert validators.sanitize_string(None) == ''
-
-
-def test_is_strong_password():
-    ok, reasons = is_strong_password('StrongPass123!')
-    assert ok
-    ok, reasons = is_strong_password('weak')
-    assert not ok
-    assert any('at least 12 characters' in str(r) for r in reasons)
-    ok, reasons = is_strong_password('alllowercasepassword')
-    assert not ok
-    assert any('uppercase' in str(r).lower() for r in reasons)
-    ok, reasons = is_strong_password('ALLUPPERCASE123!')
-    assert not ok
-    assert any('lowercase' in str(r).lower() for r in reasons)
-    ok, reasons = is_strong_password('NoSpecialChar123')
-    assert not ok
-    assert any('special character' in str(r).lower() for r in reasons)

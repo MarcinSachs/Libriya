@@ -109,15 +109,13 @@ def test_full_audit_sweep_creates_logs(tmp_path):
 
         assert target_dir is not None, f'No logs directory found for tenant or global (checked {tenant_dir} and {global_dir})'
 
-        # Zbierz pliki z obu katalogów
-        files = []
-        for d in [tenant_dir, global_dir]:
-            if os.path.exists(d):
-                files.extend([os.path.join(d, f) for f in os.listdir(d) if f.startswith('audit_')])
+        files = [f for f in os.listdir(target_dir) if f.startswith('audit_')]
         assert files, 'No audit log files found after actions.'
-        # Przeszukaj wszystkie pliki logów
+
+        # Read all log files and collect actions
         actions = []
-        for logfile in files:
+        for fname in files:
+            logfile = os.path.join(target_dir, fname)
             with open(logfile, 'r', encoding='utf-8') as fh:
                 lines = [json.loads(l) for l in fh.readlines() if l.strip()]
                 actions.extend([l['action'] for l in lines])

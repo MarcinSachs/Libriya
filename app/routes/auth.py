@@ -25,15 +25,21 @@ def get_tenant_from_request():
     Dedukuj tenant z subdomeny
     Zwraca Tenant object lub None
     """
-    host_parts = request.host.split(':')[0].split('.')
+    try:
+        host_parts = request.host.split(':')[0].split('.')
 
-    # localhost lub bez subdomeny
-    if len(host_parts) == 1 or host_parts[0] in ('localhost', 'www'):
+        # localhost lub bez subdomeny
+        if len(host_parts) == 1 or host_parts[0] in ('localhost', 'www', '127'):
+            return None
+
+        subdomain = host_parts[0]
+        tenant = Tenant.query.filter_by(subdomain=subdomain).first()
+        return tenant
+    except Exception as e:
+        # Log error but don't break the request if database is unavailable
+        from flask import current_app
+        current_app.logger.debug(f"Error fetching tenant from request: {e}")
         return None
-
-    subdomain = host_parts[0]
-    tenant = Tenant.query.filter_by(subdomain=subdomain).first()
-    return tenant
 
 
 @bp.route("/login/")
