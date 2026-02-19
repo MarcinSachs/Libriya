@@ -33,6 +33,12 @@ def libraries():
 @role_required('admin')
 def library_add():
     form = LibraryForm()
+    tenant = current_user.tenant
+    # Enforce limit for non-superadmin
+    if not current_user.is_super_admin and not tenant.can_add_library():
+        flash(_('Your organization has reached the maximum number of libraries allowed. Contact support to increase your limit.'), 'danger')
+        return redirect(url_for('libraries.libraries'))
+
     if form.validate_on_submit():
         new_library = Library(name=form.name.data, loan_overdue_days=form.loan_overdue_days.data, tenant_id=current_user.tenant_id)
         db.session.add(new_library)

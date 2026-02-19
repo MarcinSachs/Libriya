@@ -88,10 +88,13 @@ def tenant_add():
     """Create new tenant"""
     form = TenantForm()
 
+
     if form.validate_on_submit():
         tenant = Tenant(
             name=form.name.data,
-            subdomain=form.subdomain.data.lower()
+            subdomain=form.subdomain.data.lower(),
+            max_libraries=form.max_libraries.data if form.max_libraries.data not in (None, -1, "") else -1,
+            max_books=form.max_books.data if form.max_books.data not in (None, -1, "") else -1
         )
         db.session.add(tenant)
         db.session.commit()
@@ -147,9 +150,12 @@ def tenant_edit(tenant_id):
     tenant = Tenant.query.get_or_404(tenant_id)
     form = TenantForm()
 
+
     if form.validate_on_submit():
         tenant.name = form.name.data
         tenant.subdomain = form.subdomain.data.lower()
+        tenant.max_libraries = form.max_libraries.data if form.max_libraries.data not in (None, -1, "") else -1
+        tenant.max_books = form.max_books.data if form.max_books.data not in (None, -1, "") else -1
         db.session.commit()
 
         # Invalidate cache for this tenant
@@ -169,6 +175,8 @@ def tenant_edit(tenant_id):
     elif request.method == 'GET':
         form.name.data = tenant.name
         form.subdomain.data = tenant.subdomain
+        form.max_libraries.data = tenant.max_libraries if tenant.max_libraries not in (None, -1) else None
+        form.max_books.data = tenant.max_books if tenant.max_books not in (None, -1) else None
 
     return render_template(
         'admin/tenant_form.html',

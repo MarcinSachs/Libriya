@@ -26,12 +26,34 @@ class Tenant(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     status = db.Column(db.String(50), default='active', nullable=False)
 
+
     # Premium features - tenant-specific
     premium_bookcover_enabled = db.Column(db.Boolean, default=False, nullable=False)
     premium_biblioteka_narodowa_enabled = db.Column(db.Boolean, default=False, nullable=False)
 
+    # Limits (None or -1 means unlimited)
+    max_libraries = db.Column(db.Integer, nullable=True, default=1)  # Default: 1 library
+    max_books = db.Column(db.Integer, nullable=True, default=10)     # Default: 10 books
+
     libraries = db.relationship('Library', backref='tenant', lazy=True)
     users = db.relationship('User', backref='tenant', lazy=True)
+
+    def has_unlimited_libraries(self):
+        return self.max_libraries is None or self.max_libraries < 0
+
+    def has_unlimited_books(self):
+        return self.max_books is None or self.max_books < 0
+
+    def can_add_library(self):
+        if self.has_unlimited_libraries():
+            return True
+        return len(self.libraries) < self.max_libraries
+
+    def can_add_book(self):
+        if self.has_unlimited_books():
+            return True
+        # Sum all books in all libraries for this tenant
+        return sum(len(lib.books) for lib in self.libraries) < self.max_books
 
     def __str__(self):
         return f"{self.name} ({self.subdomain})"

@@ -298,6 +298,17 @@ class TenantForm(FlaskForm):
         validators=[DataRequired(), Length(min=3, max=20), validate_subdomain_field],
         description=_('URL-friendly name (e.g., "mylib"). Only lowercase letters, numbers and hyphens.')
     )
+
+    max_libraries = IntegerField(
+        _('Max Libraries'),
+        validators=[Optional()],
+        description=_('Maximum number of libraries (leave blank or -1 for unlimited)')
+    )
+    max_books = IntegerField(
+        _('Max Books'),
+        validators=[Optional()],
+        description=_('Maximum number of books (leave blank or -1 for unlimited)')
+    )
     submit = SubmitField(_('Save Tenant'))
 
     # Per-field validation now uses `validate_subdomain_field` in validators.py

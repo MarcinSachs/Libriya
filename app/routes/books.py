@@ -198,6 +198,11 @@ def book_detail(book_id):
 @role_required('admin', 'manager')
 def book_add():
     form = BookForm()
+    tenant = current_user.tenant
+    # Enforce book limit for non-superadmin
+    if not current_user.is_super_admin and not tenant.can_add_book():
+        flash(_('Your organization has reached the maximum number of books allowed. Contact support to increase your limit.'), 'danger')
+        return redirect(url_for('main.home'))
 
     # --- Populate Library Choices ---
     if current_user.role == 'admin':
