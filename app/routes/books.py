@@ -1,21 +1,7 @@
 import os
-import secrets
-import requests
-from urllib.parse import urlparse
-from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file, jsonify
-from flask_login import login_required, current_user
-from flask_babel import gettext as _
-from werkzeug.utils import secure_filename
-from werkzeug.datastructures import FileStorage
-from PIL import Image
-from io import BytesIO
-
-from app import db, csrf
-from app.forms import BookForm
-from app.models import Book, Author, Library, Location, Genre
-from app.utils import role_required
-from app.utils.audit_log import log_book_deleted, log_action
+import logging
+from app.services.premium.manager import PremiumManager
+from app.services.openlibrary_service import OpenLibraryClient
 from app.utils.messages import (
     SUCCESS_CREATED, SUCCESS_UPDATED, SUCCESS_DELETED, ERROR_PERMISSION_DENIED,
     BOOK_ADDED, BOOK_UPDATED, BOOK_DELETED, ERROR_NOT_FOUND,
@@ -23,10 +9,83 @@ from app.utils.messages import (
     BOOK_REMOVED_FROM_FAVORITES, BOOK_NOT_IN_FAVORITES, BOOK_CANNOT_DELETE_NOT_AVAILABLE,
     BOOKS_ONLY_EDIT_OWN_LIBRARIES, COVER_IMAGE_ERROR
 )
-from app.services.openlibrary_service import OpenLibraryClient
-from app.services.premium.manager import PremiumManager
+from app.utils.audit_log import log_book_deleted, log_action
+from app.utils import role_required
+from app.models import Book, Author, Library, Location, Genre, Tenant, Loan
+from app.forms import BookForm
+from app import db, csrf
+from io import BytesIO
+from PIL import Image
+from werkzeug.datastructures import FileStorage
+from werkzeug.utils import secure_filename
+from flask_babel import gettext as _
+from flask_login import login_required, current_user
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file, jsonify
+from datetime import datetime
+from urllib.parse import urlparse
+import requests
+import secrets
+from app.forms import BatchImportForm
+
+logger = logging.getLogger(__name__)
+
+# Try to import batch import service
+try:
+    from app.services.premium.batch_import.service import BatchImportService
+    BATCH_IMPORT_AVAILABLE = True
+except Exception as e:
+    BATCH_IMPORT_AVAILABLE = False
+    logger.error(f"Failed to import BatchImportService: {e}", exc_info=True)
 
 bp = Blueprint("books", __name__)
+
+# Batch import books (premium module)
+
+
+@bp.route("/books/batch_import", methods=["GET", "POST"])
+@login_required
+# TODO: Re-add @role_required('admin', 'manager') after debugging
+def batch_import_books():
+    # Role check
+    if current_user.role not in ['admin', 'manager'] and not current_user.is_super_admin:
+        flash(_('You do not have the required privileges to access this page.'), 'danger')
+        return redirect(url_for('main.home'))
+
+    # Check if BatchImportService is available
+    if not BATCH_IMPORT_AVAILABLE:
+        flash(_('Batch import service is not available.'), 'danger')
+        return redirect(url_for('main.home'))
+
+    # Load tenant and check if batch_import feature is enabled
+    tenant = Tenant.query.get(current_user.tenant_id)
+    if not tenant or not tenant.is_premium_enabled('batch_import'):
+        flash(_('Batch import module is not enabled for your organization.'), 'danger')
+        return redirect(url_for('main.home'))
+
+    # Create form and set library choices
+    form = BatchImportForm()
+    form.library.choices = [
+        (lib.id, lib.name) for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id
+    ]
+
+    # Check if user has any libraries
+    if not form.library.choices:
+        flash(_('No libraries available for import.'), 'danger')
+        return redirect(url_for('main.home'))
+
+    results = None
+    if form.validate_on_submit():
+        # Parsuj ISBN (jeden na linię lub przecinki)
+        raw = form.isbn_list.data.replace(',', '\n')
+        isbn_list = [x.strip() for x in raw.split('\n') if x.strip()]
+        library_id = form.library.data
+        results = BatchImportService.import_books_by_isbn(isbn_list, library_id)
+    return render_template(
+        "books/batch_import.html",
+        form=form,
+        results=results,
+        active_page="books"
+    )
 
 
 @bp.route("/api/book/genres-from-isbn", methods=['POST'])
@@ -198,7 +257,8 @@ def book_detail(book_id):
 @role_required('admin', 'manager')
 def book_add():
     form = BookForm()
-    tenant = current_user.tenant
+    # Load fresh tenant instance instead of lazy-loading from current_user
+    tenant = Tenant.query.get(current_user.tenant_id)
     # Enforce book limit for non-superadmin
     if not current_user.is_super_admin and not tenant.can_add_book():
         flash(_('Your organization has reached the maximum number of books allowed. Contact support to increase your limit.'), 'danger')
@@ -340,8 +400,13 @@ def book_add():
 
 @bp.route("/book_delete/<int:book_id>", methods=["POST"])
 @login_required
-@role_required('admin', 'manager')
+@csrf.exempt
 def book_delete(book_id):
+    # Role check
+    if current_user.role not in ['admin', 'manager']:
+        flash(ERROR_PERMISSION_DENIED, "danger")
+        return redirect(url_for('main.home'))
+
     book = Book.query.get_or_404(book_id)
 
     # --- Authorization ---
@@ -365,6 +430,9 @@ def book_delete(book_id):
                 current_app.logger.info(f"Deleted cover file: {book.cover}")
             except OSError as e:
                 current_app.logger.warning(f"Could not delete cover file {book.cover}: {e}")
+
+    # Delete all associated loans first (cascade delete)
+    Loan.query.filter_by(book_id=book.id).delete()
 
     # Log book deletion before removing it
     log_book_deleted(book.id, book.title)

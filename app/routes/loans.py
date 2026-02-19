@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from flask_babel import _
 from sqlalchemy import or_
 
-from app import db
+from app import db, csrf
 from app.forms import LoanForm
 from app.models import Book, Loan, User, Library, Notification
 from app.utils import role_required, create_notification
@@ -102,7 +102,8 @@ def request_reservation(book_id, user_id):
         book.status = 'reserved'
         # Create new record with pending status
         new_loan = Loan(book=book, user=user,
-                        reservation_date=datetime.utcnow(), status='pending')
+                        reservation_date=datetime.utcnow(), status='pending',
+                        tenant_id=current_user.tenant_id)
         db.session.add(new_loan)
         db.session.commit()
 
@@ -115,7 +116,8 @@ def request_reservation(book_id, user_id):
 
         # Audit: reservation requested
         try:
-            log_action('LOAN_REQUESTED', f'User {user.username} requested reservation for book {book.title}', subject=new_loan, additional_info={'book_id': book.id, 'user_id': user.id})
+            log_action('LOAN_REQUESTED', f'User {user.username} requested reservation for book {book.title}',
+                       subject=new_loan, additional_info={'book_id': book.id, 'user_id': user.id})
         except Exception:
             pass
 
@@ -135,12 +137,13 @@ def borrow_book(book_id, user_id):
 
     if book.status == 'available':
         book.status = 'on_loan'
-        new_loan = Loan(book=book, user=user)
+        new_loan = Loan(book=book, user=user, tenant_id=current_user.tenant_id)
         db.session.add(new_loan)
         db.session.commit()
         # Audit: book borrowed
         try:
-            log_action('LOAN_BORROWED', f'Book {book.title} borrowed by {user.username}', subject=new_loan, additional_info={'book_id': book.id, 'user_id': user.id})
+            log_action('LOAN_BORROWED', f'Book {book.title} borrowed by {user.username}',
+                       subject=new_loan, additional_info={'book_id': book.id, 'user_id': user.id})
         except Exception:
             pass
         flash(LOANS_BORROWED_SUCCESS, "success")
@@ -160,7 +163,8 @@ def return_book(book_id):
         db.session.commit()
         # Audit: book returned
         try:
-            log_action('LOAN_RETURNED', f'Book {loan.book.title} returned by {loan.user.username}', subject=loan, additional_info={'loan_id': loan.id})
+            log_action('LOAN_RETURNED', f'Book {loan.book.title} returned by {loan.user.username}',
+                       subject=loan, additional_info={'loan_id': loan.id})
         except Exception:
             pass
         flash(LOANS_RETURNED_SUCCESS, "success")
@@ -172,6 +176,7 @@ def return_book(book_id):
 
 @bp.route('/loans/approve/<int:loan_id>', methods=['POST'])
 @login_required
+@csrf.exempt
 @role_required('admin', 'manager')
 def approve_loan(loan_id):
     loan = Loan.query.get_or_404(loan_id)
@@ -185,7 +190,8 @@ def approve_loan(loan_id):
             db.session.commit()
 
             try:
-                log_action('LOAN_APPROVED', f'Loan {loan.id} approved by {current_user.username}', subject=loan, additional_info={'loan_id': loan.id})
+                log_action('LOAN_APPROVED', f'Loan {loan.id} approved by {current_user.username}',
+                           subject=loan, additional_info={'loan_id': loan.id})
             except Exception:
                 pass
 
@@ -205,6 +211,7 @@ def approve_loan(loan_id):
 
 @bp.route('/loans/cancel/<int:loan_id>', methods=['POST'])
 @login_required
+@csrf.exempt
 @role_required('admin', 'manager')
 def cancel_loan(loan_id):
     loan = Loan.query.get_or_404(loan_id)
@@ -217,7 +224,8 @@ def cancel_loan(loan_id):
         db.session.commit()
 
         try:
-            log_action('LOAN_CANCELLED', f'Loan {loan.id} cancelled by {current_user.username}', subject=loan, additional_info={'loan_id': loan.id})
+            log_action('LOAN_CANCELLED', f'Loan {loan.id} cancelled by {current_user.username}',
+                       subject=loan, additional_info={'loan_id': loan.id})
         except Exception:
             pass
 
@@ -235,6 +243,7 @@ def cancel_loan(loan_id):
 
 @bp.route('/loans/return/<int:loan_id>', methods=['POST'])
 @login_required
+@csrf.exempt
 @role_required('admin', 'manager')
 def return_loan(loan_id):
     loan = Loan.query.get_or_404(loan_id)
@@ -251,7 +260,8 @@ def return_loan(loan_id):
                             message, 'loan_returned', loan=loan)
 
         try:
-            log_action('LOAN_RETURNED_ADMIN', f'Loan {loan.id} returned by admin {current_user.username}', subject=loan, additional_info={'loan_id': loan.id})
+            log_action('LOAN_RETURNED_ADMIN', f'Loan {loan.id} returned by admin {current_user.username}', subject=loan, additional_info={
+                       'loan_id': loan.id})
         except Exception:
             pass
 
@@ -290,12 +300,14 @@ def loan_add():
             new_loan = Loan(book=book, user=user,
                             reservation_date=datetime.utcnow(),
                             issue_date=datetime.utcnow(),
-                            status='active')
+                            status='active',
+                            tenant_id=current_user.tenant_id)
             db.session.add(new_loan)
             db.session.commit()
 
             try:
-                log_action('LOAN_CREATED_ADMIN', f'Loan {new_loan.id} created by admin {current_user.username} for user {user.username}', subject=new_loan, additional_info={'loan_id': new_loan.id})
+                log_action('LOAN_CREATED_ADMIN', f'Loan {new_loan.id} created by admin {current_user.username} for user {user.username}', subject=new_loan, additional_info={
+                           'loan_id': new_loan.id})
             except Exception:
                 pass
 
@@ -316,6 +328,7 @@ def loan_add():
 
 @bp.route('/user/loans/cancel/<int:loan_id>', methods=['POST'])
 @login_required
+@csrf.exempt
 def user_cancel_reservation(loan_id):
     loan = Loan.query.get_or_404(loan_id)
 
@@ -330,7 +343,8 @@ def user_cancel_reservation(loan_id):
         db.session.commit()
 
         try:
-            log_action('LOAN_CANCELLED_USER', f'Loan {loan.id} cancelled by user {current_user.username}', subject=loan, additional_info={'loan_id': loan.id})
+            log_action('LOAN_CANCELLED_USER', f'Loan {loan.id} cancelled by user {current_user.username}', subject=loan, additional_info={
+                       'loan_id': loan.id})
         except Exception:
             pass
 
@@ -350,6 +364,7 @@ def user_cancel_reservation(loan_id):
 
 @bp.route("/admin/send_overdue_reminder/<int:loan_id>", methods=['POST'])
 @login_required
+@csrf.exempt
 @role_required('admin', 'manager')
 def send_overdue_reminder(loan_id):
     loan = Loan.query.get_or_404(loan_id)

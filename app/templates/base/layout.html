@@ -186,6 +186,15 @@
 
     <script src="{{ url_for('static', filename='js/pwa-manager.js') }}"></script>
     <script>
+        console.log('Layout script started');
+        
+        // Check if delete buttons exist
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        console.log('Delete buttons found:', deleteButtons.length);
+        deleteButtons.forEach((btn, idx) => {
+            console.log(`Delete button ${idx}:`, btn, 'data-book-id:', btn.getAttribute('data-book-id'));
+        });
+        
         // Admin menu toggle
         const adminToggle = document.getElementById('admin-toggle');
         const adminMenu = document.getElementById('admin-menu');
@@ -229,37 +238,52 @@
                 });
         }
 
-        // Handle delete button clicks
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
+        // Handle delete button clicks (with event delegation for dynamic elements)
+        console.log('Adding delete button event listener to document');
+        document.addEventListener('click', function(e) {
+            console.log('Document click detected on:', e.target, 'Classes:', e.target.className);
+            if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
+                console.log('Delete button handler triggered!');
+                const btn = e.target.classList.contains('delete-btn') ? e.target : e.target.closest('.delete-btn');
+                console.log('Delete button clicked');
                 e.preventDefault();
-                const bookId = this.getAttribute('data-book-id');
+                const bookId = btn.getAttribute('data-book-id');
+                console.log('Book ID:', bookId);
                 
                 if (confirm(`{{ _('Are you sure you want to delete this book?') }}`)) {
-                    // Create form with proper structure
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `/book_delete/${bookId}`;
-                    form.style.display = 'none';
+                    console.log('Confirmed delete for book:', bookId);
                     
-                    // Add CSRF token from meta tag
-                    const csrfTokenValue = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-                    if (csrfTokenValue) {
-                        const csrfInput = document.createElement('input');
-                        csrfInput.type = 'hidden';
-                        csrfInput.name = 'csrf_token';
-                        csrfInput.value = csrfTokenValue;
-                        form.appendChild(csrfInput);
-                    }
+                    // Get CSRF token
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    console.log('CSRF token found:', !!csrfToken);
                     
-                    document.body.appendChild(form);
-                    
-                    // Submit form with delay to ensure it's added to DOM
-                    setTimeout(() => {
-                        form.submit();
-                    }, 10);
+                    // Use fetch API to send DELETE request
+                    fetch(`/book_delete/${bookId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken || ''
+                        },
+                        body: JSON.stringify({})
+                    })
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (response.ok) {
+                            console.log('Delete successful');
+                            window.location.href = '/';
+                        } else {
+                            console.error('Delete failed:', response.statusText);
+                            alert('Error deleting book');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fetch error:', error);
+                        alert('Error deleting book: ' + error);
+                    });
+                } else {
+                    console.log('Delete cancelled');
                 }
-            });
+            }
         });
 
         // Offline status

@@ -98,12 +98,12 @@
                         {% if loan.status == 'pending' %}
                         <form action="{{ url_for('loans.approve_loan', loan_id=loan.id) }}" method="POST"
                             style="display: inline-block; margin-bottom: 0.25rem;">
-                            <button type="submit" class="btn btn-success btn-sm" title="{{ _('Approve Loan') }}"><i
+                            <button type="submit" class="text-accent hover:text-primary transition" title="{{ _('Approve Loan') }}"><i
                                     class="bx bx-check-circle"></i></button>
                         </form>
                         <form action="{{ url_for('loans.cancel_loan', loan_id=loan.id) }}" method="POST"
                             style="display: inline-block; margin-bottom: 0.25rem;">
-                            <button type="submit" class="btn btn-danger btn-sm" title="{{ _('Cancel Reservation') }}"><i
+                            <button type="submit" class="text-red-500 hover:text-red-700 transition" title="{{ _('Cancel Reservation') }}"><i
                                     class="bx bx-x-circle"></i></button>
                         </form>
                         {% elif loan.status == 'active' %}

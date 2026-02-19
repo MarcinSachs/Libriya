@@ -7,7 +7,7 @@ from flask_babel import _
 import logging
 import os
 
-from app import db
+from app import db, csrf
 from app.models import Tenant, User, Library, Book, AuditLogFile
 from app.forms import TenantForm
 from app.utils.decorators import role_required
@@ -27,9 +27,14 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # Super-admin must have role='superadmin'
+        current_app.logger.info(
+            f"[ADMIN_REQUIRED] Called for user: {current_user if current_user.is_authenticated else 'ANONYMOUS'}")
         if not current_user.is_authenticated or not current_user.is_super_admin:
+            current_app.logger.warning(
+                f"[ADMIN_REQUIRED] Access denied for: {current_user.username if current_user.is_authenticated else 'ANONYMOUS'}")
             flash(_("You do not have access to the super-admin panel."), "danger")
             return redirect(url_for('main.home'))
+        current_app.logger.info(f"[ADMIN_REQUIRED] Access granted for: {current_user.username}")
         return f(*args, **kwargs)
     return decorated_function
 
@@ -287,46 +292,72 @@ def manage_tenant_premium(tenant_id):
     )
 
 
-@bp.route('/tenants/<int:tenant_id>/premium/<feature_id>/toggle', methods=['POST'])
+@bp.route('/tenants/<int:tenant_id>/premium/<string:feature_id>/toggle', methods=['POST'])
+@csrf.exempt
 @login_required
 @admin_required
 def toggle_tenant_premium_feature(tenant_id, feature_id):
     """Toggle a premium feature for a tenant (AJAX endpoint)"""
-    tenant = Tenant.query.get_or_404(tenant_id)
-
-    # Validate feature_id
-    valid_features = {
-        'bookcover_api': 'premium_bookcover_enabled',
-        'biblioteka_narodowa': 'premium_biblioteka_narodowa_enabled',
-    }
-
-    if feature_id not in valid_features:
-        return jsonify({'success': False, 'error': 'Invalid feature ID'}), 400
-
-    field_name = valid_features[feature_id]
-    current_value = getattr(tenant, field_name)
-    new_value = not current_value
-    setattr(tenant, field_name, new_value)
-
-    db.session.commit()
-
-    # Invalidate cache for this tenant's premium features
-    from app.services.cache_service import invalidate_tenant_cache
-    invalidate_tenant_cache(tenant_id=tenant.id, subdomain=tenant.subdomain)
-
-    # Audit: premium toggled
+    current_app.logger.info(
+        f"[TOGGLE] ========== ENDPOINT CALLED: feature_id={feature_id}, tenant_id={tenant_id} ==========")
     try:
-        log_action('PREMIUM_TOGGLED', f'Premium feature {feature_id} toggled for tenant {tenant.id} by {current_user.username}', subject=tenant, additional_info={
-                   'feature_id': feature_id, 'enabled': new_value, 'tenant_id': tenant.id})
-    except Exception:
-        pass
+        current_app.logger.info(f"[TOGGLE] Inside try block, querying tenant...")
+        tenant = Tenant.query.get_or_404(tenant_id)
+        current_app.logger.info(f"[TOGGLE] Tenant found: {tenant}")
 
-    return jsonify({
-        'success': True,
-        'feature_id': feature_id,
-        'enabled': new_value,
-        'message': _(f'Premium feature {feature_id} has been {"enabled" if new_value else "disabled"}')
-    })
+        # Synchronize valid_features with registry
+        from app.services.premium.manager import PremiumManager
+        registry_map = {
+            'bookcover_api': 'premium_bookcover_enabled',
+            'biblioteka_narodowa': 'premium_biblioteka_narodowa_enabled',
+            'batch_import': 'premium_batch_import_enabled',
+        }
+        valid_features = {}
+        available_features = PremiumManager.list_features()
+        current_app.logger.info(f"[TOGGLE] available_features: {list(available_features.keys())}")
+        for fid in available_features.keys():
+            if fid in registry_map:
+                valid_features[fid] = registry_map[fid]
+
+        current_app.logger.info(f"[TOGGLE] valid_features: {list(valid_features.keys())}, received: {feature_id}")
+        if feature_id not in valid_features:
+            current_app.logger.warning(f"[TOGGLE] ERROR: Invalid feature_id: {feature_id}")
+            return jsonify({'success': False, 'error': 'Invalid feature ID'}), 400
+
+        field_name = valid_features[feature_id]
+        current_value = getattr(tenant, field_name, None)
+        current_app.logger.info(f"[TOGGLE] Current value for {field_name}: {current_value}")
+        if current_value is None:
+            current_app.logger.warning(f"[TOGGLE] ERROR: Tenant missing field: {field_name}")
+            return jsonify({'success': False, 'error': f'Tenant missing field: {field_name}'}), 400
+
+        new_value = 0 if current_value else 1
+        setattr(tenant, field_name, new_value)
+        current_app.logger.info(f"[TOGGLE] Set {field_name} to {new_value}")
+
+        db.session.commit()
+
+        # Invalidate cache
+        from app.services.cache_service import invalidate_tenant_cache
+        invalidate_tenant_cache(tenant_id=tenant.id, subdomain=tenant.subdomain)
+
+        # Audit
+        try:
+            log_action('PREMIUM_TOGGLED', f'Premium feature {feature_id} toggled for tenant {tenant.id} by {current_user.username}', subject=tenant, additional_info={
+                       'feature_id': feature_id, 'enabled': new_value, 'tenant_id': tenant.id})
+        except Exception:
+            pass
+
+        current_app.logger.info(f"[TOGGLE] SUCCESS: Feature {feature_id} toggled for tenant {tenant_id}")
+        return jsonify({
+            'success': True,
+            'feature_id': feature_id,
+            'enabled': new_value,
+            'message': _(f'Premium feature {feature_id} has been {"enabled" if new_value else "disabled"}')
+        })
+    except Exception as e:
+        current_app.logger.error(f"[TOGGLE] EXCEPTION: {str(e)}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 # ============================================================

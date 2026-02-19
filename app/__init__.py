@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_babel import _, Babel, lazy_gettext as _l
-from flask import session, request, render_template, flash, redirect, url_for
+from flask import session, request, render_template, flash, redirect, url_for, g
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
@@ -33,7 +33,7 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     # Ustaw komunikat logowania z tłumaczeniem dynamicznym
     login_manager.login_message = _l("Please log in to access this page.")
-    
+
     # Initialize Limiter with environment-based storage (Opcja 1)
     # Development: uses memory:// (SimpleCache)
     # Production: uses Redis if RATELIMIT_STORAGE_URL is set
@@ -42,7 +42,7 @@ def create_app(config_class=Config):
         limiter.init_app(app, storage_uri=storage_url)
     else:
         limiter.init_app(app)  # Defaults to memory://
-    
+
     csrf.init_app(app)
     cache.init_app(app)
 
@@ -104,10 +104,10 @@ def create_app(config_class=Config):
     def enforce_https():
         """Enforce HTTPS in production by redirecting HTTP requests"""
         # Only enforce in production and when not running in debug mode
-        if (not app.debug and 
-            not request.is_secure and 
+        if (not app.debug and
+            not request.is_secure and
             request.headers.get('X-Forwarded-Proto', 'http') == 'http' and
-            app.config.get('HTTPS_REDIRECT', True)):
+                app.config.get('HTTPS_REDIRECT', True)):
             # Redirect HTTP to HTTPS
             url = request.url.replace('http://', 'https://', 1)
             return redirect(url, code=301)
@@ -116,7 +116,7 @@ def create_app(config_class=Config):
     def handle_tenant_routing():
         """
         Handle tenant-specific routing logic.
-        
+
         For subdomain-based tenants:
         - If authenticated user accesses '/', redirect to home/dashboard
         - If unauthenticated user accesses non-auth pages, redirect to login
@@ -131,7 +131,7 @@ def create_app(config_class=Config):
         # Get tenant from subdomain
         host_parts = request.host.split(':')[0].split('.')
         tenant = None
-        
+
         if len(host_parts) > 1 and host_parts[0] not in ('localhost', 'www', '127'):
             subdomain = host_parts[0]
             try:
@@ -159,7 +159,7 @@ def create_app(config_class=Config):
                 'auth.verify_email_send',
                 'static'
             ]
-            
+
             if not current_user.is_authenticated and request.endpoint not in allowed_endpoints:
                 return redirect(url_for('auth.login'))
 
@@ -181,13 +181,17 @@ def create_app(config_class=Config):
                 from app.services.cache_service import get_premium_features_cached
                 enabled_features = get_premium_features_cached(current_user.tenant_id)
                 PremiumContext.set_for_tenant(current_user.tenant_id, enabled_features)
+                # Set to g for template access
+                g.premium_features = enabled_features
             except Exception as e:
                 # If database is unavailable, just set empty context
                 app.logger.debug(f"Error loading premium features: {e}")
                 PremiumContext.set_for_tenant(None, set())
+                g.premium_features = set()
         else:
             # Super-admin - super-admini mają dostęp do wszystkich features globalnie
             PremiumContext.set_for_tenant(None, set())  # No specific tenant context
+            g.premium_features = set()
 
         # Pozwól na static files i logout dla wszystkich
         if request.path.startswith('/static') or request.path == '/auth/logout':

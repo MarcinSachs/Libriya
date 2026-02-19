@@ -17,9 +17,13 @@ def create_notification(recipients, sender, message, notification_type, loan=Non
         recipients = [recipients]
 
     for recipient in recipients:
+        # Merge to avoid session conflicts with multiple User instances
+        merged_recipient = db.session.merge(recipient)
+        merged_sender = db.session.merge(sender)
+
         new_notification = Notification(
-            recipient=recipient,
-            sender=sender,
+            recipient=merged_recipient,
+            sender=merged_sender,
             message=message,
             type=notification_type,
             loan=loan

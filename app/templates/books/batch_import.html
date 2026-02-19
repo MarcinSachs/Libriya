@@ -1,0 +1,49 @@
+{% extends "base/main_base.html" %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">{{ _('Batch Import Books by ISBN') }}</h2>
+    <hr class="mb-4">
+    {{ macros.display_flashes() }}
+    <form method="POST" action="" novalidate>
+        {{ form.csrf_token }}
+        <div class="mb-4">
+            {{ macros.form_field(form.library, field_type='select', icon='bx-library') }}
+        </div>
+        <div class="mb-4">
+            {{ macros.form_field(form.isbn_list, field_type='textarea', icon='bx-barcode', placeholder=_('Enter ISBN numbers, one per line or comma-separated')) }}
+        </div>
+        <div class="mb-4">
+            {{ form.submit(class_="bg-primary text-white font-semibold px-6 py-2 rounded-lg hover:bg-accent transition") }}
+        </div>
+    </form>
+    {% if results %}
+    <div class="mt-8">
+        <h3 class="text-xl font-semibold mb-2">{{ _('Import Results') }}</h3>
+        {% if results.success %}
+        <div class="mb-2 text-green-700">{{ _('Successfully imported:') }} {{ results.success|length }}</div>
+        <ul class="list-disc ml-6 text-green-700">
+            {% for isbn in results.success %}
+            <li>{{ isbn }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% if results.failed %}
+        <div class="mt-4 text-red-700">{{ _('Failed to import:') }} {{ results.failed|length }}</div>
+        <ul class="list-disc ml-6 text-red-700">
+            {% for item in results.failed %}
+            <li>{{ item.isbn }} - {{ item.reason }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% if results.errors %}
+        <div class="mt-4 text-yellow-700">{{ _('Errors:') }}</div>
+        <ul class="list-disc ml-6 text-yellow-700">
+            {% for err in results.errors %}
+            <li>{{ err }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

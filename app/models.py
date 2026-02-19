@@ -16,6 +16,7 @@ class Tenant(db.Model):
         subdomain (str): Tenant subdomain used for routing
         premium_bookcover_enabled (bool): Feature flag for bookcover API
         premium_biblioteka_narodowa_enabled (bool): Feature flag for BN integration
+        premium_batch_import_enabled (bool): Feature flag for batch import
         created_at (datetime): Creation timestamp
         updated_at (datetime): Last update timestamp
     """
@@ -29,6 +30,7 @@ class Tenant(db.Model):
     # Premium features - tenant-specific
     premium_bookcover_enabled = db.Column(db.Boolean, default=False, nullable=False)
     premium_biblioteka_narodowa_enabled = db.Column(db.Boolean, default=False, nullable=False)
+    premium_batch_import_enabled = db.Column(db.Boolean, default=False, nullable=False)
 
     # Limits (None or -1 means unlimited)
     max_libraries = db.Column(db.Integer, nullable=True, default=1)  # Default: 1 library
@@ -64,6 +66,8 @@ class Tenant(db.Model):
             features.append('bookcover_api')
         if self.premium_biblioteka_narodowa_enabled:
             features.append('biblioteka_narodowa')
+        if self.premium_batch_import_enabled:
+            features.append('batch_import')
         return features
 
     def is_premium_enabled(self, feature_id):
@@ -71,6 +75,7 @@ class Tenant(db.Model):
         feature_map = {
             'bookcover_api': 'premium_bookcover_enabled',
             'biblioteka_narodowa': 'premium_biblioteka_narodowa_enabled',
+            'batch_import': 'premium_batch_import_enabled',
         }
         field_name = feature_map.get(feature_id)
         if field_name:
@@ -312,7 +317,7 @@ class Loan(db.Model):
         status (str): Loan status ('pending','issued','returned')
     """
     id = db.Column(db.Integer, primary_key=True)
-    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id', ondelete='CASCADE'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
     reservation_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)

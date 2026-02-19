@@ -1,3 +1,5 @@
+                            <!-- Batch Import disabled temporarily - endpoint registration issue -->
+                            <!-- TODO: Fix batch_import_books endpoint registration -->
 {# Unified base template for all pages: logo, language switcher, head, footer #}
 {% import 'base/macros.html' as macros %}
 <!DOCTYPE html>
@@ -6,6 +8,7 @@
     <meta charset="UTF-8">
     <title>{% block title %}Libriya{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#1a535c">
     <meta name="description" content="A library management application for organizing and tracking books">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
@@ -192,6 +195,14 @@
                         <i class="bx bxs-book text-lg"></i>
                         <span class="font-medium">{{ _('Books') }}</span>
                     </a>
+                    
+                    <!-- Batch Import (if enabled for tenant) -->
+                    {% if 'batch_import' in g.premium_features %}
+                    <a href="{{ url_for('books.batch_import_books') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {% if active_page == 'books-batch-import' %}bg-gray-bg text-primary font-semibold{% else %}text-gray-700 hover:bg-gray-bg hover:text-primary{% endif %} transition">
+                        <i class="bx bx-upload text-lg"></i>
+                        <span class="font-medium">{{ _('Batch Import') }}</span>
+                    </a>
+                    {% endif %}
                     {% endif %}
 
                     <!-- Super Admin Menu -->
@@ -419,6 +430,67 @@
                 icon.classList.toggle('rotate-180');
             });
         }
+
+        // Handle delete button clicks - attach directly to each button
+        console.log('Setting up delete button handlers');
+        
+        // Use event delegation on document, but capture the click BEFORE it bubbles to the td with stopPropagation
+        document.addEventListener('click', function(e) {
+            // Check if clicked element or its parent is a delete button
+            let deleteBtn = null;
+            
+            if (e.target.classList.contains('delete-btn')) {
+                deleteBtn = e.target;
+            } else if (e.target.parentElement && e.target.parentElement.classList.contains('delete-btn')) {
+                deleteBtn = e.target.parentElement;
+            }
+            
+            if (!deleteBtn) return;
+            
+            // Stop propagation so td's onclick doesn't fire
+            e.stopPropagation();
+            e.preventDefault();
+            
+            console.log('✓ Delete button clicked!');
+            
+            const bookId = deleteBtn.getAttribute('data-book-id');
+            const bookTitle = deleteBtn.getAttribute('data-book-title');
+            console.log('Book ID:', bookId, 'Title:', bookTitle);
+            
+            if (confirm(`{{ _('Are you sure you want to delete this book?') }}`)) {
+                console.log('Confirmed delete for book:', bookId);
+                
+                // Get CSRF token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                console.log('CSRF token found:', !!csrfToken);
+                
+                // Use fetch API to send DELETE request
+                fetch(`/book_delete/${bookId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken || ''
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (response.ok) {
+                        console.log('✓ Delete successful');
+                        window.location.href = '/';
+                    } else {
+                        console.error('✗ Delete failed:', response.statusText);
+                        alert('Error deleting book');
+                    }
+                })
+                .catch(error => {
+                    console.error('✗ Fetch error:', error);
+                    alert('Error deleting book: ' + error);
+                });
+            } else {
+                console.log('Delete cancelled');
+            }
+        }, true); // Use CAPTURE phase instead of BUBBLE
     </script>
 </body>
 </html>

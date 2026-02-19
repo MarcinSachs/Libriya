@@ -1,3 +1,8 @@
+from app.utils.validators import validate_username_field, validate_email_field, sanitize_string, validate_subdomain_field
+from app.models import Genre
+from flask_babel import lazy_gettext as _, gettext as _real
+from datetime import datetime
+from app.utils.password_validator import validate_password_field
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField, SubmitField, IntegerField, PasswordField,
@@ -7,11 +12,20 @@ from flask_wtf.file import FileField, FileAllowed, FileSize
 from wtforms.validators import (
     DataRequired, Email, Length, EqualTo, Optional, ValidationError, NumberRange
 )
-from app.utils.validators import validate_username_field, validate_email_field, sanitize_string, validate_subdomain_field
-from app.utils.password_validator import validate_password_field
-from datetime import datetime
-from flask_babel import lazy_gettext as _, gettext as _real
-from app.models import Genre
+# Batch import form
+
+
+class BatchImportForm(FlaskForm):
+    isbn_list = TextAreaField(
+        _('ISBN numbers (one per line or comma-separated)'),
+        validators=[DataRequired(message=_('Please provide at least one ISBN.'))]
+    )
+    library = SelectField(
+        _('Library'),
+        coerce=int,
+        validators=[DataRequired()]
+    )
+    submit = SubmitField(_('Import Books'))
 
 
 class ISBNValidator:

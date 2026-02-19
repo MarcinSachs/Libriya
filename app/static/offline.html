@@ -1,3 +1,5 @@
+                            <!-- Batch Import disabled temporarily - endpoint registration issue -->
+                            <!-- TODO: Fix batch_import_books endpoint registration -->
 
 
 <!DOCTYPE html>
@@ -6,6 +8,7 @@
     <meta charset="UTF-8">
     <title>Libriya</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="Ijg3MWFmMmRhMzhlNTVjMjNiZWE2ZGU5N2FkZjIwNTk5NTJkYjY1YzMi.aZd5iQ.65n7IK7R2IZ-ZS9GtAkWlmo4Pdk">
     <meta name="theme-color" content="#1a535c">
     <meta name="description" content="A library management application for organizing and tracking books">
     <link rel="manifest" href="/static/manifest.json">
@@ -16,7 +19,7 @@
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="/static/css/style.css?v=605" rel="stylesheet">
+    <link href="/static/css/style.css?v=963" rel="stylesheet">
     
 </head>
 <body class="font-sans text-text-dark bg-gray-bg selection:bg-accent selection:text-white">
@@ -41,8 +44,8 @@
                         <button class="flex items-center gap-2 text-primary hover:text-accent transition">
                             <img class="w-8 h-8 rounded-full object-cover" 
                                 src="/static/uploads/default.jpg" 
-                                alt="tenant_user">
-                            <span class="text-sm font-medium">tenant_user</span>
+                                alt="admin">
+                            <span class="text-sm font-medium">admin</span>
                             
                         </button>
                         <div class="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
@@ -51,7 +54,7 @@
                                 
                             </a>
                             
-                            <a href="/user/profile/1" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                            <a href="/user/profile/2" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
                                 <i class="bx bx-user-circle align-middle me-2"></i>Profil i Wypożyczenia
                             </a>
                             <a href="/user/settings" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
@@ -119,7 +122,7 @@
                         <button class="flex items-center gap-2 text-primary hover:text-accent transition">
                             <img class="w-8 h-8 rounded-full object-cover" 
                                 src="/static/uploads/default.jpg" 
-                                alt="tenant_user">
+                                alt="admin">
                             
                         </button>
                         <div class="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition z-50">
@@ -128,7 +131,7 @@
                                 
                             </a>
                             
-                            <a href="/user/profile/1" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                            <a href="/user/profile/2" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
                                 <i class="bx bx-user-circle align-middle me-2"></i>Profil i Wypożyczenia
                             </a>
                             <a href="/user/settings" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
@@ -167,11 +170,76 @@
                         <span class="font-medium">Książki</span>
                     </a>
                     
+                    <!-- Batch Import (if enabled for tenant) -->
+                    
+                    <a href="/books/batch_import" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-bg hover:text-primary transition">
+                        <i class="bx bx-upload text-lg"></i>
+                        <span class="font-medium">Batch Import</span>
+                    </a>
+                    
+                    
 
                     <!-- Super Admin Menu -->
                     
 
                     <!-- Administration Section (tenant admins only) -->
+                    
+                    <div>
+                        <button id="admin-toggle" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-bg hover:text-primary transition">
+                            <span class="flex items-center gap-3">
+                                <i class="bx bxs-dashboard text-lg"></i>
+                                <span class="font-medium">Administracja</span>
+                            </span>
+                            <i class="bx bx-chevron-down transition-transform "></i>
+                        </button>
+                        <div id="admin-menu" class="hidden ml-4 mt-2 space-y-1 border-l-2 border-gray-200 pl-2">
+                            <!-- Libraries (tenant admins only) -->
+                            
+                            <a href="/libraries/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
+                                <i class="bx bxs-building text-base"></i>
+                                <span>Biblioteki</span>
+                            </a>
+                            
+
+                            <!-- Users (tenant admins only) -->
+                            
+                            <a href="/users/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
+                                <i class="bx bxs-group text-base"></i>
+                                <span>Użytkownicy</span>
+                            </a>
+                            
+
+                            <!-- Loans (tenant admins only) -->
+                            
+                            <a href="/loans/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
+                                <i class="bx bxs-check-circle text-base"></i>
+                                <span>Wypożyczenia</span>
+                            </a>
+                            
+
+                            <!-- Invitation Codes (tenant admins only) -->
+                            
+                            <a href="/invitation-codes/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
+                                <i class="bx bxs-key text-base"></i>
+                                <span>Kody zaproszeń</span>
+                            </a>
+                            
+
+                            <!-- Messages (tenant admins only) -->
+                            
+                            <a href="/contact_messages" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
+                                <i class="bx bxs-message-detail text-base"></i>
+                                <span>Wiadomości</span>
+                            </a>
+
+                            <!-- Contact Super Admin (tenant admin -> superadmin) -->
+                            <a href="/messaging/admin-support" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
+                                <i class="bx bxs-help-circle text-base"></i>
+                                <span>Contact Super Admin</span>
+                            </a>
+                            
+                        </div>
+                    </div>
                     
                 </nav>
             </aside>
@@ -320,9 +388,26 @@
             <p class="text-gray-400 text-base text-center w-full">&copy; 2026 Libriya. All rights reserved.</p>
         </div>
     </footer>
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-consent-banner" class="fixed bottom-0 left-0 w-full bg-gray-900 text-white text-center py-3 px-4 z-[9999] shadow-lg transition-all duration-300" style="display:none;">
+        <span>This website uses cookies to ensure proper operation. By using it, you accept our <a href="#" class="underline text-accent">cookie policy</a>.</span>
+        <button id="cookie-consent-accept" class="ml-4 bg-accent hover:bg-primary text-white font-semibold py-1 px-4 rounded transition">Accept</button>
+    </div>
     
     <script src="/static/js/pwa-manager.js"></script>
     <script>
+        // Cookie Consent Banner
+        (function() {
+            const banner = document.getElementById('cookie-consent-banner');
+            const acceptBtn = document.getElementById('cookie-consent-accept');
+            if (!localStorage.getItem('cookieConsentAccepted')) {
+                banner.style.display = 'block';
+            }
+            acceptBtn?.addEventListener('click', function() {
+                localStorage.setItem('cookieConsentAccepted', '1');
+                banner.style.display = 'none';
+            });
+        })();
         // Mobile menu toggle for authenticated users
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileSidebar = document.getElementById('mobile-sidebar');
@@ -431,6 +516,67 @@
                 icon.classList.toggle('rotate-180');
             });
         }
+
+        // Handle delete button clicks - attach directly to each button
+        console.log('Setting up delete button handlers');
+        
+        // Use event delegation on document, but capture the click BEFORE it bubbles to the td with stopPropagation
+        document.addEventListener('click', function(e) {
+            // Check if clicked element or its parent is a delete button
+            let deleteBtn = null;
+            
+            if (e.target.classList.contains('delete-btn')) {
+                deleteBtn = e.target;
+            } else if (e.target.parentElement && e.target.parentElement.classList.contains('delete-btn')) {
+                deleteBtn = e.target.parentElement;
+            }
+            
+            if (!deleteBtn) return;
+            
+            // Stop propagation so td's onclick doesn't fire
+            e.stopPropagation();
+            e.preventDefault();
+            
+            console.log('✓ Delete button clicked!');
+            
+            const bookId = deleteBtn.getAttribute('data-book-id');
+            const bookTitle = deleteBtn.getAttribute('data-book-title');
+            console.log('Book ID:', bookId, 'Title:', bookTitle);
+            
+            if (confirm(`Czy na pewno chcesz usunąć tę książkę?`)) {
+                console.log('Confirmed delete for book:', bookId);
+                
+                // Get CSRF token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                console.log('CSRF token found:', !!csrfToken);
+                
+                // Use fetch API to send DELETE request
+                fetch(`/book_delete/${bookId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken || ''
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (response.ok) {
+                        console.log('✓ Delete successful');
+                        window.location.href = '/';
+                    } else {
+                        console.error('✗ Delete failed:', response.statusText);
+                        alert('Error deleting book');
+                    }
+                })
+                .catch(error => {
+                    console.error('✗ Fetch error:', error);
+                    alert('Error deleting book: ' + error);
+                });
+            } else {
+                console.log('Delete cancelled');
+            }
+        }, true); // Use CAPTURE phase instead of BUBBLE
     </script>
 </body>
 </html>

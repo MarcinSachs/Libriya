@@ -60,9 +60,17 @@ document.querySelectorAll('.toggle-premium-feature').forEach(button => {
         const tenantId = this.dataset.tenantId;
         
         try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
             const response = await fetch(
                 `/admin/tenants/${tenantId}/premium/${featureId}/toggle`,
-                { method: 'POST' }
+                { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken || ''
+                    }
+                }
             );
             
             if (!response.ok) throw new Error('Failed to toggle feature');
