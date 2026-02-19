@@ -97,6 +97,11 @@ class Config(BaseSettings):
     # Application environment: development | staging | production
     APP_ENV: str = os.getenv('FLASK_ENV', 'development')
 
+    # Rate Limiter Storage Configuration (Opcja 1: Development bez Redisa, Production z Redisem)
+    # Development: uses in-memory store (SimpleCache)
+    # Production: uses Redis (must be configured via RATELIMIT_STORAGE_URL env var)
+    RATELIMIT_STORAGE_URL: Optional[str] = os.getenv('RATELIMIT_STORAGE_URL', None)
+
     # Session and cookie security (critical for production)
     SESSION_COOKIE_HTTPONLY: bool = True
     SESSION_COOKIE_SECURE: bool = True  # Set to True only in production (HTTPS)

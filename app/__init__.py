@@ -33,7 +33,16 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     # Ustaw komunikat logowania z tłumaczeniem dynamicznym
     login_manager.login_message = _l("Please log in to access this page.")
-    limiter.init_app(app)
+    
+    # Initialize Limiter with environment-based storage (Opcja 1)
+    # Development: uses memory:// (SimpleCache)
+    # Production: uses Redis if RATELIMIT_STORAGE_URL is set
+    storage_url = app.config.get('RATELIMIT_STORAGE_URL')
+    if storage_url:
+        limiter.init_app(app, storage_uri=storage_url)
+    else:
+        limiter.init_app(app)  # Defaults to memory://
+    
     csrf.init_app(app)
     cache.init_app(app)
 

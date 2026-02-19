@@ -11,15 +11,6 @@
 
 ## 🚨 KRYTYCZNE PROBLEMY (MUSZĄ BYĆ NAPRAWIONE)
 
-### 1️⃣ SECRET_KEY Nie Konfigurowany
-- **File**: `config.py` L14
-- **Problem**: Aplikacja nie uruchomi się bez wartości
-- **Jak naprawić**: Wygeneruj silny klucz
-  ```bash
-  python -c "import secrets; print(secrets.token_hex(32))"
-  ```
-- **Czas**: 5 minut
-
 ### 2️⃣ CSP Używa `unsafe-inline`
 - **File**: `app/__init__.py` L193-197
 - **Zagrożenie**: Ataki XSS nie są blokowane
@@ -38,22 +29,6 @@
 
 ## ⚠️ POWAŻNE PROBLEMY (PRZED PRODUKCJĄ)
 
-### 4️⃣ Brak HTTPS Redirect ✅ NAPRAWIONE
-- **Status**: GOTOWE ✅
-- **File**: `app/__init__.py` + `config.py`
-- **Co dodano**: 
-  - `enforce_https()` middleware
-  - `HTTPS_REDIRECT` config flag
-- **Ćwik**: W `.env.production` ustaw `HTTPS_REDIRECT=True`
-
-### 5️⃣ Brak Cookie Security Flags ✅ NAPRAWIONE
-- **Status**: GOTOWE ✅
-- **File**: `config.py`
-- **Co dodano**:
-  - `SESSION_COOKIE_HTTPONLY = True`
-  - `SESSION_COOKIE_SECURE = True`
-  - `SESSION_COOKIE_SAMESITE = 'Lax'`
-  - `PERMANENT_SESSION_LIFETIME = 3600`
 
 ### 6️⃣ Slaba Funkcja Hash (PBKDF2)
 - **File**: `app/routes/auth.py`
@@ -111,7 +86,6 @@
 ### 🔴 Faza 1: KRYTYCZNE (PRZED PRODUKCJĄ)
 Estymowany czas: **3-5 dni**
 
-- [ ] Wygeneruj SECRET_KEY (5 min)
 - [ ] Zainstaluj Redis (1 dzień)
 - [ ] Wdrożyć CSP nonce (1-2 dni)
 - [ ] Cookie security flags (✅ DONE)

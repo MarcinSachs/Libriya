@@ -11,6 +11,7 @@ Flask-Babel
 flask-session
 wtforms-sqlalchemy
 flask-limiter
+redis>=5.0.0  # Required for rate limiting in production (Opcja 1)
 isbnlib
 Pillow
 APScheduler
