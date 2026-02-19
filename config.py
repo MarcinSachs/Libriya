@@ -84,6 +84,9 @@ class Config(BaseSettings):
     # Set to False during local development if you use custom hosts or wildcard domains.
     ENFORCE_SUBDOMAIN_EXISTS: bool = True
 
+    # HTTPS Configuration
+    HTTPS_REDIRECT: bool = False  # Set to False for development without HTTPS
+
     # Caching configuration
     CACHE_TYPE: str = 'SimpleCache'  # in-memory cache suitable for single-server deployments
     CACHE_DEFAULT_TIMEOUT: int = 3600  # 1 hour (can be overridden per cache key)
@@ -93,6 +96,12 @@ class Config(BaseSettings):
 
     # Application environment: development | staging | production
     APP_ENV: str = os.getenv('FLASK_ENV', 'development')
+
+    # Session and cookie security (critical for production)
+    SESSION_COOKIE_HTTPONLY: bool = True
+    SESSION_COOKIE_SECURE: bool = True  # Set to True only in production (HTTPS)
+    SESSION_COOKIE_SAMESITE: str = 'Lax'  # Prevent CSRF attacks
+    PERMANENT_SESSION_LIFETIME: int = 3600  # 1 hour session timeout
 
     # Have I Been Pwned (HIBP) / pwned-passwords settings
     # Disabled by default for safety; config controls enabling only in production.

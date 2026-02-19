@@ -92,6 +92,18 @@ def create_app(config_class=Config):
 
     # Register multi-tenant middleware
     @app.before_request
+    def enforce_https():
+        """Enforce HTTPS in production by redirecting HTTP requests"""
+        # Only enforce in production and when not running in debug mode
+        if (not app.debug and 
+            not request.is_secure and 
+            request.headers.get('X-Forwarded-Proto', 'http') == 'http' and
+            app.config.get('HTTPS_REDIRECT', True)):
+            # Redirect HTTP to HTTPS
+            url = request.url.replace('http://', 'https://', 1)
+            return redirect(url, code=301)
+
+    @app.before_request
     def verify_tenant_access():
         """
         Middleware sprawdzający dostęp do tenantu
