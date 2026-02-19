@@ -54,5 +54,3 @@ def test_toggle_batch_import(superadmin_client, premium_tenant):
 def test_batch_import_view(superadmin_client, premium_tenant):
     resp = superadmin_client.get('/books/batch_import')
     assert resp.status_code in (200, 302)  # 302 if not admin/manager
-
-

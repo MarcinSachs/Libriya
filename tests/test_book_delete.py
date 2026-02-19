@@ -2,6 +2,7 @@ import pytest
 from app import db
 from app.models import Tenant, User, Book
 
+
 @pytest.fixture
 def premium_tenant(app):
     tenant = Tenant(name='TestTenant', subdomain='test', premium_bookcover_enabled=True,
@@ -31,6 +32,7 @@ def admin_client(client, admin_user):
         sess['_fresh'] = True
         sess['_id'] = admin_user.get_id() if hasattr(admin_user, 'get_id') else str(admin_user.id)
     return client
+
 
 def test_book_delete_with_loans(admin_client, premium_tenant):
     from app.models import Library
