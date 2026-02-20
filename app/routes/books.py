@@ -103,7 +103,7 @@ def get_genres_from_isbn():
                     return jsonify({
                         'genres': [],
                         'message': 'No subjects found for this book'
-                    }), 200
+                    }, 200)
 
                 # Map OL subjects to application genres
                 genre_ids = OpenLibraryClient.get_genre_ids_for_subjects(subjects)
@@ -234,6 +234,7 @@ def book_add():
             title=form.title.data,
             year=form.year.data,
             library_id=form.library.data,  # Assign library
+            tenant_id=(Library.query.get(form.library.data).tenant_id if form.library.data else None),
             status='available',
             description=description
         )
