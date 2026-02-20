@@ -1,0 +1,408 @@
+                            <!-- Batch Import disabled temporarily - endpoint registration issue -->
+                            <!-- TODO: Fix batch_import_books endpoint registration -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Libriya</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="ImYwYjUwNTlmZGFkYjgzYTFmMDNmOTAyYzA2ZGJmMTdlNTY0ZTYzZGQi.aZiRRg.cGg72CwRk3VKOuYtnS-KV2_KxoI">
+    <meta name="theme-color" content="#1a535c">
+    <meta name="description" content="A library management application for organizing and tracking books">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="/static/css/style.css?v=975" rel="stylesheet">
+    
+</head>
+<body class="font-sans text-text-dark bg-gray-bg selection:bg-accent selection:text-white">
+    <!-- Unified Navbar -->
+    <nav class="fixed w-full z-50 glass-nav border-b border-gray-200" style="top:0; margin-top:0; padding-top:0;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex items-center gap-3">
+                    <a href="/" class="flex items-center gap-2">
+                        <img src="/static/images/logo.svg" alt="Libriya Logo" class="h-10 w-auto">
+                        <span class="flex flex-col leading-tight">
+                            <span class="font-serif text-3xl font-bold text-primary">Libriya</span>
+                            <span class="text-xs font-light text-gray-500 tracking-wide -mt-1 ml-1">home for your books</span>
+                        </span>
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-10">
+                    
+                    
+                    <!-- Language Selector -->
+                    <div class="relative group pb-2">
+                        <button class="flex items-center gap-1 font-semibold text-gray-700 hover:text-primary transition-colors">
+                            <i class="bx bx-globe"></i>
+                            <span>Language</span>
+                        </button>
+                        <div class="absolute right-0 top-full mt-0 w-32 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
+                            <a href="/set_language/pl" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg flex items-center gap-2">
+                                <span class="fi fi-pl"></span> PL
+                            </a>
+                            <a href="/set_language/en" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg flex items-center gap-2">
+                                <span class="fi fi-gb"></span> EN
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mobile menu button + language -->
+                <div class="md:hidden flex items-center gap-3">
+                    <!-- Mobile Language Dropdown -->
+                    <div class="relative group pb-2">
+                        <button class="flex items-center gap-1 text-primary hover:text-accent transition">
+                            <i class="bx bx-globe text-lg"></i>
+                        </button>
+                        <div class="absolute right-0 top-full mt-0 w-32 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition z-50">
+                            <a href="/set_language/pl" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg flex items-center gap-2">
+                                <span class="fi fi-pl"></span> PL
+                            </a>
+                            <a href="/set_language/en" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg flex items-center gap-2">
+                                <span class="fi fi-gb"></span> EN
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Mobile Install App Button -->
+                    
+                    
+                    <!-- Mobile User Dropdown (Authenticated) -->
+                    
+                    
+                    <!-- Mobile Menu Button -->
+                    <button id="mobile-menu-btn" class="p-2 rounded hover:bg-gray-100 transition">
+                        <i class="bx bx-menu text-2xl text-primary"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="pt-32">
+        <div class="flex">
+            
+
+                <!-- Main Content -->
+            <div class="flex-1 overflow-x-hidden">
+                <div class="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
+        
+<div class="w-full py-12 flex flex-col items-center">
+  <div class="w-full max-w-lg flex flex-col items-center">
+    <!-- Registration Form -->
+    <div class="flex flex-col w-full">
+      <!-- Main Heading -->
+      
+        <h2 class="text-4xl lg:text-5xl font-bold mb-2 text-primary">
+          Create Your Organization
+        </h2>
+        <p class="text-gray-600 mb-8 text-lg">
+          Set up your organization and start managing libraries today
+        </p>
+        <!-- New Organization Info Card -->
+        <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200 mt-8 mb-12 w-full">
+          <h4 class="font-semibold text-text-dark mb-3 flex items-center gap-2">
+            <i class='bx bx-bulb text-accent text-xl'></i> Creating New Organization
+          </h4>
+          <p class="text-gray-700 text-sm leading-relaxed">
+            You're setting up a new organization. You'll become the owner with full administrative access. You can create multiple libraries and invite team members.
+          </p>
+        </div>
+      
+      
+      <!-- Registration Form Card -->
+      <div class="glass-card rounded-2xl p-8 shadow-lg">
+        <form method="POST" novalidate class="space-y-6">
+          <input id="create_new_tenant" name="create_new_tenant" type="hidden" value="true">
+          
+          <!-- Organization Name (only for creating new tenant) -->
+          
+          <div class="form-group">
+            <label class="block text-sm font-semibold mb-2 text-text-dark" for="tenant_name">Organization Name</label>
+            
+                <input class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition" id="tenant_name" maxlength="100" minlength="3" name="tenant_name" placeholder="e.g., My City Libraries" type="text" value="TestTenant">
+            
+            <small class="text-gray-500 text-xs mt-1 block">The name of your organization</small>
+          </div>
+          
+          
+          <!-- Invitation Code (only for joining existing tenant) -->
+          
+
+          <!-- Email -->
+          <div class="form-group">
+            <label class="block text-sm font-semibold mb-2 text-text-dark" for="email">Email</label>
+            
+                <input class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition" id="email" name="email" required type="email" value="regev@test.com">
+            
+          </div>
+
+          <!-- First Name (only for joining existing tenant) -->
+          
+
+          <!-- Username -->
+          <div class="form-group">
+            <label class="block text-sm font-semibold mb-2 text-text-dark" for="username">Username</label>
+            
+                <input class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition" id="username" maxlength="50" minlength="3" name="username" required type="text" value="reg_ev">
+            
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label class="block text-sm font-semibold mb-2 text-text-dark" for="password">Password</label>
+            
+                <input class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition" id="password" minlength="8" name="password" required type="password" value="">
+            
+            <small class="text-gray-500 text-xs mt-1 block">Minimum 8 characters</small>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="form-group">
+            <label class="block text-sm font-semibold mb-2 text-text-dark" for="password_confirm">Confirm Password</label>
+            
+                <input class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition" id="password_confirm" name="password_confirm" required type="password" value="">
+            
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-4">
+            
+              <button type="submit" class="w-full py-3 px-4 bg-[#1a535c] hover:bg-[#0f3a45] text-white font-semibold rounded-lg hover:shadow-lg transform hover:-translate-y-1 transition">
+                Create Organization
+              </button>
+            
+          </div>
+
+          <!-- Already have account / Change option -->
+          <div class="text-center text-gray-600 text-sm mt-6 space-y-2">
+            <p>
+              Already have an account? 
+              <a href="/auth/login/" class="text-primary hover:text-accent font-semibold transition">
+                Log in here
+              </a>
+            </p>
+            <p>
+              <a href="/auth/register-choice" class="text-accent hover:text-primary font-semibold transition text-xs">
+                ← Back to registration options
+              </a>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+
+  </div>
+</div>
+
+
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Unified Footer -->
+    <footer class="bg-white py-0.5 border-t border-gray-100 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-[40px]" style="min-height:2.5rem;">
+            <p class="text-gray-400 text-base text-center w-full">&copy; 2026 Libriya. All rights reserved.</p>
+        </div>
+    </footer>
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-consent-banner" class="fixed bottom-0 left-0 w-full bg-gray-900 text-white text-center py-3 px-4 z-[9999] shadow-lg transition-all duration-300" style="display:none;">
+        <span>This website uses cookies to ensure proper operation. By using it, you accept our <a href="#" class="underline text-accent">cookie policy</a>.</span>
+        <button id="cookie-consent-accept" class="ml-4 bg-accent hover:bg-primary text-white font-semibold py-1 px-4 rounded transition">Accept</button>
+    </div>
+    
+    <script src="/static/js/pwa-manager.js"></script>
+    <script>
+        // Cookie Consent Banner
+        (function() {
+            const banner = document.getElementById('cookie-consent-banner');
+            const acceptBtn = document.getElementById('cookie-consent-accept');
+            if (!localStorage.getItem('cookieConsentAccepted')) {
+                banner.style.display = 'block';
+            }
+            acceptBtn?.addEventListener('click', function() {
+                localStorage.setItem('cookieConsentAccepted', '1');
+                banner.style.display = 'none';
+            });
+        })();
+        // Mobile menu toggle for authenticated users
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        
+        if (mobileMenuBtn && mobileSidebar) {
+            mobileMenuBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                mobileSidebar.classList.toggle('hidden');
+            });
+
+            // Close sidebar when clicking a link on mobile
+            mobileSidebar.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth < 1024) {  // lg breakpoint
+                        mobileSidebar.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth < 1024 && mobileSidebar && !mobileSidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                    mobileSidebar.classList.add('hidden');
+                }
+            });
+        }
+        
+        // Mobile menu toggle for landing page
+        const landingMenuBtn = document.querySelector('.md\\:hidden button i.bx-menu')?.parentElement;
+        
+        if (landingMenuBtn && (!mobileMenuBtn || !mobileSidebar)) {
+            const navContainer = document.querySelector('nav');
+            let mobileMenuPanel = null;
+            
+            landingMenuBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                if (!mobileMenuPanel) {
+                    // Create mobile menu panel
+                    mobileMenuPanel = document.createElement('div');
+                    mobileMenuPanel.id = 'mobile-nav-menu';
+                    mobileMenuPanel.className = 'fixed top-20 left-0 right-0 bg-white border-b border-gray-200 z-40 shadow-lg p-4';
+                    
+                    const linksContainer = document.createElement('div');
+                    linksContainer.className = 'space-y-2 max-w-7xl mx-auto';
+                    
+                    // Add nav links from landing page
+                    const links = [
+                        { text: 'Features', href: '#features' },
+                        { text: 'For Whom', href: '#multi-tenant' },
+                        { text: 'Premium', href: '#premium' }
+                    ];
+                    
+                    links.forEach(linkData => {
+                        const link = document.createElement('a');
+                        link.href = linkData.href;
+                        link.textContent = linkData.text;
+                        link.className = 'block px-4 py-2 text-gray-700 hover:bg-gray-bg rounded-lg transition font-semibold';
+                        linksContainer.appendChild(link);
+                    });
+                    
+                    // Add divider
+                    const divider = document.createElement('hr');
+                    divider.className = 'my-2 border-gray-200';
+                    linksContainer.appendChild(divider);
+                    
+                    // Add login button
+                    const loginBtn = document.createElement('a');
+                    loginBtn.href = '/login';
+                    loginBtn.textContent = 'Sign In';
+                    loginBtn.className = 'block w-full px-4 py-2 bg-primary text-white rounded-lg font-semibold text-center hover:shadow-lg transition';
+                    linksContainer.appendChild(loginBtn);
+                    
+                    mobileMenuPanel.appendChild(linksContainer);
+                    navContainer.insertAdjacentElement('afterend', mobileMenuPanel);
+                } else {
+                    // Toggle visibility
+                    mobileMenuPanel.classList.toggle('hidden');
+                }
+            });
+            
+            // Close mobile menu when clicking a link
+            mobileMenuPanel?.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (link.href.includes('#')) {
+                        mobileMenuPanel.classList.add('hidden');
+                    }
+                });
+            });
+            
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (mobileMenuPanel && !mobileMenuPanel.contains(e.target) && !landingMenuBtn.contains(e.target)) {
+                    mobileMenuPanel.classList.add('hidden');
+                }
+            });
+        }
+
+        // Admin menu toggle
+        const adminToggle = document.getElementById('admin-toggle');
+        const adminMenu = document.getElementById('admin-menu');
+        if (adminToggle && adminMenu) {
+            adminToggle.addEventListener('click', () => {
+                adminMenu.classList.toggle('hidden');
+                const icon = adminToggle.querySelector('i:last-child');
+                icon.classList.toggle('rotate-180');
+            });
+        }
+
+        // Handle delete button clicks - attach directly to each button
+        console.log('Setting up delete button handlers');
+        
+        // Use event delegation on document, but capture the click BEFORE it bubbles to the td with stopPropagation
+        document.addEventListener('click', function(e) {
+            // Check if clicked element or its parent is a delete button
+            let deleteBtn = null;
+            
+            if (e.target.classList.contains('delete-btn')) {
+                deleteBtn = e.target;
+            } else if (e.target.parentElement && e.target.parentElement.classList.contains('delete-btn')) {
+                deleteBtn = e.target.parentElement;
+            }
+            
+            if (!deleteBtn) return;
+            
+            // Stop propagation so td's onclick doesn't fire
+            e.stopPropagation();
+            e.preventDefault();
+            
+            console.log('✓ Delete button clicked!');
+            
+            const bookId = deleteBtn.getAttribute('data-book-id');
+            const bookTitle = deleteBtn.getAttribute('data-book-title');
+            console.log('Book ID:', bookId, 'Title:', bookTitle);
+            
+            if (confirm(`Are you sure you want to delete this book?`)) {
+                console.log('Confirmed delete for book:', bookId);
+                
+                // Get CSRF token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                console.log('CSRF token found:', !!csrfToken);
+                
+                // Use fetch API to send DELETE request
+                fetch(`/book_delete/${bookId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken || ''
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (response.ok) {
+                        console.log('✓ Delete successful');
+                        window.location.href = '/';
+                    } else {
+                        console.error('✗ Delete failed:', response.statusText);
+                        alert('Error deleting book');
+                    }
+                })
+                .catch(error => {
+                    console.error('✗ Fetch error:', error);
+                    alert('Error deleting book: ' + error);
+                });
+            } else {
+                console.log('Delete cancelled');
+            }
+        }, true); // Use CAPTURE phase instead of BUBBLE
+    </script>
+</body>
+</html>
