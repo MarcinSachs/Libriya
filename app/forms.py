@@ -305,9 +305,12 @@ class RegistrationForm(FlaskForm):
         """
         valid = super().validate(*args, **kwargs)
 
+        inv_code = getattr(self, 'invitation_code', None).data if getattr(
+            self, 'invitation_code', None) is not None else None
+        has_code = bool(inv_code and str(inv_code).strip())
         joining_existing = (
             str(getattr(self, 'create_new_tenant', None).data).lower() == 'false' or
-            bool(getattr(self, 'invitation_code', None) and str(self.invitation_code.data).strip())
+            has_code
         )
 
         if joining_existing:

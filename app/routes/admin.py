@@ -8,7 +8,7 @@ import logging
 import os
 
 from app import db, csrf
-from app.models import Tenant, User, Library, Book, AuditLogFile
+from app.models import Tenant, User, Library, Book, AuditLogFile, AuditLog
 from app.forms import TenantForm
 from app.utils.decorators import role_required
 from app.utils.audit_log import log_action
@@ -649,3 +649,79 @@ def premium_modules_reload():
     except Exception as e:
         logger.error(f"Premium module reload error: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+# ============================================================
+# AUDIT ENTRIES MANAGEMENT
+# ============================================================
+
+@bp.route('/audit-entries', methods=['GET'])
+@login_required
+@admin_required
+def audit_entries_list():
+    """List DB-backed AuditLog entries and support simple CSV/JSON export."""
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 50, type=int)
+
+    q = AuditLog.query
+
+    # Optional filters
+    tenant_id = request.args.get('tenant_id', type=int)
+    if tenant_id:
+        q = q.filter(AuditLog.tenant_id == tenant_id)
+
+    action = request.args.get('action')
+    if action:
+        q = q.filter(AuditLog.action == action)
+
+    actor_id = request.args.get('actor_id', type=int)
+    if actor_id:
+        q = q.filter(AuditLog.actor_id == actor_id)
+
+    # Date range (ISO format)
+    start = request.args.get('start')
+    end = request.args.get('end')
+    try:
+        if start:
+            q = q.filter(AuditLog.timestamp >= start)
+        if end:
+            q = q.filter(AuditLog.timestamp <= end)
+    except Exception:
+        pass
+
+    q = q.order_by(AuditLog.timestamp.desc())
+
+    export_format = request.args.get('format')
+    if export_format in ('csv', 'json'):
+        # Export full result set (no pagination)
+        entries = q.limit(10000).all()  # cap exports
+        if export_format == 'json':
+            rows = []
+            for e in entries:
+                rows.append({
+                    'id': e.id,
+                    'timestamp': e.timestamp.isoformat(),
+                    'tenant_id': e.tenant_id,
+                    'actor_id': e.actor_id,
+                    'action': e.action,
+                    'object_type': e.object_type,
+                    'object_id': e.object_id,
+                    'details': e.details,
+                    'success': e.success,
+                    'ip': e.ip,
+                })
+            return jsonify(rows)
+
+        # CSV export
+        import csv
+        from io import StringIO
+        si = StringIO()
+        writer = csv.writer(si)
+        writer.writerow(['id', 'timestamp', 'tenant_id', 'actor_id', 'action', 'object_type', 'object_id', 'details', 'success', 'ip'])
+        for e in entries:
+            writer.writerow([e.id, e.timestamp.isoformat(), e.tenant_id, e.actor_id, e.action, e.object_type, e.object_id, (e.details or '').replace('\n',' '), e.success, e.ip])
+        output = si.getvalue()
+        return current_app.response_class(output, mimetype='text/csv', headers={'Content-Disposition': 'attachment; filename=audit_entries.csv'})
+
+    paginated = q.paginate(page=page, per_page=per_page)
+    return render_template('admin/audit_entries.html', entries=paginated, title=_('Audit Entries'), active_page='admin-dashboard', parent_page='admin')

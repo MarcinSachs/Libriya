@@ -21,9 +21,13 @@ Premium covers transparently extend base functionality without code changes.
 import requests
 import os
 import secrets
+import ipaddress
 from typing import Optional, Tuple
 from urllib.parse import urlparse
 import logging
+import socket
+import io
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -205,7 +209,7 @@ class CoverService:
         upload_folder: str
     ) -> Optional[str]:
         """
-        Download cover image from URL and save locally.
+        Download cover image from URL and save locally. Validate image with Pillow.
 
         Args:
             cover_url: URL to download from
@@ -226,6 +230,12 @@ class CoverService:
             response = requests.get(cover_url, stream=True, timeout=CoverService.TIMEOUT)
             response.raise_for_status()
 
+            # Re-validate final URL after redirects to prevent SSRF via redirects
+            final_url = getattr(response, 'url', cover_url)
+            if not CoverService._validate_url(final_url):
+                logger.warning(f"CoverService: Final URL after redirects is not allowed: {final_url}")
+                return None
+
             if response.status_code != 200:
                 logger.warning(f"CoverService: Bad status code {response.status_code}")
                 return None
@@ -244,19 +254,47 @@ class CoverService:
                     logger.warning("CoverService: Downloaded content exceeds limit")
                     return None
 
-            # Determine file extension
+            # Validate image content using Pillow
+            try:
+                img = Image.open(io.BytesIO(content))
+                img.verify()  # will raise if not a valid image
+            except Exception:
+                logger.warning(f"CoverService: Downloaded content is not a valid image: {cover_url}")
+                return None
+
+            # Re-open image for safe processing (verify() may leave the file in unusable state)
+            img = Image.open(io.BytesIO(content))
+            img_format = (img.format or '').upper()
+            ext_map = {'JPEG': '.jpg', 'JPG': '.jpg', 'PNG': '.png', 'GIF': '.gif'}
+
+            # Determine file extension from image format or URL
             _, f_ext = os.path.splitext(urlparse(cover_url).path)
+            if img_format in ext_map:
+                f_ext = ext_map[img_format]
+
             if not f_ext or f_ext.lower() not in CoverService.ALLOWED_EXTENSIONS:
                 f_ext = '.jpg'
 
             # Random filename
             random_hex = secrets.token_hex(8)
             filename = random_hex + f_ext
-
             filepath = os.path.join(upload_folder, filename)
 
-            with open(filepath, 'wb') as f:
-                f.write(content)
+            # Save sanitized image (re-encode to strip metadata for JPEG/PNG)
+            try:
+                if img_format == 'GIF':
+                    # Preserve GIF bytes (animation)
+                    with open(filepath, 'wb') as f:
+                        f.write(content)
+                else:
+                    # Convert to RGB for JPEG to avoid alpha channel issues
+                    save_format = 'PNG' if f_ext == '.png' else 'JPEG'
+                    if save_format == 'JPEG':
+                        img = img.convert('RGB')
+                    img.save(filepath, format=save_format, optimize=True, quality=85)
+            except Exception as e:
+                logger.error(f"CoverService: Save error while re-encoding image: {e}")
+                return None
 
             logger.info(f"CoverService: Saved cover as {filename}")
             return filename
@@ -275,6 +313,8 @@ class CoverService:
     def _validate_url(url: str) -> bool:
         """
         Validate URL for security (prevent SSRF).
+
+        Adds DNS resolution: any resolved IP that is private/loopback will be rejected.
 
         Args:
             url: URL to validate
@@ -295,14 +335,28 @@ class CoverService:
                 return False
 
             # Check for private IP ranges
-            import ipaddress
             try:
+                # If hostname is an IP literal, check it directly
                 ip = ipaddress.ip_address(parsed_url.hostname)
                 if ip.is_private or ip.is_loopback:
                     return False
             except (ValueError, TypeError):
-                # If hostname is not an IP, it's likely a domain name (OK)
-                pass
+                # Hostname is not an IP literal -> resolve DNS and check returned addresses
+                try:
+                    infos = socket.getaddrinfo(parsed_url.hostname, None)
+                    for info in infos:
+                        sockaddr = info[4]
+                        host_ip = sockaddr[0]
+                        try:
+                            ip = ipaddress.ip_address(host_ip)
+                            if ip.is_private or ip.is_loopback:
+                                return False
+                        except Exception:
+                            # ignore non-IP results
+                            continue
+                except socket.gaierror:
+                    # DNS resolution failed - conservatively allow (don't block legitimate public hosts)
+                    pass
 
             return True
 

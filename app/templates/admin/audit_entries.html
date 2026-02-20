@@ -1,0 +1,61 @@
+{% extends "base/main_base.html" %}
+
+{% block content %}
+<h1 class="h3 mb-3">{{ title }}</h1>
+
+<form class="row g-3 mb-3" method="get">
+  <div class="col-auto">
+    <input type="text" name="action" class="form-control" placeholder="Action" value="{{ request.args.get('action','') }}">
+  </div>
+  <div class="col-auto">
+    <input type="number" name="tenant_id" class="form-control" placeholder="Tenant ID" value="{{ request.args.get('tenant_id','') }}">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary" type="submit">Filter</button>
+  </div>
+  <div class="col-auto ms-auto">
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin.audit_entries_list', format='csv') }}">Export CSV</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin.audit_entries_list', format='json') }}">Export JSON</a>
+  </div>
+</form>
+
+<table class="table table-sm table-striped">
+  <thead>
+    <tr>
+      <th>Timestamp</th>
+      <th>Tenant</th>
+      <th>Actor</th>
+      <th>Action</th>
+      <th>Object</th>
+      <th>Details</th>
+      <th>IP</th>
+      <th>Success</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for e in entries.items %}
+      <tr>
+        <td>{{ e.timestamp }}</td>
+        <td>{{ e.tenant_id or '-' }}</td>
+        <td>{{ e.actor_id or '-' }}</td>
+        <td>{{ e.action }}</td>
+        <td>{{ e.object_type or '-' }}{{ ' #' + e.object_id if e.object_id else '' }}</td>
+        <td>{{ (e.details[:120] + '...') if e.details and e.details|length > 120 else (e.details or '-') }}</td>
+        <td>{{ e.ip or '-' }}</td>
+        <td>{{ '✓' if e.success else '✗' }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<nav aria-label="Page navigation">
+  {% if entries.has_prev %}
+    <a class="btn btn-outline-secondary" href="?page={{ entries.prev_num }}">Previous</a>
+  {% endif %}
+  <span class="mx-2">Page {{ entries.page }} / {{ entries.pages }}</span>
+  {% if entries.has_next %}
+    <a class="btn btn-outline-secondary" href="?page={{ entries.next_num }}">Next</a>
+  {% endif %}
+</nav>
+
+{% endblock %}

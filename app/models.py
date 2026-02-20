@@ -673,3 +673,29 @@ class EmailVerificationToken(db.Model):
 
     def __str__(self):
         return f"EmailVerificationToken(user_id={self.user_id}, used={self.used}, expires_at={self.expires_at})"
+
+
+class AuditLog(db.Model):
+    """Row-level audit log for critical application events.
+
+    - Stored as DB rows for easy querying and short-term retention.
+    - Long-term/permanent audit files are handled by AuditLogFile (JSON-lines).
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False, index=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=True, index=True)
+    actor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    actor_role = db.Column(db.String(50), nullable=True)
+    ip = db.Column(db.String(45), nullable=True)
+
+    action = db.Column(db.String(120), nullable=False, index=True)
+    object_type = db.Column(db.String(100), nullable=True, index=True)
+    object_id = db.Column(db.String(100), nullable=True, index=True)
+    details = db.Column(db.Text, nullable=True)  # JSON string (small)
+    success = db.Column(db.Boolean, default=True, nullable=False)
+
+    actor = db.relationship('User', foreign_keys=[actor_id])
+    tenant = db.relationship('Tenant', backref='audit_logs')
+
+    def __repr__(self):
+        return f"<AuditLog {self.id} action={self.action} actor={self.actor_id} tenant={self.tenant_id} ts={self.timestamp}>"
