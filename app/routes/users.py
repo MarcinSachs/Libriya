@@ -330,7 +330,13 @@ def user_delete(user_id):
 @bp.route("/user/profile/<int:user_id>")
 @login_required
 def user_profile(user_id):
-    user = current_user
+    # fetch fresh user instance (allows viewing other profiles later)
+    from app.models import User
+    user = User.query.options(
+        db.subqueryload(User.loans),
+        db.subqueryload(User.favorites)
+    ).get_or_404(user_id)
+
     # Sort all loans by date, newest first
     all_loans = sorted(
         user.loans, key=lambda x: x.reservation_date, reverse=True)
@@ -341,7 +347,7 @@ def user_profile(user_id):
     ]
     pending_loans = [loan for loan in all_loans if loan.status == 'pending']
 
-    # Access favorites
+    # Access favorites (already eager-loaded)
     favorite_books = user.favorites
 
     return render_template(

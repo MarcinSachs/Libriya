@@ -22,7 +22,7 @@
     <link href="{{ url_for('static', filename='css/style.css') }}?v={{ range(1, 1000) | random }}" rel="stylesheet">
     {% block extra_head %}{% endblock %}
 </head>
-<body class="font-sans text-text-dark bg-gray-bg selection:bg-accent selection:text-white">
+<body class="flex flex-col min-h-screen font-sans text-text-dark bg-gray-bg selection:bg-accent selection:text-white">
     <!-- Unified Navbar -->
     <nav class="fixed w-full z-50 glass-nav border-b border-gray-200" style="top:0; margin-top:0; padding-top:0;">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -183,7 +183,7 @@
             </div>
         </div>
     </nav>
-    <main class="pt-32">
+    <main class="flex-grow pt-32">
         <div class="flex">
             {% if current_user.is_authenticated %}
             <!-- Sidebar -->

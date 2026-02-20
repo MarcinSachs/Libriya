@@ -120,9 +120,27 @@ LIBRARIES_CANNOT_DELETE_WITH_USERS = _("Cannot delete a library that has users a
 INVITATIONS_SELECT_LIBRARY = _("Please select a library")
 INVITATIONS_ONLY_OWN_LIBRARIES = _("You can only generate codes for your libraries")
 INVITATIONS_CODE_GENERATED = _("Invitation code generated: %(code)s")
+INVITATIONS_EMAIL_SENT = _("Invitation sent to %(email)s")
+INVITATIONS_EMAIL_COLUMN = _("Email sent")
+INVITATIONS_NO_RECIPIENT = _("No recipient email specified for this code")
+INVITATIONS_EMAIL_SEND_ERROR = _("Failed to send invitation email.")
 INVITATIONS_NO_PERMISSION_DEACTIVATE = _("You do not have permission to deactivate this code")
 INVITATIONS_CANNOT_DEACTIVATE_USED = _("Cannot deactivate an already-used code")
 INVITATIONS_CODE_DEACTIVATED = _("Invitation code deactivated")
+
+# Sharing links messages
+SHARE_LINK_CREATED = _("Shareable link generated and copied to clipboard")
+SHARE_LINK_EXPIRED = _("Share link has expired or is inactive")
+SHARE_LINK_INVALID = _("Invalid share link")
+SHARE_GENERATE_LINK = _("Generate share link")
+SHARE_ENTER_EXPIRY = _("Enter expiration date (YYYY-MM-DD) or leave blank:")
+SHARE_LINK_COPIED = _("Share link copied to clipboard")
+SHARE_LINK_ERROR = _("Error generating share link")
+SHARE_LINK_CANCELLED = _("Share link has been deactivated")
+SHARE_EXPIRATION_LABEL = _("Expiration date")
+SHARE_GENERATE = _("Generate")
+SHARE_CANCEL = _("Cancel")
+SHARE_DEACTIVATE = _("Deactivate share")
 
 # Error-specific messages
 ERROR_UNSUPPORTED_LANGUAGE = _("Unsupported language.")

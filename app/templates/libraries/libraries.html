@@ -10,6 +10,13 @@
         <li class="flex justify-between items-center px-4 py-3 border-b border-gray-200 hover:bg-gray-50">
             {{ library.name }}
             <div class="flex gap-2">
+                {# choose first valid shared link using filter #}
+                {% set active_link = library.shared_links | selectattr('is_valid') | list | first %}
+                <button class="text-green-500 hover:text-green-700 transition share-link-btn" data-library-id="{{ library.id }}" title="{{ _('Generate share link') }}"
+                        data-token="{{ active_link.token if active_link else '' }}"
+                        data-expiry="{{ active_link.expires_at.strftime('%Y-%m-%d') if active_link and active_link.expires_at else '' }}">
+                    <i class="bx bx-share-alt text-lg"></i>
+                </button>
                 <a href="{{ url_for('libraries.library_edit', library_id=library.id) }}" class="text-accent hover:text-primary transition" title="{{ _('Edit Library') }}">
                     <i class="bx bxs-edit text-lg"></i>
                 </a>
@@ -25,4 +32,83 @@
         {% endfor %}
     </ul>
 </div>
+
+<!-- share link modal -->
+<div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-80">
+        <h2 class="text-lg font-semibold mb-4">{{ _('Generate share link') }}</h2>
+        <p id="existingLink" class="text-sm text-blue-600 mb-2 hidden"></p>
+        <button id="deactivateBtn" class="px-3 py-1 mb-2 text-sm rounded bg-red-500 text-white hover:bg-red-600 hidden">{{ _('Deactivate share') }}</button>
+        <label class="block mb-2">
+            <span class="text-sm text-gray-700">{{ _('Expiration date') }}</span>
+            <input id="shareExpiry" type="date" class="mt-1 block w-full border-gray-300 rounded-md" />
+        </label>
+        <div class="flex justify-end gap-2 mt-4">
+            <button id="shareCancel" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">{{ _('Cancel') }}</button>
+            <button id="shareOk" class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600">{{ _('Generate') }}</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// handle share link creation with modal
+let currentLibId = null;
+let currentToken = '';
+document.querySelectorAll('.share-link-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        currentLibId = this.dataset.libraryId;
+        currentToken = this.dataset.token || '';
+        document.getElementById('shareExpiry').value = '';
+        const existingLinkEl = document.getElementById('existingLink');
+        const deactivateBtn = document.getElementById('deactivateBtn');
+        if (currentToken) {
+            const url = `${window.location.origin}/share/${currentToken}/`;
+            existingLinkEl.textContent = url + (this.dataset.expiry ? (' (expires ' + this.dataset.expiry + ')') : '');
+            existingLinkEl.classList.remove('hidden');
+            deactivateBtn.classList.remove('hidden');
+        } else {
+            existingLinkEl.classList.add('hidden');
+            deactivateBtn.classList.add('hidden');
+        }
+        document.getElementById('shareModal').classList.remove('hidden');
+    });
+});
+
+document.getElementById('shareCancel').addEventListener('click', () => {
+    document.getElementById('shareModal').classList.add('hidden');
+});
+
+document.getElementById('deactivateBtn').addEventListener('click', async () => {
+    if (!currentLibId) return;
+    const resp = await fetch(`/libraries/${currentLibId}/share/deactivate`, { method: 'POST' });
+    let data;
+    try { data = await resp.json(); } catch(e){ data={}; }
+    document.getElementById('shareModal').classList.add('hidden');
+    if (resp.ok && data.success) {
+        alert('{{ _('Share link has been deactivated') }}');
+        location.reload();
+    } else {
+        alert(data.error || '{{ _('Error generating share link') }}');
+    }
+});
+
+document.getElementById('shareOk').addEventListener('click', async () => {
+    const expires = document.getElementById('shareExpiry').value;
+    const form = new FormData();
+    form.append('expires_at', expires);
+    const resp = await fetch(`/libraries/${currentLibId}/share`, {
+        method: 'POST',
+        body: form
+    });
+    let data;
+    try { data = await resp.json(); } catch(e) { data = {}; }
+    document.getElementById('shareModal').classList.add('hidden');
+    if (resp.ok && data.success) {
+        navigator.clipboard.writeText(data.url);
+        alert('{{ _('Share link copied to clipboard') }}');
+    } else {
+        alert(data.error || '{{ _('Error generating share link') }}');
+    }
+});
+</script>
 {% endblock %}
