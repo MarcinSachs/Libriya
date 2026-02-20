@@ -100,6 +100,78 @@ def log_action(action: str, description: str, subject=None, additional_info: dic
     rec = _build_log_record(action, description, subject=subject, additional_info=additional_info, tenant_id=tenant_id)
     _log_to_file(rec)
 
+    # Also record a short DB-backed audit row for quick queries/alerts
+    try:
+        log_action_db(action, description, subject=subject, additional_info=additional_info, tenant_id=tenant_id, success=True)
+    except Exception:
+        # log_action_db handles its own errors, but guard here as well
+        logging.getLogger('audit').exception('Failed to write DB audit entry from log_action')
+
+
+def log_action_db(action: str, description: str, subject=None, additional_info: dict = None, tenant_id=None, success: bool = True):
+    """Record a short audit entry in the database (useful for quick queries/alerts).
+
+    This stores a compact JSON `details` field and minimal metadata. Retention/cleanup
+    is handled by scheduled jobs (AUDIT_RETENTION_DAYS).
+    """
+    try:
+        from app.models import AuditLog
+        rec = {
+            'action': action,
+            'tenant_id': tenant_id,
+            'actor_id': None,
+            'actor_role': None,
+            'ip': None,
+            'object_type': None,
+            'object_id': None,
+            'details': None,
+            'success': bool(success),
+        }
+
+        if current_user and getattr(current_user, 'is_authenticated', False):
+            rec['actor_id'] = current_user.id
+            rec['actor_role'] = getattr(current_user, 'role', None)
+            if rec['tenant_id'] is None:
+                rec['tenant_id'] = getattr(current_user, 'tenant_id', None)
+
+        if has_request_context():
+            rec['ip'] = request.remote_addr
+
+        if subject is not None:
+            rec['object_type'] = subject.__class__.__name__ if hasattr(subject, '__class__') else str(type(subject))
+            rec['object_id'] = getattr(subject, 'id', None)
+
+        if additional_info:
+            masked = {}
+            for k, v in (additional_info.items() if isinstance(additional_info, dict) else []):
+                if k.lower() in ('password', 'token', 'secret'):
+                    masked[k] = '***'
+                else:
+                    masked[k] = v
+            rec['details'] = json.dumps(masked, ensure_ascii=False)
+
+        entry = AuditLog(
+            tenant_id=rec['tenant_id'],
+            actor_id=rec['actor_id'],
+            actor_role=rec['actor_role'],
+            ip=rec['ip'],
+            action=rec['action'],
+            object_type=rec['object_type'],
+            object_id=str(rec['object_id']) if rec['object_id'] is not None else None,
+            details=rec['details'],
+            success=rec['success']
+        )
+        db.session.add(entry)
+        db.session.commit()
+        return entry
+    except Exception:
+        logging.getLogger('audit').exception('Failed to write DB audit entry')
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return None
+
 
 # Backwards-compatible helpers
 

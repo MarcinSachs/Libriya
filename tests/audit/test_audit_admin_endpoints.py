@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import User, Tenant, AuditLogFile
+from app.models import User, Tenant, AuditLogFile, AuditLog
 import os
 import json
 from datetime import datetime, timedelta
@@ -176,3 +176,50 @@ def test_audit_log_delete_outside_logs_not_allowed(client, app, tmp_path):
         assert AuditLogFile.query.get(alf_id) is not None
         # admin list is returned after redirect (flash not rendered by that template)
         assert 'Audit Logs' in res.get_data(as_text=True)
+
+
+def test_admin_audit_entries_list_and_export(client, app):
+    with app.app_context():
+        # create super-admin and sample audit rows
+        user = User(username='super_entries', email='super_entries@example.com', role='superadmin')
+        user.set_password('pw')
+        user.is_email_verified = True
+        db.session.add(user)
+
+        a1 = AuditLog(action='TEST_A1', details='row1')
+        a2 = AuditLog(action='TEST_A2', details='row2')
+        db.session.add(a1)
+        db.session.add(a2)
+        db.session.commit()
+
+        # login
+        client.post('/auth/login/', data={'email_or_username': 'super_entries', 'password': 'pw'})
+
+        # list page
+        res = client.get('/admin/audit-entries')
+        assert res.status_code == 200
+        text = res.get_data(as_text=True)
+        assert 'TEST_A1' in text or 'Audit Entries' in text
+
+        # CSV export
+        res_csv = client.get('/admin/audit-entries?format=csv')
+        assert res_csv.status_code == 200
+        assert res_csv.headers.get('Content-Type', '').startswith('text/csv')
+        assert 'TEST_A1' in res_csv.get_data(as_text=True)
+
+        # JSON export
+        res_json = client.get('/admin/audit-entries?format=json')
+        assert res_json.status_code == 200
+        arr = res_json.get_json()
+        assert isinstance(arr, list) and any(r['action'] == 'TEST_A2' for r in arr)
+
+
+def test_admin_audit_entries_access_denied_for_regular_user(client, app, regular_user):
+    with app.app_context():
+        regular_user.is_email_verified = True
+        db.session.commit()
+
+    client.post('/auth/login/', data={'email_or_username': regular_user.username, 'password': 'password'})
+    res = client.get('/admin/audit-entries')
+    assert res.status_code == 302
+    assert res.headers['Location'].endswith('/dashboard')

@@ -47,6 +47,18 @@ def init_scheduler(app):
         replace_existing=True
     )
 
+    # Add audit rows retention job - runs every day at 4:00 AM
+    scheduler.add_job(
+        cleanup_old_audit_rows,
+        'cron',
+        hour=4,
+        minute=0,
+        args=[app],
+        id='cleanup_audit_rows',
+        name='Cleanup old audit DB rows',
+        replace_existing=True
+    )
+
     if not scheduler.running:
         scheduler.start()
         logger.info("Background scheduler started")
@@ -98,6 +110,31 @@ def cleanup_old_audit_logs(app):
             logger.info(f"Audit log retention: Removed {deleted_files} files older than {retention_days} days")
         except Exception as e:
             logger.error(f"Error during audit log retention: {e}")
+            db.session.rollback()
+
+
+def cleanup_old_audit_rows(app):
+    """Delete AuditLog DB rows older than retention days in small batches."""
+    with app.app_context():
+        from app import db
+        from app.models import AuditLog
+        try:
+            retention_days = app.config.get('AUDIT_RETENTION_DAYS', 30)
+            cutoff = datetime.utcnow() - timedelta(days=retention_days)
+
+            batch_size = 1000
+            total_deleted = 0
+            while True:
+                # select a batch of IDs first, then delete by id list (supported by SQLAlchemy)
+                ids = [r.id for r in AuditLog.query.with_entities(AuditLog.id).filter(AuditLog.timestamp < cutoff).order_by(AuditLog.id).limit(batch_size).all()]
+                if not ids:
+                    break
+                deleted = AuditLog.query.filter(AuditLog.id.in_(ids)).delete(synchronize_session=False)
+                total_deleted += deleted
+                db.session.commit()
+            logger.info(f"Audit log retention: Removed {total_deleted} rows older than {retention_days} days")
+        except Exception as e:
+            logger.error(f"Error during audit rows retention: {e}")
             db.session.rollback()
 
 

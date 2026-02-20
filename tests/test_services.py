@@ -59,7 +59,10 @@ def test_get_cover_from_openlibrary_by_isbn_parsing(monkeypatch):
 
 
 def test_download_and_save_cover_success_and_extension(tmp_path, monkeypatch):
-    content = b'0' * 1024
+    # create a small valid PNG image in-memory
+    img_buf = io.BytesIO()
+    Image.new('RGB', (10, 10), color='red').save(img_buf, format='PNG')
+    content = img_buf.getvalue()
 
     class FakeResp:
         status_code = 200
@@ -80,9 +83,15 @@ def test_download_and_save_cover_success_and_extension(tmp_path, monkeypatch):
     assert os.path.exists(path)
     assert os.path.splitext(filename)[1].lower() in CoverService.ALLOWED_EXTENSIONS
 
-    # missing extension defaults to .jpg
+    # ensure the saved file is a valid image
+    img = Image.open(path)
+    img.verify()
+
+    # missing extension -> service should determine extension from content (Pillow)
     filename2 = CoverService.download_and_save_cover('http://example.com/pic', upload_folder)
-    assert filename2.endswith('.jpg')
+    assert os.path.splitext(filename2)[1].lower() in CoverService.ALLOWED_EXTENSIONS
+    img2 = Image.open(os.path.join(upload_folder, filename2))
+    img2.verify()
 
     # too large content-length -> reject
     class BigResp(FakeResp):
@@ -90,6 +99,51 @@ def test_download_and_save_cover_success_and_extension(tmp_path, monkeypatch):
 
     monkeypatch.setattr(requests, 'get', lambda *a, **k: BigResp())
     assert CoverService.download_and_save_cover('http://example.com/big.jpg', upload_folder) is None
+
+
+def test_validate_url_dns_lookup_blocks_private(monkeypatch):
+    # simulate DNS resolving to a private IP
+    import socket
+
+    def fake_getaddrinfo(hostname, port):
+        return [(None, None, None, None, ('10.0.0.1', 0))]
+
+    monkeypatch.setattr(socket, 'getaddrinfo', fake_getaddrinfo)
+    assert not CoverService._validate_url('http://internal.example.com/secret')
+
+
+def test_download_and_save_cover_rejects_non_image(tmp_path, monkeypatch):
+    # fake response with non-image bytes
+    class FakeResp:
+        status_code = 200
+        headers = {'content-length': '10'}
+        url = 'http://example.com/notimage'
+
+        def raise_for_status(self):
+            return None
+
+        def iter_content(self, chunk_size=1024):
+            yield b'not-an-image'
+
+    monkeypatch.setattr(requests, 'get', lambda *a, **k: FakeResp())
+    upload_folder = str(tmp_path)
+    assert CoverService.download_and_save_cover('http://example.com/notimage', upload_folder) is None
+
+
+def test_download_and_save_cover_rejects_redirect_to_private_ip(tmp_path, monkeypatch):
+    class RedirectResp:
+        status_code = 200
+        headers = {'content-length': '10'}
+        url = 'http://127.0.0.1/secret'
+
+        def raise_for_status(self):
+            return None
+
+        def iter_content(self, chunk_size=1024):
+            yield b'0' * 10
+
+    monkeypatch.setattr(requests, 'get', lambda *a, **k: RedirectResp())
+    assert CoverService.download_and_save_cover('http://example.com/redirect', str(tmp_path)) is None
 
 
 def test_get_cover_url_priority_with_premium(monkeypatch):
@@ -199,3 +253,32 @@ def test_cache_service_tenant_and_user_invalidation(app):
     cache_service.invalidate_user_cache(u.id)
     updated = cache_service.get_user_by_id_cached(u.id)
     assert updated.username == 'cacheu2'
+
+
+def test_validate_url_allows_when_dns_resolution_fails(monkeypatch):
+    import socket
+
+    def raise_gai(hostname, port):
+        raise socket.gaierror()
+
+    monkeypatch.setattr(socket, 'getaddrinfo', raise_gai)
+    # DNS failure should not cause a false positive block for public hostnames
+    assert CoverService._validate_url('http://public.example.com/image')
+
+
+def test_validate_url_rejects_if_any_resolved_ip_is_private(monkeypatch):
+    import socket
+
+    def mixed_getaddr(hostname, port):
+        return [
+            (None, None, None, None, ('203.0.113.5', 0)),
+            (None, None, None, None, ('10.1.1.1', 0)),
+        ]
+
+    monkeypatch.setattr(socket, 'getaddrinfo', mixed_getaddr)
+    # One of the resolved addresses is private -> should be rejected
+    assert not CoverService._validate_url('http://mixed.example.com/image')
+
+
+def test_validate_url_blocks_ipv6_loopback():
+    assert not CoverService._validate_url('http://[::1]/secret')
