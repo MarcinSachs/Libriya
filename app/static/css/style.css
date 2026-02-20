@@ -1670,10 +1670,23 @@ select.bg-white {
 }
 
 /* ===== Users Card Layout ===== */
-.users-grid {
+.users-grid,
+.tenants-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1rem;
+}
+
+/* ===== Tenant Card Layout ===== */
+.tenant-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
 }
 
 .user-card {
@@ -1958,13 +1971,15 @@ select.bg-white {
 
     .users-table-container,
     .loans-table-container,
-    .invitation-codes-table-container {
+    .invitation-codes-table-container,
+    .tenants-table-container {
         display: none !important;
     }
 
     .users-grid,
     .loans-grid,
-    .invitation-codes-grid {
+    .invitation-codes-grid,
+    .tenants-grid {
         display: grid !important;
     }
 }
@@ -1973,13 +1988,15 @@ select.bg-white {
 
     .users-table-container,
     .loans-table-container,
-    .invitation-codes-table-container {
+    .invitation-codes-table-container,
+    .tenants-table-container {
         display: block !important;
     }
 
     .users-grid,
     .loans-grid,
-    .invitation-codes-grid {
+    .invitation-codes-grid,
+    .tenants-grid {
         display: none !important;
     }
 }

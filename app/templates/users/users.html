@@ -18,22 +18,22 @@
 
     <!-- Users Table (Desktop) -->
     <div class="users-table-container overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
-    <table class="w-full">
+    <table class="w-full table-fixed">
         <thead>
             <tr class="bg-[#1a535c] text-white">
-                <th class="px-4 py-3 text-left font-semibold">{{ _('Username') }}</th> 
-                <th class="px-4 py-3 text-left font-semibold">{{ _('Email') }}</th> 
-                <th class="px-4 py-3 text-left font-semibold">{{ _('Role') }}</th> 
-                <th class="px-4 py-3 text-left font-semibold">{{ _('Actions') }}</th> 
+                <th class="px-3 sm:px-4 py-3 text-left font-semibold whitespace-nowrap">{{ _('Username') }}</th> 
+                <th class="px-3 sm:px-4 py-3 text-left font-semibold whitespace-nowrap">{{ _('Email') }}</th> 
+                <th class="px-3 sm:px-4 py-3 text-left font-semibold whitespace-nowrap">{{ _('Role') }}</th> 
+                <th class="px-3 sm:px-4 py-3 text-left font-semibold whitespace-nowrap">{{ _('Actions') }}</th> 
             </tr>
         </thead>
         <tbody>
             {% for user in users %}
             <tr class="border-b border-gray-200 hover:bg-gray-50">
-                <td class="px-4 py-3">{{ user.username }}</td>
-                <td class="px-4 py-3">{{ user.email }}</td>
-                <td class="px-4 py-3">{{ user.role }}</td>
-                <td class="px-4 py-3 flex gap-2">
+                <td class="px-3 sm:px-4 py-3 break-words">{{ user.username }}</td>
+                <td class="px-3 sm:px-4 py-3 break-words">{{ user.email }}</td>
+                <td class="px-3 sm:px-4 py-3 break-words">{{ user.role }}</td>
+                <td class="px-3 sm:px-4 py-3 flex gap-2">
                     <a href="{{ url_for('users.user_edit', user_id=user.id) }}" class="text-accent hover:text-primary transition" title="{{ _('Edit User') }}">
                         <i class="bx bxs-edit text-lg"></i>
                     </a>

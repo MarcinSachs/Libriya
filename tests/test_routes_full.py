@@ -7,6 +7,86 @@ def login(client, username, password='password'):
     return client.post('/auth/login/', data={'email_or_username': username, 'password': password}, follow_redirects=True)
 
 
+def test_login_page_without_trailing_slash(client):
+    """Visiting the login URL without a slash should still succeed."""
+    resp = client.get('/auth/login')
+    assert resp.status_code == 200
+    assert b'name="email_or_username"' in resp.data
+
+
+def test_tenants_and_user_list_markup(client, app):
+    """Sanity-check that the tenant and user list pages include responsive classes."""
+    # first, create superadmin and login
+    from app import db
+    from app.models import User, Tenant
+    supera = User(username='super2', email='super2@example.com', role='superadmin')
+    supera.is_email_verified = True
+    supera.set_password('password')
+    db.session.add(supera)
+    # create a tenant with a user
+    t = Tenant(name='T1', subdomain='t1')
+    db.session.add(t)
+    db.session.commit()
+    user = User(username='tuser', email='tuser@example.com', tenant_id=t.id)
+    user.is_email_verified = True
+    user.set_password('pw')
+    db.session.add(user)
+    db.session.commit()
+
+    login(client, 'super2')
+    resp = client.get('/admin/tenants')
+    assert resp.status_code == 200
+    assert b'tenants-table-container' in resp.data
+    assert b'tenants-grid' in resp.data
+
+    # now create a tenant admin and verify users page
+    admin_user = User(username='admin1', email='adm1@example.com', role='admin', tenant_id=t.id)
+    admin_user.is_email_verified = True
+    admin_user.set_password('password')
+    db.session.add(admin_user)
+    db.session.commit()
+    # switch to tenant admin
+    client.get('/auth/logout')
+    login(client, 'admin1')
+    resp2 = client.get('/users/')
+    assert resp2.status_code == 200
+    assert b'users-table-container' in resp2.data
+    assert b'users-grid' in resp2.data
+
+    # POSTing credentials should also work (redirect to homepage).
+    # create a dummy user in the database so login can succeed
+    from app.models import User
+    from app import db
+    user = User(username='slashtest', email='s@test.com', tenant_id=None)
+    user.is_email_verified = True
+    user.set_password('pw')
+    db.session.add(user)
+    db.session.commit()
+
+    resp2 = client.post('/auth/login', data={'email_or_username': 'slashtest', 'password': 'pw'}, follow_redirects=True)
+    assert resp2.status_code == 200
+    assert b'Logout' in resp2.data or b'Wyloguj' in resp2.data
+
+
+def test_legacy_login_and_register_redirects(client):
+    """Ensure `/login` and `/register` are redirected to the auth blueprint."""
+    resp = client.get('/login/')
+    assert resp.status_code == 302
+    assert '/auth/login' in resp.headers['Location']
+
+    resp2 = client.get('/login')
+    assert resp2.status_code == 302
+    assert '/auth/login' in resp2.headers['Location']
+
+    resp3 = client.get('/register/')
+    assert resp3.status_code == 302
+    assert '/auth/register-choice' in resp3.headers['Location']
+
+    resp4 = client.get('/register')
+    assert resp4.status_code == 302
+    assert '/auth/register-choice' in resp4.headers['Location']
+
+
 def test_reservation_and_admin_approval_flow(app, client):
     # Setup tenant, library, admin and user and a book
     t = Tenant(name='FlowTenant', subdomain='ft')

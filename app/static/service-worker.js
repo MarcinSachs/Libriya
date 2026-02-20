@@ -15,8 +15,10 @@ const STATIC_ASSETS = [
     '/dashboard'
 ];
 
-// Pages that should NEVER be cached (forms with CSRF)
-const NO_CACHE_PAGES = ['/login', '/register', '/invitation'];
+// Pages that should NEVER be cached (forms with CSRF).  We also
+// explicitly include auth routes so the PWA doesn't serve cached
+// copies of login/register that could contain stale error messages.
+const NO_CACHE_PAGES = ['/login', '/login/', '/register', '/register/', '/invitation', '/auth/login', '/auth/register'];
 
 // Install event
 self.addEventListener('install', (event) => {

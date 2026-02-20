@@ -62,7 +62,8 @@ def my_messages():
         # Audit: contact message sent
         try:
             from app.utils.audit_log import log_action
-            log_action('CONTACT_MESSAGE_SENT', f'Contact message {msg.id} sent by {current_user.username}', subject=msg, additional_info={'library_id': msg.library_id})
+            log_action('CONTACT_MESSAGE_SENT', f'Contact message {msg.id} sent by {current_user.username}', subject=msg, additional_info={
+                       'library_id': msg.library_id})
         except Exception:
             pass
 
@@ -112,6 +113,21 @@ def favicon():
 def offline():
     """Offline page with translations"""
     return render_template("base/offline.html", title=_("Offline"))
+
+
+# Legacy/root-level auth URLs used by some bookmarks or service workers
+# (see mobile testing notes).  These simply redirect to the current
+# auth blueprint rather than returning 404.
+@bp.route("/login/", strict_slashes=False)
+def legacy_login():
+    return redirect(url_for('auth.login'))
+
+
+@bp.route("/register/", strict_slashes=False)
+def legacy_register():
+    # registration page has two modes; we simply redirect to the generic
+    # entry point, preserving query string if any
+    return redirect(url_for('auth.register_choice'))
 
 
 @bp.route("/")
@@ -293,7 +309,8 @@ def mark_notification_as_read(notification_id):
     # Audit: notification marked as read
     try:
         from app.utils.audit_log import log_action
-        log_action('NOTIFICATION_MARKED_READ', f'Notification {notification_id} marked as read by {current_user.username}', subject=notification, additional_info={'notification_id': notification_id})
+        log_action('NOTIFICATION_MARKED_READ', f'Notification {notification_id} marked as read by {current_user.username}', subject=notification, additional_info={
+                   'notification_id': notification_id})
     except Exception:
         pass
 
@@ -315,7 +332,8 @@ def mark_all_notifications_as_read():
     # Audit: mark all notifications read
     try:
         from app.utils.audit_log import log_action
-        log_action('NOTIFICATIONS_MARKED_ALL_READ', f'All notifications marked read by {current_user.username}', subject=None)
+        log_action('NOTIFICATIONS_MARKED_ALL_READ',
+                   f'All notifications marked read by {current_user.username}', subject=None)
     except Exception:
         pass
 

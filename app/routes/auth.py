@@ -17,6 +17,12 @@ import hashlib
 # Per-user cooldown (seconds) for resending verification emails
 EMAIL_VERIFICATION_RESEND_COOLDOWN = 600  # 10 minutes
 
+# We only need the login endpoints to be forgiving about the
+# trailing slash because mobile clients were occasionally requesting
+# `/auth/login` and getting a 404.  Flask lets us override strictness on
+# a per-route basis via the `strict_slashes` argument on `route()`.
+#
+# The blueprint itself keeps the default behaviour.
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
@@ -42,7 +48,7 @@ def get_tenant_from_request():
         return None
 
 
-@bp.route("/login/")
+@bp.route("/login/", strict_slashes=False)
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
@@ -58,7 +64,7 @@ def login():
     )
 
 
-@bp.route("/login/", methods=['POST'])
+@bp.route("/login/", methods=['POST'], strict_slashes=False)
 @limiter.limit("5 per minute")
 def login_post():
     # Support legacy tests/forms that send 'username' or 'email'
