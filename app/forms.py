@@ -164,12 +164,14 @@ class LoanForm(FlaskForm):
     book_id = SelectField(
         _('Book'),
         coerce=int,
-        validators=[DataRequired()]
+        validators=[DataRequired()],
+        validate_choice=False
     )
     user_id = SelectField(
         _('User'),
         coerce=int,
-        validators=[DataRequired()]
+        validators=[DataRequired()],
+        validate_choice=False
     )
     submit = SubmitField(
         _('Submit'),
@@ -251,13 +253,23 @@ class RegistrationForm(FlaskForm):
     def validate_first_name(self, field):
         # Sanitize input and require first name when joining existing tenant
         field.data = sanitize_string(field.data, max_length=50)
-        if self.create_new_tenant.data == 'false' and not field.data:
+        # treat empty or whitespace-only values as missing
+        joining_existing = (
+            str(self.create_new_tenant.data).lower() == 'false' or
+            bool(getattr(self, 'invitation_code', None) and str(self.invitation_code.data).strip())
+        )
+        if joining_existing and (not field.data or not str(field.data).strip()):
             raise ValidationError(_('First name is required'))
 
     def validate_last_name(self, field):
         # Sanitize input and require last name when joining existing tenant
         field.data = sanitize_string(field.data, max_length=50)
-        if self.create_new_tenant.data == 'false' and not field.data:
+        # treat empty or whitespace-only values as missing
+        joining_existing = (
+            str(self.create_new_tenant.data).lower() == 'false' or
+            bool(getattr(self, 'invitation_code', None) and str(self.invitation_code.data).strip())
+        )
+        if joining_existing and (not field.data or not str(field.data).strip()):
             raise ValidationError(_('Last name is required'))
 
     def validate_email(self, field):
@@ -271,6 +283,29 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(username=field.data).first()
         if user:
             raise ValidationError(_('Username already taken'))
+
+    def validate(self, *args, **kwargs):
+        """Run standard validation then enforce first/last name when joining an existing tenant.
+        This complements the per-field validators and ensures the form is correct
+        even if input population differs between request/formdata and `data=`.
+        """
+        valid = super().validate(*args, **kwargs)
+
+        joining_existing = (
+            str(getattr(self, 'create_new_tenant', None).data).lower() == 'false' or
+            bool(getattr(self, 'invitation_code', None) and str(self.invitation_code.data).strip())
+        )
+
+        if joining_existing:
+            # Ensure first_name/last_name present when joining an existing tenant
+            if not (self.first_name.data and str(self.first_name.data).strip()):
+                self.first_name.errors.append(_('First name is required'))
+                valid = False
+            if not (self.last_name.data and str(self.last_name.data).strip()):
+                self.last_name.errors.append(_('Last name is required'))
+                valid = False
+
+        return valid
 
 
 # Formularz kontaktowy
