@@ -102,13 +102,13 @@ def request_reservation(book_id, user_id):
         book.status = 'reserved'
         # Create new record with pending status
         new_loan = Loan(book=book, user=user,
-                        reservation_date=datetime.utcnow(), status='pending',
-                        tenant_id=current_user.tenant_id)
+                        reservation_date=datetime.utcnow(), status='pending', tenant_id=book.tenant_id)
+
         db.session.add(new_loan)
         db.session.commit()
 
         # --- Notifications for admins ---
-        admins = User.query.filter_by(is_admin=True).all()
+        admins = User.query.filter_by(role='admin').all()
         message = _("%(username)s has requested to reserve \"%(title)s\".",
                     username=user.username, title=book.title)
         create_notification(admins, current_user, message,
@@ -137,7 +137,10 @@ def borrow_book(book_id, user_id):
 
     if book.status == 'available':
         book.status = 'on_loan'
-        new_loan = Loan(book=book, user=user, tenant_id=current_user.tenant_id)
+        new_loan = Loan(book=book, user=user, status='active', issue_date=datetime.utcnow(), tenant_id=book.tenant_id)
+        # defensive assignments to ensure DB value is correct
+        new_loan.status = 'active'
+        new_loan.issue_date = new_loan.issue_date or datetime.utcnow()
         db.session.add(new_loan)
         db.session.commit()
         # Audit: book borrowed
@@ -300,8 +303,7 @@ def loan_add():
             new_loan = Loan(book=book, user=user,
                             reservation_date=datetime.utcnow(),
                             issue_date=datetime.utcnow(),
-                            status='active',
-                            tenant_id=current_user.tenant_id)
+                            status='active', tenant_id=book.tenant_id)
             db.session.add(new_loan)
             db.session.commit()
 
@@ -349,7 +351,7 @@ def user_cancel_reservation(loan_id):
             pass
 
         # --- Create notyfication for admin ---
-        admins = User.query.filter_by(is_admin=True).all()
+        admins = User.query.filter_by(role='admin').all()
         message = _("%(username)s has cancelled their reservation for \"%(title)s\".",
                     username=current_user.username, title=loan.book.title)
         create_notification(admins, current_user, message,
