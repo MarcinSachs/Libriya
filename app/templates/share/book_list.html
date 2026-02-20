@@ -1,0 +1,17 @@
+{% extends "base/main_base.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-4">
+    <h1 class="text-2xl font-bold mb-4">{{ _('Shared Library:') }} {{ link.library.name }}</h1>
+    <ul class="space-y-2">
+        {% for book in books %}
+        <li>
+            <a href="{{ url_for('share.book_detail', token=link.token, book_id=book.id) }}" class="text-blue-600 hover:underline">
+                {{ book.title }}{% if book.authors %} - {{ book.authors|map(attribute='name')|join(', ') }}{% endif %}
+            </a>
+        </li>
+        {% else %}
+        <li>{{ _('No books available') }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

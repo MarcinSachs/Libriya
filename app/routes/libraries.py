@@ -1,10 +1,13 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from flask_babel import _
 
-from app import db
+import secrets
+from datetime import datetime
+
+from app import db, csrf
 from app.forms import LibraryForm
-from app.models import Library
+from app.models import Library, SharedLink
 from app.utils import role_required
 from app.utils.messages import (
     LIBRARY_ADDED, LIBRARY_UPDATED, LIBRARY_DELETED,
@@ -19,13 +22,70 @@ bp = Blueprint("libraries", __name__)
 @login_required
 @role_required('admin', 'manager')
 def libraries():
+    # eager-load shared links so template can show existing share info
     if current_user.is_admin:
-        all_libraries = Library.query.filter_by(tenant_id=current_user.tenant_id).order_by(Library.name).all()
+        all_libraries = Library.query.options(db.subqueryload(Library.shared_links))
+        all_libraries = all_libraries.filter_by(tenant_id=current_user.tenant_id).order_by(Library.name).all()
     elif current_user.is_manager:
-        all_libraries = [lib for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
+        # limit to manager's libraries, load links manually
+        libs = [lib for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
+        # ensure links are loaded (iterate without assigning to _)
+        for l in libs:
+            _unused = l.shared_links
+        all_libraries = libs
     else:
         all_libraries = []
     return render_template("libraries/libraries.html", libraries=all_libraries, active_page="libraries", parent_page="admin", title=_("Libraries"))
+
+
+@bp.route('/libraries/<int:library_id>/share', methods=['POST'])
+@csrf.exempt
+@login_required
+@role_required('admin', 'manager')
+def library_share(library_id):
+    """Generate a share link for a library"""
+    library = Library.query.filter_by(id=library_id, tenant_id=current_user.tenant_id).first_or_404()
+    if current_user.role == 'manager' and library not in current_user.libraries:
+        return jsonify({'error': _('You do not have permission to share this library')}), 403
+
+    expires_str = request.form.get('expires_at', '').strip()
+    expires_at = None
+    if expires_str:
+        try:
+            expires_at = datetime.strptime(expires_str, '%Y-%m-%d')
+        except Exception:
+            return jsonify({'error': _('Invalid expiration date format')}), 400
+
+    token = secrets.token_urlsafe(16)
+    link = SharedLink(
+        token=token,
+        library_id=library.id,
+        created_by_id=current_user.id,
+        expires_at=expires_at,
+        active=True
+    )
+    db.session.add(link)
+    db.session.commit()
+
+    url = url_for('share.view', token=token, _external=True)
+    return jsonify({'success': True, 'token': token, 'url': url})
+
+
+@bp.route('/libraries/<int:library_id>/share/deactivate', methods=['POST'])
+@csrf.exempt
+@login_required
+@role_required('admin', 'manager')
+def library_share_deactivate(library_id):
+    lib = Library.query.filter_by(id=library_id, tenant_id=current_user.tenant_id).first_or_404()
+    if current_user.role == 'manager' and lib not in current_user.libraries:
+        return jsonify({'error': _('You do not have permission')}), 403
+    # find active link
+    link = SharedLink.query.filter_by(library_id=lib.id, active=True).first()
+    if not link:
+        return jsonify({'error': _('No active share link')}), 400
+    link.active = False
+    db.session.commit()
+    return jsonify({'success': True})
 
 
 @bp.route("/libraries/add", methods=['GET', 'POST'])

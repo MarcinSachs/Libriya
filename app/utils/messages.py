@@ -128,5 +128,19 @@ INVITATIONS_NO_PERMISSION_DEACTIVATE = _("You do not have permission to deactiva
 INVITATIONS_CANNOT_DEACTIVATE_USED = _("Cannot deactivate an already-used code")
 INVITATIONS_CODE_DEACTIVATED = _("Invitation code deactivated")
 
+# Sharing links messages
+SHARE_LINK_CREATED = _("Shareable link generated and copied to clipboard")
+SHARE_LINK_EXPIRED = _("Share link has expired or is inactive")
+SHARE_LINK_INVALID = _("Invalid share link")
+SHARE_GENERATE_LINK = _("Generate share link")
+SHARE_ENTER_EXPIRY = _("Enter expiration date (YYYY-MM-DD) or leave blank:")
+SHARE_LINK_COPIED = _("Share link copied to clipboard")
+SHARE_LINK_ERROR = _("Error generating share link")
+SHARE_LINK_CANCELLED = _("Share link has been deactivated")
+SHARE_EXPIRATION_LABEL = _("Expiration date")
+SHARE_GENERATE = _("Generate")
+SHARE_CANCEL = _("Cancel")
+SHARE_DEACTIVATE = _("Deactivate share")
+
 # Error-specific messages
 ERROR_UNSUPPORTED_LANGUAGE = _("Unsupported language.")

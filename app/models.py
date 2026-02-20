@@ -487,6 +487,42 @@ class InvitationCode(db.Model):
         return base
 
 
+# Shared links for public book lists
+class SharedLink(db.Model):
+    """Public share links for a library's books.
+
+    Attributes:
+        id (int): primary key
+        token (str): unguessable link token
+        library_id (int): FK to Library being shared
+        created_by_id (int): FK to User who generated link
+        created_at (datetime): when link was created
+        expires_at (datetime|None): optional expiry date/time
+        active (bool): whether link is still valid
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(64), unique=True, nullable=False, index=True)
+    library_id = db.Column(db.Integer, db.ForeignKey('library.id'), nullable=False)
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=True)
+    active = db.Column(db.Boolean, default=True, nullable=False)
+
+    library = db.relationship('Library', backref='shared_links')
+    created_by = db.relationship('User', backref='generated_shares')
+
+    def is_valid(self):
+        if not self.active:
+            return False
+        if self.expires_at and self.expires_at < datetime.datetime.utcnow():
+            return False
+        return True
+
+    def __str__(self):
+        status = 'active' if self.is_valid() else 'inactive'
+        return f"Share {self.token} for {self.library.name} ({status})"
+
+
 # Model wiadomości kontaktowej
 class ContactMessage(db.Model):
     """Message submitted via contact form for a library.

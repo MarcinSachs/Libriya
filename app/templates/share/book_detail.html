@@ -1,0 +1,10 @@
+{% extends "base/main_base.html" %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-4">
+    <h1 class="text-2xl font-bold mb-2">{{ book.title }}</h1>
+    <p><strong>{{ _('Author') }}:</strong> {{ book.authors|map(attribute='name')|join(', ') }}</p>
+    <p><strong>{{ _('Year') }}:</strong> {{ book.year }}</p>
+    <p><strong>{{ _('ISBN') }}:</strong> {{ book.isbn or '-' }}</p>
+    <p><strong>{{ _('Description') }}:</strong> {{ book.description or '-' }}</p>
+</div>
+{% endblock %}
