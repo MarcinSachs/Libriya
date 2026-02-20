@@ -35,6 +35,8 @@
                     <th class="px-4 py-3 text-left font-semibold">{{ _('Created') }}</th>
                     <th class="px-4 py-3 text-left font-semibold">{{ _('Expires') }}</th>
                     <th class="px-4 py-3 text-left font-semibold">{{ _('Status') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Recipient') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold">{{ _('Email sent') }}</th>
                     <th class="px-4 py-3 text-left font-semibold">{{ _('Used By') }}</th>
                     <th class="px-4 py-3 text-left font-semibold">{{ _('Actions') }}</th>
                 </tr>
@@ -68,6 +70,16 @@
                         {% endif %}
                     </td>
                     <td class="px-4 py-3">
+                        {{ code.recipient_email or '-' }}
+                    </td>
+                    <td class="px-4 py-3">
+                        {% if code.email_sent_at %}
+                            {{ code.email_sent_at.strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                            <span class="text-gray-600">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3">
                         {% if code.used_by_id %}
                             {{ code.used_by.username }}
                         {% else %}
@@ -78,6 +90,10 @@
                         <button class="p-2 text-primary hover:bg-gray-200 rounded transition copy-code" data-code-id="{{ code.id }}" 
                                 title="{{ _('Copy code to clipboard') }}">
                             <i class='bx bx-copy'></i>
+                        </button>
+                        <button class="p-2 text-green-500 hover:bg-gray-200 rounded transition send-email" data-code-id="{{ code.id }}" data-recipient-email="{{ code.recipient_email or '' }}" 
+                                title="{{ _('Send code via email') }}">
+                            <i class='bx bx-envelope'></i>
                         </button>
                         {% if not code.used_by_id and code.is_valid() %}
                         <form method="POST" action="{{ url_for('invitations.deactivate_code', code_id=code.id) }}" 
@@ -110,6 +126,20 @@
                 <div class="invitation-code-card-row">
                     <span class="invitation-code-card-label">{{ _('Created By') }}</span>
                     <span class="invitation-code-card-value">{{ code.created_by.username if code.created_by else '-' }}</span>
+                </div>
+                <div class="invitation-code-card-row">
+                    <span class="invitation-code-card-label">{{ _('Recipient') }}</span>
+                    <span class="invitation-code-card-value">{{ code.recipient_email or '-' }}</span>
+                </div>
+                <div class="invitation-code-card-row">
+                    <span class="invitation-code-card-label">{{ _('Email sent') }}</span>
+                    <span class="invitation-code-card-value">
+                        {% if code.email_sent_at %}
+                            {{ code.email_sent_at.strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="invitation-code-card-row">
                     <span class="invitation-code-card-label">{{ _('Created') }}</span>
@@ -155,6 +185,9 @@
                 <button class="invitation-code-card-btn copy-code" data-code-id="{{ code.id }}" title="{{ _('Copy code to clipboard') }}">
                     <i class='bx bx-copy'></i> {{ _('Copy') }}
                 </button>
+                <button class="invitation-code-card-btn send-email" data-code-id="{{ code.id }}" data-recipient-email="{{ code.recipient_email or '' }}" title="{{ _('Send code via email') }}">
+                    <i class='bx bx-envelope'></i> {{ _('Email') }}
+                </button>
                 {% if not code.used_by_id and code.is_valid() %}
                 <form method="POST" action="{{ url_for('invitations.deactivate_code', code_id=code.id) }}" 
                       style="display: inline;" 
@@ -186,6 +219,33 @@ document.querySelectorAll('.copy-code').forEach(btn => {
                     this.innerHTML = originalText;
                 }, 2000);
             });
+        }
+    });
+});
+
+// send email via prompt
+document.querySelectorAll('.send-email').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const codeId = this.dataset.codeId;
+        let email = prompt('{{ _('Enter recipient email:') }}', this.dataset.recipientEmail || '');
+        if (!email) return;
+        const resp = await fetch(`/invitation-codes/${codeId}/send`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        let data;
+        try {
+            data = await resp.json();
+        } catch (err) {
+            alert(`Server returned ${resp.status} - could not parse JSON`);
+            return;
+        }
+        if (resp.ok && data.success) {
+            alert(data.message);
+            window.location.reload();
+        } else {
+            alert(data.error || '{{ _('Error sending email') }}');
         }
     });
 });

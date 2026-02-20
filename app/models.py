@@ -464,6 +464,11 @@ class InvitationCode(db.Model):
     expires_at = db.Column(db.DateTime)
     used_at = db.Column(db.DateTime, nullable=True)
 
+    # optional email address the code was sent to (if any)
+    recipient_email = db.Column(db.String(200), nullable=True)
+    # timestamp when invitation was emailed (optional)
+    email_sent_at = db.Column(db.DateTime, nullable=True)
+
     def is_valid(self):
         """Sprawdza czy kod jest jeszcze ważny i nieużyty"""
         return (self.used_by_id is None and
@@ -476,7 +481,10 @@ class InvitationCode(db.Model):
         db.session.commit()
 
     def __str__(self):
-        return f"Code {self.code} for {self.library.name} - {'Active' if self.is_valid() else 'Inactive'}"
+        base = f"Code {self.code} for {self.library.name} - {'Active' if self.is_valid() else 'Inactive'}"
+        if self.recipient_email:
+            base += f" (sent to {self.recipient_email})"
+        return base
 
 
 # Model wiadomości kontaktowej
