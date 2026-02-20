@@ -73,7 +73,8 @@ def validate_password_field(form, field):
     password = field.data or ''
     ok, reasons = is_strong_password(password)
     if not ok:
-        raise ValidationError('\n'.join(reasons))
+        # reasons may contain lazy gettext objects; coerce to str before joining
+        raise ValidationError('\n'.join(map(str, reasons)))
 
     # Optional pwned check
     app = None
