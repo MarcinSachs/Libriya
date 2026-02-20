@@ -195,12 +195,15 @@ class OpenLibraryClient:
         if not query or len(query.strip()) < 3:
             return []
 
+        # Cap the requested limit so we don't return more than the API allows locally
+        limit = min(limit, 20)
+
         logger.info(f"Open Library: Searching by title: '{query}'")
 
         try:
             params = {
                 "title": query,
-                "limit": min(limit, 20),
+                "limit": limit,
                 "fields": "title,author_name,first_publish_year,isbn,cover_i"
             }
 
