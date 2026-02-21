@@ -1,3 +1,5 @@
+import OfflineQueue from './pwa-queue.js';
+
 /**
  * PWA Manager - Handles Progressive Web App functionality
  * Features:
@@ -5,6 +7,7 @@
  * - Online/Offline detection
  * - Install prompt handling
  * - Cache management
+ * - Offline action queue
  */
 
 class PWAManager {
@@ -12,6 +15,18 @@ class PWAManager {
         this.isOnline = navigator.onLine;
         this.deferredPrompt = null;
         this.swRegistration = null;
+        this.queue = new OfflineQueue();
+
+        // dynamic cache names driven by backend config
+        const version = (window.pwaConfig && window.pwaConfig.cacheVersion) || 'v1';
+        this.cacheVersion = version;
+        this.cacheNames = {
+            main: `libriya-${version}`,
+            thumbnail: `libriya-thumbnails-${version}`,
+            micro: `libriya-micro-${version}`,
+            data: `libriya-data-${version}`
+        };
+
         this.init();
     }
 
@@ -26,6 +41,21 @@ class PWAManager {
         if (this.isRunningStandalone()) {
             this.hideInstallPrompt();
         }
+
+        // If the browser still has an old registration pointing at
+        // "/static/service-worker.js" we should unregister it right away.
+        // Otherwise `registration.update()` will keep fetching that URL every
+        // interval (seen as requests in the logs).  The redirect route still
+        // handles it, but unregistering keeps the network quieter.
+        if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
+            this.cleanupOldRegistrations();
+        }
+
+        // Purge caches that do not include the current version string.  This is
+        // useful for laptops/devices that may have stale pages (login redirects)
+        // from earlier precache runs; cleaning them ensures only fresh content
+        // will ever be served.
+        this.cleanupOldCaches();
 
         // Check if Service Worker is supported
         if ('serviceWorker' in navigator) {
@@ -56,6 +86,29 @@ class PWAManager {
         window.addEventListener('online', () => this.handleOnline());
         window.addEventListener('offline', () => this.handleOffline());
 
+        // Intercept fetch calls so that any non-GET request made while offline
+        // is automatically queued instead of failing silently.
+        const originalFetch = window.fetch.bind(window);
+        window.fetch = async (input, init = {}) => {
+            const method = (init && init.method) ? init.method.toUpperCase() : 'GET';
+            const url = typeof input === 'string' ? input : input.url;
+            if (!navigator.onLine && method !== 'GET') {
+                console.log('[PWA] offline, queuing request', method, url);
+                await this.enqueueRequest(url, init);
+                return new Response(null, { status: 503, statusText: 'Queued offline' });
+            }
+            try {
+                return await originalFetch(input, init);
+            } catch (e) {
+                if (method !== 'GET') {
+                    console.log('[PWA] fetch error, queuing', url, e);
+                    await this.enqueueRequest(url, init);
+                    return new Response(null, { status: 503, statusText: 'Queued offline' });
+                }
+                throw e;
+            }
+        };
+
         // Install prompt event listener
         window.addEventListener('beforeinstallprompt', (e) => {
             console.log('[PWA] beforeinstallprompt event triggered');
@@ -74,8 +127,10 @@ class PWAManager {
             this.hideInstallPrompt();
         });
 
-        // Update status on load
-        this.updateOnlineStatus();
+        // Update status once DOM is ready (badge may not exist yet)
+        document.addEventListener('DOMContentLoaded', () => {
+            this.updateOnlineStatus();
+        });
     }
 
     /**
@@ -87,6 +142,42 @@ class PWAManager {
             window.navigator.standalone === true ||
             document.referrer.startsWith('android-app://')
         );
+    }
+
+    /**
+     * Remove any existing service worker registrations that still point at the
+     * old static path. Browsers will continue to call `.update()` on the
+     * registered URL, which was previously `/static/service-worker.js`.
+     * Unregistering here keeps those requests from recurring once the new
+     * worker is installed.
+     */
+    async cleanupOldRegistrations() {
+        try {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (const reg of regs) {
+                // older versions registered from /static/service-worker.js
+                if (reg.scriptURL && reg.scriptURL.includes('/static/service-worker.js')) {
+                    console.log('[PWA] Unregistering legacy service worker:', reg.scriptURL);
+                    await reg.unregister();
+                }
+            }
+        } catch (e) {
+            console.warn('[PWA] error cleaning old registrations', e);
+        }
+    }
+
+    async cleanupOldCaches() {
+        try {
+            const keys = await caches.keys();
+            for (const name of keys) {
+                if (name.startsWith('libriya-') && !name.includes(this.cacheVersion)) {
+                    await caches.delete(name);
+                    console.log('[PWA] Deleted old cache', name);
+                }
+            }
+        } catch (e) {
+            console.warn('[PWA] error cleaning old caches', e);
+        }
     }
 
     /**
@@ -125,9 +216,8 @@ class PWAManager {
      */
     async registerServiceWorker() {
         try {
-            this.swRegistration = await navigator.serviceWorker.register('/static/service-worker.js', {
-                scope: '/'
-            });
+            console.log('[PWA] Registering service worker with cache version', this.cacheVersion);
+            this.swRegistration = await navigator.serviceWorker.register('/service-worker.js', { scope: '/' });
             console.log('[PWA] Service Worker registered:', this.swRegistration);
 
             // Check for updates immediately on page load
@@ -140,11 +230,18 @@ class PWAManager {
                 this.preCachePages();
             }
 
-            // Check for updates periodically every 60 seconds when online
+            // try to flush any queued offline actions when we go online
             if (navigator.onLine) {
+                this.processQueue();
+            }
+
+            // Check for updates periodically when online.  Interval comes from
+            // backend configuration and defaults to 5 minutes.
+            if (navigator.onLine) {
+                const interval = (window.pwaConfig && window.pwaConfig.updateInterval) || 300000;
                 setInterval(() => {
                     this.swRegistration.update();
-                }, 60000);
+                }, interval);
             }
 
             // Listen for updates
@@ -152,7 +249,7 @@ class PWAManager {
                 const newWorker = this.swRegistration.installing;
                 newWorker.addEventListener('statechange', () => {
                     if (newWorker.state === 'activated') {
-                        console.log('[PWA] New Service Worker activated');
+                        console.log('[PWA] New Service Worker activated (version', this.cacheVersion, ')');
                         this.notifyUpdate();
                     }
                 });
@@ -163,33 +260,83 @@ class PWAManager {
     }
 
     /**
+     * Enqueue an action to be performed when back online.
+     * The action is stored in IndexedDB by the OfflineQueue helper.
+     */
+    /**
+     * Proxy for adding a request to the offline queue.
+     */
+    async enqueueRequest(url, options) {
+        return this.queue.enqueueRequest(url, options);
+    }
+
+    /**
+     * Process all pending queued actions.  Called on startup and when
+     * connectivity returns.
+     */
+    async processQueue() {
+        if (!this.queue) return;
+        try {
+            const res = await this.queue.flush();
+            console.log('[PWA] Offline queue processed', res);
+            return res;
+        } catch (err) {
+            console.error('[PWA] Error processing offline queue', err);
+        }
+    }
+
+    /**
+     * Return the number of requests currently queued (for display purposes).
+     */
+    async getQueueInfo() {
+        if (!this.queue) return { count: 0 };
+        const items = await this.queue.getAll();
+        return { count: items.length };
+    }
+
+    /**
+     * Send a network request normally, or enqueue it if offline.
+     * Returns a Promise resolving to the fetch response (or a fake response when
+     * queued).
+     */
+    async sendOrQueue(url, options = {}) {
+        if (navigator.onLine) {
+            try {
+                const resp = await fetch(url, options);
+                if (!resp.ok) {
+                    // if network call fails (e.g. 503), optionally enqueue?
+                }
+                return resp;
+            } catch (e) {
+                console.warn('[PWA] fetch failed, enqueueing', url, e);
+                await this.enqueueRequest(url, options);
+                return new Response(null, { status: 503, statusText: 'Queued offline' });
+            }
+        } else {
+            console.log('[PWA] offline - queuing request', url, options);
+            await this.enqueueRequest(url, options);
+            return new Response(null, { status: 503, statusText: 'Queued offline' });
+        }
+    }
+
+    /**
      * Pre-cache important pages for offline use
      */
     async preCachePages() {
-        // Correct URLs for the application
-        const pagesToCache = [
-            '/',                    // Home page (book list)
-            '/loans/',              // Loans list
-            '/libraries/',          // Libraries list
-            '/users/',              // Users list
-            '/notifications/',      // Notifications
-            '/user/settings',       // User settings
-            '/offline'              // Offline page (with translations)
-        ];
-        console.log('[PWA] Pre-caching pages...');
+        // Obtain pages list from global config or fallback
+        const pagesToCache = (window.pwaConfig && window.pwaConfig.precachePages) || [];
+        console.log('[PWA] Pre-caching pages...', pagesToCache);
 
-        const cache = await caches.open('libriya-v14');
+        const cache = await caches.open(this.cacheNames.main);
 
         for (const page of pagesToCache) {
             try {
                 const fullUrl = new URL(page, location.origin).href;
                 const response = await fetch(page, { credentials: 'same-origin' });
                 if (response.ok) {
-                    // Cache with full URL as key (same format as service worker uses)
                     await cache.put(fullUrl, response.clone());
                     console.log('[PWA] Pre-cached:', fullUrl);
 
-                    // Also cache without trailing slash variant
                     const altUrl = fullUrl.endsWith('/') ? fullUrl.slice(0, -1) : fullUrl + '/';
                     await cache.put(altUrl, response.clone());
                 }
@@ -208,6 +355,8 @@ class PWAManager {
         console.log('[PWA] Device is online');
         this.updateOnlineStatus();
         this.hideOfflineWarning();
+        // try to flush queued actions when connection returns
+        this.processQueue();
     }
 
     /**
@@ -566,7 +715,8 @@ class PWAManager {
      * Clear all offline book data
      */
     async clearOfflineData() {
-        const cachesToClear = ['libriya-micro-v1', 'libriya-data-v1'];
+        // clear caches associated with offline book data (micro images and API data)
+        const cachesToClear = [this.cacheNames.micro, this.cacheNames.data];
 
         for (const name of cachesToClear) {
             try {
@@ -582,16 +732,9 @@ class PWAManager {
     }
 }
 
-// Initialize PWA Manager on DOM ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        window.pwaManager = new PWAManager();
-    });
-} else {
-    window.pwaManager = new PWAManager();
-}
+// When the module is executed as part of a type="module" import we don't
+// create a global instance here.  The consuming script is responsible for
+// instantiation (see layout.html).  However, for legacy CommonJS support in
+// unit tests we still export the class.
 
-// Export for use in other scripts
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = PWAManager;
-}
+export default PWAManager;

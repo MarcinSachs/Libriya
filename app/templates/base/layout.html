@@ -184,7 +184,21 @@
 
     {# Footer removed: now provided by main_base.html #}
 
-    <script src="{{ url_for('static', filename='js/pwa-manager.js') }}"></script>
+    <!-- PWA configuration injected from backend -->
+    <script>
+        window.pwaConfig = {
+            cacheVersion: '{{ PWA_CACHE_VERSION }}',
+            precachePages: {{ PWA_PRECACHE_PAGES|tojson }},
+            updateInterval: {{ PWA_UPDATE_INTERVAL }}
+        };
+    </script>
+
+    <!-- Load PWA manager as an ES module (makes it easier to split logic) -->
+    <script type="module">
+        import PWAManager from '{{ url_for('static', filename='js/pwa-manager.js') }}?v={{ PWA_CACHE_VERSION }}';
+        window.pwaManager = new PWAManager();
+    </script>
+
     <script>
         console.log('Layout script started');
         
@@ -227,16 +241,8 @@
             console.warn('[MENU] Mobile menu not initialized - mobileMenuBtn or sidebar is null');
         }
 
-        // Register Service Worker for PWA support
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('{{ url_for("static", filename="service-worker.js") }}')
-                .then(registration => {
-                    console.log('Service Worker registered successfully:', registration);
-                })
-                .catch(error => {
-                    console.log('Service Worker registration failed:', error);
-                });
-        }
+        // Service worker registration is handled by pwa-manager.js module above
+        // (avoids duplicate fetches and allows dynamic path configuration)
 
         // Handle delete button clicks (with event delegation for dynamic elements)
         console.log('Adding delete button event listener to document');

@@ -52,3 +52,27 @@ def regular_user(app):
     db.session.add(user)
     db.session.commit()
     return user
+
+
+@pytest.fixture
+def manager_user(app):
+    """Create a manager user with an associated library.
+
+    This fixture is used to reproduce the DetachedInstanceError that used to
+    occur when the login cache returned a stale object.  The user is bound to a
+    dummy library in the same tenant so that the ``/libraries/`` endpoint will
+    exercise the manager-specific code path.
+    """
+    user = User(username='manager_test', email='manager@test.com', role='manager')
+    user.set_password('password')
+    db.session.add(user)
+    # create a library and attach it
+    from app.models import Library
+    db.session.flush()  # assign user.id/tenant_id
+    lib = Library(name='Test Lib', tenant_id=user.tenant_id or 1)
+    db.session.add(lib)
+    db.session.commit()
+    # establish relationship
+    user.libraries.append(lib)
+    db.session.commit()
+    return user

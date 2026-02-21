@@ -92,6 +92,11 @@
                     <span><i class='bx bx-check-circle'></i> {{ _('Actual size') }}:</span>
                     <span id="actual-size">-</span>
                 </div>
+                <!-- queued requests info -->
+                <div id="queue-info" class="mt-3 text-sm text-gray-700" style="display:none;">
+                    <i class='bx bx-history'></i> {{ _('Offline requests queued:') }} <span id="queue-count">0</span>
+                    <button type="button" class="btn btn-sm btn-outline ml-2" id="flush-queue-btn">{{ _('Sync now') }}</button>
+                </div>
             </div>
         </div>
     </div>
@@ -139,6 +144,7 @@ async function updateOfflineStatus() {
 
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(updateOfflineStatus, 1000);
+    setTimeout(updateQueueStatus, 1000);
 });
 
 async function downloadOfflineData() {
@@ -180,6 +186,41 @@ async function clearOfflineData() {
         document.getElementById('actual-size-row').style.display = 'none';
     }
 }
+
+// --- queue helpers ---
+async function updateQueueStatus() {
+    if (!window.pwaManager) return;
+    try {
+        const info = await window.pwaManager.getQueueInfo();
+        const count = info.count || 0;
+        const queueEl = document.getElementById('queue-info');
+        const countEl = document.getElementById('queue-count');
+        if (queueEl && countEl) {
+            if (count > 0) {
+                queueEl.style.display = 'block';
+                countEl.textContent = count;
+            } else {
+                queueEl.style.display = 'none';
+            }
+        }
+    } catch (e) {
+        console.error('Error getting queue status', e);
+    }
+}
+
+async function flushQueue() {
+    if (!window.pwaManager) return;
+    const btn = document.getElementById('flush-queue-btn');
+    btn.disabled = true;
+    btn.textContent = '{{ _('Syncing...') }}';
+    await window.pwaManager.processQueue();
+    btn.disabled = false;
+    btn.textContent = '{{ _('Sync now') }}';
+    updateQueueStatus();
+}
+
+// Poll queue status periodically
+setInterval(updateQueueStatus, 10000);
 </script>
 {% endif %}
 {% endblock %}

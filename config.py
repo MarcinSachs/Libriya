@@ -94,6 +94,25 @@ class Config(BaseSettings):
     CACHE_PREMIUM_FEATURES_TIMEOUT: int = 3600  # Cache premium features for 1 hour
     CACHE_USER_TIMEOUT: int = 1800  # Cache user lookups for 30 minutes
 
+    # Progressive Web App (PWA) settings
+    # Version string used for cache names; bumping this forces the service worker
+    # to remove old caches automatically.  Set via environment or defaults to 'v3'.
+    # Increment this value whenever the service worker or caching logic changes
+    # in a way that should invalidate existing client-side caches.
+    PWA_CACHE_VERSION: str = 'v3'
+
+    # Interval (milliseconds) at which the client will call
+    # ``serviceWorker.update()`` when online.  Longer intervals reduce churn in
+    # development environments and lighten network traffic.
+    PWA_UPDATE_INTERVAL: int = 300000  # 5 minutes
+
+    # Pages that the client-side pre-cache routine should download when the
+    # user explicitly asks for offline data (via the settings UI).  These URLs
+    # may require authentication and are **not** automatically precached by the
+    # service worker on install; the SW template filters out protected paths.
+    PWA_PRECACHE_PAGES: list = ['/', '/loans/', '/libraries/',
+                                '/users/', '/notifications/', '/user/settings', '/offline']
+
     # Application environment: development | staging | production
     APP_ENV: str = os.getenv('FLASK_ENV', 'development')
 
@@ -102,9 +121,13 @@ class Config(BaseSettings):
     # Production: uses Redis (must be configured via RATELIMIT_STORAGE_URL env var)
     RATELIMIT_STORAGE_URL: Optional[str] = os.getenv('RATELIMIT_STORAGE_URL', None)
 
-    # Session and cookie security (critical for production)
+    # Session and cookie security (critical for production).
+    # `SESSION_COOKIE_SECURE` is set to False by default to allow HTTP during
+    # local development. A production deployment **must** override it to True
+    # (via environment or APP_ENV) as browsers will then omit the cookie over
+    # plain HTTP.
     SESSION_COOKIE_HTTPONLY: bool = True
-    SESSION_COOKIE_SECURE: bool = True  # Set to True only in production (HTTPS)
+    SESSION_COOKIE_SECURE: bool = False  # automatically promoted in production
     SESSION_COOKIE_SAMESITE: str = 'Lax'  # Prevent CSRF attacks
     PERMANENT_SESSION_LIFETIME: int = 3600  # 1 hour session timeout
 
@@ -131,7 +154,14 @@ class Config(BaseSettings):
             """
             env = getattr(self, 'APP_ENV', None) or os.getenv('FLASK_ENV') or 'development'
             self.APP_ENV = env
-
+            # Adjust cookie security automatically
+            if env.lower() != 'production':
+                # never send 'Secure' on non-HTTPS, avoids missing session
+                self.SESSION_COOKIE_SECURE = False
+            else:
+                # in production default to True unless explicitly disabled
+                if 'SESSION_COOKIE_SECURE' not in os.environ:
+                    self.SESSION_COOKIE_SECURE = True
             # If not running in production, always disable HIBP checks regardless of .env
             if env.lower() != 'production':
                 self.ENABLE_PWNED_CHECK = False

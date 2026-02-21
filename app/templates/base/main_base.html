@@ -20,6 +20,22 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="{{ url_for('static', filename='css/style.css') }}?v={{ range(1, 1000) | random }}" rel="stylesheet">
+
+    <!-- PWA configuration injected from backend -->
+    <script>
+        window.pwaConfig = {
+            cacheVersion: '{{ PWA_CACHE_VERSION }}',
+            precachePages: {{ PWA_PRECACHE_PAGES|tojson }},
+            updateInterval: {{ PWA_UPDATE_INTERVAL }}
+        };
+    </script>
+
+    <!-- Load PWA manager module -->
+    <script type="module">
+        import PWAManager from '{{ url_for('static', filename='js/pwa-manager.js') }}?v={{ PWA_CACHE_VERSION }}';
+        window.pwaManager = new PWAManager();
+    </script>
+
     {% block extra_head %}{% endblock %}
 </head>
 <body class="flex flex-col min-h-screen font-sans text-text-dark bg-gray-bg selection:bg-accent selection:text-white">
@@ -308,7 +324,6 @@
         <button id="cookie-consent-accept" class="ml-4 bg-accent hover:bg-primary text-white font-semibold py-1 px-4 rounded transition">{{ _('Accept') }}</button>
     </div>
     {% block extra_body %}{% endblock %}
-    <script src="{{ url_for('static', filename='js/pwa-manager.js') }}"></script>
     <script>
         // Cookie Consent Banner
         (function() {
@@ -465,28 +480,52 @@
                 console.log('CSRF token found:', !!csrfToken);
                 
                 // Use fetch API to send DELETE request
-                fetch(`/book_delete/${bookId}`, {
+                // Build fetch options
+                const options = {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': csrfToken || ''
                     },
                     body: JSON.stringify({})
-                })
-                .then(response => {
-                    console.log('Response status:', response.status);
-                    if (response.ok) {
-                        console.log('✓ Delete successful');
-                        window.location.href = '/';
-                    } else {
-                        console.error('✗ Delete failed:', response.statusText);
-                        alert('Error deleting book');
-                    }
-                })
-                .catch(error => {
-                    console.error('✗ Fetch error:', error);
-                    alert('Error deleting book: ' + error);
-                });
+                };
+
+                // If PWA manager available, let it decide whether to queue.
+                if (window.pwaManager && typeof window.pwaManager.sendOrQueue === 'function') {
+                    window.pwaManager.sendOrQueue(`/book_delete/${bookId}`, options)
+                        .then(response => {
+                            console.log('Response status:', response.status);
+                            if (response.ok) {
+                                console.log('✓ Delete successful');
+                                window.location.href = '/';
+                            } else if (response.status === 503) {
+                                alert('{{ _('Request queued for offline sync. Will be performed when online.') }}');
+                            } else {
+                                console.error('✗ Delete failed:', response.statusText);
+                                alert('Error deleting book');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('✗ sendOrQueue error:', error);
+                            alert('Error deleting book: ' + error);
+                        });
+                } else {
+                    fetch(`/book_delete/${bookId}`, options)
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (response.ok) {
+                            console.log('✓ Delete successful');
+                            window.location.href = '/';
+                        } else {
+                            console.error('✗ Delete failed:', response.statusText);
+                            alert('Error deleting book');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('✗ Fetch error:', error);
+                        alert('Error deleting book: ' + error);
+                    });
+                }
             } else {
                 console.log('Delete cancelled');
             }

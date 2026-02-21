@@ -115,6 +115,26 @@ def offline():
     return render_template("base/offline.html", title=_("Offline"))
 
 
+@bp.route('/service-worker.js')
+def service_worker():
+    """Dynamically generate the service worker script so it can access
+    configuration such as the cache version.
+
+    This mirrors the old static file but allows us to render Jinja expressions
+    inside the worker.
+    """
+    response = make_response(render_template('service-worker.js'))
+    response.headers['Content-Type'] = 'application/javascript'
+    response.headers['Service-Worker-Allowed'] = '/'  # allow entire origin
+    return response
+
+
+# backward compatibility: redirect old static path to the dynamic endpoint
+@bp.route('/static/service-worker.js')
+def legacy_service_worker():
+    return redirect(url_for('main.service_worker'), code=302)
+
+
 # Legacy/root-level auth URLs used by some bookmarks or service workers
 # (see mobile testing notes).  These simply redirect to the current
 # auth blueprint rather than returning 404.
@@ -515,6 +535,21 @@ def inject_unread_notifications_count():
             recipient=current_user, is_read=False).count()
         return {'unread_notifications_count': unread_count}
     return {'unread_notifications_count': 0}
+
+
+@bp.context_processor
+def inject_pwa_settings():
+    """Make cache version and pre‑cache list available to templates.
+
+    The service worker itself is served by a dynamic route so it can see the
+    same version string; other JavaScript code reads the global
+    ``window.pwaConfig`` object.
+    """
+    return {
+        'PWA_CACHE_VERSION': current_app.config.get('PWA_CACHE_VERSION', 'v1'),
+        'PWA_PRECACHE_PAGES': current_app.config.get('PWA_PRECACHE_PAGES', []),
+        'PWA_UPDATE_INTERVAL': current_app.config.get('PWA_UPDATE_INTERVAL', 300000)
+    }
 
 
 @bp.route('/debug/locale')

@@ -112,6 +112,13 @@ def get_user_by_id_cached(user_id):
         - Cached for CACHE_USER_TIMEOUT (default 30 minutes)
         - Shorter TTL than tenant cache since user data changes more frequently
         - Cache key: f'user_id_{user_id}'
+
+    **Important:** SQLAlchemy model instances stored in the cache become
+    ``detached`` when the request-local session that originally loaded them is
+    torn down.  Any later attempt to access a relationship will raise
+    ``DetachedInstanceError``.  To avoid this we merge the cached instance back
+    into the current session before returning it.  This keeps client code
+    (especially ``load_user`` in ``app/__init__.py``) oblivious to caching.
     """
     from app.models import User
 
@@ -122,7 +129,15 @@ def get_user_by_id_cached(user_id):
     def _get_user():
         return User.query.get(user_id)
 
-    return _get_user()
+    user = _get_user()
+    if user is not None:
+        try:
+            # merge returns an instance bound to the current session
+            return db.session.merge(user)
+        except Exception:
+            # if merging fails for any reason just return original
+            return user
+    return None
 
 
 def invalidate_user_cache(user_id):
