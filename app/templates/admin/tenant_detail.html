@@ -125,8 +125,9 @@
                     {{ _('Users') }} ({{ users_count }})
                 </h2>
                 {% if tenant.users %}
-                <div class="overflow-x-auto">
-                    <table class="w-full">
+                <!-- desktop table, hidden on small screens by CSS via users-table-container -->
+                <div class="users-table-container overflow-x-auto">
+                    <table class="w-full table-fixed">
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
                                 <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">{{ _('Username') }}</th>
@@ -138,11 +139,11 @@
                         <tbody class="divide-y divide-gray-200">
                             {% for user in tenant.users[:10] %}
                             <tr class="hover:bg-gray-50 transition">
-                                <td class="px-4 py-3">
+                                <td class="px-4 py-3 break-words">
                                     <span class="font-semibold text-gray-800">{{ user.username }}</span>
                                 </td>
-                                <td class="px-4 py-3 text-gray-600">{{ user.email }}</td>
-                                <td class="px-4 py-3">
+                                <td class="px-4 py-3 text-gray-600 break-words">{{ user.email }}</td>
+                                <td class="px-4 py-3 break-words">
                                     {% if user.role == 'admin' %}
                                         <span class="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">
                                             {{ _('Admin') }}
@@ -165,6 +166,31 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- mobile card view; CSS will show .users-grid on small screens and hide table -->
+                <div class="users-grid mt-4">
+                    {% for user in tenant.users[:10] %}
+                    <div class="user-card">
+                        <div class="user-card-header">
+                            <h3 class="user-card-title">{{ user.username }}</h3>
+                            <span class="user-card-role">
+                                {% if user.role == 'admin' %}{{ _('Admin') }}{% elif user.role == 'manager' %}{{ _('Manager') }}{% else %}{{ _('User') }}{% endif %}
+                            </span>
+                        </div>
+                        <div class="user-card-body">
+                            <div class="user-card-info">
+                                <span class="user-card-label">{{ _('Email') }}:</span>
+                                <span class="user-card-value">{{ user.email }}</span>
+                            </div>
+                            <div class="user-card-info">
+                                <span class="user-card-label">{{ _('Joined') }}:</span>
+                                <span class="user-card-value">{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
                 {% if tenant.users|length > 10 %}
                 <p class="text-sm text-gray-500 mt-4 text-center">
                     {{ _('... and %(count)d more users', count=tenant.users|length - 10) }}

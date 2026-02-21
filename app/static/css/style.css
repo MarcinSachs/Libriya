@@ -1659,7 +1659,7 @@ select.bg-white {
     }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
     .books-table-container {
         display: none !important;
     }
@@ -1967,7 +1967,7 @@ select.bg-white {
 }
 
 /* ===== Responsive Table/Card Toggle ===== */
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
 
     .users-table-container,
     .loans-table-container,

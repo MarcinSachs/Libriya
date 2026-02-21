@@ -39,6 +39,16 @@ def test_tenants_and_user_list_markup(client, app):
     assert b'tenants-table-container' in resp.data
     assert b'tenants-grid' in resp.data
 
+    # tenant detail view should also offer responsive user list
+    resp_detail = client.get(f'/admin/tenants/{t.id}')
+    assert resp_detail.status_code == 200
+    assert b'users-table-container' in resp_detail.data
+    assert b'users-grid' in resp_detail.data
+    # cells should allow wrapping to avoid excessive width
+    assert b'break-words' in resp_detail.data
+    # table should use fixed layout for better wrapping
+    assert b'table-fixed' in resp_detail.data
+
     # now create a tenant admin and verify users page
     admin_user = User(username='admin1', email='adm1@example.com', role='admin', tenant_id=t.id)
     admin_user.is_email_verified = True
@@ -66,6 +76,15 @@ def test_tenants_and_user_list_markup(client, app):
     resp2 = client.post('/auth/login', data={'email_or_username': 'slashtest', 'password': 'pw'}, follow_redirects=True)
     assert resp2.status_code == 200
     assert b'Logout' in resp2.data or b'Wyloguj' in resp2.data
+
+
+def test_responsive_css_breakpoint():
+    """Static stylesheet should hide tables on devices up to 1023px wide."""
+    import os
+    css_path = os.path.join(os.path.dirname(__file__), '..', 'app', 'static', 'css', 'style.css')
+    with open(css_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    assert 'max-width: 1023px' in content
 
 
 def test_legacy_login_and_register_redirects(client):
