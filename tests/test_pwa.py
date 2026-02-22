@@ -32,12 +32,21 @@ def test_service_worker_route(client, regular_user):
     body = res.get_data(as_text=True)
     # should contain the cache version from config
     from config import Config
-    assert Config().PWA_CACHE_VERSION in body
+    assert Config().PWA_CACHE_VERSION in body  # new version should appear
+    # install listener should define a constant for the cache name
+    assert 'PRECACHE_NAME' in body
+    assert f"libriya-{Config().PWA_CACHE_VERSION}" in body
     # service-worker content should include workbox import
     assert 'workbox' in body
 
     # ensure activate event for cleaning old caches is present
     assert 'self.addEventListener' in body and 'activate' in body
+
+    # ensure static assets are also precached by default
+    assert '/static/css/style.css' in body
+    assert 'pwa-manager.js' in body
+    # also ensure a runtime route for /static/ assets exists so offline page is styled
+    assert "url.pathname.startsWith('/static/')" in body
 
     # legacy static path should redirect to new URL
     res2 = client.get('/static/service-worker.js', follow_redirects=False)
@@ -74,6 +83,34 @@ def test_service_worker_precache_only_public(client):
     assert "filter(u => u === '/' || u === '/offline')" in body
     # offline page should still be mentioned in the precache map call later on
     assert '/offline' in body
+
+
+def test_offline_page_content(client):
+    res = client.get('/offline')
+    assert res.status_code == 200
+    html = res.get_data(as_text=True)
+    # must not include CDN references (old, now removed)
+    assert 'cdn.tailwindcss' not in html
+    assert 'boxicons' not in html
+    # color scheme enforced as light, styles should include !important
+    assert 'color-scheme' in html
+    assert 'background: #fff !important' in html
+    assert 'color: #000 !important' in html
+    # content is minimal (no big layout divs)
+    assert '<div class="bg-white' not in html
+    assert '<h1' in html and 'You are offline' in html
+
+
+def test_offline_page_minimal(client):
+    res = client.get('/offline')
+    assert res.status_code == 200
+    html = res.get_data(as_text=True)
+    # minimal content should be present and not include big layout markers
+    assert '<h1' in html and 'You are offline' in html
+    # no tailwind CDN or external CSS references
+    assert 'cdn.tailwindcss' not in html
+    # page should be self-contained and not include external resources
+    assert '<script' not in html
 
 
 def test_session_cookie_configuration(client):

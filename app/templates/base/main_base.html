@@ -19,14 +19,15 @@
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="{{ url_for('static', filename='css/style.css') }}?v={{ range(1, 1000) | random }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}?v={{ PWA_CACHE_VERSION }}" rel="stylesheet">
 
     <!-- PWA configuration injected from backend -->
     <script>
         window.pwaConfig = {
             cacheVersion: '{{ PWA_CACHE_VERSION }}',
             precachePages: {{ PWA_PRECACHE_PAGES|tojson }},
-            updateInterval: {{ PWA_UPDATE_INTERVAL }}
+            updateInterval: {{ PWA_UPDATE_INTERVAL }},
+            currentUserId: {{ PWA_CURRENT_USER_ID|default(none)|tojson }}
         };
     </script>
 
@@ -34,6 +35,79 @@
     <script type="module">
         import PWAManager from '{{ url_for('static', filename='js/pwa-manager.js') }}?v={{ PWA_CACHE_VERSION }}';
         window.pwaManager = new PWAManager();
+    </script>
+
+    <!-- Load offline data manager -->
+    <script src="{{ url_for('static', filename='js/offline-data.js') }}"></script>
+
+    <!-- Auto-cache offline data after login -->
+    <script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initAutoCache);
+        } else {
+            initAutoCache();
+        }
+
+        function initAutoCache() {
+            // Only run if user is logged in
+            const userLoggedIn = document.body.getAttribute('data-user-logged-in') === 'true' || 
+                                 document.querySelector('[data-user-logged-in="true"]');
+            
+            if (!userLoggedIn) return;
+
+            // Check if online
+            if (!navigator.onLine) return;
+
+            // Wait for PWA manager to be ready
+            let readyCheck = 0;
+            const autoCache = setInterval(function() {
+                readyCheck++;
+                if (window.pwaManager) {
+                    clearInterval(autoCache);
+                    
+                    // Check if user has already cached data
+                    const offlineCacheInfo = localStorage.getItem('offlineCacheInfo');
+                    
+                    if (!offlineCacheInfo) {
+                        // First time - silently cache
+                        console.log('[Auto-Cache] First login detected - caching offline data...');
+                        setTimeout(async function() {
+                            try {
+                                await window.pwaManager.preCacheOfflineData(false);
+                                console.log('[Auto-Cache] ✓ Offline data cached on first login');
+                            } catch (e) {
+                                console.log('[Auto-Cache] ⚠ Failed to cache (non-critical):', e.message);
+                            }
+                        }, 1000);
+                    } else {
+                        // Check if cache needs refresh (older than 7 days)
+                        try {
+                            const cacheInfo = JSON.parse(offlineCacheInfo);
+                            const cacheDate = new Date(cacheInfo.timestamp);
+                            const daysSince = (new Date() - cacheDate) / (1000 * 60 * 60 * 24);
+                            
+                            if (daysSince > 7) {
+                                console.log('[Auto-Cache] Cache stale (' + daysSince.toFixed(0) + ' days) - refreshing...');
+                                setTimeout(async function() {
+                                    try {
+                                        await window.pwaManager.preCacheOfflineData(false);
+                                        console.log('[Auto-Cache] ✓ Offline data refreshed');
+                                    } catch (e) {
+                                        console.log('[Auto-Cache] ⚠ Failed to refresh:', e.message);
+                                    }
+                                }, 1000);
+                            }
+                        } catch (e) {
+                            console.log('[Auto-Cache] Cache info parse error:', e.message);
+                        }
+                    }
+                } else if (readyCheck > 50) {
+                    // Timeout after 5 seconds
+                    clearInterval(autoCache);
+                    console.log('[Auto-Cache] PWA Manager not ready - skipping auto-cache');
+                }
+            }, 100);
+        }
     </script>
 
     {% block extra_head %}{% endblock %}

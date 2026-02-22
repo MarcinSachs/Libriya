@@ -96,10 +96,10 @@ class Config(BaseSettings):
 
     # Progressive Web App (PWA) settings
     # Version string used for cache names; bumping this forces the service worker
-    # to remove old caches automatically.  Set via environment or defaults to 'v3'.
+    # to remove old caches automatically.  Set via environment or defaults to 'v5'.
     # Increment this value whenever the service worker or caching logic changes
     # in a way that should invalidate existing client-side caches.
-    PWA_CACHE_VERSION: str = 'v3'
+    PWA_CACHE_VERSION: str = 'v5'
 
     # Interval (milliseconds) at which the client will call
     # ``serviceWorker.update()`` when online.  Longer intervals reduce churn in

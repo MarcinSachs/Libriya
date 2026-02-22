@@ -657,11 +657,54 @@ class PWAManager {
                 }
             }
 
+            // 5. Cache protected user pages (profile, loans)
+            // These require authentication and can only be cached when user is logged in
+            updateProgress('Zapisywanie danych użytkownika...');
+            let protectedPagesCached = 0;
+
+            // Get current user ID from pwaConfig if available
+            const currentUserId = window.pwaConfig?.currentUserId;
+            if (!currentUserId) {
+                console.warn('[PWA] Current user ID not available in pwaConfig');
+            }
+
+            const protectedPages = currentUserId ? [
+                { url: `/user/profile/${currentUserId}`, label: 'profilu' },
+                { url: `/loans/${currentUserId}`, label: 'wypożyczeń' }
+            ] : [];
+
+            for (const page of protectedPages) {
+                try {
+                    const pageResponse = await fetch(page.url, { credentials: 'same-origin' });
+                    if (pageResponse.ok) {
+                        const blob = await pageResponse.clone().blob();
+                        totalBytes += blob.size;
+                        await mainCache.put(
+                            new URL(page.url, location.origin).href,
+                            pageResponse.clone()
+                        );
+                        protectedPagesCached++;
+                        updateProgress(`Zapisano stronę ${page.label}`);
+                        console.log(`[PWA] Cached protected page: ${page.url}`);
+                    } else {
+                        console.warn(`[PWA] Failed to cache ${page.url}: ${pageResponse.status}`);
+                    }
+                } catch (e) {
+                    console.warn(`[PWA] Error caching ${page.url}:`, e.message);
+                }
+            }
+
+            // 6. Try to cache /api/offline/loans if available
+            updateProgress('Sychronizowanie pobranych danych...');
+            let dataSynced = 0;
+
             const result = {
                 success: true,
                 booksCount: books.length,
                 coversCount: cachedCovers,
                 pagesCount: cachedPages,
+                protectedPagesCached: protectedPagesCached,
+                dataSynced: dataSynced,
                 totalBytes: totalBytes,
                 totalFormatted: this.formatBytes(totalBytes),
                 timestamp: new Date().toISOString()
@@ -670,7 +713,7 @@ class PWAManager {
             // Save cache metadata to localStorage
             localStorage.setItem('offlineCacheInfo', JSON.stringify(result));
 
-            updateProgress(`Gotowe! ${books.length} książek, ${cachedCovers} okładek`);
+            updateProgress(`Gotowe! ${books.length} książek, ${protectedPagesCached} chronionych stron`);
             console.log('[PWA] Offline data pre-cache complete:', result);
 
             return result;

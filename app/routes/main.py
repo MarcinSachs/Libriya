@@ -111,8 +111,11 @@ def favicon():
 
 @bp.route("/offline")
 def offline():
-    """Offline page with translations"""
-    return render_template("base/offline.html", title=_("Offline"))
+    """Offline fallback page.  This is a very small standalone template that
+    does not depend on external CSS/JS so that it can render even when the
+    device is completely offline.
+    """
+    return render_template("base/offline.html")
 
 
 @bp.route('/service-worker.js')
@@ -545,10 +548,12 @@ def inject_pwa_settings():
     same version string; other JavaScript code reads the global
     ``window.pwaConfig`` object.
     """
+    current_user_id = current_user.id if current_user.is_authenticated else None
     return {
         'PWA_CACHE_VERSION': current_app.config.get('PWA_CACHE_VERSION', 'v1'),
         'PWA_PRECACHE_PAGES': current_app.config.get('PWA_PRECACHE_PAGES', []),
-        'PWA_UPDATE_INTERVAL': current_app.config.get('PWA_UPDATE_INTERVAL', 300000)
+        'PWA_UPDATE_INTERVAL': current_app.config.get('PWA_UPDATE_INTERVAL', 300000),
+        'PWA_CURRENT_USER_ID': current_user_id
     }
 
 

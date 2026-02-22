@@ -22,15 +22,38 @@ workbox.core.setCacheNameDetails({
 // even when the network is available, so including protected pages leads to
 // stale login screens being shown after a user signs in.
 //
-// The list below is derived from the backend value but filtered strictly to
-// safe URLs.  Only the landing page ("/") and the offline fallback are
-// precached by default.
-const PRECACHE_URLS = {{ PWA_PRECACHE_PAGES| tojson }}
-    .filter(u => u === '/' || u === '/offline');
+// In addition to the root and fallback page we want the core static assets to
+// be available immediately after the service worker installs.  Those assets
+// include the main stylesheet and the PWA manager script; they are versioned
+// via the cache string so bumping ``PWA_CACHE_VERSION`` invalidates them.
+const STATIC_ASSETS = [
+    '/static/css/style.css',
+    `/static/js/pwa-manager.js?v={{ PWA_CACHE_VERSION }}`,
+    `/static/js/offline-data.js?v={{ PWA_CACHE_VERSION }}`
+];
+
+const PRECACHE_URLS = STATIC_ASSETS.concat(
+    ({{ PWA_PRECACHE_PAGES| tojson }})
+        .filter(u => u === '/' || u === '/offline')
+);
 
 workbox.precaching.precacheAndRoute(
     PRECACHE_URLS.map(p => ({ url: p, revision: '{{ PWA_CACHE_VERSION }}' }))
 );
+
+// During installation we also fetch the offline page explicitly to ensure the
+// cache contains the latest version even if the user hasn't navigated there.
+// Use a simple string here rather than JS template interpolation to avoid
+// accidental `$` prefixes that break when Jinja replaces the variable.  This
+// constant matches the cache name details configured earlier.
+const PRECACHE_NAME = 'libriya-{{ PWA_CACHE_VERSION }}';
+self.addEventListener('install', (event) => {
+    event.waitUntil(
+        caches.open(PRECACHE_NAME)
+            .then(cache => cache.add('/offline'))
+            .catch(() => {/* ignore failures */ })
+    );
+});
 
 // App shell caching for navigation requests (except settings)
 // leave settings page network-only to avoid stale login page being served
@@ -38,7 +61,7 @@ workbox.precaching.precacheAndRoute(
 // errors because those are typically login pages or server faults that would
 // be misleading when the user is subsequently authenticated.
 workbox.routing.registerRoute(
-    ({url, request}) => request.mode === 'navigate' && !url.pathname.startsWith('/user/settings'),
+    ({ url, request }) => request.mode === 'navigate' && !url.pathname.startsWith('/user/settings'),
     new workbox.strategies.NetworkFirst({
         cacheName: `libriya-shell-{{ PWA_CACHE_VERSION }}`,
         networkTimeoutSeconds: 3,
@@ -56,7 +79,7 @@ workbox.routing.registerRoute(
 
 // Network-only route for settings (no caching)
 workbox.routing.registerRoute(
-    ({url}) => url.pathname.startsWith('/user/settings'),
+    ({ url }) => url.pathname.startsWith('/user/settings'),
     new workbox.strategies.NetworkOnly()
 );
 
@@ -89,6 +112,25 @@ workbox.routing.registerRoute(
     })
 );
 
+// Cache static files (CSS, JS, images, fonts) using a cache-first strategy.
+// This ensures the offline fallback page can render with styling and scripts
+// even when the network is unavailable.  ignoreSearch:true causes query
+// parameters (like version strings) to be ignored when matching the cache,
+// preventing random or changing ?v= values from missing the cached asset.
+workbox.routing.registerRoute(
+    ({ url }) => url.pathname.startsWith('/static/'),
+    new workbox.strategies.CacheFirst({
+        cacheName: `libriya-static-{{ PWA_CACHE_VERSION }}`,
+        matchOptions: { ignoreSearch: true },
+        plugins: [
+            new workbox.expiration.ExpirationPlugin({
+                maxEntries: 200,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+            })
+        ]
+    })
+);
+
 // fallback to offline page
 workbox.routing.setCatchHandler(async ({ event }) => {
     if (event.request.destination === 'document') {
@@ -102,7 +144,11 @@ workbox.routing.setCatchHandler(async ({ event }) => {
 // script and ensures clients update automatically when ``PWA_CACHE_VERSION``
 // is bumped.
 self.addEventListener('activate', (event) => {
+    // keep the main precache cache plus any other versioned caches we still
+    // want.  earlier versions mistakenly omitted the primary cache, causing
+    // it to be deleted on activation and breaking offline fallback.
     const expected = [
+        `libriya-{{ PWA_CACHE_VERSION }}`,
         `libriya-shell-{{ PWA_CACHE_VERSION }}`,
         `libriya-images-{{ PWA_CACHE_VERSION }}`,
         `libriya-api-{{ PWA_CACHE_VERSION }}`
