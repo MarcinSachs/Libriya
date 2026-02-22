@@ -140,6 +140,7 @@ def generate_code():
 
 
 @bp.route('/<int:code_id>/deactivate', methods=['POST'])
+@csrf.exempt
 @login_required
 @role_required('admin', 'manager')
 def deactivate_code(code_id):

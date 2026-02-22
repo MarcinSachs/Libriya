@@ -1,12 +1,12 @@
 """
 Routes for messaging between tenant admins and super-admin
 """
-from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, current_app
 from flask_login import login_required, current_user
 from flask_babel import _
 
-from app import db
-from app.models import AdminSuperAdminConversation, AdminSuperAdminMessage, Tenant, User
+from app import db, csrf
+from app.models import AdminSuperAdminConversation, AdminSuperAdminMessage, Tenant, User, Notification
 
 bp = Blueprint("messaging", __name__, url_prefix="/messaging")
 
@@ -37,6 +37,7 @@ def admin_support():
 
 
 @bp.route('/admin-support/new', methods=['GET', 'POST'])
+@csrf.exempt
 @login_required
 def admin_support_new():
     """Start new conversation with super-admin"""
@@ -69,10 +70,28 @@ def admin_support_new():
         db.session.add(first_message)
         db.session.commit()
 
+        # Create notifications for all super-admins
+        try:
+            from app.utils.notifications import create_notification
+            super_admins = User.query.filter_by(role='superadmin').all()
+            if super_admins:
+                message_text = _('New message from %(admin)s about "%(subject)s"',
+                                 admin=current_user.username, subject=subject)
+                create_notification(
+                    recipients=super_admins,
+                    sender=current_user,
+                    message=message_text,
+                    notification_type='admin_support_message'
+                )
+        except Exception as e:
+            current_app.logger.warning(f'Failed to create notification for super-admins: {e}')
+            pass
+
         # Audit
         try:
             from app.utils.audit_log import log_action
-            log_action('SUPPORT_CONVERSATION_CREATED', f'Conversation {conversation.id} created by {current_user.username}', subject=conversation, additional_info={'tenant_id': conversation.tenant_id})
+            log_action('SUPPORT_CONVERSATION_CREATED', f'Conversation {conversation.id} created by {current_user.username}', subject=conversation, additional_info={
+                       'tenant_id': conversation.tenant_id})
         except Exception:
             pass
 
@@ -88,6 +107,7 @@ def admin_support_new():
 
 
 @bp.route('/admin-support/<int:conversation_id>', methods=['GET', 'POST'])
+@csrf.exempt
 @login_required
 def admin_support_conversation(conversation_id):
     """View conversation and add replies"""
@@ -118,9 +138,26 @@ def admin_support_conversation(conversation_id):
         # Audit
         try:
             from app.utils.audit_log import log_action
-            log_action('SUPPORT_MESSAGE_SENT', f'Admin {current_user.username} sent message in conversation {conversation_id}', subject=new_message, additional_info={'conversation_id': conversation_id})
+            log_action('SUPPORT_MESSAGE_SENT', f'Admin {current_user.username} sent message in conversation {conversation_id}',
+                       subject=new_message, additional_info={'conversation_id': conversation_id})
         except Exception:
             pass
+
+        # Create notifications for all super-admins
+        try:
+            from app.utils.notifications import create_notification
+            super_admins = User.query.filter_by(role='superadmin').all()
+            if super_admins:
+                message_notif = _('New reply from %(admin)s in "%(subject)s"',
+                                  admin=current_user.username, subject=conversation.subject)
+                create_notification(
+                    recipients=super_admins,
+                    sender=current_user,
+                    message=message_notif,
+                    notification_type='admin_support_message'
+                )
+        except Exception as e:
+            current_app.logger.warning(f'Failed to create notification for super-admins: {e}')
 
         flash(_('Reply sent'), 'success')
         return redirect(url_for('messaging.admin_support_conversation', conversation_id=conversation_id))
@@ -164,6 +201,7 @@ def super_admin_messages():
 
 
 @bp.route('/admin/messages/<int:conversation_id>', methods=['GET', 'POST'])
+@csrf.exempt
 @login_required
 def super_admin_conversation(conversation_id):
     """Super-admin: View conversation and reply"""
@@ -196,9 +234,23 @@ def super_admin_conversation(conversation_id):
         # Audit
         try:
             from app.utils.audit_log import log_action
-            log_action('SUPPORT_MESSAGE_SENT_BY_SUPERADMIN', f'Super-admin {current_user.username} replied in conversation {conversation_id}', subject=new_message, additional_info={'conversation_id': conversation_id})
+            log_action('SUPPORT_MESSAGE_SENT_BY_SUPERADMIN',
+                       f'Super-admin {current_user.username} replied in conversation {conversation_id}', subject=new_message, additional_info={'conversation_id': conversation_id})
         except Exception:
             pass
+
+        # Notify the admin who initiated the conversation
+        try:
+            from app.utils.notifications import create_notification
+            message_notif = _('Super-admin replied to "%(subject)s"', subject=conversation.subject)
+            create_notification(
+                recipients=[conversation.admin],
+                sender=current_user,
+                message=message_notif,
+                notification_type='admin_support_message'
+            )
+        except Exception as e:
+            current_app.logger.warning(f'Failed to create notification for admin: {e}')
 
         flash(_('Reply sent to admin'), 'success')
         return redirect(url_for('messaging.super_admin_conversation', conversation_id=conversation_id))

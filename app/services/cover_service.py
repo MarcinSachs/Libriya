@@ -124,10 +124,10 @@ class CoverService:
         from app.services.premium.manager import PremiumManager
 
         # Try bookcover API (Goodreads) - premium source
-        if PremiumManager.is_enabled('covers'):
+        if PremiumManager.is_enabled('bookcover_api'):
             logger.info("CoverService: Trying premium bookcover API")
             cover_url = PremiumManager.call(
-                'covers',
+                'bookcover_api',
                 'BookcoverService',
                 'get_cover_from_bookcover_api',
                 isbn=isbn,

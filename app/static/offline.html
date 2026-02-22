@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <title>Libriya</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="Ijc2Mzk0ZGFhODFlNTE5MTU0NWFhZjczODc4NWJkOTVjNmNhZGFhMjgi.aZriHw.4FJKPiUTXY23pTv8q46J8_xMHRk">
+    <meta name="csrf-token" content="IjhhNWY5MjIxYWFkZDk2YzlhNDM5YmM3MDFjOWVmZDlmOGMxM2MyMTQi.aZr_Qw.sHshdsbKwdIltvfAQ8tqc3ZANMI">
     <meta name="theme-color" content="#1a535c">
     <meta name="description" content="A library management application for organizing and tracking books">
     <link rel="manifest" href="/static/manifest.json">
@@ -26,7 +26,8 @@
         window.pwaConfig = {
             cacheVersion: 'v5',
             precachePages: ["/", "/loans/", "/libraries/", "/users/", "/notifications/", "/user/settings", "/offline"],
-            updateInterval: 300000
+            updateInterval: 300000,
+            currentUserId: 2
         };
     </script>
 
@@ -342,7 +343,7 @@
     <!-- Offline Banner -->
     <div class="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded">
         <div class="flex items-start">
-            <i class='bx bx-wifi-off text-yellow-600 text-2xl mr-3'></i>
+            <span class="text-2xl mr-3">📡</span>
             <div>
                 <h3 class="font-bold text-yellow-800">You are currently offline</h3>
                 <p class="text-sm text-yellow-700 mt-1">Only cached content is available. Go online to access all features.</p>
@@ -354,25 +355,27 @@
     <div class="grid md:grid-cols-2 gap-6 mb-8">
         <div class="bg-green-50 border border-green-200 rounded-lg p-6">
             <h4 class="font-bold text-green-800 mb-4 flex items-center">
-                <i class='bx bx-check-circle text-green-600 mr-2'></i> Available offline
+                <span class="mr-2">✅</span> Available offline (after download)
             </h4>
             <ul class="space-y-2">
                 <li class="text-sm text-green-800">📚 Browse cached books</li>
-                <li class="text-sm text-green-800">📖 Read book details</li>
+                <li class="text-sm text-green-800">📖 Read book details & covers</li>
                 <li class="text-sm text-green-800">👤 View your profile</li>
                 <li class="text-sm text-green-800">⏱️ Sprawdź historię wypożyczeń</li>
+                <li class="text-xs text-green-700 mt-3 pt-3 border-t border-green-200">✓ Downloaded in "Offline Mode" settings</li>
             </ul>
         </div>
         
         <div class="bg-red-50 border border-red-200 rounded-lg p-6">
             <h4 class="font-bold text-red-800 mb-4 flex items-center">
-                <i class='bx bx-x-circle text-red-600 mr-2'></i> Requires internet
+                <span class="mr-2">❌</span> Requires internet
             </h4>
             <ul class="space-y-2">
                 <li class="text-sm text-red-800">🔍 Search books</li>
                 <li class="text-sm text-red-800">➕ Add new books</li>
                 <li class="text-sm text-red-800">⚙️ Settings & preferences</li>
                 <li class="text-sm text-red-800">💾 Save changes</li>
+                <li class="text-sm text-red-800">📅 Make new loans</li>
             </ul>
         </div>
     </div>
@@ -412,7 +415,7 @@
 
     <!-- No Cache Message -->
     <div id="no-cache-section" class="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
-        <i class='bx bx-book text-gray-400 text-5xl mb-4'></i>
+        <div class="text-5xl mb-4">📚</div>
         <p class="text-gray-600 mb-2">No books cached for offline access</p>
         <p class="text-sm text-gray-500">Go online and download your library in Settings</p>
     </div>
