@@ -791,3 +791,30 @@ def get_offline_books_data():
     except Exception as e:
         current_app.logger.error(f"Error getting offline books data: {e}")
         return {'success': False, 'error': str(e)}, 500
+
+
+@bp.route('/api/offline/sync', methods=['POST'])
+@login_required
+def offline_sync():
+    """Endpoint used by the PWA offline queue to replay actions.
+
+    Supports two formats:
+    1. legacy ``{action_type, payload}`` for backwards compatibility.
+    2. new ``{url, options}`` which mirrors the request that the client
+       originally attempted.  The server does **not** execute the request
+       automatically; this endpoint exists only to allow debugging when a
+       queued request reaches the server accidentally.
+    """
+    data = request.get_json(silent=True) or {}
+
+    if 'url' in data:
+        url = data.get('url')
+        options = data.get('options')
+        current_app.logger.debug(f"Offline sync proxy received url={url}, options={options}")
+        # No automatic replay; client now handles its own requests.
+        return {'success': True, 'note': 'received new-style request'}
+
+    action = data.get('action_type')
+    payload = data.get('payload')
+    current_app.logger.debug(f"Offline sync received action={action}, payload={payload}")
+    return {'success': True}

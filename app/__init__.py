@@ -277,7 +277,7 @@ def create_app(config_class=Config):
 
         response.headers['Content-Security-Policy'] = (
             "default-src 'self'; script-src 'self' 'unsafe-inline' "
-            "https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://fonts.googleapis.com https://unpkg.com; "
+            "https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://fonts.googleapis.com https://unpkg.com https://storage.googleapis.com; "
             "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net "
             "https://fonts.googleapis.com https://unpkg.com; "
             "font-src 'self' https://fonts.gstatic.com https://unpkg.com; "
@@ -289,6 +289,15 @@ def create_app(config_class=Config):
             response.headers['Service-Worker-Allowed'] = '/'
 
         return response
+
+    # Global PWA context (applies to all blueprints/templates)
+    @app.context_processor
+    def inject_global_pwa_settings():
+        return {
+            'PWA_CACHE_VERSION': app.config.get('PWA_CACHE_VERSION', 'v1'),
+            'PWA_PRECACHE_PAGES': app.config.get('PWA_PRECACHE_PAGES', []),
+            'PWA_UPDATE_INTERVAL': app.config.get('PWA_UPDATE_INTERVAL', 300000),
+        }
 
     # Error handlers
     @app.errorhandler(404)
@@ -352,4 +361,12 @@ def register_cli_commands(app):
 @login_manager.user_loader
 def load_user(user_id):
     from app.services.cache_service import get_user_by_id_cached
-    return get_user_by_id_cached(int(user_id))
+    user = get_user_by_id_cached(int(user_id))
+    # _get_user_cached already merges into the session, but do an extra safety
+    # merge here to be sure any calling code always gets an attached instance.
+    if user is not None:
+        try:
+            return db.session.merge(user)
+        except Exception:
+            return user
+    return None

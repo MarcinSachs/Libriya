@@ -1,131 +1,114 @@
 {% extends "base/main_base.html" %}
 {% block content %}
-<style>
-    .link-buttons {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.75rem;
-    }
-    
-    .link-button {
-        padding: 0.75rem;
-        background: #f0f0f0;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        text-decoration: none;
-        color: #1a535c;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-        cursor: pointer;
-    }
-    
-    .link-button:hover {
-        background: #1a535c;
-        color: white;
-        border-color: #1a535c;
-        text-decoration: none;
-    }
-    
-    .link-button i {
-        font-size: 1.3rem;
-    }
-</style>
-<div class="max-w-4xl mx-auto px-4 py-4">
-    <div class="bg-white rounded-lg shadow-lg border-0 overflow-hidden">
-        <div class="text-center p-5">
-            <div class="mb-4">
-                <i class='bx bx-wifi-off' style="font-size: 4rem; color: #1a535c;"></i>
-            </div>
-            <h1 class="text-2xl font-bold text-[#1a535c] mb-3">{{ _('You are offline') }}</h1>
-            <p class="text-gray-600 mb-4">{{ _('But don\'t worry! Libriya still works') }}</p>
-            
-            <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg inline-block mb-4">
-                <i class='bx bx-alert-circle'></i> {{ _('No internet connection') }}
-            </div>
-            
-            <!-- Available Features -->
-            <div class="text-left mb-4">
-                <h5 class="text-lg font-bold text-green-600 mb-3">
-                    <i class='bx bx-check-circle'></i> {{ _('What you can do:') }}
-                </h5>
-                <ul class="space-y-2">
-                    <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
-                        <i class='bx bxs-building' ></i> <strong>{{ _('Browse library') }}</strong> - {{ _('View all your books') }}
-                    </li>
-                    <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
-                        <i class='bx bxs-book'></i> <strong>{{ _('Book details') }}</strong> - {{ _('Read information and metadata') }}
-                    </li>
-                    <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
-                        <i class='bx bx-image-alt'></i> <strong>{{ _('Book covers') }}</strong> - {{ _('View cached thumbnails') }}
-                    </li>
-                    <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
-                        <i class='bx bxs-check-circle'></i> <strong>{{ _('Loans') }}</strong> - {{ _('Check loan history') }}
-                    </li>
-                </ul>
-            </div>
-            
-            <!-- Unavailable Features -->
-            <div class="text-left mb-4">
-                <h5 class="text-lg font-bold text-red-600 mb-3">
-                    <i class='bx bx-x-circle'></i> {{ _('Not available offline:') }}
-                </h5>
-                <ul class="space-y-2">
-                    <li class="bg-red-50 border border-red-200 text-red-800 px-4 py-2 rounded-lg">
-                        <i class='bx bxs-file-find'></i> <strong>{{ _('Search') }}</strong> - {{ _('Requires connection') }}
-                    </li>
-                    <li class="bg-red-50 border border-red-200 text-red-800 px-4 py-2 rounded-lg">
-                        <i class='bx bxs-book-add' ></i> <strong>{{ _('Adding books') }}</strong> - {{ _('Requires connection') }}
-                    </li>
-                    <li class="bg-red-50 border border-red-200 text-red-800 px-4 py-2 rounded-lg">
-                        <i class='bx bxs-save' ></i> <strong>{{ _('Saving changes') }}</strong> - {{ _('Will sync when online') }}
-                    </li>
-                </ul>
-            </div>
-            
-            <!-- Quick Links -->
-            <h5 class="text-lg font-bold mb-3">
-                <i class='bx bx-lightning'></i> {{ _('Quick links') }}
-            </h5>
-            <div class="link-buttons mb-4">
-                <a href="/" class="link-button">
-                    <i class='bx bx-home'></i>
-                    {{ _('Home') }}
-                </a>
-                <a href="/loans/" class="link-button">
-                    <i class='bx bxs-check-circle'></i>
-                    {{ _('Loans') }}
-                </a>
-                <a href="/libraries/" class="link-button">
-                    <i class='bx bxs-building' ></i>
-                    {{ _('Libraries') }}
-                </a>
-                <a href="/user/settings" class="link-button">
-                    <i class='bx bx-cog'></i>
-                    {{ _('Settings') }}
-                </a>
-            </div>
-            
-            <!-- Reconnect -->
-            <div class="bg-[#1a535c] text-white rounded-lg p-4 mb-4">
-                <p class="mb-3">
-                    <i class='bx bx-info-circle'></i>
-                    {{ _('Connection will be restored automatically. You can also try below.') }}
-                </p>
-                <button class="btn btn-outline" onclick="window.location.reload()">
-                    <i class='bx bx-refresh'></i> {{ _('Refresh page') }}
-                </button>
-            </div>
-            
-            <div class="mt-3 text-green-600 text-sm">
-                <i class='bx bx-server'></i>
-                {{ _('App data is cached. Uses minimal storage.') }}
+<div class="max-w-7xl mx-auto px-4">
+    <!-- Offline Banner -->
+    <div class="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded">
+        <div class="flex items-start">
+            <span class="text-2xl mr-3">📡</span>
+            <div>
+                <h3 class="font-bold text-yellow-800">{{ _('You are currently offline') }}</h3>
+                <p class="text-sm text-yellow-700 mt-1">{{ _('Only cached content is available. Go online to access all features.') }}</p>
             </div>
         </div>
     </div>
+
+    <!-- What's Available Offline -->
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+            <h4 class="font-bold text-green-800 mb-4 flex items-center">
+                <span class="mr-2">✅</span> {{ _('Available offline (after download)') }}
+            </h4>
+            <ul class="space-y-2">
+                <li class="text-sm text-green-800">📚 {{ _('Browse cached books') }}</li>
+                <li class="text-sm text-green-800">📖 {{ _('Read book details & covers') }}</li>
+                <li class="text-sm text-green-800">👤 {{ _('View your profile') }}</li>
+                <li class="text-sm text-green-800">⏱️ {{ _('Check loan history') }}</li>
+                <li class="text-xs text-green-700 mt-3 pt-3 border-t border-green-200">✓ {{ _('Downloaded in "Offline Mode" settings') }}</li>
+            </ul>
+        </div>
+        
+        <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+            <h4 class="font-bold text-red-800 mb-4 flex items-center">
+                <span class="mr-2">❌</span> {{ _('Requires internet') }}
+            </h4>
+            <ul class="space-y-2">
+                <li class="text-sm text-red-800">🔍 {{ _('Search books') }}</li>
+                <li class="text-sm text-red-800">➕ {{ _('Add new books') }}</li>
+                <li class="text-sm text-red-800">⚙️ {{ _('Settings & preferences') }}</li>
+                <li class="text-sm text-red-800">💾 {{ _('Save changes') }}</li>
+                <li class="text-sm text-red-800">📅 {{ _('Make new loans') }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+        <h4 class="font-bold text-blue-900 mb-3">{{ _('To cache your books for offline:') }}</h4>
+        <ol class="space-y-2 text-sm text-blue-800">
+            <li class="flex items-start">
+                <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">1</span>
+                <span>{{ _('Go online and open your browser') }}</span>
+            </li>
+            <li class="flex items-start">
+                <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">2</span>
+                <span>{{ _('Visit Settings (user icon → Settings)') }}</span>
+            </li>
+            <li class="flex items-start">
+                <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">3</span>
+                <span>{{ _('Find "Offline Mode" section') }}</span>
+            </li>
+            <li class="flex items-start">
+                <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">4</span>
+                <span>{{ _('Click "Download" button to cache your library') }}</span>
+            </li>
+            <li class="flex items-start">
+                <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">5</span>
+                <span>{{ _('Now you can go offline and view your books') }}</span>
+            </li>
+        </ol>
+    </div>
+
+    <!-- Cached Books Grid -->
+    <div id="books-section" style="display: none;">
+        <h3 class="text-2xl font-bold mb-4">{{ _('Your Cached Library') }}</h3>
+        <div id="books-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8"></div>
+    </div>
+
+    <!-- No Cache Message -->
+    <div id="no-cache-section" class="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
+        <div class="text-5xl mb-4">📚</div>
+        <p class="text-gray-600 mb-2">{{ _('No books cached for offline access') }}</p>
+        <p class="text-sm text-gray-500">{{ _('Go online and download your library in Settings') }}</p>
+    </div>
 </div>
+
+<!-- Load offline data manager -->
+<script src="{{ url_for('static', filename='js/offline-data.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        console.log('[Offline Page] Initializing...');
+        
+        if (window.offlineDataManager) {
+            try {
+                const books = await offlineDataManager.loadCachedBooks();
+                console.log('[Offline Page] Loaded', books.length, 'books');
+                
+                if (books.length > 0) {
+                    // Show cached books
+                    document.getElementById('no-cache-section').style.display = 'none';
+                    document.getElementById('books-section').style.display = 'block';
+                    await offlineDataManager.renderBooksList('books-container');
+                } else {
+                    // Show "no cache" message
+                    document.getElementById('no-cache-section').style.display = 'block';
+                    document.getElementById('books-section').style.display = 'none';
+                }
+            } catch (e) {
+                console.error('[Offline Page] Error:', e);
+                document.getElementById('no-cache-section').style.display = 'block';
+                document.getElementById('books-section').style.display = 'none';
+            }
+        }
+    });
+</script>
 {% endblock %}

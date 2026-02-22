@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <title>Libriya</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="Ijg3MWFmMmRhMzhlNTVjMjNiZWE2ZGU5N2FkZjIwNTk5NTJkYjY1YzMi.aZd5iQ.65n7IK7R2IZ-ZS9GtAkWlmo4Pdk">
+    <meta name="csrf-token" content="Ijc2Mzk0ZGFhODFlNTE5MTU0NWFhZjczODc4NWJkOTVjNmNhZGFhMjgi.aZriHw.4FJKPiUTXY23pTv8q46J8_xMHRk">
     <meta name="theme-color" content="#1a535c">
     <meta name="description" content="A library management application for organizing and tracking books">
     <link rel="manifest" href="/static/manifest.json">
@@ -19,10 +19,99 @@
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="/static/css/style.css?v=963" rel="stylesheet">
+    <link href="/static/css/style.css?v=v5" rel="stylesheet">
+
+    <!-- PWA configuration injected from backend -->
+    <script>
+        window.pwaConfig = {
+            cacheVersion: 'v5',
+            precachePages: ["/", "/loans/", "/libraries/", "/users/", "/notifications/", "/user/settings", "/offline"],
+            updateInterval: 300000
+        };
+    </script>
+
+    <!-- Load PWA manager module -->
+    <script type="module">
+        import PWAManager from '/static/js/pwa-manager.js?v=v5';
+        window.pwaManager = new PWAManager();
+    </script>
+
+    <!-- Load offline data manager -->
+    <script src="/static/js/offline-data.js"></script>
+
+    <!-- Auto-cache offline data after login -->
+    <script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initAutoCache);
+        } else {
+            initAutoCache();
+        }
+
+        function initAutoCache() {
+            // Only run if user is logged in
+            const userLoggedIn = document.body.getAttribute('data-user-logged-in') === 'true' || 
+                                 document.querySelector('[data-user-logged-in="true"]');
+            
+            if (!userLoggedIn) return;
+
+            // Check if online
+            if (!navigator.onLine) return;
+
+            // Wait for PWA manager to be ready
+            let readyCheck = 0;
+            const autoCache = setInterval(function() {
+                readyCheck++;
+                if (window.pwaManager) {
+                    clearInterval(autoCache);
+                    
+                    // Check if user has already cached data
+                    const offlineCacheInfo = localStorage.getItem('offlineCacheInfo');
+                    
+                    if (!offlineCacheInfo) {
+                        // First time - silently cache
+                        console.log('[Auto-Cache] First login detected - caching offline data...');
+                        setTimeout(async function() {
+                            try {
+                                await window.pwaManager.preCacheOfflineData(false);
+                                console.log('[Auto-Cache] ✓ Offline data cached on first login');
+                            } catch (e) {
+                                console.log('[Auto-Cache] ⚠ Failed to cache (non-critical):', e.message);
+                            }
+                        }, 1000);
+                    } else {
+                        // Check if cache needs refresh (older than 7 days)
+                        try {
+                            const cacheInfo = JSON.parse(offlineCacheInfo);
+                            const cacheDate = new Date(cacheInfo.timestamp);
+                            const daysSince = (new Date() - cacheDate) / (1000 * 60 * 60 * 24);
+                            
+                            if (daysSince > 7) {
+                                console.log('[Auto-Cache] Cache stale (' + daysSince.toFixed(0) + ' days) - refreshing...');
+                                setTimeout(async function() {
+                                    try {
+                                        await window.pwaManager.preCacheOfflineData(false);
+                                        console.log('[Auto-Cache] ✓ Offline data refreshed');
+                                    } catch (e) {
+                                        console.log('[Auto-Cache] ⚠ Failed to refresh:', e.message);
+                                    }
+                                }, 1000);
+                            }
+                        } catch (e) {
+                            console.log('[Auto-Cache] Cache info parse error:', e.message);
+                        }
+                    }
+                } else if (readyCheck > 50) {
+                    // Timeout after 5 seconds
+                    clearInterval(autoCache);
+                    console.log('[Auto-Cache] PWA Manager not ready - skipping auto-cache');
+                }
+            }, 100);
+        }
+    </script>
+
     
 </head>
-<body class="font-sans text-text-dark bg-gray-bg selection:bg-accent selection:text-white">
+<body class="flex flex-col min-h-screen font-sans text-text-dark bg-gray-bg selection:bg-accent selection:text-white">
     <!-- Unified Navbar -->
     <nav class="fixed w-full z-50 glass-nav border-b border-gray-200" style="top:0; margin-top:0; padding-top:0;">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -157,7 +246,7 @@
             </div>
         </div>
     </nav>
-    <main class="pt-32">
+    <main class="flex-grow pt-32">
         <div class="flex">
             
             <!-- Sidebar -->
@@ -249,134 +338,115 @@
             <div class="flex-1 overflow-x-hidden">
                 <div class="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
         
-<style>
-    .link-buttons {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.75rem;
-    }
-    
-    .link-button {
-        padding: 0.75rem;
-        background: #f0f0f0;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        text-decoration: none;
-        color: #1a535c;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-        cursor: pointer;
-    }
-    
-    .link-button:hover {
-        background: #1a535c;
-        color: white;
-        border-color: #1a535c;
-        text-decoration: none;
-    }
-    
-    .link-button i {
-        font-size: 1.3rem;
-    }
-</style>
-<div class="max-w-4xl mx-auto px-4 py-4">
-    <div class="bg-white rounded-lg shadow-lg border-0 overflow-hidden">
-        <div class="text-center p-5">
-            <div class="mb-4">
-                <i class='bx bx-wifi-off' style="font-size: 4rem; color: #1a535c;"></i>
-            </div>
-            <h1 class="text-2xl font-bold text-[#1a535c] mb-3">Jesteś offline</h1>
-            <p class="text-gray-600 mb-4">Ale nie martw się! Libriya nadal działa</p>
-            
-            <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg inline-block mb-4">
-                <i class='bx bx-alert-circle'></i> Brak połączenia z internetem
-            </div>
-            
-            <!-- Available Features -->
-            <div class="text-left mb-4">
-                <h5 class="text-lg font-bold text-green-600 mb-3">
-                    <i class='bx bx-check-circle'></i> Co możesz zrobić:
-                </h5>
-                <ul class="space-y-2">
-                    <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
-                        📚 <strong>Przeglądaj bibliotekę</strong> - Zobacz wszystkie swoje książki
-                    </li>
-                    <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
-                        📖 <strong>Szczegóły książki</strong> - Czytaj informacje i metadane
-                    </li>
-                    <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
-                        🖼️ <strong>Okładki książek</strong> - Przeglądaj miniaturki z pamięci podręcznej
-                    </li>
-                    <li class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg">
-                        📋 <strong>Wypożyczenia</strong> - Sprawdź historię wypożyczeń
-                    </li>
-                </ul>
-            </div>
-            
-            <!-- Unavailable Features -->
-            <div class="text-left mb-4">
-                <h5 class="text-lg font-bold text-red-600 mb-3">
-                    <i class='bx bx-x-circle'></i> Niedostępne offline:
-                </h5>
-                <ul class="space-y-2">
-                    <li class="bg-red-50 border border-red-200 text-red-800 px-4 py-2 rounded-lg">
-                        🔍 <strong>Szukaj</strong> - Wymaga połączenia
-                    </li>
-                    <li class="bg-red-50 border border-red-200 text-red-800 px-4 py-2 rounded-lg">
-                        ➕ <strong>Dodawanie książek</strong> - Wymaga połączenia
-                    </li>
-                    <li class="bg-red-50 border border-red-200 text-red-800 px-4 py-2 rounded-lg">
-                        💾 <strong>Zapisywanie zmian</strong> - Zsynchronizuje się po połączeniu
-                    </li>
-                </ul>
-            </div>
-            
-            <!-- Quick Links -->
-            <h5 class="text-lg font-bold mb-3">
-                <i class='bx bx-lightning'></i> Szybkie linki
-            </h5>
-            <div class="link-buttons mb-4">
-                <a href="/" class="link-button">
-                    <i class='bx bx-home'></i>
-                    Strona główna
-                </a>
-                <a href="/loans/" class="link-button">
-                    <i class='bx bx-time-five'></i>
-                    Wypożyczenia
-                </a>
-                <a href="/libraries/" class="link-button">
-                    <i class='bx bx-library'></i>
-                    Biblioteki
-                </a>
-                <a href="/user/settings" class="link-button">
-                    <i class='bx bx-cog'></i>
-                    Ustawienia
-                </a>
-            </div>
-            
-            <!-- Reconnect -->
-            <div class="bg-[#1a535c] text-white rounded-lg p-4 mb-4">
-                <p class="mb-3">
-                    <i class='bx bx-info-circle'></i>
-                    Połączenie zostanie przywrócone automatycznie. Możesz też spróbować poniżej.
-                </p>
-                <button class="btn btn-outline" onclick="window.location.reload()">
-                    <i class='bx bx-refresh'></i> Odśwież stronę
-                </button>
-            </div>
-            
-            <div class="mt-3 text-green-600 text-sm">
-                <i class='bx bx-server'></i>
-                Dane aplikacji są w pamięci podręcznej. Zajmują minimalnie miejsca.
+<div class="max-w-7xl mx-auto px-4">
+    <!-- Offline Banner -->
+    <div class="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded">
+        <div class="flex items-start">
+            <i class='bx bx-wifi-off text-yellow-600 text-2xl mr-3'></i>
+            <div>
+                <h3 class="font-bold text-yellow-800">You are currently offline</h3>
+                <p class="text-sm text-yellow-700 mt-1">Only cached content is available. Go online to access all features.</p>
             </div>
         </div>
     </div>
+
+    <!-- What's Available Offline -->
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+            <h4 class="font-bold text-green-800 mb-4 flex items-center">
+                <i class='bx bx-check-circle text-green-600 mr-2'></i> Available offline
+            </h4>
+            <ul class="space-y-2">
+                <li class="text-sm text-green-800">📚 Browse cached books</li>
+                <li class="text-sm text-green-800">📖 Read book details</li>
+                <li class="text-sm text-green-800">👤 View your profile</li>
+                <li class="text-sm text-green-800">⏱️ Sprawdź historię wypożyczeń</li>
+            </ul>
+        </div>
+        
+        <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+            <h4 class="font-bold text-red-800 mb-4 flex items-center">
+                <i class='bx bx-x-circle text-red-600 mr-2'></i> Requires internet
+            </h4>
+            <ul class="space-y-2">
+                <li class="text-sm text-red-800">🔍 Search books</li>
+                <li class="text-sm text-red-800">➕ Add new books</li>
+                <li class="text-sm text-red-800">⚙️ Settings & preferences</li>
+                <li class="text-sm text-red-800">💾 Save changes</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+        <h4 class="font-bold text-blue-900 mb-3">To cache your books for offline:</h4>
+        <ol class="space-y-2 text-sm text-blue-800">
+            <li class="flex items-start">
+                <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">1</span>
+                <span>Go online and open your browser</span>
+            </li>
+            <li class="flex items-start">
+                <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">2</span>
+                <span>Visit Settings (user icon → Settings)</span>
+            </li>
+            <li class="flex items-start">
+                <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">3</span>
+                <span>Find "Offline Mode" section</span>
+            </li>
+            <li class="flex items-start">
+                <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">4</span>
+                <span>Click "Download" button to cache your library</span>
+            </li>
+            <li class="flex items-start">
+                <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">5</span>
+                <span>Now you can go offline and view your books</span>
+            </li>
+        </ol>
+    </div>
+
+    <!-- Cached Books Grid -->
+    <div id="books-section" style="display: none;">
+        <h3 class="text-2xl font-bold mb-4">Your Cached Library</h3>
+        <div id="books-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8"></div>
+    </div>
+
+    <!-- No Cache Message -->
+    <div id="no-cache-section" class="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
+        <i class='bx bx-book text-gray-400 text-5xl mb-4'></i>
+        <p class="text-gray-600 mb-2">No books cached for offline access</p>
+        <p class="text-sm text-gray-500">Go online and download your library in Settings</p>
+    </div>
 </div>
+
+<!-- Load offline data manager -->
+<script src="/static/js/offline-data.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        console.log('[Offline Page] Initializing...');
+        
+        if (window.offlineDataManager) {
+            try {
+                const books = await offlineDataManager.loadCachedBooks();
+                console.log('[Offline Page] Loaded', books.length, 'books');
+                
+                if (books.length > 0) {
+                    // Show cached books
+                    document.getElementById('no-cache-section').style.display = 'none';
+                    document.getElementById('books-section').style.display = 'block';
+                    await offlineDataManager.renderBooksList('books-container');
+                } else {
+                    // Show "no cache" message
+                    document.getElementById('no-cache-section').style.display = 'block';
+                    document.getElementById('books-section').style.display = 'none';
+                }
+            } catch (e) {
+                console.error('[Offline Page] Error:', e);
+                document.getElementById('no-cache-section').style.display = 'block';
+                document.getElementById('books-section').style.display = 'none';
+            }
+        }
+    });
+</script>
 
                 </div>
             </div>
@@ -394,7 +464,6 @@
         <button id="cookie-consent-accept" class="ml-4 bg-accent hover:bg-primary text-white font-semibold py-1 px-4 rounded transition">Accept</button>
     </div>
     
-    <script src="/static/js/pwa-manager.js"></script>
     <script>
         // Cookie Consent Banner
         (function() {
@@ -551,28 +620,52 @@
                 console.log('CSRF token found:', !!csrfToken);
                 
                 // Use fetch API to send DELETE request
-                fetch(`/book_delete/${bookId}`, {
+                // Build fetch options
+                const options = {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': csrfToken || ''
                     },
                     body: JSON.stringify({})
-                })
-                .then(response => {
-                    console.log('Response status:', response.status);
-                    if (response.ok) {
-                        console.log('✓ Delete successful');
-                        window.location.href = '/';
-                    } else {
-                        console.error('✗ Delete failed:', response.statusText);
-                        alert('Error deleting book');
-                    }
-                })
-                .catch(error => {
-                    console.error('✗ Fetch error:', error);
-                    alert('Error deleting book: ' + error);
-                });
+                };
+
+                // If PWA manager available, let it decide whether to queue.
+                if (window.pwaManager && typeof window.pwaManager.sendOrQueue === 'function') {
+                    window.pwaManager.sendOrQueue(`/book_delete/${bookId}`, options)
+                        .then(response => {
+                            console.log('Response status:', response.status);
+                            if (response.ok) {
+                                console.log('✓ Delete successful');
+                                window.location.href = '/';
+                            } else if (response.status === 503) {
+                                alert('Request queued for offline sync. Will be performed when online.');
+                            } else {
+                                console.error('✗ Delete failed:', response.statusText);
+                                alert('Error deleting book');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('✗ sendOrQueue error:', error);
+                            alert('Error deleting book: ' + error);
+                        });
+                } else {
+                    fetch(`/book_delete/${bookId}`, options)
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (response.ok) {
+                            console.log('✓ Delete successful');
+                            window.location.href = '/';
+                        } else {
+                            console.error('✗ Delete failed:', response.statusText);
+                            alert('Error deleting book');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('✗ Fetch error:', error);
+                        alert('Error deleting book: ' + error);
+                    });
+                }
             } else {
                 console.log('Delete cancelled');
             }
