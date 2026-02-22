@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-02-22 12:35+0100\n"
-"PO-Revision-Date: 2026-02-22 11:40\n"
+"PO-Revision-Date: 2026-02-22 12:47\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -443,7 +443,7 @@ msgstr ""
 
 #: app/routes/admin.py:632
 msgid "Server error during upload"
-msgstr ""
+msgstr "Błąd serwera podczas przesyłania"
 
 #: app/routes/admin.py:647
 msgid "Premium modules reloaded"
@@ -808,7 +808,7 @@ msgstr ""
 
 #: app/seeds/seed.py:21
 msgid "Non-fiction"
-msgstr ""
+msgstr "Fakty / Dokument"
 
 #: app/seeds/seed.py:22
 msgid "Fiction"
@@ -1075,7 +1075,7 @@ msgstr "Edytuj"
 
 #: app/templates/admin/tenant_detail.html:47
 msgid "Active users in this tenant"
-msgstr ""
+msgstr "Aktywni użytkownicy tego klienta"
 
 #: app/templates/admin/tenant_detail.html:61
 msgid "Total libraries in this tenant"
@@ -1321,7 +1321,7 @@ msgstr ""
 
 #: app/templates/auth/register.html:19
 msgid "Creating New Organization"
-msgstr ""
+msgstr "Tworzenie nowej organizacji"
 
 #: app/templates/auth/register.html:22
 msgid "You're setting up a new organization. You'll become the owner with full administrative access. You can create multiple libraries and invite team members."
@@ -1623,7 +1623,7 @@ msgstr ""
 
 #: app/templates/base/offline.html:39
 msgid "Make new loans"
-msgstr ""
+msgstr "Nowe wypożyczenia"
 
 #: app/templates/base/offline.html:46
 msgid "To cache your books for offline:"
