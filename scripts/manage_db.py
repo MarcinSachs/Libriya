@@ -24,14 +24,24 @@ def create_database_if_not_exists():
         match = re.search(r'/([^/?]+)(\?|$)', database_url)
         if match:
             db_name = match.group(1)
-            # Create URL without database name
-            base_url = database_url.replace(f'/{db_name}', '/mysql')
+
+            # Build a connection URL that does *not* include any specific database.
+            # connecting to the server without a database allows us to issue
+            # CREATE DATABASE.  We avoid using '/mysql' since many managed
+            # accounts are not permitted to access the internal `mysql` schema
+            # (which was causing "access denied for user 'mysql'" errors).
+            from urllib.parse import urlparse, urlunparse
+
+            parsed = urlparse(database_url)
+            # keep scheme and netloc (includes credentials and host:port)
+            base_url = urlunparse((parsed.scheme, parsed.netloc, '', '', '', ''))
 
             try:
                 engine = create_engine(base_url)
+                from sqlalchemy import text
                 with engine.connect() as conn:
                     conn.execute(
-                        f"CREATE DATABASE IF NOT EXISTS {db_name} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+                        text(f"CREATE DATABASE IF NOT EXISTS {db_name} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"))
                     print(f"✓ Database '{db_name}' ready")
                 engine.dispose()
             except OperationalError as e:
@@ -50,8 +60,10 @@ def check_migrations_needed():
             from alembic.runtime.migration import MigrationContext
             import os
 
-            # Get path to migrations directory
-            migrations_dir = os.path.join(os.path.dirname(__file__), 'migrations')
+            # Get path to migrations directory (repo root, not inside scripts)
+            migrations_dir = os.path.abspath(
+                os.path.join(os.path.dirname(__file__), '..', 'migrations')
+            )
             alembic_cfg = Config(os.path.join(migrations_dir, 'alembic.ini'))
             alembic_cfg.set_main_option('script_location', migrations_dir)
 
@@ -102,14 +114,30 @@ def init_db():
                     upgrade()
                     print("   ✓ Database initialized successfully")
                 except Exception as e:
-                    print(f"   ✗ Migration failed: {e}")
-                    print("   → Falling back to SQLAlchemy create_all() to create schema for development/testing.")
-                    try:
-                        db.create_all()
-                        print("   ✓ Tables created using SQLAlchemy (fallback)")
-                    except Exception as e2:
-                        print(f"   ✗ Fallback create_all() failed: {e2}")
-                        return False
+                    msg = str(e)
+                    if 'Multiple head revisions' in msg:
+                        print("   ⚠ Multiple heads detected while initializing, upgrading all heads...")
+                        try:
+                            upgrade('heads')
+                            print("   ✓ Database initialized successfully (heads)")
+                        except Exception as e2:
+                            print(f"   ✗ Head upgrade failed: {e2}")
+                            print("   → Falling back to SQLAlchemy create_all() to create schema for development/testing.")
+                            try:
+                                db.create_all()
+                                print("   ✓ Tables created using SQLAlchemy (fallback)")
+                            except Exception as e3:
+                                print(f"   ✗ Fallback create_all() failed: {e3}")
+                                return False
+                    else:
+                        print(f"   ✗ Migration failed: {e}")
+                        print("   → Falling back to SQLAlchemy create_all() to create schema for development/testing.")
+                        try:
+                            db.create_all()
+                            print("   ✓ Tables created using SQLAlchemy (fallback)")
+                        except Exception as e2:
+                            print(f"   ✗ Fallback create_all() failed: {e2}")
+                            return False
             else:
                 # Check for pending migrations
                 needs_migration, current_rev, head_rev = check_migrations_needed()
@@ -125,14 +153,30 @@ def init_db():
                         upgrade()
                         print("   ✓ Database upgraded successfully")
                     except Exception as e:
-                        print(f"   ✗ Migration failed: {e}")
-                        print("   → Falling back to SQLAlchemy create_all() to create schema for development/testing.")
-                        try:
-                            db.create_all()
-                            print("   ✓ Tables created using SQLAlchemy (fallback)")
-                        except Exception as e2:
-                            print(f"   ✗ Fallback create_all() failed: {e2}")
-                            return False
+                        msg = str(e)
+                        if 'Multiple head revisions' in msg:
+                            print("   ⚠ Multiple heads detected while upgrading, upgrading all heads...")
+                            try:
+                                upgrade('heads')
+                                print("   ✓ Database upgraded successfully (heads)")
+                            except Exception as e2:
+                                print(f"   ✗ Head upgrade failed: {e2}")
+                                print("   → Falling back to SQLAlchemy create_all() to create schema for development/testing.")
+                                try:
+                                    db.create_all()
+                                    print("   ✓ Tables created using SQLAlchemy (fallback)")
+                                except Exception as e3:
+                                    print(f"   ✗ Fallback create_all() failed: {e3}")
+                                    return False
+                        else:
+                            print(f"   ✗ Migration failed: {e}")
+                            print("   → Falling back to SQLAlchemy create_all() to create schema for development/testing.")
+                            try:
+                                db.create_all()
+                                print("   ✓ Tables created using SQLAlchemy (fallback)")
+                            except Exception as e2:
+                                print(f"   ✗ Fallback create_all() failed: {e2}")
+                                return False
                 else:
                     print("   ✓ Database is up to date")
         except Exception as e:
@@ -264,8 +308,10 @@ def show_status():
             from alembic.runtime.migration import MigrationContext
             import os
 
-            # Get path to migrations directory
-            migrations_dir = os.path.join(os.path.dirname(__file__), 'migrations')
+            # Get path to migrations directory (repo root, not inside scripts)
+            migrations_dir = os.path.abspath(
+                os.path.join(os.path.dirname(__file__), '..', 'migrations')
+            )
             alembic_cfg = Config(os.path.join(migrations_dir, 'alembic.ini'))
             alembic_cfg.set_main_option('script_location', migrations_dir)
 

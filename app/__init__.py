@@ -39,9 +39,11 @@ def create_app(config_class=Config):
     # Production: uses Redis if RATELIMIT_STORAGE_URL is set
     storage_url = app.config.get('RATELIMIT_STORAGE_URL')
     if storage_url:
-        limiter.init_app(app, storage_uri=storage_url)
-    else:
-        limiter.init_app(app)  # Defaults to memory://
+        # flask-limiter now expects the URI to live in config key
+        # `RATELIMIT_STORAGE_URI`.  Copy the value over and call init_app
+        app.config['RATELIMIT_STORAGE_URI'] = storage_url
+    # always call init_app without extra args; configuration is read from app.config
+    limiter.init_app(app)
 
     csrf.init_app(app)
     cache.init_app(app)

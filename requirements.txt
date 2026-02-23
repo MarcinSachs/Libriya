@@ -17,3 +17,4 @@ Pillow
 APScheduler
 python-json-logger
 flask-caching
+pydantic-settings
