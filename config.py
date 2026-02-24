@@ -129,6 +129,7 @@ class Config(BaseSettings):
     SESSION_COOKIE_HTTPONLY: bool = True
     SESSION_COOKIE_SECURE: bool = False  # automatically promoted in production
     SESSION_COOKIE_SAMESITE: str = 'Lax'  # Prevent CSRF attacks
+    SESSION_COOKIE_DOMAIN: Optional[str] = None  # Auto-configured by middleware for subdomains
     PERMANENT_SESSION_LIFETIME: int = 3600  # 1 hour session timeout
 
     # Have I Been Pwned (HIBP) / pwned-passwords settings

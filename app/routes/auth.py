@@ -67,12 +67,13 @@ def login():
 @bp.route("/login/", methods=['POST'], strict_slashes=False)
 @limiter.limit("5 per minute")
 def login_post():
+    from flask import current_app
     # Support legacy tests/forms that send 'username' or 'email'
     email_or_username = request.form.get('email_or_username') or request.form.get(
         'username') or request.form.get('email') or ''
     password = request.form.get('password')
 
-    # KROK 1: Dedukuj tenant z subdomeny
+    # KROK 1: Dedukuj tenant z subdomenrinty
     tenant_from_url = get_tenant_from_request()
 
     user = None

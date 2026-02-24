@@ -1,6 +1,8 @@
 {% extends "base/main_base.html" %}
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-4">
+    <!-- flash messages (added so that limit errors and other alerts show immediately) -->
+    {{ macros.display_flashes() }}
     <div class="flex justify-between items-center mb-3">
         <h1 class="text-2xl font-bold text-gray-800">{{ _('Manage Libraries') }}</h1>
         <a href="{{ url_for('libraries.library_add') }}" class="btn btn-primary">{{ _('Add Library') }}</a>

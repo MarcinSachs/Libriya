@@ -44,12 +44,6 @@ def create_app(config_class=Config):
 
     login_manager.login_message = _l("Please log in to access this page.")
 
-    # --- debugging: log every incoming path ---
-    @app.before_request
-    def log_every_request():
-        app.logger.warning(f"incoming request {request.method} {request.path}")
-        # do not early-return; we want other middleware to run
-
     # Initialize Limiter with environment-based storage (Opcja 1)
     # Development: uses memory:// (SimpleCache)
     # Production: uses Redis if RATELIMIT_STORAGE_URL is set
@@ -169,12 +163,14 @@ def create_app(config_class=Config):
             # List of allowed endpoints for unauthenticated users on subdomain
             allowed_endpoints = [
                 'auth.login',
+                'auth.login_post',  # POST to /auth/login/
                 'auth.register',
                 'auth.register_choice',
                 'auth.password_reset',
                 'auth.password_reset_confirm',
                 'auth.verify_email',
                 'auth.verify_email_send',
+                'auth.send_email_verification',  # POST to /verify-email/send
                 'static'
             ]
 
@@ -281,6 +277,55 @@ def create_app(config_class=Config):
                 abort(403)  # Forbidden
         # end if host_parts
 
+    @app.before_request
+    def auto_configure_session_cookie_domain():
+        """
+        Auto-configure SESSION_COOKIE_DOMAIN when accessing via subdomain.
+        
+        For localhost/direct IP access: keep SESSION_COOKIE_DOMAIN = None (host-only cookie)
+        For subdomain access (.example.com or .libriya.local): set SESSION_COOKIE_DOMAIN based on parent domain
+        
+        The key insight: if host_without_port IS an IP (127.0.0.1), we're accessing directly via IP.
+        If host_without_port IS localhost, we're accessing via localhost.
+        Otherwise, it's a domain name and we should respect the subdomain structure.
+        
+        request.remote_addr shouldn't block domain cookies for real subdomains!
+        """
+        from flask import request
+        import re
+        
+        host_without_port = request.host.split(':')[0]
+        ip_pattern = r'^(\d+\.){3}\d+$'
+        
+        # Case 1: Host header itself is an IP address (e.g., 127.0.0.1)
+        if re.match(ip_pattern, host_without_port):
+            # Direct IP access - use host-only cookie
+            if app.config.get('SESSION_COOKIE_DOMAIN') is not None:
+                app.config['SESSION_COOKIE_DOMAIN'] = None
+            return
+        
+        # Case 2: localhost or www
+        if host_without_port in ('localhost',) or host_without_port.startswith('localhost:'):
+            if app.config.get('SESSION_COOKIE_DOMAIN') is not None:
+                app.config['SESSION_COOKIE_DOMAIN'] = None
+            return
+        
+        # Case 3: .local domain accessed via IP (e.g., my.libriya.local from 127.0.0.1)
+        # This is local development - keep host-only cookie
+        actual_client_ip = request.remote_addr
+        if host_without_port.endswith('.local') and re.match(ip_pattern, actual_client_ip):
+            if app.config.get('SESSION_COOKIE_DOMAIN') is not None:
+                app.config['SESSION_COOKIE_DOMAIN'] = None
+            return
+        
+        # Case 4: Real subdomain (e.g., testtenant.example.com or tenant.example.com)
+        # Set SESSION_COOKIE_DOMAIN to parent domain regardless of remote_addr
+        host_parts = host_without_port.split('.')
+        if len(host_parts) >= 3:
+            parent_domain = '.' + '.'.join(host_parts[1:])
+            if app.config.get('SESSION_COOKIE_DOMAIN') != parent_domain:
+                app.config['SESSION_COOKIE_DOMAIN'] = parent_domain
+
     # Add security headers
     @app.after_request
     def set_security_headers(response):
@@ -309,26 +354,7 @@ def create_app(config_class=Config):
 
         return response
 
-    # ensure correct MIME for static files when Flask guesses octet-stream
-    @app.after_request
-    def fix_static_mime(response):
-        # some environments report content_type with charset or slightly
-        # different, so check startswith
-        if request.path.startswith('/static/'):
-            # always override common extensions, avoiding downloads entirely
-            if request.path.endswith('.css'):
-                response.headers['Content-Type'] = 'text/css; charset=utf-8'
-                app.logger.info(f"fix_static_mime set text/css for {request.path}")
-            elif request.path.endswith('.js') or request.path.endswith('.mjs'):
-                response.headers['Content-Type'] = 'application/javascript; charset=utf-8'
-                app.logger.info(f"fix_static_mime set application/javascript for {request.path}")
-            else:
-                # still log others so we can see what's being served
-                ct = response.headers.get('Content-Type', '')
-                app.logger.debug(f"fix_static_mime checking path={request.path} ct={ct}")
-            # NOTE: we no longer rely on the original Content-Type being
-            # octet-stream; just proactively correct the most-used ones.
-        return response
+
 
     # Global PWA context (applies to all blueprints/templates)
     @app.context_processor
