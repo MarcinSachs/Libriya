@@ -2150,7 +2150,7 @@ msgstr "<strong>Libri</strong> – pochodzi z łaciny i oznacza „książki”.
 
 #: app/templates/landing/landing.html:72
 msgid "<strong>Ya (屋)</strong> – a Japanese suffix meaning \"shop,\" \"establishment,\" or \"house of.\" In Japan, a Hon-ya is a bookstore—literally, a house where books reside."
-msgstr "<strong>Ya (屋)</strong> – o japoński przyrostek oznaczający „miejsce”, „sklep” lub „dom rzemiosła”. W Japonii Hon-ya to księgarnia, czyli dom, w którym mieszkają książki."
+msgstr "<strong>Ya (屋)</strong> – japoński przyrostek oznaczający „miejsce”, „sklep” lub „dom rzemiosła”. W Japonii Hon-ya to księgarnia, czyli dom, w którym mieszkają książki."
 
 #: app/templates/landing/landing.html:73
 msgid "<strong>Libriya</strong> translates to the \"House of Books\"—your personal, digital space where every story finds its home. It is a blend of European heritage and the Japanese art of organization and mindfulness."

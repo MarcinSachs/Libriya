@@ -1,15 +1,25 @@
-from flask import Flask
-from config import Config
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_login import LoginManager
-from flask_babel import _, Babel, lazy_gettext as _l
-from flask import session, request, render_template, flash, redirect, url_for, g
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from flask_wtf.csrf import CSRFProtect
-from flask_caching import Cache
 from markupsafe import Markup
+from flask_caching import Cache
+from flask_wtf.csrf import CSRFProtect
+from flask_limiter.util import get_remote_address
+from flask_limiter import Limiter
+from flask import session, request, render_template, flash, redirect, url_for, g
+from flask_babel import _, Babel, lazy_gettext as _l
+from flask_login import LoginManager
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
+from config import Config
+from flask import Flask
+import mimetypes
+
+# Some hosting environments ship with an incomplete mimetypes database which
+# causes Flask's send_static_file (used by the `/static` route) to return
+# `application/octet-stream` for CSS/JS.  Explicitly register the common types
+# before the app is created.
+mimetypes.add_type('text/css', '.css')
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('application/javascript', '.mjs')
+
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -31,8 +41,14 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
-    # Ustaw komunikat logowania z tłumaczeniem dynamicznym
+
     login_manager.login_message = _l("Please log in to access this page.")
+
+    # --- debugging: log every incoming path ---
+    @app.before_request
+    def log_every_request():
+        app.logger.warning(f"incoming request {request.method} {request.path}")
+        # do not early-return; we want other middleware to run
 
     # Initialize Limiter with environment-based storage (Opcja 1)
     # Development: uses memory:// (SimpleCache)
@@ -216,53 +232,54 @@ def create_app(config_class=Config):
                 abort(403)  # Zabroń dostępu poza dozwoloną listę
 
         # Pobierz tenant z subdomeny (z cache)
-        try:
-            host_parts = request.host.split(':')[0].split('.')
-            if len(host_parts) > 1 and host_parts[0] not in ('localhost', 'www', '127'):
-                subdomain = host_parts[0]
+        # interpretujemy jako subdomenę tylko adresy typu
+        # sub.example.com (>=3 części); plain domain (example.com)
+        # nie powinien powodować 404.
+        host_parts = request.host.split(':')[0].split('.')
+        if len(host_parts) > 2 and host_parts[0] not in ('localhost', 'www', '127'):
+            subdomain = host_parts[0]
+            try:
                 from app.services.cache_service import get_tenant_by_subdomain_cached
                 tenant = get_tenant_by_subdomain_cached(subdomain)
+            except Exception as e:
+                app.logger.debug(f"Error fetching tenant for subdomain '{subdomain}': {e}")
+                tenant = None
 
-                # If the current_user is logged in, ensure their tenant subdomain matches the request subdomain
-                if current_user.is_authenticated and getattr(current_user, 'tenant_id', None):
-                    try:
-                        from app.services.cache_service import get_tenant_by_id_cached
-                        current_tenant = get_tenant_by_id_cached(current_user.tenant_id)
-                    except Exception:
-                        current_tenant = None
-                    if current_tenant and current_tenant.subdomain != subdomain:
+            # If the current_user is logged in, ensure their tenant subdomain matches the request subdomain
+            if current_user.is_authenticated and getattr(current_user, 'tenant_id', None):
+                try:
+                    from app.services.cache_service import get_tenant_by_id_cached
+                    current_tenant = get_tenant_by_id_cached(current_user.tenant_id)
+                except Exception:
+                    current_tenant = None
+                if current_tenant and current_tenant.subdomain != subdomain:
+                    from flask import abort
+                    abort(403)
+
+            # Also check session-based user id for tests where Flask-Login may not be populated
+            session_user_id = session.get('_user_id')
+            if session_user_id:
+                try:
+                    session_user_id_int = int(session_user_id)
+                except Exception:
+                    session_user_id_int = None
+                if session_user_id_int:
+                    from app.models import User as AppUser
+                    session_user = AppUser.query.get(session_user_id_int)
+                    if session_user and session_user.tenant_id and tenant and session_user.tenant_id != tenant.id:
                         from flask import abort
                         abort(403)
 
-                # Also check session-based user id for tests where Flask-Login may not be populated
-                session_user_id = session.get('_user_id')
-                if session_user_id:
-                    try:
-                        session_user_id_int = int(session_user_id)
-                    except Exception:
-                        session_user_id_int = None
-                    if session_user_id_int:
-                        from app.models import User as AppUser
-                        session_user = AppUser.query.get(session_user_id_int)
-                        if session_user and session_user.tenant_id and tenant and session_user.tenant_id != tenant.id:
-                            from flask import abort
-                            abort(403)
+            # Jeśli subdomena nie istnieje - zwróć 404 tylko gdy ENFORCE_SUBDOMAIN_EXISTS=True
+            if not tenant and app.config.get('ENFORCE_SUBDOMAIN_EXISTS', True):
+                from flask import abort
+                abort(404)
 
-                # Jeśli subdomena nie istnieje - zwróć 404 tylko gdy ENFORCE_SUBDOMAIN_EXISTS=True
-                if not tenant:
-                    if app.config.get('ENFORCE_SUBDOMAIN_EXISTS', True):
-                        from flask import abort
-                        abort(404)
-                    # else: allow unknown subdomains (development/local use)
-
-                # Sprawdź czy użytkownik należy do tego tenantu
-                if current_user.is_authenticated and tenant and current_user.tenant_id != tenant.id:
-                    from flask import abort
-                    abort(403)  # Forbidden
-        except Exception as e:
-            # Log error but don't break the request if database is unavailable
-            # This allows the app to continue working even if the database is temporarily down
-            app.logger.debug(f"Error in verify_tenant_access: {e}")
+            # Sprawdź czy użytkownik należy do tego tenantu
+            if current_user.is_authenticated and tenant and current_user.tenant_id != tenant.id:
+                from flask import abort
+                abort(403)  # Forbidden
+        # end if host_parts
 
     # Add security headers
     @app.after_request
@@ -290,6 +307,27 @@ def create_app(config_class=Config):
         if request.path.endswith('service-worker.js'):
             response.headers['Service-Worker-Allowed'] = '/'
 
+        return response
+
+    # ensure correct MIME for static files when Flask guesses octet-stream
+    @app.after_request
+    def fix_static_mime(response):
+        # some environments report content_type with charset or slightly
+        # different, so check startswith
+        if request.path.startswith('/static/'):
+            # always override common extensions, avoiding downloads entirely
+            if request.path.endswith('.css'):
+                response.headers['Content-Type'] = 'text/css; charset=utf-8'
+                app.logger.info(f"fix_static_mime set text/css for {request.path}")
+            elif request.path.endswith('.js') or request.path.endswith('.mjs'):
+                response.headers['Content-Type'] = 'application/javascript; charset=utf-8'
+                app.logger.info(f"fix_static_mime set application/javascript for {request.path}")
+            else:
+                # still log others so we can see what's being served
+                ct = response.headers.get('Content-Type', '')
+                app.logger.debug(f"fix_static_mime checking path={request.path} ct={ct}")
+            # NOTE: we no longer rely on the original Content-Type being
+            # octet-stream; just proactively correct the most-used ones.
         return response
 
     # Global PWA context (applies to all blueprints/templates)
@@ -330,11 +368,13 @@ def create_app(config_class=Config):
     register_cli_commands(app)
 
     # Initialize background scheduler for periodic cleanup
-    from app.utils.scheduler import init_scheduler, shutdown_scheduler
+    from app.utils.scheduler import init_scheduler
     init_scheduler(app)
 
-    # Shutdown scheduler on app teardown
-    app.teardown_appcontext(lambda exc=None: shutdown_scheduler())
+    # NOTE: do not shut down scheduler on each request; Passenger spawns
+    # short‑lived workers and teardown happens after every request which
+    # would stop the scheduler immediately.  The scheduler should run for
+    # the lifetime of the process and will exit when the worker exits.
 
     return app
 
