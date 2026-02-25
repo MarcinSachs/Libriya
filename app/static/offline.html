@@ -1,5 +1,3 @@
-                            <!-- Batch Import disabled temporarily - endpoint registration issue -->
-                            <!-- TODO: Fix batch_import_books endpoint registration -->
 
 
 <!DOCTYPE html>
@@ -8,11 +6,26 @@
     <meta charset="UTF-8">
     <title>Libriya</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="IjhhNWY5MjIxYWFkZDk2YzlhNDM5YmM3MDFjOWVmZDlmOGMxM2MyMTQi.aZr_Qw.sHshdsbKwdIltvfAQ8tqc3ZANMI">
+    <meta name="csrf-token" content="ImEzZDc3YjU1OWQ2ZWVlNjEzYmYyNGIyMTQ5YTU1MzMwYmRmNjlhNzUi.aZ9acA.Ds8r1NlghcbbY3kF5134qrl7HvI">
     <meta name="theme-color" content="#1a535c">
     <meta name="description" content="A library management application for organizing and tracking books">
+    <meta property="og:url" content="http://127.0.0.1:5001/dashboard">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="http://127.0.0.1:5001/static/og_image_2.jpg?v=v5">
+    <meta property="og:image:secure_url" content="http://127.0.0.1:5001/static/og_image_2.jpg?v=v5">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:title" content="Libriya">
+    <meta property="og:description" content="A library management application for organizing and tracking books">
+    <link rel="image_src" href="http://127.0.0.1:5001/static/og_image_2.jpg?v=v5">
+    <!-- Twitter card metadata for extra compatibility -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Libriya">
+    <meta name="twitter:description" content="A library management application for organizing and tracking books">
+    <meta name="twitter:image" content="http://127.0.0.1:5001/static/og_image_2.jpg?v=v5">
     <link rel="manifest" href="/static/manifest.json">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=v5">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@700&display=swap" rel="stylesheet">
@@ -38,7 +51,7 @@
     </script>
 
     <!-- Load offline data manager -->
-    <script src="/static/js/offline-data.js"></script>
+    <script type="module" src="/static/js/offline-data.js"></script>
 
     <!-- Auto-cache offline data after login -->
     <script>
@@ -122,7 +135,7 @@
                         <img src="/static/images/logo.svg" alt="Libriya Logo" class="h-10 w-auto">
                         <span class="flex flex-col leading-tight">
                             <span class="font-serif text-3xl font-bold text-primary">Libriya</span>
-                            <span class="text-xs font-light text-gray-500 tracking-wide -mt-1 ml-1">home for your books</span>
+                            <span class="text-xs font-light text-gray-500 tracking-wide -mt-1 ml-1">dom dla Twoich książek</span>
                         </span>
                     </a>
                 </div>
@@ -134,8 +147,8 @@
                         <button class="flex items-center gap-2 text-primary hover:text-accent transition">
                             <img class="w-8 h-8 rounded-full object-cover" 
                                 src="/static/uploads/default.jpg" 
-                                alt="admin">
-                            <span class="text-sm font-medium">admin</span>
+                                alt="marcin">
+                            <span class="text-sm font-medium">marcin</span>
                             
                         </button>
                         <div class="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
@@ -212,7 +225,7 @@
                         <button class="flex items-center gap-2 text-primary hover:text-accent transition">
                             <img class="w-8 h-8 rounded-full object-cover" 
                                 src="/static/uploads/default.jpg" 
-                                alt="admin">
+                                alt="marcin">
                             
                         </button>
                         <div class="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition z-50">
@@ -261,11 +274,6 @@
                     </a>
                     
                     <!-- Batch Import (if enabled for tenant) -->
-                    
-                    <a href="/books/batch_import" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-bg hover:text-primary transition">
-                        <i class="bx bx-upload text-lg"></i>
-                        <span class="font-medium">Batch Import</span>
-                    </a>
                     
                     
 
@@ -325,7 +333,7 @@
                             <!-- Contact Super Admin (tenant admin -> superadmin) -->
                             <a href="/messaging/admin-support" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
                                 <i class="bx bxs-help-circle text-base"></i>
-                                <span>Contact Super Admin</span>
+                                <span>Skontaktuj się z Super Administratorem</span>
                             </a>
                             
                         </div>
@@ -345,8 +353,8 @@
         <div class="flex items-start">
             <span class="text-2xl mr-3">📡</span>
             <div>
-                <h3 class="font-bold text-yellow-800">You are currently offline</h3>
-                <p class="text-sm text-yellow-700 mt-1">Only cached content is available. Go online to access all features.</p>
+                <h3 class="font-bold text-yellow-800">Jesteś obecnie offline</h3>
+                <p class="text-sm text-yellow-700 mt-1">Dostępna jest tylko buforowana zawartość. Przejdź do trybu online, aby uzyskać dostęp do wszystkich funkcji.</p>
             </div>
         </div>
     </div>
@@ -355,69 +363,69 @@
     <div class="grid md:grid-cols-2 gap-6 mb-8">
         <div class="bg-green-50 border border-green-200 rounded-lg p-6">
             <h4 class="font-bold text-green-800 mb-4 flex items-center">
-                <span class="mr-2">✅</span> Available offline (after download)
+                <span class="mr-2">✅</span> Dostępne offline (po pobraniu)
             </h4>
             <ul class="space-y-2">
-                <li class="text-sm text-green-800">📚 Browse cached books</li>
-                <li class="text-sm text-green-800">📖 Read book details & covers</li>
-                <li class="text-sm text-green-800">👤 View your profile</li>
+                <li class="text-sm text-green-800">📚 Przeglądaj książki w pamięci podręcznej</li>
+                <li class="text-sm text-green-800">📖 Przeczytaj szczegóły książki i okładki</li>
+                <li class="text-sm text-green-800">👤 Wyświetl swój profil</li>
                 <li class="text-sm text-green-800">⏱️ Sprawdź historię wypożyczeń</li>
-                <li class="text-xs text-green-700 mt-3 pt-3 border-t border-green-200">✓ Downloaded in "Offline Mode" settings</li>
+                <li class="text-xs text-green-700 mt-3 pt-3 border-t border-green-200">✓ Pobrane w ustawieniach "Tryb offline"</li>
             </ul>
         </div>
         
         <div class="bg-red-50 border border-red-200 rounded-lg p-6">
             <h4 class="font-bold text-red-800 mb-4 flex items-center">
-                <span class="mr-2">❌</span> Requires internet
+                <span class="mr-2">❌</span> Wymaga Internetu
             </h4>
             <ul class="space-y-2">
-                <li class="text-sm text-red-800">🔍 Search books</li>
-                <li class="text-sm text-red-800">➕ Add new books</li>
-                <li class="text-sm text-red-800">⚙️ Settings & preferences</li>
-                <li class="text-sm text-red-800">💾 Save changes</li>
-                <li class="text-sm text-red-800">📅 Make new loans</li>
+                <li class="text-sm text-red-800">🔍 Wyszukiwanie książek</li>
+                <li class="text-sm text-red-800">➕ Dodawanie nowych książek</li>
+                <li class="text-sm text-red-800">⚙️ Ustawienia</li>
+                <li class="text-sm text-red-800">💾 Zapisywanie zmian</li>
+                <li class="text-sm text-red-800">📅 Nowe wypożyczenia</li>
             </ul>
         </div>
     </div>
 
     <!-- Instructions -->
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-        <h4 class="font-bold text-blue-900 mb-3">To cache your books for offline:</h4>
+        <h4 class="font-bold text-blue-900 mb-3">Aby przechowywać swoje książki w trybie offline:</h4>
         <ol class="space-y-2 text-sm text-blue-800">
             <li class="flex items-start">
                 <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">1</span>
-                <span>Go online and open your browser</span>
+                <span>Przejdź do trybu online i otwórz przeglądarkę</span>
             </li>
             <li class="flex items-start">
                 <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">2</span>
-                <span>Visit Settings (user icon → Settings)</span>
+                <span>Odwiedź ustawienia (ikona użytkownika → Ustawienia)</span>
             </li>
             <li class="flex items-start">
                 <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">3</span>
-                <span>Find "Offline Mode" section</span>
+                <span>Znajdź sekcję "Tryb offline"</span>
             </li>
             <li class="flex items-start">
                 <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">4</span>
-                <span>Click "Download" button to cache your library</span>
+                <span>Kliknij przycisk "Pobierz", aby przechowywać w pamięci podręcznej swoją bibliotekę</span>
             </li>
             <li class="flex items-start">
                 <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">5</span>
-                <span>Now you can go offline and view your books</span>
+                <span>Teraz możesz przejść offline i przeglądać swoje książki</span>
             </li>
         </ol>
     </div>
 
     <!-- Cached Books Grid -->
     <div id="books-section" style="display: none;">
-        <h3 class="text-2xl font-bold mb-4">Your Cached Library</h3>
+        <h3 class="text-2xl font-bold mb-4">Twoja pamięć podręczna biblioteki</h3>
         <div id="books-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8"></div>
     </div>
 
     <!-- No Cache Message -->
     <div id="no-cache-section" class="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
         <div class="text-5xl mb-4">📚</div>
-        <p class="text-gray-600 mb-2">No books cached for offline access</p>
-        <p class="text-sm text-gray-500">Go online and download your library in Settings</p>
+        <p class="text-gray-600 mb-2">Brak książek dla dostępu offline</p>
+        <p class="text-sm text-gray-500">Przejdź do trybu online i pobierz swoją bibliotekę w Ustawieniach</p>
     </div>
 </div>
 
@@ -458,13 +466,13 @@
     <!-- Unified Footer -->
     <footer class="bg-white py-0.5 border-t border-gray-100 mt-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-[40px]" style="min-height:2.5rem;">
-            <p class="text-gray-400 text-base text-center w-full">&copy; 2026 Libriya. All rights reserved.</p>
+            <p class="text-gray-400 text-base text-center w-full">&copy; 2026 Libriya. Wszelkie prawa zastrzeżone.</p>
         </div>
     </footer>
     <!-- Cookie Consent Banner -->
     <div id="cookie-consent-banner" class="fixed bottom-0 left-0 w-full bg-gray-900 text-white text-center py-3 px-4 z-[9999] shadow-lg transition-all duration-300" style="display:none;">
-        <span>This website uses cookies to ensure proper operation. By using it, you accept our <a href="#" class="underline text-accent">cookie policy</a>.</span>
-        <button id="cookie-consent-accept" class="ml-4 bg-accent hover:bg-primary text-white font-semibold py-1 px-4 rounded transition">Accept</button>
+        <span>Ta strona używa plików cookie, aby zapewnić właściwe działanie. Używając strony akceptujesz naszą <a href="#" class="underline text-accent">politykę ciasteczek</a>.</span>
+        <button id="cookie-consent-accept" class="ml-4 bg-accent hover:bg-primary text-white font-semibold py-1 px-4 rounded transition">Zaakceptuj</button>
     </div>
     
     <script>
@@ -642,7 +650,7 @@
                                 console.log('✓ Delete successful');
                                 window.location.href = '/';
                             } else if (response.status === 503) {
-                                alert('Request queued for offline sync. Will be performed when online.');
+                                alert('Żądanie synchronizacji w kolejce do trybu offline. Zostanie wykonane, po przejściu w tryb online.');
                             } else {
                                 console.error('✗ Delete failed:', response.statusText);
                                 alert('Error deleting book');

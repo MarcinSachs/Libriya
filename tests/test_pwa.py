@@ -25,6 +25,35 @@ def test_pwa_settings_in_homepage(client, regular_user):
     assert 'precachePages' in html
 
 
+def test_favicon_link_in_dashboard(client, regular_user):
+    """Dashboard head should include an explicit link to the favicon.
+
+    Prefer the dedicated ``/favicon.ico`` route so that the service worker
+    doesn't intercept and cache the icon.  A version query string is also
+    added to bust browser caches when the image changes.
+    """
+    login_user_in_session(client, regular_user)
+    res = client.get('/dashboard')
+    assert res.status_code == 200
+    html = res.get_data(as_text=True)
+    assert 'rel="icon"' in html
+    # check for the route and cache version parameter
+    assert '/favicon.ico?v=' in html
+
+
+def test_favicon_route(client):
+    # direct access should serve the same contents as the static path with
+    # appropriate mime type; this also ensures the route hasn't been broken.
+    res = client.get('/favicon.ico')
+    assert res.status_code == 200
+    assert res.headers['Content-Type'] == 'image/x-icon'
+    assert len(res.data) > 0
+    # compare against the default static URL
+    res2 = client.get('/static/favicon.ico')
+    assert res2.status_code == 200
+    assert res2.data == res.data
+
+
 def test_service_worker_route(client, regular_user):
     res = client.get('/service-worker.js')
     assert res.status_code == 200
