@@ -71,9 +71,7 @@
                     <div class="flex-1 min-w-xs">
                         {{ macros.form_field(form.year, field_type='number', icon='bx-calendar', placeholder=_("e.g. 1954")) }}
                     </div>
-                    <div class="flex-1 min-w-xs">
-                        {{ macros.form_field(form.library, field_type='select', icon='bx-building') }}
-                    </div>
+                    
                 </div>
 
                 {{ macros.form_field(form.genres, field_type='select', icon='bx-tag', help_text=_('Hold Ctrl (or Cmd on Mac) to select multiple genres.'), size=8) }}
@@ -95,6 +93,17 @@
                 </div>
                 {{ form.cover_url(id="cover_url_hidden") }}
                 {{ macros.form_field(form.cover, field_type='file', icon='bx-cloud-upload', help_text=_('Supported formats: JPG, PNG, JPEG (Max 5MB)')) }}
+            </div>
+        </div>
+        <!-- Library Section -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+            <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
+                <h5 class="font-semibold text-lg mb-0"><i class='bx bx-building'></i> {{ _('Library') }}</h5>
+            </div>
+            <div class="px-4 py-3">
+                <div class="flex-1 min-w-xs">
+                        {{ macros.form_field(form.library, field_type='select', icon='bx-building') }}
+                    </div>
             </div>
         </div>
 
