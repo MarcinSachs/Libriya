@@ -602,6 +602,7 @@ def remove_favorite(book_id):
 
 
 @bp.route("/api/cleanup-cover", methods=["POST"])
+@csrf.exempt  # token not required for this helper endpoint
 @login_required
 def cleanup_cover():
     """
@@ -610,70 +611,75 @@ def cleanup_cover():
     Expected JSON: {"cover_url": "filename or URL"}
     """
     try:
-        data = request.get_json()
+        # attempt to parse JSON; if content-type is wrong this will raise
+        data = request.get_json(silent=True)
+        if data is None:
+            current_app.logger.info('Cleanup-cover: no JSON body received')
+            return {'success': True, 'message': 'No data to process'}, 200
         cover_url = data.get('cover_url', '').strip()
 
         if not cover_url:
             return {'success': False, 'error': 'No cover URL provided'}, 400
-
-        # Only delete local files, not external URLs
-        # Extract filename from path if it's a local file
-        if '/' in cover_url:
-            filename = cover_url.split('/')[-1]
-        else:
-            filename = cover_url
-
-        # Security: only allow alphanumeric and common image extensions
-        if not all(c.isalnum() or c in '._-' for c in filename):
-            return {'success': False, 'error': 'Invalid filename'}, 400
-
-        file_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
-
-        # Extra security: ensure path is within UPLOAD_FOLDER
-        real_upload_folder = os.path.realpath(current_app.config["UPLOAD_FOLDER"])
-        real_file_path = os.path.realpath(file_path)
-        if not real_file_path.startswith(real_upload_folder):
-            return {'success': False, 'error': 'Invalid file path'}, 403
-
-        # Delete the file if it exists
-        if os.path.exists(file_path) and os.path.isfile(file_path):
-            os.remove(file_path)
-            # Audit
-            try:
-                log_action('COVER_CLEANUP', f'Cover file {filename} deleted by {current_user.username}', additional_info={
-                           'filename': filename, 'user_id': current_user.id})
-            except Exception:
-                pass
-            return {'success': True, 'message': 'Cover file deleted'}
-
-        return {'success': True, 'message': 'File does not exist (already deleted)'}
-
     except Exception as e:
-        current_app.logger.error(f"Error cleaning up cover: {e}")
-        return {'success': False, 'error': str(e)}, 500
+        # non-JSON requests may arrive via sendBeacon or older clients
+        current_app.logger.info(f'Cleanup-cover: ignored non-JSON request ({e})')
+        return {'success': True, 'message': 'Non-JSON request ignored'}, 200
+
+    # Only delete local files, not external URLs
+    # Extract filename from path if it's a local file
+    if '/' in cover_url:
+        filename = cover_url.split('/')[-1]
+    else:
+        filename = cover_url
+    # strip query string or fragment
+    filename = filename.split('?')[0].split('#')[0]
+    current_app.logger.info(f"Cleanup-cover: parsed filename='{filename}' from '{cover_url}'")
+
+    # Security: only allow alphanumeric and common image extensions
+    if not all(c.isalnum() or c in '._-' for c in filename):
+        current_app.logger.warning(f"Cleanup-cover: invalid characters in filename '{filename}'")
+        return {'success': False, 'error': 'Invalid filename'}, 400
+
+    file_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+
+    # Extra security: ensure path is within UPLOAD_FOLDER
+    real_upload_folder = os.path.realpath(current_app.config["UPLOAD_FOLDER"])
+    real_file_path = os.path.realpath(file_path)
+    if not real_file_path.startswith(real_upload_folder):
+        return {'success': False, 'error': 'Invalid file path'}, 403
+
+    # Delete the file if it exists
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        os.remove(file_path)
+        # Audit
+        try:
+            log_action('COVER_CLEANUP', f'Cover file {filename} deleted by {current_user.username}', additional_info={
+                       'filename': filename, 'user_id': current_user.id})
+        except Exception:
+            pass
+        return {'success': True, 'message': 'Cover file deleted'}
+
+    # file wasn't present
+    return {'success': True, 'message': 'File does not exist (already deleted)'}
+
+# micro-thumbnail endpoint now lives outside of cleanup_cover
 
 
 @bp.route("/api/books/<int:book_id>/cover/thumbnail")
 def get_cover_thumbnail(book_id):
-    """
-    Get thumbnail version of book cover for PWA offline caching.
-    Returns compressed 200x300px image (~40KB) instead of full-size (~200KB).
-    Useful for offline PWA to cache more cover images without excessive storage.
-    """
+    # load book before inspecting
     book = Book.query.get_or_404(book_id)
-
+    book = Book.query.get_or_404(book_id)
     if not book.cover:
         return {'error': 'No cover image'}, 404
 
     try:
-        # Construct file path
         file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], secure_filename(book.cover))
 
         if not os.path.exists(file_path):
             current_app.logger.warning(f"Cover file not found: {file_path}")
             return {'error': 'Cover file not found'}, 404
 
-        # Open and process image
         img = Image.open(file_path)
 
         # Convert RGBA to RGB if necessary
@@ -682,58 +688,8 @@ def get_cover_thumbnail(book_id):
             background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
             img = background
 
-        # Create thumbnail: 200x300px (standard book cover ratio)
+        # Create regular thumbnail: 200x300px
         img.thumbnail((200, 300), Image.Resampling.LANCZOS)
-
-        # Compress to JPEG with quality 75 (40-50KB per image)
-        buffer = BytesIO()
-        img.save(buffer, format='JPEG', quality=75, optimize=True)
-        buffer.seek(0)
-
-        # Return with proper cache headers (1 day cache)
-        response = send_file(
-            buffer,
-            mimetype='image/jpeg',
-            as_attachment=False,
-            download_name=f'thumb_{book_id}.jpg'
-        )
-        response.headers['Cache-Control'] = 'public, max-age=86400'  # 24 hours
-        return response
-
-    except Exception as e:
-        current_app.logger.error(f"Error generating thumbnail for book {book_id}: {e}")
-        return {'error': 'Error generating thumbnail'}, 500
-
-
-@bp.route("/api/books/<int:book_id>/cover/micro")
-def get_cover_micro(book_id):
-    """
-    Get micro-thumbnail version of book cover for PWA offline bulk caching.
-    Returns highly compressed 50x75px image (~2-5KB) for minimal storage.
-    Used for offline mode where bandwidth/storage is critical.
-    """
-    book = Book.query.get_or_404(book_id)
-
-    if not book.cover:
-        return {'error': 'No cover image'}, 404
-
-    try:
-        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], secure_filename(book.cover))
-
-        if not os.path.exists(file_path):
-            current_app.logger.warning(f"Cover file not found: {file_path}")
-            return {'error': 'Cover file not found'}, 404
-
-        img = Image.open(file_path)
-
-        # Convert RGBA to RGB if necessary
-        if img.mode in ('RGBA', 'LA', 'P'):
-            background = Image.new('RGB', img.size, (255, 255, 255))
-            background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
-            img = background
-
-        # Create micro thumbnail: 50x75px (very small for bulk caching)
-        img.thumbnail((50, 75), Image.Resampling.LANCZOS)
 
         # High compression JPEG quality 60 (~2-5KB per image)
         buffer = BytesIO()
@@ -750,6 +706,42 @@ def get_cover_micro(book_id):
         response.headers['Cache-Control'] = 'public, max-age=604800'  # 7 days
         return response
 
+    except Exception as e:
+        current_app.logger.error(f"Error generating thumbnail for book {book_id}: {e}")
+        return {'error': 'Error generating thumbnail'}, 500
+
+# micro-thumbnail endpoint
+
+
+@bp.route("/api/books/<int:book_id>/cover/micro")
+def get_cover_micro(book_id):
+    book = Book.query.get_or_404(book_id)
+    if not book.cover:
+        return {'error': 'No cover image'}, 404
+
+    try:
+        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], secure_filename(book.cover))
+        if not os.path.exists(file_path):
+            current_app.logger.warning(f"Cover file not found: {file_path}")
+            return {'error': 'Cover file not found'}, 404
+        img = Image.open(file_path)
+        if img.mode in ('RGBA', 'LA', 'P'):
+            background = Image.new('RGB', img.size, (255, 255, 255))
+            background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+            img = background
+        # micro-size
+        img.thumbnail((50, 75), Image.Resampling.LANCZOS)
+        buffer = BytesIO()
+        img.save(buffer, format='JPEG', quality=60, optimize=True)
+        buffer.seek(0)
+        response = send_file(
+            buffer,
+            mimetype='image/jpeg',
+            as_attachment=False,
+            download_name=f'micro_{book_id}.jpg'
+        )
+        response.headers['Cache-Control'] = 'public, max-age=604800'
+        return response
     except Exception as e:
         current_app.logger.error(f"Error generating micro thumbnail for book {book_id}: {e}")
         return {'error': 'Error generating micro thumbnail'}, 500

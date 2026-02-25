@@ -246,29 +246,35 @@
         const coverUrlInput = document.getElementById('cover_url_hidden');
         
         if (coverUrlInput && coverUrlInput.value) {
-            const coverUrl = coverUrlInput.value;
-            
-            // Only cleanup local files (containing /uploads/)
-            if (coverUrl.includes('/uploads/')) {
-                fetch('/api/cleanup-cover', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ cover_url: coverUrl })
-                })
-                .then(response => response.json())
-                .catch(error => {
-                    console.error('Error cleaning up cover:', error);
-                    // Continue anyway, don't block user from leaving
-                })
-                .finally(() => {
-                    window.location.href = "{{ url_for('main.home') }}";
-                });
-            } else {
-                // External URL, no cleanup needed
+            let coverUrl = coverUrlInput.value;
+            console.log('[Cancel] coverUrlHidden contains', coverUrl);
+
+            // strip any query string or hash before sending to server
+            coverUrl = coverUrl.split('?')[0].split('#')[0];
+
+            // always attempt cleanup when a value exists; server will ignore
+            // non-local filenames and perform its own safety checks
+            // include CSRF token for consistency (route is exempt but no harm)
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            fetch('/api/cleanup-cover', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ cover_url: coverUrl })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('[Cancel] cleanup response', data);
+            })
+            .catch(error => {
+                console.error('Error cleaning up cover:', error);
+                // Continue anyway, don't block user from leaving
+            })
+            .finally(() => {
                 window.location.href = "{{ url_for('main.home') }}";
-            }
+            });
         } else {
             // No cover URL, redirect immediately
             window.location.href = "{{ url_for('main.home') }}";

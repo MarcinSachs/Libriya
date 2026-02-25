@@ -243,6 +243,49 @@ def test_book_add_page_js_contains_preview_and_cleanup_logic(client, app):
     assert '/api/cleanup-cover' in html
     # file input preview code added in macros
     assert 'FileReader' in html
+    # handleCancel now strips query strings and logs
+    assert 'coverUrl = coverUrl.split' in html
+    assert "console.log('[Cancel]" in html
+
+
+def test_cleanup_cover_accepts_query_string(client, app):
+    # verify server will delete file even if URL includes a cache-busting query
+    u = User(username='cleanup_user2', email='cu2@example.com')
+    u.is_email_verified = True
+    u.set_password('password')
+    db.session.add(u)
+    db.session.commit()
+    login(client, u.email)
+
+    folder = app.config['UPLOAD_FOLDER']
+    os.makedirs(folder, exist_ok=True)
+    filename = 'query.jpg'
+    path = os.path.join(folder, filename)
+    from PIL import Image
+    Image.new('RGB', (5, 5)).save(path)
+    assert os.path.exists(path)
+
+    # send with query string appended
+    res = client.post('/api/cleanup-cover', json={'cover_url': f'/static/uploads/{filename}?v=1'})
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data.get('success') is True
+    assert not os.path.exists(path)
+
+    # create another file and simulate a beacon-like non-JSON call
+    filename2 = 'plain.jpg'
+    path2 = os.path.join(folder, filename2)
+    Image.new('RGB', (5, 5)).save(path2)
+    assert os.path.exists(path2)
+
+    res2 = client.post('/api/cleanup-cover', data=f'/static/uploads/{filename2}', content_type='text/plain')
+    assert res2.status_code == 200
+    data2 = res2.get_json()
+    assert data2.get('success') is True
+    # file should remain because we didn't actually tell it what to delete
+    assert os.path.exists(path2)
+    # manually remove
+    os.remove(path2)
 
 
 def test_cover_thumbnail_and_micro_endpoints(app, client):
