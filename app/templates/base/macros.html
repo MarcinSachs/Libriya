@@ -69,6 +69,16 @@
             fileInput.addEventListener('change', function() {
                 if (this.files && this.files[0]) {
                     statusLabel.textContent = this.files[0].name;
+
+                    // display a preview of the chosen image (if the form has a preview element)
+                    var preview = document.getElementById('cover-preview');
+                    if (preview) {
+                        var reader = new FileReader();
+                        reader.onload = function(e) {
+                            preview.innerHTML = `<img src="${e.target.result}" style="max-width: 150px; border-radius: 4px;">`;
+                        };
+                        reader.readAsDataURL(fileInput.files[0]);
+                    }
                 } else {
                     statusLabel.textContent = noFileText;
                 }

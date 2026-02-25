@@ -77,6 +77,12 @@ class CoverService:
         """
         logger.info(f"CoverService: Getting cover for: {title or isbn}")
 
+        def _is_placeholder(url: str) -> bool:
+            """Return True if the URL points to a known "no cover" placeholder."""
+            if not url:
+                return False
+            return 'no-cover' in url or '/no-cover' in url
+
         # 1. Try premium sources FIRST (if enabled and licensed)
         # Premium bookcover service has HIGHEST priority
         cover_url = CoverService._get_cover_from_premium_sources(isbn, title, author)
@@ -86,8 +92,11 @@ class CoverService:
 
         # 2. Try cover from source metadata (Open Library or Biblioteka Narodowa)
         if cover_from_source:
-            logger.info(f"CoverService: Using cover from metadata source")
-            return cover_from_source, "open_library"
+            if _is_placeholder(cover_from_source):
+                logger.info("CoverService: Metadata cover is placeholder, ignoring")
+            else:
+                logger.info(f"CoverService: Using cover from metadata source")
+                return cover_from_source, "open_library"
 
         # 3. Try Open Library by ISBN lookup
         if isbn:
@@ -134,9 +143,20 @@ class CoverService:
                 title=title,
                 author=author
             )
+            # Some premium responses indicate "no cover" by returning a
+            # generic placeholder image.  We don't want to treat that as a
+            # real cover because another source might have an actual image.
             if cover_url:
-                logger.info("CoverService: Got premium cover from bookcover API")
-                return cover_url
+                # normalize case, but currently we care about the specific
+                # cloudfront path used by bookcover API
+                if 'no-cover.png' in cover_url:
+                    logger.info(
+                        "CoverService: Premium cover URL is placeholder, ignoring"
+                    )
+                    cover_url = None
+                else:
+                    logger.info("CoverService: Got premium cover from bookcover API")
+                    return cover_url
         else:
             logger.info("CoverService: premium covers feature is not enabled")
 

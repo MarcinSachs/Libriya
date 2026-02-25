@@ -18,7 +18,29 @@ def test_api_genres_from_isbn_test_endpoint(client):
     assert data.get('isbn') == '9780306406157'
 
 
-def test_book_add_post_as_admin(app, client):
+def test_api_genres_from_isbn_with_premium(monkeypatch, client, app):
+    """Real endpoint should call PremiumManager with the correct signature and map genres."""
+    # create a matching genre so mapping works
+    g = Genre(name='Fiction')
+    db.session.add(g)
+    db.session.commit()
+
+    def fake_call(feature_id, class_name, method_name, **kwargs):
+        # verify parameters passed correctly
+        assert feature_id == 'biblioteka_narodowa'
+        assert class_name == 'BibliotekaNarodowaService'
+        assert method_name == 'search_by_isbn'
+        assert kwargs.get('isbn') == '12345'
+        return {'genres': ['Fiction']}
+
+    monkeypatch.setattr('app.routes.books.PremiumManager.call', fake_call)
+    res = client.post('/api/book/genres-from-isbn', json={'isbn': '12345'})
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data['genres'] == [{'id': g.id, 'name': g.name}]
+
+
+def test_book_add_post_as_admin(app, client, monkeypatch):
     # prepare tenant, library, genre and admin user
     t = Tenant(name='Tbook', subdomain='tb')
     db.session.add(t)
@@ -47,6 +69,19 @@ def test_book_add_post_as_admin(app, client):
     assert get.status_code == 200
 
     # POST add book
+    # now test that PremiumManager is invoked when description is empty
+    called = {'flag': False}
+
+    def fake_premium(feature_id, class_name, method_name, **kwargs):
+        called['flag'] = True
+        assert feature_id == 'biblioteka_narodowa'
+        assert class_name == 'BibliotekaNarodowaService'
+        assert method_name == 'search_by_isbn'
+        assert kwargs.get('isbn') == '9780306406157'
+        return {'description': 'Generated description from premium'}
+
+    monkeypatch.setattr('app.routes.books.PremiumManager.call', fake_premium)
+
     post_data = {
         'isbn': '9780306406157',
         'title': 'New Book',
@@ -54,7 +89,7 @@ def test_book_add_post_as_admin(app, client):
         'library': lib.id,
         'genres': [str(g.id)],
         'year': 2000,
-        'description': 'Desc'
+        'description': ''
     }
     post = client.post('/books/add/', data=post_data, follow_redirects=True)
     assert post.status_code == 200
@@ -63,6 +98,8 @@ def test_book_add_post_as_admin(app, client):
     assert b is not None
     assert b.library_id == lib.id
     assert any(ge.name == 'Fiction' for ge in b.genres)
+    assert b.description == 'Generated description from premium'
+    assert called['flag'] is True
 
 
 def test_book_delete_and_manager_permissions(app, client):
@@ -180,6 +217,32 @@ def test_cleanup_cover_filename_validation_and_deletion(app, client):
     data3 = res3.get_json()
     assert data3.get('success') is True
     assert not os.path.exists(path)
+
+
+def test_book_add_page_js_contains_preview_and_cleanup_logic(client, app):
+    """Ensure the add-book page includes updated JS for cover preview and unload cleanup."""
+    # prepare minimal user and login
+    t = Tenant(name='JsTest', subdomain='jt')
+    db.session.add(t)
+    db.session.commit()
+    u = User(username='jsuser', email='js@example.com', tenant_id=t.id, role='admin')
+    u.is_email_verified = True
+    u.set_password('password')
+    db.session.add(u)
+    db.session.commit()
+    login(client, u.email)
+
+    res = client.get('/books/add/')
+    assert res.status_code == 200
+    html = res.get_data(as_text=True)
+
+    # the JS should treat both http and /static URLs as direct images
+    assert "book.cover_id.startsWith('http') || book.cover_id.startsWith('/')" in html
+    # the beforeunload cleanup code should be present
+    assert 'window.addEventListener' in html and 'beforeunload' in html
+    assert '/api/cleanup-cover' in html
+    # file input preview code added in macros
+    assert 'FileReader' in html
 
 
 def test_cover_thumbnail_and_micro_endpoints(app, client):

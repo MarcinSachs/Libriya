@@ -195,6 +195,59 @@ def test_get_cover_url_premium_returns_none_then_fallbacks_to_openlibrary(monkey
     assert source == 'open_library'
 
 
+def test_get_cover_url_premium_placeholder_ignored(monkeypatch):
+    """If premium returns a 'no-cover' placeholder we should ignore it."""
+    class PM:
+        @staticmethod
+        def is_enabled(feature):
+            return True
+
+        @staticmethod
+        def call(*a, **k):
+            # mimic the problematic CloudFront URL
+            return 'https://dryofg8nmyqjw.cloudfront.net/images/no-cover.png'
+
+    monkeypatch.setattr('app.services.premium.manager.PremiumManager', PM)
+
+    # with a valid OL cover available we should get that
+    monkeypatch.setattr(CoverService, '_get_cover_from_openlibrary_by_isbn', lambda isbn: 'http://ol/real.jpg')
+    url, source = CoverService.get_cover_url(isbn='123')
+    assert url == 'http://ol/real.jpg'
+    assert source == 'open_library'
+
+    # if OL also fails, fallback to local default
+    monkeypatch.setattr(CoverService, '_get_cover_from_openlibrary_by_isbn', lambda isbn: None)
+    url2, source2 = CoverService.get_cover_url(isbn='123')
+    assert url2 is None and source2 == 'local_default'
+
+
+def test_get_cover_url_metadata_placeholder_ignored(monkeypatch):
+    """If the cover string from metadata is a placeholder, skip it."""
+    # disable premium completely
+    class PM2:
+        @staticmethod
+        def is_enabled(feature):
+            return False
+    monkeypatch.setattr('app.services.premium.manager.PremiumManager', PM2)
+
+    # case 1: OL lookup returns nothing, so we should end up with the local default
+    monkeypatch.setattr(CoverService, '_get_cover_from_openlibrary_by_isbn', lambda isbn: None)
+    url, source = CoverService.get_cover_url(
+        cover_from_source='https://dryofg8nmyqjw.cloudfront.net/images/no-cover.png',
+        isbn='xyz'
+    )
+    assert url is None and source == 'local_default'
+
+    # case 2: OL lookup returns a real cover; placeholder should be ignored
+    monkeypatch.setattr(CoverService, '_get_cover_from_openlibrary_by_isbn', lambda isbn: 'http://ol/another.jpg')
+    url2, source2 = CoverService.get_cover_url(
+        cover_from_source='https://dryofg8nmyqjw.cloudfront.net/images/no-cover.png',
+        isbn='xyz'
+    )
+    assert url2 == 'http://ol/another.jpg'
+    assert source2 == 'open_library'
+
+
 def test_get_cover_url_no_sources_uses_local_default(monkeypatch):
     # Premium enabled but no cover, no cover_from_source and no isbn -> local default
     class PM:

@@ -125,7 +125,11 @@ def get_genres_from_isbn():
         try:
             # Try premium metadata services (like Biblioteka Narodowa) first
             current_app.logger.info(f"Genres API - Searching premium services for ISBN: {isbn}")
-            book_data = PremiumManager.call('biblioteka_narodowa', 'search_by_isbn', isbn=isbn)
+            # call signature: feature_id, class_name, method_name
+            book_data = PremiumManager.call('biblioteka_narodowa',
+                                            'BibliotekaNarodowaService',
+                                            'search_by_isbn',
+                                            isbn=isbn)
 
             if not book_data:
                 # Fallback to Open Library
@@ -285,7 +289,11 @@ def book_add():
         # Try to fetch description from APIs if not provided
         if not description and form.isbn.data:
             # Try BN first
-            book_data = PremiumManager.call('biblioteka_narodowa', 'search_by_isbn', isbn=form.isbn.data)
+            # note: PremiumManager.call requires service class name as second arg
+            book_data = PremiumManager.call('biblioteka_narodowa',
+                                            'BibliotekaNarodowaService',
+                                            'search_by_isbn',
+                                            isbn=form.isbn.data)
             if not book_data:
                 book_data = OpenLibraryClient.search_by_isbn(form.isbn.data)
             if book_data:

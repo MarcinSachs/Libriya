@@ -278,6 +278,16 @@
     // Initialize when DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM loaded, Html5Qrcode available:', typeof Html5Qrcode !== 'undefined');
+
+        // ensure temporary cover is removed if user leaves page without clicking cancel
+        window.addEventListener('beforeunload', function(e) {
+            const coverUrlInput = document.getElementById('cover_url_hidden');
+            if (coverUrlInput && coverUrlInput.value && coverUrlInput.value.includes('/uploads/')) {
+                // try to use sendBeacon for async unload
+                const payload = JSON.stringify({ cover_url: coverUrlInput.value });
+                navigator.sendBeacon('/api/cleanup-cover', payload);
+            }
+        });
         
         var startBtn = document.getElementById('start-scanner');
         if (startBtn) {
@@ -518,12 +528,14 @@
                         data.results.forEach(book => {
                             // Handle both direct URL and cover_id format
                             let coverImg = '';
-                            if (book.cover_id && book.cover_id.startsWith('http')) {
-                                // Direct URL from Bookcover API or OL
-                                coverImg = `<img src="${book.cover_id}" alt="cover" style="height: 60px; margin-right: 10px;" onerror="this.src='/static/images/default-book-cover.png'">`;
-                            } else if (book.cover_id) {
-                                // Open Library cover ID
-                                coverImg = `<img src="https://covers.openlibrary.org/b/id/${book.cover_id}-S.jpg" alt="cover" style="height: 60px; margin-right: 10px;" onerror="this.src='/static/images/default-book-cover.png'">`;
+                            if (book.cover_id) {
+                                // treat any absolute or web URL (http(s) or starting with /static) as direct image
+                                if (book.cover_id.startsWith('http') || book.cover_id.startsWith('/')) {
+                                    coverImg = `<img src="${book.cover_id}" alt="cover" style="height: 60px; margin-right: 10px;" onerror="this.src='/static/images/default-book-cover.png'">`;
+                                } else {
+                                    // otherwise it's assumed to be an Open Library cover ID
+                                    coverImg = `<img src="https://covers.openlibrary.org/b/id/${book.cover_id}-S.jpg" alt="cover" style="height: 60px; margin-right: 10px;" onerror="this.src='/static/images/default-book-cover.png'">`;
+                                }
                             }
                             
                             const authors = book.authors ? book.authors.join(', ') : '{{ _('Unknown') }}';
@@ -572,7 +584,7 @@
                                 var coverUrlHidden = document.getElementById('cover_url_hidden');
                                 if (coverId) {
                                     let coverUrl;
-                                    if (coverId.startsWith('http')) {
+                                    if (coverId.startsWith('http') || coverId.startsWith('/')) {
                                         coverUrl = coverId;
                                     } else {
                                         coverUrl = `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
