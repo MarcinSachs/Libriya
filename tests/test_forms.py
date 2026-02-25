@@ -1,7 +1,7 @@
 import io
 from datetime import datetime
 import pytest
-from werkzeug.datastructures import FileStorage
+from werkzeug.datastructures import FileStorage, MultiDict
 from werkzeug.test import EnvironBuilder
 from wtforms import Form
 from wtforms.validators import ValidationError
@@ -126,12 +126,12 @@ def test_registrationform_tenant_name_and_invitation_logic(app):
 
 def test_tenantform_name_unique(app):
     with app.app_context():
-        t = Tenant(name='UniqueTest', subdomain='u1')
+        t = Tenant(name='UniqueTest', subdomain='uni')
         db.session.add(t)
         db.session.commit()
 
         with app.test_request_context('/'):
-            form = TenantForm(data={'name': 'UniqueTest', 'subdomain': 'u2'})
+            form = TenantForm(data={'name': 'UniqueTest', 'subdomain': 'uni2'})
             assert not form.validate()
             assert form.name.errors
 
@@ -263,6 +263,38 @@ def test_comment_and_loan_forms_sanitization_and_required(app):
 
         lf2 = LoanForm(data={'book_id': 1, 'user_id': 1})
         assert lf2.validate()
+
+
+def test_tenantform_name_unique_on_edit(app):
+    """Editing a tenant should not trip the unique-name validator if the name is unchanged."""
+    with app.app_context():
+        t = Tenant(name='UniqueTest', subdomain='uni')
+        other = Tenant(name='Other', subdomain='oth')
+        db.session.add_all([t, other])
+        db.session.commit()
+
+        # editing `t` but leaving the name alone should validate
+        with app.test_request_context('/'):
+            form = TenantForm(obj=t, data={'name': 'UniqueTest', 'subdomain': 'uni'})
+            assert form.validate(), form.errors
+
+        # editing `t` and trying to rename it to an existing tenant's name should fail
+        with app.test_request_context('/'):
+            # sanity check that the other tenant is still in the database
+            assert Tenant.query.filter_by(name='Other').first() is not None
+            form2 = TenantForm(formdata=MultiDict({'name': 'Other', 'subdomain': 'uni'}), obj=t)
+            # ensure the field actually picked up the new name
+            assert form2.name.data == 'Other', f"name data was {form2.name.data!r}"
+            existing = Tenant.query.filter_by(name=form2.name.data).first()
+            assert existing is not None, "no tenant found with the submitted name"
+            assert existing.id == other.id, f"existing id {existing.id} != other.id {other.id}"
+            rv = form2.validate()
+            # print errors for debugging if something goes wrong
+            if rv:
+                print('DEBUG: form2 validated unexpectedly, errors', form2.errors)
+                print('field data', form2.name.data, form2.subdomain.data, 'original_id', form2._original_id)
+            assert not rv
+            assert form2.name.errors
 
 
 # End of form tests

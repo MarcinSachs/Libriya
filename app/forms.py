@@ -347,7 +347,7 @@ class TenantForm(FlaskForm):
     )
     subdomain = StringField(
         _('Subdomain'),
-        validators=[DataRequired(), Length(min=3, max=20), validate_subdomain_field],
+        validators=[DataRequired(), validate_subdomain_field],
         description=_('URL-friendly name (e.g., "mylib"). Only lowercase letters, numbers and hyphens.')
     )
 
@@ -365,6 +365,18 @@ class TenantForm(FlaskForm):
 
     # Per-field validation now uses `validate_subdomain_field` in validators.py
 
+    def __init__(self, *args, **kwargs):
+        # capture object being edited so we can ignore it during uniqueness checks
+        self._original_id = None
+        # keep a reference to the object on the form; some validators rely on form.obj
+        self.obj = kwargs.get('obj', None)
+        if self.obj is not None:
+            try:
+                self._original_id = self.obj.id
+            except Exception:
+                pass
+        super().__init__(*args, **kwargs)
+
     def validate_name(self, field):
         """Validate tenant name uniqueness"""
         # Sanitize tenant name before validation
@@ -372,4 +384,7 @@ class TenantForm(FlaskForm):
         from app.models import Tenant
         existing = Tenant.query.filter_by(name=field.data).first()
         if existing:
+            # if we're editing an existing tenant, allow the same name
+            if self._original_id is not None and existing.id == self._original_id:
+                return
             raise ValidationError(_('This tenant name already exists.'))
