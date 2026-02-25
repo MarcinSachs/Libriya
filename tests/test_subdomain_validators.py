@@ -61,3 +61,31 @@ def test_validate_subdomain_field_uniqueness_and_edit_allows_same(app):
     f = DummyField('Exist')  # mixed case -> will be slugified
     validators.validate_subdomain_field(EditForm(existing), f)
     assert f.data == 'exist'
+
+
+def test_validate_subdomain_field_allows_existing_short(app):
+    # somebody manually inserted a two-character subdomain; editing should not
+    # reject it as long as the value isn't changed, but you still can't change
+    # it to another invalid string or a duplicate.
+    existing = Tenant(name='Short', subdomain='ab')
+    from app import db
+    db.session.add(existing)
+    db.session.commit()
+
+    class DummyField:
+        def __init__(self, data):
+            self.data = data
+
+    class EditForm:
+        def __init__(self, obj):
+            self.obj = obj
+
+    # unchanged value passes even though it would normally be too short
+    f = DummyField('ab')
+    validators.validate_subdomain_field(EditForm(existing), f)
+    assert f.data == 'ab'
+
+    # changing it to another invalid value should still be rejected
+    f2 = DummyField('cd')  # still too short
+    with __import__('pytest').raises(ValidationError):
+        validators.validate_subdomain_field(EditForm(existing), f2)

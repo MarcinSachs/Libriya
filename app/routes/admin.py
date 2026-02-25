@@ -152,7 +152,11 @@ def tenant_detail(tenant_id):
 def tenant_edit(tenant_id):
     """Edit tenant"""
     tenant = Tenant.query.get_or_404(tenant_id)
-    form = TenantForm()
+    # pass the existing tenant in so the form can ignore its own name
+    form = TenantForm(obj=tenant)
+
+    # also set the original id explicitly in case the form was not given obj
+    form._original_id = tenant.id
 
     if form.validate_on_submit():
         tenant.name = form.name.data

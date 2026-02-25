@@ -58,6 +58,15 @@ def validate_subdomain_field(form, field):
 
     candidate = slugify_subdomain(field.data or '', max_length=20)
 
+    # if we're editing and the value hasn't changed, just accept it; the
+    # existing subdomain may already violate the current rules (e.g. two
+    # characters) and we don't want to force an update just to pass validation.
+    obj = getattr(form, 'obj', None)
+    if obj is not None and getattr(obj, 'subdomain', None) == candidate:
+        # still normalize the data so that forms display canonical slug
+        field.data = candidate
+        return
+
     if not is_valid_subdomain(candidate):
         raise ValidationError(_(
             'Subdomain can only contain lowercase letters, numbers, and hyphens, 3-20 chars, cannot start/end with hyphen.'
@@ -66,8 +75,6 @@ def validate_subdomain_field(form, field):
     # Check uniqueness
     existing = Tenant.query.filter_by(subdomain=candidate).first()
     if existing:
-        # If editing an existing tenant, allow same value (the form may provide `obj`)
-        obj = getattr(form, 'obj', None)
         if not obj or getattr(obj, 'id', None) != getattr(existing, 'id', None):
             raise ValidationError(_('This subdomain is already taken.'))
 
