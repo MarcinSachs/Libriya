@@ -336,8 +336,98 @@ def test_cover_thumbnail_and_micro_endpoints(app, client):
     resp4 = client.get(f'/api/books/{book2.id}/cover/micro')
     assert resp4.status_code == 404
 
-    # cleanup
+    # cleanup temporary files
     try:
         os.remove(cover_path)
     except Exception:
         pass
+
+
+# --- fixtures for super-admin context (needed for tenant management tests) ---
+
+@pytest.fixture
+def superadmin_user(app):
+    user = User(username='superadmin_test', email='superadmin@example.com', role='superadmin')
+    user.set_password('password')
+    db.session.add(user)
+    db.session.commit()
+    return user
+
+
+@pytest.fixture
+def superadmin_client(client, superadmin_user):
+    # mimic what admin_client does for regular admins so the user is
+    # considered authenticated by flask-login.  Without the extra session
+    # keys, ``current_user.is_authenticated`` is False and protected
+    # endpoints redirect to the login page (302) which is what broke the
+    # tenant-delete tests.
+    with client.session_transaction() as sess:
+        sess['user_id'] = superadmin_user.id
+        sess['_user_id'] = str(superadmin_user.id)
+        sess['_fresh'] = True
+        sess['_id'] = superadmin_user.get_id() if hasattr(superadmin_user, 'get_id') else str(superadmin_user.id)
+    return client
+
+
+# ---------------------------------------------------------------------------
+# Tenant deletion behaviour
+# ---------------------------------------------------------------------------
+
+def test_tenant_deletion_cascades_books_and_removes_cover(superadmin_client, app):
+    """Deleting a tenant should clear all its libraries and books and
+    remove any cover files from disk.
+    """
+    # create tenant, library, and a book with a cover file
+    t = Tenant(name='CascadeTenant', subdomain='ct')
+    db.session.add(t)
+    db.session.commit()
+
+    lib = Library(name='CascadeLib', tenant_id=t.id)
+    db.session.add(lib)
+    db.session.commit()
+
+    # create a dummy cover file on disk
+    folder = app.config['UPLOAD_FOLDER']
+    os.makedirs(folder, exist_ok=True)
+    cover_fn = 'cascade_cover.jpg'
+    cover_path = os.path.join(folder, cover_fn)
+    Image.new('RGB', (10, 10)).save(cover_path)
+    assert os.path.exists(cover_path)
+
+    book = Book(title='CascadeBook', library_id=lib.id, tenant_id=t.id,
+                year=2001, cover=cover_fn)
+    db.session.add(book)
+    db.session.commit()
+
+    # perform tenant deletion
+    resp = superadmin_client.post(f'/admin/tenants/{t.id}/delete', data={'csrf_token': ''}, follow_redirects=True)
+    assert resp.status_code in (200, 302)
+
+    # expire the identity map so subsequent queries hit the database
+    db.session.expire_all()
+
+    # tenant and related records should be gone
+    assert Tenant.query.get(t.id) is None
+    assert Library.query.filter_by(tenant_id=t.id).count() == 0
+    assert Book.query.filter_by(tenant_id=t.id).count() == 0
+
+    # cover file should have been removed
+    assert not os.path.exists(cover_path)
+
+
+def test_tenant_delete_fails_if_users_present(superadmin_client):
+    # tenant with an associated user should not be deletable
+    t = Tenant(name='UserTenant', subdomain='ut')
+    db.session.add(t)
+    db.session.commit()
+    u = User(username='someuser', email='u@example.com', tenant_id=t.id)
+    u.is_email_verified = True
+    u.set_password('password')
+    db.session.add(u)
+    db.session.commit()
+
+    resp = superadmin_client.post(f'/admin/tenants/{t.id}/delete', data={'csrf_token': ''}, follow_redirects=True)
+    assert resp.status_code in (200, 302)
+    # tenant should still exist (session may still have it, but expire to be sure)
+    db.session.expire_all()
+    assert Tenant.query.get(t.id) is not None

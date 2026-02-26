@@ -348,8 +348,8 @@ msgid "Edit Tenant"
 msgstr "Edytuj klienta"
 
 #: app/routes/admin.py:204
-msgid "Cannot delete tenant with existing users or libraries."
-msgstr "Nie można usunąć klienta z istniejącymi użytkownikami lub bibliotekami."
+msgid "Cannot delete tenant with existing users."
+msgstr "Nie można usunąć klienta z istniejącymi użytkownikami."
 
 #: app/routes/admin.py:225
 #, python-format

@@ -1957,6 +1957,9 @@ msgstr ""
 msgid "Unsupported language."
 msgstr ""
 
+msgid "Cannot delete tenant with existing users."
+msgstr ""
+
 #~ msgid "Could not find data for ISBN. Please check the number and try again."
 #~ msgstr ""
 

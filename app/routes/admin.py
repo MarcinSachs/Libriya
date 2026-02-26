@@ -202,13 +202,37 @@ def tenant_delete(tenant_id):
     """Delete tenant"""
     tenant = Tenant.query.get_or_404(tenant_id)
 
-    # Prevent deletion if tenant has users or libraries
-    if tenant.users or tenant.libraries:
+    # Prevent deletion if tenant still has users.  We can safely remove
+    # libraries (and their books) automatically when the tenant is deleted,
+    # but we don't want to orphan any user records.
+    if tenant.users:
         flash(
-            _("Cannot delete tenant with existing users or libraries."),
+            _("Cannot delete tenant with existing users."),
             'danger'
         )
         return redirect(url_for('admin.tenant_detail', tenant_id=tenant_id))
+
+    # Clean up cover files for every book owned by this tenant.  The
+    # cascade relationships added in ``models.py`` will take care of deleting
+    # the database rows for libraries and books, but those cascades don't
+    # trigger the normal ``book_delete`` route, so we remove covers here
+    # beforehand to avoid orphaned files.
+    upload_folder = current_app.config.get('UPLOAD_FOLDER')
+    if upload_folder:
+        for lib in tenant.libraries:
+            for book in lib.books:
+                if book.cover:
+                    cover_path = os.path.join(upload_folder, book.cover)
+                    if os.path.exists(cover_path) and os.path.isfile(cover_path):
+                        try:
+                            os.remove(cover_path)
+                            current_app.logger.info(
+                                f"Deleted cover file during tenant removal: {book.cover}"
+                            )
+                        except OSError as e:
+                            current_app.logger.warning(
+                                f"Could not delete cover file {book.cover}: {e}"
+                            )
 
     name = tenant.name
     subdomain = tenant.subdomain
@@ -721,9 +745,11 @@ def audit_entries_list():
         from io import StringIO
         si = StringIO()
         writer = csv.writer(si)
-        writer.writerow(['id', 'timestamp', 'tenant_id', 'actor_id', 'action', 'object_type', 'object_id', 'details', 'success', 'ip'])
+        writer.writerow(['id', 'timestamp', 'tenant_id', 'actor_id', 'action',
+                        'object_type', 'object_id', 'details', 'success', 'ip'])
         for e in entries:
-            writer.writerow([e.id, e.timestamp.isoformat(), e.tenant_id, e.actor_id, e.action, e.object_type, e.object_id, (e.details or '').replace('\n',' '), e.success, e.ip])
+            writer.writerow([e.id, e.timestamp.isoformat(), e.tenant_id, e.actor_id, e.action,
+                            e.object_type, e.object_id, (e.details or '').replace('\n', ' '), e.success, e.ip])
         output = si.getvalue()
         return current_app.response_class(output, mimetype='text/csv', headers={'Content-Disposition': 'attachment; filename=audit_entries.csv'})
 

@@ -1,3 +1,6 @@
+from sqlalchemy import event
+import os
+from flask import current_app
 from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
@@ -36,7 +39,13 @@ class Tenant(db.Model):
     max_libraries = db.Column(db.Integer, nullable=True, default=1)  # Default: 1 library
     max_books = db.Column(db.Integer, nullable=True, default=10)     # Default: 10 books
 
-    libraries = db.relationship('Library', backref='tenant', lazy=True)
+    # Ensure that when a tenant is removed, its libraries (and by extension
+    # their books) are deleted as well.  Cascade also allows orphaned
+    # records to be cleared when a `Tenant` object is removed from the
+    # session.  We handle the actual book cover file cleanup via a SQLAlchemy
+    # event listener further down.
+    libraries = db.relationship('Library', backref='tenant', lazy=True,
+                                cascade='all, delete-orphan')
     users = db.relationship('User', backref='tenant', lazy=True)
 
     def has_unlimited_libraries(self):
@@ -125,7 +134,11 @@ class Library(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False, index=True)
     tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
-    books = db.relationship('Book', back_populates='library', lazy=True)
+    # When a library is deleted, remove all associated books from the
+    # database too.  Each `Book` has its own event listener to delete the
+    # cover file from disk.
+    books = db.relationship('Book', back_populates='library', lazy=True,
+                            cascade='all, delete-orphan')
     users = db.relationship('User', secondary=user_libraries, lazy='subquery',
                             back_populates='libraries')
     loan_overdue_days = db.Column(db.Integer, nullable=False, default=14)
@@ -173,6 +186,36 @@ class Book(db.Model):
         author_names = ", ".join([author.name for author in self.authors])
         genre_names = ", ".join([genre.name for genre in self.genres])
         return f"{self.title} by {author_names} ({self.year}) - Genres: {genre_names}"
+
+
+# ---------------------------------------------------------------------------
+# Event listeners / helpers
+# ---------------------------------------------------------------------------
+
+
+@event.listens_for(Book, 'after_delete')
+def _delete_cover_file(mapper, connection, target):
+    """Remove the cover image file when a Book is deleted.
+
+    This listener handles cases where books are removed indirectly (for
+    example, via cascading deletions when a tenant or library is deleted).
+    The normal ``book_delete`` route already cleans up covers manually,
+    but cascade operations bypass that handler so we need this listener.
+    """
+    if not target.cover:
+        return
+
+    try:
+        upload_folder = current_app.config.get('UPLOAD_FOLDER')
+        if not upload_folder:
+            return
+        cover_path = os.path.join(upload_folder, target.cover)
+        if os.path.exists(cover_path) and os.path.isfile(cover_path):
+            os.remove(cover_path)
+            current_app.logger.info(f"Deleted cover file via event: {target.cover}")
+    except Exception as e:
+        # Do not raise; just log
+        current_app.logger.warning(f"Failed to remove cover file {target.cover}: {e}")
 
 
 class Location(db.Model):
