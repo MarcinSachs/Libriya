@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-02-22 12:35+0100\n"
-"PO-Revision-Date: 2026-02-22 13:44\n"
+"PO-Revision-Date: 2026-02-26 19:53\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -348,8 +348,8 @@ msgid "Edit Tenant"
 msgstr "Edytuj klienta"
 
 #: app/routes/admin.py:204
-msgid "Cannot delete tenant with existing users or libraries."
-msgstr "Nie można usunąć klienta z istniejącymi użytkownikami lub bibliotekami."
+msgid "Cannot delete tenant with existing users."
+msgstr "Nie można usunąć klienta z istniejącymi użytkownikami."
 
 #: app/routes/admin.py:225
 #, python-format
