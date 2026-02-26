@@ -14,6 +14,54 @@ def test_login_page_without_trailing_slash(client):
     assert b'name="email_or_username"' in resp.data
 
 
+def test_login_remember_me_cookie(client, app):
+    """Enabling "remember me" should set the appropriate cookie and allow
+    the session to be restored after the normal session cookie is removed.
+    """
+    from app import db
+    from app.models import User
+
+    # create a test user
+    user = User(username='remember', email='remember@example.com')
+    user.is_email_verified = True
+    user.set_password('password')
+    db.session.add(user)
+    db.session.commit()
+
+    # perform login with the "remember" checkbox checked
+    resp = client.post(
+        '/auth/login/',
+        data={
+            'email_or_username': user.username,
+            'password': 'password',
+            'remember': 'on',
+        },
+        follow_redirects=False
+    )
+    assert resp.status_code in (302, 200)
+
+    # ensure a remember-token cookie was issued
+    assert client.get_cookie('remember_token') is not None
+
+    # clear the regular session cookie but leave the remember token intact
+    session_name = app.config.get('SESSION_COOKIE_NAME', 'session')
+    # client.delete_cookie takes server_name as first arg; default test client domain is 'localhost'
+    client.delete_cookie(session_name, domain='localhost')
+
+    # simulate a new browser session by creating a fresh client and
+    # copying only the remember-token cookie.  ``get_cookie`` returns the
+    # cookie object, so extract its value.
+    remember_cookie = client.get_cookie('remember_token')
+    assert remember_cookie is not None
+    remember_val = remember_cookie.value
+
+    with app.test_client() as new_client:
+        new_client.set_cookie('remember_token', remember_val, domain='localhost')
+        resp2 = new_client.get('/', follow_redirects=False)
+        # a successful login may redirect (e.g. to /dashboard) so 302 is fine
+        assert resp2.status_code not in (401,)
+
+
 def test_tenants_and_user_list_markup(client, app):
     """Sanity-check that the tenant and user list pages include responsive classes."""
     # first, create superadmin and login

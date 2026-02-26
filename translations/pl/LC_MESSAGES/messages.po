@@ -1301,6 +1301,10 @@ msgstr "Wpisz e-mail lub nazwę użytkownika"
 msgid "Enter your password"
 msgstr "Wprowadź swoje hasło"
 
+#: app/templates/auth/login.html:??
+msgid "Remember me"
+msgstr "Zapamiętaj mnie"
+
 #: app/templates/auth/login.html:53 app/templates/base/layout.html:136
 msgid "Log In"
 msgstr "Zaloguj się"

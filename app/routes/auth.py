@@ -73,34 +73,38 @@ def login_post():
         'username') or request.form.get('email') or ''
     password = request.form.get('password')
 
-    # KROK 1: Dedukuj tenant z subdomenrinty
+    # STEP 1: tenant from subdomain
     tenant_from_url = get_tenant_from_request()
 
     user = None
     tenant = None
 
-    # KROK 2: Szukaj użytkownika
+    # remember-me flag from form (checkbox).  Flask‑login will accept any truthy
+    # value (e.g. 'on').
+    remember = bool(request.form.get('remember'))
+
+    # STEP 2: Search for user
     if '@' in email_or_username:
-        # Szukaj po email
+        # search by email
         if tenant_from_url:
-            # Ze subdomeny - szukaj w konkretnym tenanie
+            # with subdomain - search in specific tenant
             user = User.query.filter_by(
                 email=email_or_username,
                 tenant_id=tenant_from_url.id
             ).first()
             tenant = tenant_from_url
         else:
-            # Bez subdomeny - szukaj wszędzie
+            # Without subdomain - search everywhere
             user = User.query.filter_by(email=email_or_username).first()
 
             if user:
-                # Sprawdź czy email nie istnieje w wielu tenantach
+                # Check if email exists in multiple tenants
                 users_count = User.query.filter_by(
                     email=email_or_username
                 ).count()
 
                 if users_count > 1:
-                    # Email w wielu tenantach - błąd!
+                    # Email exists in multiple tenants!
                     flash(
                         _("This email exists in multiple libraries. "
                           "Please log in from your library's page."),
@@ -110,20 +114,20 @@ def login_post():
 
                 tenant = user.tenant
     else:
-        # Szukaj po username
+        # Search by username
         if tenant_from_url:
-            # Ze subdomeny - szukaj w konkretnym tenanie
+            # With subdomain
             user = User.query.filter_by(
                 username=email_or_username,
                 tenant_id=tenant_from_url.id
             ).first()
             tenant = tenant_from_url
         else:
-            # Bez subdomeny - szukaj wszędzie
+            # without subdomain - search everywhere
             user = User.query.filter_by(username=email_or_username).first()
 
             if user:
-                # Sprawdź czy username nie istnieje w wielu tenantach
+                # Check if username exists in multiple tenants
                 users_count = User.query.filter_by(
                     username=email_or_username
                 ).count()
@@ -138,7 +142,7 @@ def login_post():
 
                 tenant = user.tenant
 
-    # KROK 3: Walidacja hasła
+    # STEP 3 : Check password
     if user:
         password_ok = user.check_password(password)
         if password_ok:
@@ -193,7 +197,7 @@ def login_post():
                 return redirect(url_for('auth.login'))
 
             # User is verified - proceed with normal login
-            login_user(user)
+            login_user(user, remember=remember)
 
             try:
                 log_action('USER_LOGIN', f'User {user.username} logged in',
@@ -206,7 +210,7 @@ def login_post():
                 flash(AUTH_LOGIN_SUCCESS, 'success')
                 return redirect(url_for('admin.tenants_list'))
 
-            # Tenant-admin/user -> zawsze redirect do landing page
+            # Tenant-admin/user -> always to landing page
             flash(AUTH_LOGIN_SUCCESS, 'success')
             return redirect(url_for('main.landing'))
         else:
@@ -291,9 +295,9 @@ def logout():
 @bp.route('/register-choice', methods=['GET'])
 def register_choice():
     """
-    Strona wyboru typu rejestracji:
-    - Nowy klient
-    - Dołączenie do istniejącej biblioteki poprzez kod zaproszenia
+    Page to choose between:
+    - New organization
+    - Join to existing organization
     """
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))

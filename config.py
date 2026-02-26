@@ -2,6 +2,7 @@ import os
 from pydantic_settings import BaseSettings
 from pydantic import model_validator, field_validator
 from typing import Any, Optional
+from datetime import timedelta
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DEFAULT_DB_URI = f'sqlite:///{os.path.join(BASE_DIR, "libriya.db")}'
@@ -131,6 +132,10 @@ class Config(BaseSettings):
     SESSION_COOKIE_SAMESITE: str = 'Lax'  # Prevent CSRF attacks
     SESSION_COOKIE_DOMAIN: Optional[str] = None  # Auto-configured by middleware for subdomains
     PERMANENT_SESSION_LIFETIME: int = 3600  # 1 hour session timeout
+
+    # Remember‑me token lifetime (seconds).  Flask‑Login will convert to a
+    # ``timedelta`` during app initialization.  Defaults to one week.
+    REMEMBER_COOKIE_DURATION: int = 7 * 24 * 3600  # 7 days in seconds
 
     # Have I Been Pwned (HIBP) / pwned-passwords settings
     # Disabled by default for safety; config controls enabling only in production.

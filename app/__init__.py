@@ -6,6 +6,7 @@ from flask_limiter import Limiter
 from flask import session, request, render_template, flash, redirect, url_for, g
 from flask_babel import _, Babel, lazy_gettext as _l
 from flask_login import LoginManager
+from datetime import timedelta
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
@@ -37,6 +38,12 @@ def create_app(config_class=Config):
     # Initialize Pydantic Settings instance and update Flask config
     config = config_class()
     app.config.update(config.model_dump())
+
+    # flask-login expects REMEMBER_COOKIE_DURATION to be a timedelta object.
+    # our settings store it as an integer number of seconds so convert now.
+    rcd = app.config.get('REMEMBER_COOKIE_DURATION')
+    if isinstance(rcd, int):
+        app.config['REMEMBER_COOKIE_DURATION'] = timedelta(seconds=rcd)
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -281,35 +288,35 @@ def create_app(config_class=Config):
     def auto_configure_session_cookie_domain():
         """
         Auto-configure SESSION_COOKIE_DOMAIN when accessing via subdomain.
-        
+
         For localhost/direct IP access: keep SESSION_COOKIE_DOMAIN = None (host-only cookie)
         For subdomain access (.example.com or .libriya.local): set SESSION_COOKIE_DOMAIN based on parent domain
-        
+
         The key insight: if host_without_port IS an IP (127.0.0.1), we're accessing directly via IP.
         If host_without_port IS localhost, we're accessing via localhost.
         Otherwise, it's a domain name and we should respect the subdomain structure.
-        
+
         request.remote_addr shouldn't block domain cookies for real subdomains!
         """
         from flask import request
         import re
-        
+
         host_without_port = request.host.split(':')[0]
         ip_pattern = r'^(\d+\.){3}\d+$'
-        
+
         # Case 1: Host header itself is an IP address (e.g., 127.0.0.1)
         if re.match(ip_pattern, host_without_port):
             # Direct IP access - use host-only cookie
             if app.config.get('SESSION_COOKIE_DOMAIN') is not None:
                 app.config['SESSION_COOKIE_DOMAIN'] = None
             return
-        
+
         # Case 2: localhost or www
         if host_without_port in ('localhost',) or host_without_port.startswith('localhost:'):
             if app.config.get('SESSION_COOKIE_DOMAIN') is not None:
                 app.config['SESSION_COOKIE_DOMAIN'] = None
             return
-        
+
         # Case 3: .local domain accessed via IP (e.g., my.libriya.local from 127.0.0.1)
         # This is local development - keep host-only cookie
         actual_client_ip = request.remote_addr
@@ -317,7 +324,7 @@ def create_app(config_class=Config):
             if app.config.get('SESSION_COOKIE_DOMAIN') is not None:
                 app.config['SESSION_COOKIE_DOMAIN'] = None
             return
-        
+
         # Case 4: Real subdomain (e.g., testtenant.example.com or tenant.example.com)
         # Set SESSION_COOKIE_DOMAIN to parent domain regardless of remote_addr
         host_parts = host_without_port.split('.')
@@ -354,9 +361,8 @@ def create_app(config_class=Config):
 
         return response
 
-
-
     # Global PWA context (applies to all blueprints/templates)
+
     @app.context_processor
     def inject_global_pwa_settings():
         return {

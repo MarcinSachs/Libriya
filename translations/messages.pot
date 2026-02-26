@@ -1323,6 +1323,10 @@ msgstr ""
 msgid "Enter your password"
 msgstr ""
 
+#: app/templates/auth/login.html:??
+msgid "Remember me"
+msgstr ""
+
 #: app/templates/auth/login.html:53 app/templates/base/layout.html:136
 msgid "Log In"
 msgstr ""
