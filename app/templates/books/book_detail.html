@@ -78,7 +78,7 @@
             <p><strong>{{ _('Description') }}:</strong></p>
             <p class="text-gray-700 leading-relaxed">{{ book.description|linebreaksbr }}</p>
             {% endif %}
-            <p><strong>{{ _('Status') }}:</strong>
+            <p><strong>{{ _('Library') }}:</strong> {{ book.library }}
                 {% if book.status == 'available' %}
                     <span class="inline-block bg-green-200 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">{{ _('Available') }}</span>
                 {% elif book.status == 'reserved' %}
@@ -89,7 +89,7 @@
                     <span class="inline-block bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-xs font-semibold">{{ book.status.replace('_', ' ').title() }}</span>
                 {% endif %}
             </p>
-            
+
             {% if book.location %}
             <p><strong>{{ _('Location') }}:</strong> {{ book.location }}</p>
             <div class="mt-2">
