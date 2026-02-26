@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-02-22 12:35+0100\n"
-"PO-Revision-Date: 2026-02-26 19:53\n"
+"PO-Revision-Date: 2026-02-26 20:57\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -1300,6 +1300,10 @@ msgstr "Wpisz e-mail lub nazwę użytkownika"
 #: app/templates/auth/login.html:48
 msgid "Enter your password"
 msgstr "Wprowadź swoje hasło"
+
+#: app/templates/auth/login.html:??
+msgid "Remember me"
+msgstr "Zapamiętaj mnie"
 
 #: app/templates/auth/login.html:53 app/templates/base/layout.html:136
 msgid "Log In"
