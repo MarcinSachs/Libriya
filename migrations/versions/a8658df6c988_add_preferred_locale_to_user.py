@@ -23,8 +23,10 @@ def upgrade():
     op.execute('DROP TABLE IF EXISTS _alembic_tmp_user')
 
     # skip if column already present (previous partial run)
+    # use SQLAlchemy inspector which works across databases
     conn = op.get_bind()
-    existing = [r[1] for r in conn.execute(text("PRAGMA table_info('user')"))]
+    insp = sa.inspect(conn)
+    existing = [c['name'] for c in insp.get_columns('user')]
     if 'preferred_locale' in existing:
         return
 
@@ -37,7 +39,12 @@ def upgrade():
 
     # now make it non-nullable and drop the server default
     with op.batch_alter_table('user', schema=None) as batch_op:
-        batch_op.alter_column('preferred_locale', nullable=False, server_default=None)
+        batch_op.alter_column(
+            'preferred_locale',
+            nullable=False,
+            server_default=None,
+            existing_type=sa.String(length=5),
+        )
 
     # ### end Alembic commands ###
 
