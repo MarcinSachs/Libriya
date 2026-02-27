@@ -298,6 +298,7 @@ class User(UserMixin, db.Model):
     loans = db.relationship('Loan', back_populates='user', lazy=True)
     role = db.Column(db.String(20), nullable=False, default='user')  # 'user', 'manager', 'admin'
     tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=True)  # NULL for super-admin
+    preferred_locale = db.Column(db.String(5), nullable=False, default='en')   # 'en', 'pl'
 
     @property
     def is_admin(self):

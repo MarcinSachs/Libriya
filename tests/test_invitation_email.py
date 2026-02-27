@@ -20,6 +20,8 @@ def test_generate_code_with_email_sends_mail(client, app, monkeypatch):
     admin = User(username='mailadmin', email='mail@ex.com', role='admin', tenant_id=t.id)
     admin.is_email_verified = True
     admin.set_password('password')
+    # user default language is English; for this test use Polish
+    admin.preferred_locale = 'pl'
     db.session.add(admin)
     db.session.commit()
 
@@ -55,6 +57,8 @@ def test_generate_code_with_email_sends_mail(client, app, monkeypatch):
     assert sent['to'] == 'recipient@example.com'
     assert code.code in sent['body']
     assert lib.name in sent['body']  # library name should appear in message
+    # subject should be translated to Polish because admin.preferred_locale was pl
+    assert 'Zaproszenie' in sent['subject']
 
 
 def test_generate_code_invalid_email_shows_error(client, app):

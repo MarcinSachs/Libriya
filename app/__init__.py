@@ -66,6 +66,14 @@ def create_app(config_class=Config):
     cache.init_app(app)
 
     def get_locale():
+        # 0. If user is logged in, respect their stored preference first
+        from flask_login import current_user
+        if current_user.is_authenticated:
+            # current_user.preferred_locale guaranteed to be in config by migration/default
+            lang = getattr(current_user, 'preferred_locale', None)
+            if lang and lang in app.config['LANGUAGES']:
+                return lang
+
         # 1. Check for language in cookie first
         lang = request.cookies.get("language")
         if lang and lang in app.config["LANGUAGES"]:

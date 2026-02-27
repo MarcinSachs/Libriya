@@ -148,6 +148,9 @@ def test_libraryform_and_user_settings_file_validation(app):
         # so ensure the FileField validators are the expected objects exist on the form
         usf = UserSettingsForm()
         assert hasattr(usf, 'picture')
+        assert hasattr(usf, 'language')
+        # there should be at least one language choice (en/pl)
+        assert usf.language.choices
 
 
 def test_user_settings_picture_file_validation(app):

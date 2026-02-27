@@ -112,7 +112,7 @@ def request_reservation(book_id, user_id):
         message = _("%(username)s has requested to reserve \"%(title)s\".",
                     username=user.username, title=book.title)
         create_notification(admins, current_user, message,
-                            'reservation_request', loan=new_loan)
+                            'reservation_request', loan=new_loan, send_email=True)
 
         # Audit: reservation requested
         try:
@@ -202,7 +202,7 @@ def approve_loan(loan_id):
             message = _(
                 "Your reservation for \"%(title)s\" has been approved!", title=loan.book.title)
             create_notification(loan.user, current_user,
-                                message, 'loan_approved', loan=loan)
+                                message, 'loan_approved', loan=loan, send_email=True)
 
             flash(LOANS_APPROVED % {'title': loan.book.title, 'username': loan.user.username}, 'success')
         else:
@@ -236,7 +236,7 @@ def cancel_loan(loan_id):
         message = _("Your reservation for \"%(title)s\" has been cancelled by an administrator.",
                     title=loan.book.title)
         create_notification(loan.user, current_user,
-                            message, 'loan_cancelled', loan=loan)
+                            message, 'loan_cancelled', loan=loan, send_email=True)
 
         flash(LOANS_RESERVATION_CANCELLED % {'title': loan.book.title, 'username': loan.user.username}, 'info')
     else:
@@ -260,7 +260,7 @@ def return_loan(loan_id):
         message = _("The book \"%(title)s\" that you loaned has been marked as returned.",
                     title=loan.book.title)
         create_notification(loan.user, current_user,
-                            message, 'loan_returned', loan=loan)
+                            message, 'loan_returned', loan=loan, send_email=True)
 
         try:
             log_action('LOAN_RETURNED_ADMIN', f'Loan {loan.id} returned by admin {current_user.username}', subject=loan, additional_info={
@@ -317,7 +317,7 @@ def loan_add():
             message = _("A loan for \"%(title)s\" has been directly issued to you by an administrator.",
                         title=book.title)
             create_notification(user, current_user, message,
-                                'admin_issued_loan', loan=new_loan)
+                                'admin_issued_loan', loan=new_loan, send_email=True)
 
             flash(LOANS_ADDED_SUCCESS, "success")
             return redirect(url_for("loans.loans"))
@@ -355,7 +355,7 @@ def user_cancel_reservation(loan_id):
         message = _("%(username)s has cancelled their reservation for \"%(title)s\".",
                     username=current_user.username, title=loan.book.title)
         create_notification(admins, current_user, message,
-                            'user_cancelled_reservation', loan=loan)
+                            'user_cancelled_reservation', loan=loan, send_email=True)
 
         flash(LOANS_USER_RESERVATION_CANCELLED % {'title': loan.book.title}, 'success')
     else:
@@ -376,7 +376,7 @@ def send_overdue_reminder(loan_id):
         message = _("Reminder: Your loan for \"%(title)s\" is overdue. Please return it as soon as possible.",
                     title=loan.book.title)
         create_notification(loan.user, current_user, message,
-                            'overdue_reminder', loan=loan)
+                            'overdue_reminder', loan=loan, send_email=True)
         flash(_("Overdue reminder sent to %(username)s for book \"%(title)s\".",
                 username=loan.user.username, title=loan.book.title), "success")
     else:

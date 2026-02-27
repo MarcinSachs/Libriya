@@ -11,6 +11,14 @@ from app.models import AdminSuperAdminConversation, AdminSuperAdminMessage, Tena
 bp = Blueprint("messaging", __name__, url_prefix="/messaging")
 
 
+# ensure certain dynamically constructed messages are included in POT
+# Babel sometimes misses strings that are built or used deep inside
+# functions/try blocks, so include them here as no-op calls.
+_('New message from %(admin)s about "%(subject)s"')
+_('New reply from %(admin)s in "%(subject)s"')
+_('Super-admin replied to "%(subject)s"')
+
+
 # ============================================================
 # TENANT ADMIN ROUTES
 # ============================================================
@@ -75,16 +83,20 @@ def admin_support_new():
             from app.utils.notifications import create_notification
             super_admins = User.query.filter_by(role='superadmin').all()
             if super_admins:
-                message_text = _('New message from %(admin)s about "%(subject)s"',
-                                 admin=current_user.username, subject=subject)
+                # Format after translation to avoid confusing the extractor
+                message_text = _('New message from %(admin)s about "%(subject)s"') % {
+                    'admin': current_user.username,
+                    'subject': subject,
+                }
                 create_notification(
                     recipients=super_admins,
                     sender=current_user,
                     message=message_text,
-                    notification_type='admin_support_message'
+                    notification_type='admin_support_message',
+                    send_email=True
                 )
         except Exception as e:
-            current_app.logger.warning(f'Failed to create notification for super-admins: {e}')
+            current_app.logger.warning(f'Failed to notify super-admins: {e}')
             pass
 
         # Audit
@@ -154,7 +166,8 @@ def admin_support_conversation(conversation_id):
                     recipients=super_admins,
                     sender=current_user,
                     message=message_notif,
-                    notification_type='admin_support_message'
+                    notification_type='admin_support_message',
+                    send_email=True
                 )
         except Exception as e:
             current_app.logger.warning(f'Failed to create notification for super-admins: {e}')
@@ -242,12 +255,14 @@ def super_admin_conversation(conversation_id):
         # Notify the admin who initiated the conversation
         try:
             from app.utils.notifications import create_notification
-            message_notif = _('Super-admin replied to "%(subject)s"', subject=conversation.subject)
+            # translate first, format afterwards so extractor sees the literal
+            message_notif = _('Super-admin replied to "%(subject)s"') % {'subject': conversation.subject}
             create_notification(
                 recipients=[conversation.admin],
                 sender=current_user,
                 message=message_notif,
-                notification_type='admin_support_message'
+                notification_type='admin_support_message',
+                send_email=True
             )
         except Exception as e:
             current_app.logger.warning(f'Failed to create notification for admin: {e}')

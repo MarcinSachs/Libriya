@@ -108,3 +108,30 @@ def test_non_owner_cannot_mark_read_unless_admin(app, client):
     resp2 = client.post(f'/notifications/mark_read/{notif.id}', follow_redirects=True)
     assert resp2.status_code == 200
     assert Notification.query.get(notif.id).is_read
+
+
+def test_create_notification_sends_email(app, monkeypatch):
+    u = User(username='emailuser', email='eu@example.com')
+    u.is_email_verified = True
+    u.set_password('password')
+    # set a non-default locale to exercise force_locale path (optional)
+    u.preferred_locale = 'pl'
+    sender = User(username='sender2', email='s2@example.com')
+    sender.set_password('password')
+    db.session.add_all([u, sender])
+    db.session.commit()
+
+    sent = {}
+    def fake_send(to, subj, body):
+        sent['to'] = to
+        sent['subj'] = subj
+        sent['body'] = body
+        return True
+
+    monkeypatch.setattr('app.utils.mailer.send_generic_email', fake_send)
+    result = create_notification(u, sender, 'Hello there', 'info', send_email=True, email_subject='Custom subj')
+    # function returns list of addresses that were emailed
+    assert result == [u.email]
+    assert sent['to'] == u.email
+    assert sent['subj'] == 'Custom subj'
+    assert 'Hello there' in sent['body']

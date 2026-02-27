@@ -161,8 +161,17 @@ class UserSettingsForm(FlaskForm):
         _('Confirm New Password'),
         validators=[EqualTo('password', message=_('Passwords must match.'))]
     )
+    # new field for user language preference
+    language = SelectField(_('Language'), choices=[], validators=[Optional()])
     submit = SubmitField(_('Submit'), render_kw={
                          "class": "btn btn-primary"})
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # populate language choices from app configuration
+        from flask import current_app
+        langs = current_app.config.get('LANGUAGES', [])
+        self.language.choices = [(l, l.upper()) for l in langs]
 
 
 class LibraryForm(FlaskForm):

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, make_response, current_app
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_babel import _
 
@@ -205,14 +205,26 @@ def login_post():
             except Exception:
                 pass
 
+            # sync language cookie -> db and ensure cookie is set to stored preference
+            lang_cookie = request.cookies.get('language')
+            if lang_cookie and lang_cookie in current_app.config['LANGUAGES']:
+                if user.preferred_locale != lang_cookie:
+                    user.preferred_locale = lang_cookie
+                    db.session.commit()
+            # always make response so we can set the cookie to whatever is in db
+            resp = make_response(
+                redirect(url_for('admin.tenants_list') if user.is_super_admin else url_for('main.landing'))
+            )
+            resp.set_cookie('language', user.preferred_locale, max_age=60*60*24*365*2, path='/')
+
             # Super-admin (role='superadmin') -> tenants management panel
             if user.is_super_admin:
                 flash(AUTH_LOGIN_SUCCESS, 'success')
-                return redirect(url_for('admin.tenants_list'))
+                return resp
 
-            # Tenant-admin/user -> always to landing page
+            # Tenant-admin/user -> zawsze redirect do landing page
             flash(AUTH_LOGIN_SUCCESS, 'success')
-            return redirect(url_for('main.landing'))
+            return resp
         else:
             flash(_('Invalid password. Please check and try again.'), 'danger')
             try:
@@ -350,6 +362,10 @@ def register():
                     tenant_id=new_tenant.id,
                     role='admin'  # Owner of this tenant
                 )
+                # set locale from cookie if available
+                lang_cookie = request.cookies.get('language')
+                if lang_cookie and lang_cookie in current_app.config['LANGUAGES']:
+                    user.preferred_locale = lang_cookie
                 user.set_password(form.password.data)
                 # Auto-fill first_name and last_name from username and tenant name
                 user.first_name = form.username.data.capitalize()
@@ -402,6 +418,10 @@ def register():
                     libraries=[code.library],
                     role='user'
                 )
+                # set locale from cookie if available
+                lang_cookie = request.cookies.get('language')
+                if lang_cookie and lang_cookie in current_app.config['LANGUAGES']:
+                    user.preferred_locale = lang_cookie
                 user.set_password(form.password.data)
                 user.first_name = form.first_name.data
                 user.last_name = form.last_name.data

@@ -371,6 +371,14 @@ def set_language(lang):
         message = INFO_LANGUAGE_CHANGED_PL if lang == 'pl' else INFO_LANGUAGE_CHANGED_EN
         flash(message, 'info')
 
+        # if user is logged in, save preference to DB as well
+        if current_user.is_authenticated:
+            try:
+                current_user.preferred_locale = lang
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+
         # Create a response object from the redirect
         response = make_response(
             redirect(request.referrer or url_for('main.home')))

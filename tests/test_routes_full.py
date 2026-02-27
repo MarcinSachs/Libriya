@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from app import db
-from app.models import Tenant, Library, User, Book, Loan, Notification
+from app.models import Tenant, Library, User, Book, Loan, Notification, AdminSuperAdminConversation, AdminSuperAdminMessage
 
 
 def login(client, username, password='password'):
@@ -154,7 +154,7 @@ def test_legacy_login_and_register_redirects(client):
     assert '/auth/register-choice' in resp4.headers['Location']
 
 
-def test_reservation_and_admin_approval_flow(app, client):
+def test_reservation_and_admin_approval_flow(app, client, monkeypatch):
     # Setup tenant, library, admin and user and a book
     t = Tenant(name='FlowTenant', subdomain='ft')
     db.session.add(t)
@@ -181,8 +181,15 @@ def test_reservation_and_admin_approval_flow(app, client):
 
     # User requests reservation
     login(client, user.email)
+    sent = []
+    def fake_send(to_address, subject, body):
+        sent.append((to_address, subject, body))
+        return True
+    monkeypatch.setattr('app.utils.mailer.send_generic_email', fake_send)
     res = client.get(f'/request_reservation/{book.id}/{user.id}', follow_redirects=True)
     assert res.status_code == 200
+    # the admin should have received an email about the request
+    assert any(admin.email == to for to, _, _ in sent)
 
     # Book should be reserved and pending loan created
     b = Book.query.get(book.id)
@@ -191,9 +198,12 @@ def test_reservation_and_admin_approval_flow(app, client):
     assert loan is not None and loan.status == 'pending'
 
     # Admin approves the loan
+    sent.clear()
     login(client, admin.email)
     rv = client.post(f'/loans/approve/{loan.id}', data={'csrf_token': ''}, follow_redirects=True)
     assert rv.status_code == 200
+    # approval email should have been sent to the user
+    assert any(user.email == to for to, _, _ in sent)
 
     loan_db = Loan.query.get(loan.id)
     assert loan_db.status == 'active'
@@ -318,3 +328,108 @@ def test_admin_send_overdue_reminder(app, client):
     # notification should be created for the user
     n = Notification.query.filter_by(recipient_id=user.id, type='overdue_reminder').first()
     assert n is not None
+
+
+def test_login_syncs_language_cookie_and_db(client, app):
+    """If the browser has a language cookie the login process should copy it
+    to the user's preferred_locale and then reset the cookie to that value.
+    """
+    from app.models import User
+
+    user = User(username='languser', email='lang@example.com')
+    user.is_email_verified = True
+    user.set_password('password')
+    db.session.add(user)
+    db.session.commit()
+
+    # simulate user having chosen Polish before logging in
+    # set_cookie takes name and value; domain defaults to localhost
+    client.set_cookie('language', 'pl')
+    resp = login(client, 'languser', 'password')
+    assert resp.status_code == 200
+    updated = User.query.get(user.id)
+    assert updated.preferred_locale == 'pl'
+    assert client.get_cookie('language').value == 'pl'
+
+
+def test_set_language_persists_for_logged_in_user(client, app):
+    """Changing language via /set_language should update the database for
+authenticated users."""
+    from app.models import User
+
+    user = User(username='setlang', email='setlang@example.com')
+    user.is_email_verified = True
+    user.set_password('password')
+    user.preferred_locale = 'en'
+    db.session.add(user)
+    db.session.commit()
+
+    login(client, 'setlang', 'password')
+    resp = client.get('/set_language/pl', follow_redirects=True)
+    assert resp.status_code == 200
+    updated = User.query.get(user.id)
+    assert updated.preferred_locale == 'pl'
+    assert client.get_cookie('language').value == 'pl'
+
+
+def test_admin_support_sends_email_to_superadmins(app, client, monkeypatch):
+    # Set up one tenant admin and one superadmin
+    t = Tenant(name='MSGTenant', subdomain='msgt')
+    db.session.add(t)
+    db.session.commit()
+    admin = User(username='msgadmin', email='msgadmin@x.com', role='admin', tenant_id=t.id)
+    admin.is_email_verified = True
+    admin.set_password('password')
+    supera = User(username='msgsuper', email='msgsuper@x.com', role='superadmin')
+    supera.is_email_verified = True
+    supera.set_password('password')
+    db.session.add_all([admin, supera])
+    db.session.commit()
+
+    sent = []
+    def fake_send(to_address, subject, body):
+        sent.append((to_address, subject, body))
+        return True
+    monkeypatch.setattr('app.utils.mailer.send_generic_email', fake_send)
+
+    # login as admin and post a new support message
+    login(client, admin.email)
+    resp = client.post('/messaging/admin-support/new', data={'subject': 'Help', 'message': 'please'}, follow_redirects=True)
+    assert resp.status_code == 200
+    # superadmin should have received exactly one email
+    assert any(supera.email == to for to, _, _ in sent)
+
+
+def test_superadmin_reply_sends_email_to_admin(app, client, monkeypatch):
+    # create tenant admin, superadmin and a pre-existing conversation
+    t = Tenant(name='MSGTenant2', subdomain='msgt2')
+    db.session.add(t)
+    db.session.commit()
+    admin = User(username='msgadmin2', email='msgadmin2@x.com', role='admin', tenant_id=t.id)
+    admin.is_email_verified = True
+    admin.set_password('password')
+    supera = User(username='msgsuper2', email='msgsuper2@x.com', role='superadmin')
+    supera.is_email_verified = True
+    supera.set_password('password')
+    db.session.add_all([admin, supera])
+    db.session.commit()
+
+    # manually create conversation and one initial message
+    conv = AdminSuperAdminConversation(tenant_id=t.id, admin_id=admin.id, subject='Subj')
+    db.session.add(conv)
+    db.session.flush()
+    msg = AdminSuperAdminMessage(conversation_id=conv.id, sender_id=admin.id, message='hello')
+    db.session.add(msg)
+    db.session.commit()
+
+    sent = []
+    def fake_send(to_address, subject, body):
+        sent.append((to_address, subject, body))
+        return True
+    monkeypatch.setattr('app.utils.mailer.send_generic_email', fake_send)
+
+    # login as superadmin and reply
+    login(client, supera.email)
+    resp = client.post(f'/messaging/admin/messages/{conv.id}', data={'message': 'reply'}, follow_redirects=True)
+    assert resp.status_code == 200
+    assert any(admin.email == to for to, _, _ in sent)

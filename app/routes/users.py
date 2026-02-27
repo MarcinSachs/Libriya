@@ -1,6 +1,6 @@
 import os
 import secrets
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, make_response
 from flask_login import login_required, current_user
 from flask_babel import _
 
@@ -80,16 +80,11 @@ def reply_to_message(message_id):
     message.replied_at = datetime.utcnow()
     db.session.commit()
 
-    # Create notification for user who sent the message
-    notification = Notification(
-        recipient_id=message.user_id,
-        sender_id=current_user.id,
-        contact_message_id=message.id,
-        message=_('You received a reply to your contact message'),
-        type='contact_reply'
-    )
-    db.session.add(notification)
-    db.session.commit()
+    # Create notification (and email) for user who sent the message
+    from app.utils.notifications import create_notification
+    create_notification(message.user, current_user,
+                        _('You received a reply to your contact message'),
+                        'contact_reply', send_email=True)
 
     flash(_('Reply sent'), "success")
     return redirect(url_for('users.contact_messages'))
@@ -385,6 +380,9 @@ def user_settings():
             user.image_file = picture_filename
 
         user.email = form.email.data
+        # update language preference
+        if hasattr(form, 'language') and form.language.data:
+            user.preferred_locale = form.language.data
         if form.password.data:
             user.set_password(form.password.data)
             # Log password change
@@ -392,7 +390,11 @@ def user_settings():
             log_password_changed(user.id, user.username)
         db.session.commit()
         flash(USERS_SETTINGS_UPDATED, "success")
-        return redirect(url_for('users.user_profile', user_id=user.id))
+        # set language cookie so UI updates immediately
+        resp = make_response(redirect(url_for('users.user_profile', user_id=user.id)))
+        if hasattr(form, 'language') and form.language.data:
+            resp.set_cookie('language', form.language.data, max_age=60*60*24*365*2, path='/')
+        return resp
 
     image_file_url = url_for(
         'static',

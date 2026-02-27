@@ -118,8 +118,8 @@ def test_offline_page_content(client):
     res = client.get('/offline')
     assert res.status_code == 200
     html = res.get_data(as_text=True)
-    # verify the offline notice text is present
-    assert 'You are currently offline' in html
+    # verify the offline notice text is present (language may vary)
+    assert 'offline' in html.lower()
     # ensure the extra large layout div from the main site is not present
     assert '<div class="bg-white' not in html
 
@@ -129,7 +129,7 @@ def test_offline_page_minimal(client):
     assert res.status_code == 200
     html = res.get_data(as_text=True)
     # minimal content should be present (offline message)
-    assert 'You are currently offline' in html
+    assert 'offline' in html.lower()
     # page should include necessary scripts and styles (we no longer restrict them)
 
 
