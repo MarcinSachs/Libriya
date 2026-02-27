@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-02-27 14:27+0100\n"
-"PO-Revision-Date: 2026-02-27 13:30\n"
+"PO-Revision-Date: 2026-02-27 17:23\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -24,21 +24,21 @@ msgstr ""
 #: ⁨c:/Users/marcin.sachs/Downloads/Python Scripts/Libriya/temp_extract_test2.py⁩:7
 #, python-format
 msgid "New message from %(admin)s about \"%(subject)s\""
-msgstr ""
+msgstr "Nowa wiadomość od %(admin)s o \"%(subject)s\""
 
 #: ⁨c:/Users/marcin.sachs/Downloads/Python Scripts/Libriya/app/routes/messaging.py⁩:18
 #: ⁨c:/Users/marcin.sachs/Downloads/Python Scripts/Libriya/app/routes/messaging.py⁩:163
 #: ⁨c:/Users/marcin.sachs/Downloads/Python Scripts/Libriya/temp_extract_test.py⁩:5
 #, python-format
 msgid "New reply from %(admin)s in \"%(subject)s\""
-msgstr ""
+msgstr "Nowa odpowiedź od %(admin)s w \"%(subject)s\""
 
 #: ⁨c:/Users/marcin.sachs/Downloads/Python Scripts/Libriya/app/routes/messaging.py⁩:19
 #: ⁨c:/Users/marcin.sachs/Downloads/Python Scripts/Libriya/app/routes/messaging.py⁩:259
 #: ⁨c:/Users/marcin.sachs/Downloads/Python Scripts/Libriya/temp_extract_test.py⁩:6
 #, python-format
 msgid "Super-admin replied to \"%(subject)s\""
-msgstr ""
+msgstr "Super-admin odpowiedział na \"%(subject)s\""
 
 #: ⁨c:/Users/marcin.sachs/Downloads/Python Scripts/Libriya/app/__init__.py⁩:391
 msgid "You do not have permission to access this page"
@@ -3677,7 +3677,7 @@ msgstr "Nieobsługiwany język."
 
 #: ⁨c:/Users/marcin.sachs/Downloads/Python Scripts/Libriya/app/utils/notifications.py⁩:44
 msgid "Notification from Libriya"
-msgstr ""
+msgstr "Powiadomienie z Libriya"
 
 #: ⁨c:/Users/marcin.sachs/Downloads/Python Scripts/Libriya/app/utils/password_validator.py⁩:22
 msgid "Password must be at least 12 characters long."
