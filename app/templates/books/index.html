@@ -15,7 +15,14 @@
     </div>
 
     <h2 class="text-3xl font-bold text-primary mb-6">{{ _('List of books') }}</h2>
-
+    <!-- Add Book Button (Admin/Manager) -->
+    {% if current_user and (current_user.role == 'admin' or current_user.role == 'manager') %}
+    <div class="mt-8 mb-4 flex justify-end">
+        <a href="{{ url_for('books.book_add') }}" class="btn btn-primary">
+            <i class='bx bx-plus'></i> {{ _('Add book') }}
+        </a>
+    </div>
+    {% endif %}
     <!-- Filtering Form -->
     <form method="GET" action="{{ url_for('main.home') }}" class="mb-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
@@ -254,14 +261,7 @@
         {% endfor %}
     </div>
 
-    <!-- Add Book Button (Admin/Manager) -->
-    {% if current_user and (current_user.role == 'admin' or current_user.role == 'manager') %}
-    <div class="mt-8 flex justify-center">
-        <a href="{{ url_for('books.book_add') }}" class="btn btn-primary">
-            <i class='bx bx-plus'></i> {{ _('Add book') }}
-        </a>
-    </div>
-    {% endif %}
+    
 </div>
 
 <script>

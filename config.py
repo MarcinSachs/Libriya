@@ -100,7 +100,7 @@ class Config(BaseSettings):
     # to remove old caches automatically.  Set via environment or defaults to 'v5'.
     # Increment this value whenever the service worker or caching logic changes
     # in a way that should invalidate existing client-side caches.
-    PWA_CACHE_VERSION: str = 'v01'
+    PWA_CACHE_VERSION: str = 'v02'
 
     # Interval (milliseconds) at which the client will call
     # ``serviceWorker.update()`` when online.  Longer intervals reduce churn in
