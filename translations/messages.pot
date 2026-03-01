@@ -3781,3 +3781,6 @@ msgstr ""
 msgid "This subdomain is already taken."
 msgstr ""
 
+#: C:/Users/Marcin/Documents/Python/Libriya/app/templates/books/index.html:130
+msgid "None"
+msgstr ""
