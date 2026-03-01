@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-03-01 12:55+0100\n"
-"PO-Revision-Date: 2026-03-01 12:12\n"
+"PO-Revision-Date: 2026-03-01 13:14\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -3706,4 +3706,8 @@ msgstr "Subdomena może zawierać tylko małe litery, cyfry i myślniki, 3-20 zn
 #: c:/Users/Marcin/Documents/Python/Libriya/app/utils/validators.py:79
 msgid "This subdomain is already taken."
 msgstr "Ta subdomena jest już zajęta."
+
+#: C:/Users/Marcin/Documents/Python/Libriya/app/templates/books/index.html:130
+msgid "None"
+msgstr "Brak"
 
