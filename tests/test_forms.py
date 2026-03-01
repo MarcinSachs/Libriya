@@ -80,17 +80,25 @@ def test_bookform_validates_year_and_required_fields(app):
             assert not form2.validate()
             assert form2.year.errors
 
+            # the isbn field should filter out whitespace and convert to None
+            form3 = BookForm(data={**data, 'isbn': '   '})
+            form3.library.choices = [(lib.id, lib.name)]
+            assert form3.validate()
+            assert form3.isbn.data is None
+
 
 def test_userform_password_strength(app):
     with app.app_context():
         # WTForms translations need a request context
         with app.test_request_context('/'):
             # weak password should fail form validation
-            form = UserForm(data={'username': 'u', 'email': 'u@example.com', 'password': 'weakpass', 'confirm_password': 'weakpass'})
+            form = UserForm(data={'username': 'u', 'email': 'u@example.com',
+                            'password': 'weakpass', 'confirm_password': 'weakpass'})
             assert not form.validate()
 
             # strong password passes (username must be >= 3 chars)
-            form2 = UserForm(data={'username': 'user2', 'email': 'user2@example.com', 'password': 'Str0ngPass!23', 'confirm_password': 'Str0ngPass!23'})
+            form2 = UserForm(data={'username': 'user2', 'email': 'user2@example.com',
+                             'password': 'Str0ngPass!23', 'confirm_password': 'Str0ngPass!23'})
             assert form2.validate()
 
 
@@ -115,12 +123,14 @@ def test_registrationform_tenant_name_and_invitation_logic(app):
         db.session.commit()
 
         with app.test_request_context('/'):
-            form2 = RegistrationForm(data={'create_new_tenant': 'false', 'invitation_code': 'ABCD1234', 'email': 'b@b.com', 'username': 'usery', 'password': 'Str0ngPass!23', 'password_confirm': 'Str0ngPass!23', 'first_name': '', 'last_name': ''})
+            form2 = RegistrationForm(data={'create_new_tenant': 'false', 'invitation_code': 'ABCD1234', 'email': 'b@b.com',
+                                     'username': 'usery', 'password': 'Str0ngPass!23', 'password_confirm': 'Str0ngPass!23', 'first_name': '', 'last_name': ''})
             assert not form2.validate()
             assert form2.first_name.errors and form2.last_name.errors
 
             # valid join (supply names)
-            form3 = RegistrationForm(data={'create_new_tenant': 'false', 'invitation_code': 'ABCD1234', 'email': 'c@b.com', 'username': 'userz', 'password': 'Str0ngPass!23', 'password_confirm': 'Str0ngPass!23', 'first_name': 'John', 'last_name': 'Doe'})
+            form3 = RegistrationForm(data={'create_new_tenant': 'false', 'invitation_code': 'ABCD1234', 'email': 'c@b.com', 'username': 'userz',
+                                     'password': 'Str0ngPass!23', 'password_confirm': 'Str0ngPass!23', 'first_name': 'John', 'last_name': 'Doe'})
             assert form3.validate()
 
 
@@ -162,7 +172,8 @@ def test_user_settings_picture_file_validation(app):
             usf.picture.data = small_file
             assert usf.validate()  # small image should pass FileAllowed/FileSize
 
-            large_file = FileStorage(stream=io.BytesIO(b'x' * (3 * 1024 * 1024)), filename='large.jpg', content_type='image/jpeg')
+            large_file = FileStorage(stream=io.BytesIO(b'x' * (3 * 1024 * 1024)),
+                                     filename='large.jpg', content_type='image/jpeg')
             usf2 = UserSettingsForm(data={'email': 'me2@example.com'})
             usf2.picture.data = large_file
             assert not usf2.validate()
@@ -199,7 +210,8 @@ def test_bookform_cover_file_validation(app):
             form.cover.data = ok_file
             assert form.validate()
 
-            bad_ext = FileStorage(stream=io.BytesIO(b'x' * 1024), filename='cover.exe', content_type='application/octet-stream')
+            bad_ext = FileStorage(stream=io.BytesIO(b'x' * 1024), filename='cover.exe',
+                                  content_type='application/octet-stream')
             form2 = BookForm(data=data)
             form2.library.choices = [(lib.id, lib.name)]
             form2.cover.data = bad_ext
@@ -216,12 +228,14 @@ def test_registrationform_email_and_username_uniqueness(app):
 
         with app.test_request_context('/'):
             # duplicate username
-            form = RegistrationForm(data={'create_new_tenant': 'true', 'tenant_name': 'New', 'email': 'new@example.com', 'username': 'taken', 'password': 'Str0ngPass!23', 'password_confirm': 'Str0ngPass!23', 'first_name': 'A', 'last_name': 'B'})
+            form = RegistrationForm(data={'create_new_tenant': 'true', 'tenant_name': 'New', 'email': 'new@example.com', 'username': 'taken',
+                                    'password': 'Str0ngPass!23', 'password_confirm': 'Str0ngPass!23', 'first_name': 'A', 'last_name': 'B'})
             assert not form.validate()
             assert form.username.errors
 
             # duplicate email
-            form2 = RegistrationForm(data={'create_new_tenant': 'true', 'tenant_name': 'New2', 'email': 'taken@example.com', 'username': 'unique', 'password': 'Str0ngPass!23', 'password_confirm': 'Str0ngPass!23', 'first_name': 'A', 'last_name': 'B'})
+            form2 = RegistrationForm(data={'create_new_tenant': 'true', 'tenant_name': 'New2', 'email': 'taken@example.com',
+                                     'username': 'unique', 'password': 'Str0ngPass!23', 'password_confirm': 'Str0ngPass!23', 'first_name': 'A', 'last_name': 'B'})
             assert not form2.validate()
             assert form2.email.errors
 

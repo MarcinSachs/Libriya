@@ -51,8 +51,17 @@ class ISBNValidator:
 
 
 class BookForm(FlaskForm):
+    def _isbn_filter(val):
+        # WTForms filters run before validators and can coerce empty
+        # strings into ``None`` which avoids saving '' into the database.
+        if val is None:
+            return None
+        v = val.strip()
+        return v or None
+
     isbn = StringField(
         _('ISBN'),
+        filters=[_isbn_filter],
         validators=[Optional(), ISBNValidator()]
     )
     title = StringField(_('Title'), validators=[DataRequired()])

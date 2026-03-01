@@ -77,6 +77,38 @@ def test_library_defaults_and_relationships(app):
     assert g in book.genres
 
 
+def test_blank_isbn_stored_as_null_and_allows_multiple(app):
+    """Books without an ISBN should not trigger unique constraint errors.
+
+    Historically the application inserted an empty string when no ISBN was
+    provided.  MySQL treats ``''`` as a normal value, so creating two books
+    in the same tenant resulted in ``IntegrityError: Duplicate entry ''``.
+
+    The model now coerces blank values to ``None`` and the form filters also
+    clean up user input.  This test verifies the behaviour.
+    """
+    tenant = Tenant(name='NoIsbnTenant', subdomain='nisbn')
+    db.session.add(tenant)
+    db.session.commit()
+
+    lib = Library(name='NoIsbnLib', tenant_id=tenant.id)
+    db.session.add(lib)
+    db.session.commit()
+
+    # create two books; assign empty string explicitly to simulate legacy data
+    b1 = Book(title='First', library_id=lib.id, tenant_id=tenant.id, year=1990, isbn='')
+    b2 = Book(title='Second', library_id=lib.id, tenant_id=tenant.id, year=1991, isbn='')
+    db.session.add_all([b1, b2])
+    # commit should succeed without raising IntegrityError
+    db.session.commit()
+
+    assert b1.isbn is None
+    assert b2.isbn is None
+    # both books exist independent of one another
+    assert Book.query.filter_by(title='First').one()
+    assert Book.query.filter_by(title='Second').one()
+
+
 def test_loan_and_comment_for_tenant_and_str(app):
     tenant = Tenant(name='LoanTenant', subdomain='lt2')
     db.session.add(tenant)
@@ -130,14 +162,16 @@ def test_invitation_code_validity_and_mark_used(app):
     future = datetime.utcnow() + timedelta(days=7)
     past = datetime.utcnow() - timedelta(days=1)
 
-    code = InvitationCode(code='VALID123', created_by_id=creator.id, library_id=lib.id, tenant_id=tenant.id, expires_at=future)
+    code = InvitationCode(code='VALID123', created_by_id=creator.id,
+                          library_id=lib.id, tenant_id=tenant.id, expires_at=future)
     db.session.add(code)
     db.session.commit()
 
     assert code.is_valid()
 
     # expired
-    code2 = InvitationCode(code='EXPR0001', created_by_id=creator.id, library_id=lib.id, tenant_id=tenant.id, expires_at=past)
+    code2 = InvitationCode(code='EXPR0001', created_by_id=creator.id,
+                           library_id=lib.id, tenant_id=tenant.id, expires_at=past)
     db.session.add(code2)
     db.session.commit()
     assert not code2.is_valid()

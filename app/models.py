@@ -164,6 +164,24 @@ class Book(db.Model):
     tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
     isbn = db.Column(db.String(13), unique=True, nullable=True, index=True)
     title = db.Column(db.String(200), nullable=False, index=True)
+
+    @db.validates('isbn')
+    def _normalize_isbn(self, key, value):
+        """Normalize and clean ISBN values before they're saved.
+
+        The database has a unique index on the ISBN column.  MySQL treats
+        the empty string '' as a normal value, which means creating two
+        books without an ISBN would violate the uniqueness constraint and
+        raise a ``pymysql.err.IntegrityError``.  To avoid this we convert
+        any blank/whitespace string to ``None`` so that the column stores a
+        true NULL.  Multiple NULLs are permitted by the unique index and
+        the problem disappears.
+        """
+        if value is None:
+            return None
+        # strip whitespace and collapse empty strings
+        cleaned = value.strip()
+        return cleaned or None
     authors = db.relationship(
         'Author', secondary=book_authors, lazy='subquery', back_populates='books')
 

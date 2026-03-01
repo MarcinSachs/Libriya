@@ -102,6 +102,62 @@ def test_book_add_post_as_admin(app, client, monkeypatch):
     assert called['flag'] is True
 
 
+def test_book_add_blank_isbn_twice(client, app):
+    """Submitting two books without an ISBN should succeed and store NULL.
+
+    This covers the regression where '' triggered a unique index error.
+    """
+    # setup tenant, library, admin user similar to previous test
+    t = Tenant(name='BlankIsbnT', subdomain='bist')
+    db.session.add(t)
+    db.session.commit()
+    lib = Library(name='BlankIsbnLib', tenant_id=t.id)
+    db.session.add(lib)
+    db.session.commit()
+
+    # also need at least one genre because the form requires it
+    g = Genre(name='Misc')
+    db.session.add(g)
+    db.session.commit()
+
+    admin = User(username='blankadmin', email='blank@example.com', role='admin', tenant_id=t.id)
+    admin.is_email_verified = True
+    admin.set_password('password')
+    db.session.add(admin)
+    db.session.commit()
+    # login
+    rv = login(client, admin.email)
+    assert b'Please log in' not in rv.data
+
+    # first add with empty isbn
+    post1 = client.post('/books/add/', data={
+        'isbn': '',
+        'title': 'NoISBN One',
+        'author': 'A',
+        'library': lib.id,
+        'genres': [str(g.id)],
+        'year': 2000,
+    }, follow_redirects=True)
+    assert post1.status_code == 200
+
+    # second add with blank isbn again
+    post2 = client.post('/books/add/', data={
+        'isbn': '',
+        'title': 'NoISBN Two',
+        'author': 'B',
+        'library': lib.id,
+        'genres': [str(g.id)],
+        'year': 2001,
+    }, follow_redirects=True)
+    assert post2.status_code == 200
+
+    # verify both books exist and isbn fields are stored as NULL
+    b1 = Book.query.filter_by(title='NoISBN One').first()
+    b2 = Book.query.filter_by(title='NoISBN Two').first()
+    assert b1 is not None and b1.isbn is None
+    assert b2 is not None and b2.isbn is None
+
+
 def test_book_delete_and_manager_permissions(app, client):
     # setup tenant, two libraries and users
     t = Tenant(name='TD', subdomain='td')
