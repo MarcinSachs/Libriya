@@ -79,10 +79,24 @@ class BookForm(FlaskForm):
         coerce=int,
         validators=[DataRequired()]
     )
+
+    def _year_filter(val):
+        # Convert empty string to None so the model gets NULL.
+        if val is None:
+            return None
+        try:
+            # WTForms passes '' when the field is left blank
+            if isinstance(val, str) and val.strip() == '':
+                return None
+            return val
+        except Exception:
+            return val
+
     year = IntegerField(
         _('Year'),
+        filters=[_year_filter],
         validators=[
-            DataRequired(message=_("Field 'Year' is required.")),
+            Optional(),
             NumberRange(
                 min=0,
                 max=datetime.now().year,

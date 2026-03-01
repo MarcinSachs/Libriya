@@ -192,7 +192,18 @@ class Book(db.Model):
     library = db.relationship('Library', back_populates='books')
     location = db.relationship('Location', back_populates='book', uselist=False, cascade='all, delete-orphan')
 
-    year = db.Column(db.Integer, nullable=False)
+    # publication year.  If the value is unknown we store NULL rather
+    # than forcing users to enter a dummy number.
+    year = db.Column(db.Integer, nullable=True)
+
+    @db.validates('year')
+    def _normalize_year(self, key, value):
+        # allow empty strings/src to be treated as NULL; ensures any code that
+        # directly assigns ``book.year = ''`` doesn't cause a type error and
+        # will store NULL in the database.
+        if value == '' or value is None:
+            return None
+        return value
     cover = db.Column(db.String(200))
     description = db.Column(db.Text, nullable=True)
     # 'available', 'reserved', 'on_loan'

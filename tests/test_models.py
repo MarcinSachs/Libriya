@@ -109,6 +109,33 @@ def test_blank_isbn_stored_as_null_and_allows_multiple(app):
     assert Book.query.filter_by(title='Second').one()
 
 
+def test_blank_year_stored_as_null_and_allows_multiple(app):
+    """Books without a publication year should save NULL and not conflict.
+
+    Similar to the ISBN test we explicitly assign ``None`` or an empty
+    string to ``year`` to simulate either programmatic creation or a
+    user-submitted blank field.  The model filter normalises it and the
+    column is now nullable so two such books may coexist.
+    """
+    tenant = Tenant(name='NoYearTenant', subdomain='nyear')
+    db.session.add(tenant)
+    db.session.commit()
+
+    lib = Library(name='NoYearLib', tenant_id=tenant.id)
+    db.session.add(lib)
+    db.session.commit()
+
+    b1 = Book(title='Y1', library_id=lib.id, tenant_id=tenant.id, year=None)
+    b2 = Book(title='Y2', library_id=lib.id, tenant_id=tenant.id, year='')
+    db.session.add_all([b1, b2])
+    db.session.commit()
+
+    assert b1.year is None
+    assert b2.year is None
+    assert Book.query.filter_by(title='Y1').one()
+    assert Book.query.filter_by(title='Y2').one()
+
+
 def test_loan_and_comment_for_tenant_and_str(app):
     tenant = Tenant(name='LoanTenant', subdomain='lt2')
     db.session.add(tenant)

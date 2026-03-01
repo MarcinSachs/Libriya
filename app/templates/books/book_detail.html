@@ -72,8 +72,8 @@
                     {{ _('No genres assigned') }}
                 {% endif %}
             </p>
-            <p><strong>{{ _('Year') }}:</strong> {{ book.year }}</p>
-            <p><strong>{{ _('ISBN') }}:</strong> {{ book.isbn }}</p>
+            <p><strong>{{ _('Year') }}:</strong> {{ book.year or _('None') }}</p>
+            <p><strong>{{ _('ISBN') }}:</strong> {{ book.isbn or _('None') }}</p>
             {% if book.description %}
             <p><strong>{{ _('Description') }}:</strong></p>
             <p class="text-gray-700 leading-relaxed">{{ book.description|linebreaksbr }}</p>

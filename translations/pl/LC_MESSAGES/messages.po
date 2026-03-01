@@ -3715,3 +3715,6 @@ msgstr "Subdomena może zawierać tylko małe litery, cyfry i myślniki, 3-20 zn
 msgid "This subdomain is already taken."
 msgstr "Ta subdomena jest już zajęta."
 
+#: ⁨C:/Users/Marcin/Documents/Python/Libriya/app/templates/books/index.html⁩:130
+msgid "None"
+msgstr "Brak"

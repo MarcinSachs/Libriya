@@ -127,7 +127,7 @@
                         <span class="text-gray-500">{{ _('No genres') }}</span>
                         {% endif %}
                     </td>
-                    <td class="px-4 py-3">{{ book.year }}</td>
+                    <td class="px-4 py-3">{{ book.year or _('None') }}</td>
                     <td class="px-4 py-3">{{ book.library.name }}</td>
                     <td class="px-4 py-3">
                         {% if book.status == 'available' %}

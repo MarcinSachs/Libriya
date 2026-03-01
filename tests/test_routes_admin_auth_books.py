@@ -102,6 +102,37 @@ def test_book_add_post_as_admin(app, client, monkeypatch):
     assert called['flag'] is True
 
 
+def test_list_page_shows_dash_for_missing_year(client, app):
+    """Verify that books without a year display '-' in the main table."""
+    # create tenant, library, book without year
+    t = Tenant(name='YearDash', subdomain='yd')
+    db.session.add(t)
+    db.session.commit()
+    lib = Library(name='YearLib', tenant_id=t.id)
+    db.session.add(lib)
+    db.session.commit()
+
+    book = Book(title='NoYearHere', library_id=lib.id, tenant_id=t.id)
+    db.session.add(book)
+    db.session.commit()
+
+    # login as admin to see books
+    admin = User(username='yadmin', email='y@example.com', role='admin', tenant_id=t.id)
+    admin.is_email_verified = True
+    admin.set_password('password')
+    db.session.add(admin)
+    db.session.commit()
+    rv = login(client, admin.email)
+    assert b'Please log in' not in rv.data
+
+    # root URL should redirect to dashboard for logged in users
+    res = client.get('/', follow_redirects=True)
+    assert res.status_code == 200
+    html = res.get_data(as_text=True)
+    # look for table cell containing dash (year column) in the books listing
+    assert '<td class="px-4 py-3">-</td>' in html
+
+
 def test_book_add_blank_isbn_twice(client, app):
     """Submitting two books without an ISBN should succeed and store NULL.
 
@@ -129,14 +160,14 @@ def test_book_add_blank_isbn_twice(client, app):
     rv = login(client, admin.email)
     assert b'Please log in' not in rv.data
 
-    # first add with empty isbn
+    # first add with empty isbn and blank year
     post1 = client.post('/books/add/', data={
         'isbn': '',
         'title': 'NoISBN One',
         'author': 'A',
         'library': lib.id,
         'genres': [str(g.id)],
-        'year': 2000,
+        'year': '',  # should be treated as NULL
     }, follow_redirects=True)
     assert post1.status_code == 200
 
@@ -151,11 +182,12 @@ def test_book_add_blank_isbn_twice(client, app):
     }, follow_redirects=True)
     assert post2.status_code == 200
 
-    # verify both books exist and isbn fields are stored as NULL
+    # verify both books exist and isbn/year fields are stored as NULL
     b1 = Book.query.filter_by(title='NoISBN One').first()
     b2 = Book.query.filter_by(title='NoISBN Two').first()
-    assert b1 is not None and b1.isbn is None
-    assert b2 is not None and b2.isbn is None
+    assert b1 is not None and b1.isbn is None and b1.year is None
+    # second book had a year provided
+    assert b2 is not None and b2.isbn is None and b2.year == 2001
 
 
 def test_book_delete_and_manager_permissions(app, client):

@@ -68,14 +68,15 @@ def test_bookform_validates_year_and_required_fields(app):
 
         # WTForms (and Flask-Babel) require a request context for translations
         with app.test_request_context('/'):
-            form = BookForm(data=data)
+            # normal submission via formdata (mimics request.form)
+            form = BookForm(formdata=MultiDict(data))
             # the view normally sets library choices
             form.library.choices = [(lib.id, lib.name)]
             assert form.validate()
 
-            # invalid year (future)
+            # invalid year (future) should be caught by NumberRange
             future = datetime.now().year + 10
-            form2 = BookForm(data={**data, 'year': future})
+            form2 = BookForm(formdata=MultiDict({**data, 'year': future}))
             form2.library.choices = [(lib.id, lib.name)]
             assert not form2.validate()
             assert form2.year.errors
@@ -85,6 +86,12 @@ def test_bookform_validates_year_and_required_fields(app):
             form3.library.choices = [(lib.id, lib.name)]
             assert form3.validate()
             assert form3.isbn.data is None
+
+            # blank year should be allowed and result in None
+            form4 = BookForm(data={**data, 'year': ''})
+            form4.library.choices = [(lib.id, lib.name)]
+            assert form4.validate()
+            assert form4.year.data is None
 
 
 def test_userform_password_strength(app):
