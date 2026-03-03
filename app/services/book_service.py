@@ -72,6 +72,22 @@ class BookSearchService:
             else:
                 logger.info("BookSearchService: Not found in BN, falling back to Open Library")
 
+        # 1.5 Try Google Books before falling back to Open Library
+        if PremiumManager.is_enabled('google_books'):
+            logger.debug(f"BookSearchService: Trying Google Books for ISBN {normalized_isbn}")
+            book_data = PremiumManager.call(
+                'google_books',
+                'GoogleBooksService',
+                'search_by_isbn',
+                isbn=normalized_isbn
+            )
+            if book_data:
+                logger.info(f"BookSearchService: Found in Google Books: {book_data.get('title')}")
+                BookSearchService._enhance_with_cover(book_data, normalized_isbn)
+                return book_data
+            else:
+                logger.info("BookSearchService: Not found in Google Books, falling back to Open Library")
+
         # 2. Try Open Library (fallback)
         logger.debug(f"BookSearchService: Searching Open Library for ISBN {normalized_isbn}")
         book_data = OpenLibraryClient.search_by_isbn(normalized_isbn)

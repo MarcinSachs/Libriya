@@ -131,6 +131,14 @@ def get_genres_from_isbn():
                                             'search_by_isbn',
                                             isbn=isbn)
 
+            # if BN didn't return anything, try Google Books (another premium module)
+            if not book_data and PremiumManager.is_enabled('google_books'):
+                current_app.logger.info(f"Genres API - BN empty, trying Google Books for ISBN: {isbn}")
+                book_data = PremiumManager.call('google_books',
+                                                'GoogleBooksService',
+                                                'search_by_isbn',
+                                                isbn=isbn)
+
             if not book_data:
                 # Fallback to Open Library
                 current_app.logger.info(f"Genres API - Premium services failed, searching OL for ISBN: {isbn}")
@@ -289,11 +297,16 @@ def book_add():
         # Try to fetch description from APIs if not provided
         if not description and form.isbn.data:
             # Try BN first
-            # note: PremiumManager.call requires service class name as second arg
             book_data = PremiumManager.call('biblioteka_narodowa',
                                             'BibliotekaNarodowaService',
                                             'search_by_isbn',
                                             isbn=form.isbn.data)
+            # if BN didn't yield metadata and google books is enabled, try it
+            if not book_data and PremiumManager.is_enabled('google_books'):
+                book_data = PremiumManager.call('google_books',
+                                                'GoogleBooksService',
+                                                'search_by_isbn',
+                                                isbn=form.isbn.data)
             if not book_data:
                 book_data = OpenLibraryClient.search_by_isbn(form.isbn.data)
             if book_data:

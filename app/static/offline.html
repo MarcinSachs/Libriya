@@ -6,47 +6,47 @@
     <meta charset="UTF-8">
     <title>Libriya</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="IjAyNzhiNWUzODIyYjExZjU5YzQ3ZmE4YWRlMzVjM2UyODBlZDhmM2Mi.aaCmJA.7Vv0K3Fh6LnO869xD57y8MLZU6A">
+    <meta name="csrf-token" content="Ijc5OGZlM2JhN2ZlYTdhNDlkNTRkZWE2ZDZhYWYxNDVhZDIyY2VkZGEi.aab9sg.dFIsRdUHH4jR7_L0pqgCxOdA2ks">
     <meta name="theme-color" content="#1a535c">
     <meta name="description" content="A library management application for organizing and tracking books">
-    <meta property="og:url" content="http://127.0.0.1:5001/dashboard">
+    <meta property="og:url" content="http://localhost/dashboard">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="http://127.0.0.1:5001/static/og_image_2.jpg?v=v01">
-    <meta property="og:image:secure_url" content="http://127.0.0.1:5001/static/og_image_2.jpg?v=v01">
+    <meta property="og:image" content="http://localhost/static/og_image_2.jpg?v=v02">
+    <meta property="og:image:secure_url" content="http://localhost/static/og_image_2.jpg?v=v02">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:title" content="Libriya">
     <meta property="og:description" content="A library management application for organizing and tracking books">
-    <link rel="image_src" href="http://127.0.0.1:5001/static/og_image_2.jpg?v=v01">
+    <link rel="image_src" href="http://localhost/static/og_image_2.jpg?v=v02">
     <!-- Twitter card metadata for extra compatibility -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Libriya">
     <meta name="twitter:description" content="A library management application for organizing and tracking books">
-    <meta name="twitter:image" content="http://127.0.0.1:5001/static/og_image_2.jpg?v=v01">
+    <meta name="twitter:image" content="http://localhost/static/og_image_2.jpg?v=v02">
     <link rel="manifest" href="/static/manifest.json">
     
-    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=v01">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=v02">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="/static/css/style.css?v=v01" rel="stylesheet">
+    <link href="/static/css/style.css?v=v02" rel="stylesheet">
 
     <!-- PWA configuration injected from backend -->
     <script>
         window.pwaConfig = {
-            cacheVersion: 'v01',
+            cacheVersion: 'v02',
             precachePages: ["/", "/loans/", "/libraries/", "/users/", "/notifications/", "/user/settings", "/offline"],
             updateInterval: 300000,
-            currentUserId: 2
+            currentUserId: 1
         };
     </script>
 
     <!-- Load PWA manager module -->
     <script type="module">
-        import PWAManager from '/static/js/pwa-manager.js?v=v01';
+        import PWAManager from '/static/js/pwa-manager.js?v=v02';
         window.pwaManager = new PWAManager();
     </script>
 
@@ -135,7 +135,7 @@
                         <img src="/static/images/logo.svg" alt="Libriya Logo" class="h-10 w-auto">
                         <span class="flex flex-col leading-tight">
                             <span class="font-serif text-3xl font-bold text-primary">Libriya</span>
-                            <span class="text-xs font-light text-gray-500 tracking-wide -mt-1 ml-1">dom dla Twoich książek</span>
+                            <span class="text-xs font-light text-gray-500 tracking-wide -mt-1 ml-1">home for your books</span>
                         </span>
                     </a>
                 </div>
@@ -147,29 +147,29 @@
                         <button class="flex items-center gap-2 text-primary hover:text-accent transition">
                             <img class="w-8 h-8 rounded-full object-cover" 
                                 src="/static/uploads/default.jpg" 
-                                alt="marcin">
-                            <span class="text-sm font-medium">marcin</span>
+                                alt="yadmin">
+                            <span class="text-sm font-medium">yadmin</span>
                             
                         </button>
                         <div class="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
                             <a href="/notifications/" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg">
-                                <i class="bx bx-bell align-middle me-2"></i>Powiadomienia
+                                <i class="bx bx-bell align-middle me-2"></i>Notifications
                                 
                             </a>
                             
-                            <a href="/user/profile/2" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
-                                <i class="bx bx-user-circle align-middle me-2"></i>Profil i Wypożyczenia
+                            <a href="/user/profile/1" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-user-circle align-middle me-2"></i>Profile & Loans
                             </a>
                             <a href="/user/settings" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
-                                <i class="bx bx-cog align-middle me-2"></i>Ustawienia
+                                <i class="bx bx-cog align-middle me-2"></i>Settings
                             </a>
                             <a href="/my-messages" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
-                                <i class="bx bx-envelope align-middle me-2"></i>Wiadomości
+                                <i class="bx bx-envelope align-middle me-2"></i>Messages
                             </a>
                             
                             <hr class="my-1">
                             <a href="/auth/logout" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg">
-                                <i class="bx bx-log-out align-middle me-2"></i>Wyloguj się
+                                <i class="bx bx-log-out align-middle me-2"></i>Logout
                             </a>
                         </div>
                     </div>
@@ -178,7 +178,7 @@
                     <div class="relative group pb-2">
                         <button class="flex items-center gap-1 font-semibold text-gray-700 hover:text-primary transition-colors">
                             <i class="bx bx-globe"></i>
-                            <span>Język</span>
+                            <span>Language</span>
                         </button>
                         <div class="absolute right-0 top-full mt-0 w-32 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
                             <a href="/set_language/pl" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg flex items-center gap-2">
@@ -212,7 +212,7 @@
                     
                     <button id="mobile-install-app-btn" onclick="if(window.pwaManager) window.pwaManager.installApp(); else alert('To install: Chrome menu → Install app')" 
                             class="p-2 text-primary hover:text-accent transition"
-                            title="Zainstaluj Aplikacje"
+                            title="Install App"
                             style="display: none; align-items: center;">
                         <i class="bx bx-download text-lg"></i>
                     </button>
@@ -225,28 +225,28 @@
                         <button class="flex items-center gap-2 text-primary hover:text-accent transition">
                             <img class="w-8 h-8 rounded-full object-cover" 
                                 src="/static/uploads/default.jpg" 
-                                alt="marcin">
+                                alt="yadmin">
                             
                         </button>
                         <div class="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition z-50">
                             <a href="/notifications/" class="block px-4 py-2 hover:bg-gray-bg text-text-dark first:rounded-t-lg">
-                                <i class="bx bx-bell align-middle me-2"></i>Powiadomienia
+                                <i class="bx bx-bell align-middle me-2"></i>Notifications
                                 
                             </a>
                             
-                            <a href="/user/profile/2" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
-                                <i class="bx bx-user-circle align-middle me-2"></i>Profil i Wypożyczenia
+                            <a href="/user/profile/1" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
+                                <i class="bx bx-user-circle align-middle me-2"></i>Profile & Loans
                             </a>
                             <a href="/user/settings" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
-                                <i class="bx bx-cog align-middle me-2"></i>Ustawienia
+                                <i class="bx bx-cog align-middle me-2"></i>Settings
                             </a>
                             <a href="/my-messages" class="block px-4 py-2 hover:bg-gray-bg text-text-dark">
-                                <i class="bx bx-envelope align-middle me-2"></i>Wiadomości
+                                <i class="bx bx-envelope align-middle me-2"></i>Messages
                             </a>
                             
                             <hr class="my-1">
                             <a href="/auth/logout" class="block px-4 py-2 hover:bg-gray-bg text-text-dark last:rounded-b-lg">
-                                <i class="bx bx-log-out align-middle me-2"></i>Wyloguj się
+                                <i class="bx bx-log-out align-middle me-2"></i>Logout
                             </a>
                         </div>
                     </div>
@@ -270,7 +270,7 @@
                     
                     <a href="/dashboard" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-bg hover:text-primary transition">
                         <i class="bx bxs-book text-lg"></i>
-                        <span class="font-medium">Książki</span>
+                        <span class="font-medium">Books</span>
                     </a>
                     
                     <!-- Batch Import (if enabled for tenant) -->
@@ -286,7 +286,7 @@
                         <button id="admin-toggle" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-bg hover:text-primary transition">
                             <span class="flex items-center gap-3">
                                 <i class="bx bxs-dashboard text-lg"></i>
-                                <span class="font-medium">Administracja</span>
+                                <span class="font-medium">Administration</span>
                             </span>
                             <i class="bx bx-chevron-down transition-transform "></i>
                         </button>
@@ -295,7 +295,7 @@
                             
                             <a href="/libraries/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
                                 <i class="bx bxs-building text-base"></i>
-                                <span>Biblioteki</span>
+                                <span>Libraries</span>
                             </a>
                             
 
@@ -303,7 +303,7 @@
                             
                             <a href="/users/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
                                 <i class="bx bxs-group text-base"></i>
-                                <span>Użytkownicy</span>
+                                <span>Users</span>
                             </a>
                             
 
@@ -311,7 +311,7 @@
                             
                             <a href="/loans/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
                                 <i class="bx bxs-check-circle text-base"></i>
-                                <span>Wypożyczenia</span>
+                                <span>Loans</span>
                             </a>
                             
 
@@ -319,7 +319,7 @@
                             
                             <a href="/invitation-codes/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
                                 <i class="bx bxs-key text-base"></i>
-                                <span>Kody zaproszeń</span>
+                                <span>Invitation Codes</span>
                             </a>
                             
 
@@ -327,13 +327,13 @@
                             
                             <a href="/contact_messages" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
                                 <i class="bx bxs-message-detail text-base"></i>
-                                <span>Wiadomości</span>
+                                <span>Messages</span>
                             </a>
 
                             <!-- Contact Super Admin (tenant admin -> superadmin) -->
                             <a href="/messaging/admin-support" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-bg transition text-sm">
                                 <i class="bx bxs-help-circle text-base"></i>
-                                <span>Skontaktuj się z Super Administratorem</span>
+                                <span>Contact Super Admin</span>
                             </a>
                             
                         </div>
@@ -353,8 +353,8 @@
         <div class="flex items-start">
             <span class="text-2xl mr-3">📡</span>
             <div>
-                <h3 class="font-bold text-yellow-800">Jesteś obecnie offline</h3>
-                <p class="text-sm text-yellow-700 mt-1">Dostępna jest tylko buforowana zawartość. Przejdź do trybu online, aby uzyskać dostęp do wszystkich funkcji.</p>
+                <h3 class="font-bold text-yellow-800">You are currently offline</h3>
+                <p class="text-sm text-yellow-700 mt-1">Only cached content is available. Go online to access all features.</p>
             </div>
         </div>
     </div>
@@ -363,69 +363,69 @@
     <div class="grid md:grid-cols-2 gap-6 mb-8">
         <div class="bg-green-50 border border-green-200 rounded-lg p-6">
             <h4 class="font-bold text-green-800 mb-4 flex items-center">
-                <span class="mr-2">✅</span> Dostępne offline (po pobraniu)
+                <span class="mr-2">✅</span> Available offline (after download)
             </h4>
             <ul class="space-y-2">
-                <li class="text-sm text-green-800">📚 Przeglądaj książki w pamięci podręcznej</li>
-                <li class="text-sm text-green-800">📖 Przeczytaj szczegóły książki i okładki</li>
-                <li class="text-sm text-green-800">👤 Wyświetl swój profil</li>
-                <li class="text-sm text-green-800">⏱️ Sprawdź historię wypożyczeń</li>
-                <li class="text-xs text-green-700 mt-3 pt-3 border-t border-green-200">✓ Pobrane w ustawieniach "Tryb offline"</li>
+                <li class="text-sm text-green-800">📚 Browse cached books</li>
+                <li class="text-sm text-green-800">📖 Read book details & covers</li>
+                <li class="text-sm text-green-800">👤 View your profile</li>
+                <li class="text-sm text-green-800">⏱️ Check loan history</li>
+                <li class="text-xs text-green-700 mt-3 pt-3 border-t border-green-200">✓ Downloaded in "Offline Mode" settings</li>
             </ul>
         </div>
         
         <div class="bg-red-50 border border-red-200 rounded-lg p-6">
             <h4 class="font-bold text-red-800 mb-4 flex items-center">
-                <span class="mr-2">❌</span> Wymaga Internetu
+                <span class="mr-2">❌</span> Requires internet
             </h4>
             <ul class="space-y-2">
-                <li class="text-sm text-red-800">🔍 Wyszukiwanie książek</li>
-                <li class="text-sm text-red-800">➕ Dodawanie nowych książek</li>
-                <li class="text-sm text-red-800">⚙️ Ustawienia</li>
-                <li class="text-sm text-red-800">💾 Zapisywanie zmian</li>
-                <li class="text-sm text-red-800">📅 Nowe wypożyczenia</li>
+                <li class="text-sm text-red-800">🔍 Search books</li>
+                <li class="text-sm text-red-800">➕ Add new books</li>
+                <li class="text-sm text-red-800">⚙️ Settings & preferences</li>
+                <li class="text-sm text-red-800">💾 Save changes</li>
+                <li class="text-sm text-red-800">📅 Make new loans</li>
             </ul>
         </div>
     </div>
 
     <!-- Instructions -->
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-        <h4 class="font-bold text-blue-900 mb-3">Aby przechowywać swoje książki w trybie offline:</h4>
+        <h4 class="font-bold text-blue-900 mb-3">To cache your books for offline:</h4>
         <ol class="space-y-2 text-sm text-blue-800">
             <li class="flex items-start">
                 <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">1</span>
-                <span>Przejdź do trybu online i otwórz przeglądarkę</span>
+                <span>Go online and open your browser</span>
             </li>
             <li class="flex items-start">
                 <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">2</span>
-                <span>Odwiedź ustawienia (ikona użytkownika → Ustawienia)</span>
+                <span>Visit Settings (user icon → Settings)</span>
             </li>
             <li class="flex items-start">
                 <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">3</span>
-                <span>Znajdź sekcję "Tryb offline"</span>
+                <span>Find "Offline Mode" section</span>
             </li>
             <li class="flex items-start">
                 <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">4</span>
-                <span>Kliknij przycisk "Pobierz", aby przechowywać w pamięci podręcznej swoją bibliotekę</span>
+                <span>Click "Download" button to cache your library</span>
             </li>
             <li class="flex items-start">
                 <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold mr-3 flex-shrink-0">5</span>
-                <span>Teraz możesz przejść offline i przeglądać swoje książki</span>
+                <span>Now you can go offline and view your books</span>
             </li>
         </ol>
     </div>
 
     <!-- Cached Books Grid -->
     <div id="books-section" style="display: none;">
-        <h3 class="text-2xl font-bold mb-4">Twoja pamięć podręczna biblioteki</h3>
+        <h3 class="text-2xl font-bold mb-4">Your Cached Library</h3>
         <div id="books-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8"></div>
     </div>
 
     <!-- No Cache Message -->
     <div id="no-cache-section" class="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
         <div class="text-5xl mb-4">📚</div>
-        <p class="text-gray-600 mb-2">Brak książek dla dostępu offline</p>
-        <p class="text-sm text-gray-500">Przejdź do trybu online i pobierz swoją bibliotekę w Ustawieniach</p>
+        <p class="text-gray-600 mb-2">No books cached for offline access</p>
+        <p class="text-sm text-gray-500">Go online and download your library in Settings</p>
     </div>
 </div>
 
@@ -466,13 +466,13 @@
     <!-- Unified Footer -->
     <footer class="bg-white py-0.5 border-t border-gray-100 mt-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-[40px]" style="min-height:2.5rem;">
-            <p class="text-gray-400 text-base text-center w-full">&copy; 2026 Libriya. Wszelkie prawa zastrzeżone.</p>
+            <p class="text-gray-400 text-base text-center w-full">&copy; 2026 Libriya. All rights reserved.</p>
         </div>
     </footer>
     <!-- Cookie Consent Banner -->
     <div id="cookie-consent-banner" class="fixed bottom-0 left-0 w-full bg-gray-900 text-white text-center py-3 px-4 z-[9999] shadow-lg transition-all duration-300" style="display:none;">
-        <span>Ta strona używa plików cookie, aby zapewnić właściwe działanie. Używając strony akceptujesz naszą <a href="#" class="underline text-accent">politykę ciasteczek</a>.</span>
-        <button id="cookie-consent-accept" class="ml-4 bg-accent hover:bg-primary text-white font-semibold py-1 px-4 rounded transition">Zaakceptuj</button>
+        <span>This website uses cookies to ensure proper operation. By using it, you accept our <a href="#" class="underline text-accent">cookie policy</a>.</span>
+        <button id="cookie-consent-accept" class="ml-4 bg-accent hover:bg-primary text-white font-semibold py-1 px-4 rounded transition">Accept</button>
     </div>
     
     <script>
@@ -623,7 +623,7 @@
             const bookTitle = deleteBtn.getAttribute('data-book-title');
             console.log('Book ID:', bookId, 'Title:', bookTitle);
             
-            if (confirm(`Czy na pewno chcesz usunąć tę książkę?`)) {
+            if (confirm(`Are you sure you want to delete this book?`)) {
                 console.log('Confirmed delete for book:', bookId);
                 
                 // Get CSRF token
@@ -650,7 +650,7 @@
                                 console.log('✓ Delete successful');
                                 window.location.href = '/';
                             } else if (response.status === 503) {
-                                alert('Żądanie synchronizacji w kolejce do trybu offline. Zostanie wykonane, po przejściu w tryb online.');
+                                alert('Request queued for offline sync. Will be performed when online.');
                             } else {
                                 console.error('✗ Delete failed:', response.statusText);
                                 alert('Error deleting book');

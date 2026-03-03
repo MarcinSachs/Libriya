@@ -34,6 +34,7 @@ class Tenant(db.Model):
     premium_bookcover_enabled = db.Column(db.Boolean, default=False, nullable=False)
     premium_biblioteka_narodowa_enabled = db.Column(db.Boolean, default=False, nullable=False)
     premium_batch_import_enabled = db.Column(db.Boolean, default=False, nullable=False)
+    premium_google_books_enabled = db.Column(db.Boolean, default=False, nullable=False)
 
     # Limits (None or -1 means unlimited)
     max_libraries = db.Column(db.Integer, nullable=True, default=1)  # Default: 1 library
@@ -77,6 +78,8 @@ class Tenant(db.Model):
             features.append('biblioteka_narodowa')
         if self.premium_batch_import_enabled:
             features.append('batch_import')
+        if self.premium_google_books_enabled:
+            features.append('google_books')
         return features
 
     def is_premium_enabled(self, feature_id):
@@ -85,6 +88,7 @@ class Tenant(db.Model):
             'bookcover_api': 'premium_bookcover_enabled',
             'biblioteka_narodowa': 'premium_biblioteka_narodowa_enabled',
             'batch_import': 'premium_batch_import_enabled',
+            'google_books': 'premium_google_books_enabled',
         }
         field_name = feature_map.get(feature_id)
         if field_name:
