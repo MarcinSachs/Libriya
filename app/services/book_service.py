@@ -151,6 +151,22 @@ class BookSearchService:
         # Search in Open Library
         ol_results = OpenLibraryClient.search_by_title(title, limit)
 
+        # if nothing found and premium Google Books is enabled, try there
+        if not ol_results and PremiumManager.is_enabled('google_books'):
+            logger.debug(f"BookSearchService: No OL results, trying Google Books for title '{title}'")
+            gb_results = PremiumManager.call(
+                'google_books',
+                'GoogleBooksService',
+                'search_by_title',
+                title=title,
+                author=author,
+                limit=limit
+            )
+            # gb_results should already be list
+            if gb_results:
+                ol_results = gb_results
+                logger.info(f"BookSearchService: Found {len(gb_results)} results from Google Books")
+
         # Enhance each result with cover info
         for result in ol_results:
             BookSearchService._enhance_with_cover(result)

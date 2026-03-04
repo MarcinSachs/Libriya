@@ -1,6 +1,7 @@
 import pytest
 from app.services.book_service import BookSearchService
 from app.services.premium.manager import PremiumManager
+from app.services.openlibrary_service import OpenLibraryClient
 
 
 def test_search_by_isbn_uses_google_if_bn_empty(monkeypatch, app):
@@ -43,3 +44,40 @@ def test_search_by_isbn_prefers_bn_over_google(monkeypatch, app):
 
     res = BookSearchService.search_by_isbn('9780306406157')
     assert res['title'] == 'From BN'
+
+
+def test_search_by_title_fallback_to_google(monkeypatch, app):
+    """When Open Library yields no titles, Google Books should be tried if enabled."""
+    calls = []
+
+    def fake_ol(query, limit):
+        calls.append('ol')
+        return []
+
+    def fake_gb(title, author=None, limit=10):
+        calls.append('google')
+        return [{'title': 'GB Book', 'isbn': '12345'}]
+
+    monkeypatch.setattr(OpenLibraryClient, 'search_by_title', fake_ol)
+    monkeypatch.setattr(PremiumManager, 'is_enabled', lambda f: f == 'google_books' or f == 'biblioteka_narodowa')
+    monkeypatch.setattr(PremiumManager, 'call', lambda feature_id, class_name, method_name, **kwargs: fake_gb(**kwargs) if feature_id == 'google_books' else None)
+
+    results = BookSearchService.search_by_title('some title')
+    assert len(results) == 1
+    assert results[0]['title'] == 'GB Book'
+    assert calls == ['ol', 'google']
+
+
+def test_search_by_title_prefers_ol_over_google(monkeypatch, app):
+    """If OL returns something, Google Books must not be called."""
+    def fake_ol(query, limit):
+        return [{'title': 'OL Book', 'isbn': '9876'}]
+    def fake_gb(title, author=None, limit=10):
+        pytest.fail('Google Books should not be used when OL returns data')
+
+    monkeypatch.setattr(OpenLibraryClient, 'search_by_title', fake_ol)
+    monkeypatch.setattr(PremiumManager, 'is_enabled', lambda f: True)
+    monkeypatch.setattr(PremiumManager, 'call', lambda *args, **kwargs: fake_gb(**kwargs))
+
+    res = BookSearchService.search_by_title('xxx')
+    assert res[0]['title'] == 'OL Book'

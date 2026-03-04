@@ -30,6 +30,7 @@ Attributes:
 - `updated_at` (datetime): Last update timestamp
 - `premium_bookcover_enabled` (bool): Feature flag for bookcover API
 - `premium_biblioteka_narodowa_enabled` (bool): Feature flag for BN integration
+- `premium_google_books_enabled` (bool): Feature flag for Google Books integration
 
 Utility methods:
 - `get_enabled_premium_features()` -> list of enabled feature ids
