@@ -69,15 +69,52 @@ def check_migrations_needed():
 
             script = ScriptDirectory.from_config(alembic_cfg)
 
-            # Get current revision
+            # Get current revision(s).  ``get_current_revision`` raises when
+            # the alembic_version table contains multiple heads, which is exactly
+            # the error seen on the server.  ``get_current_heads`` handles that
+            # case by returning a list instead.
             with db.engine.connect() as connection:
                 context = MigrationContext.configure(connection)
-                current_rev = context.get_current_revision()
+                try:
+                    curr = context.get_current_heads()
+                except Exception:
+                    # Fallback to single-revision call for older alembic versions
+                    curr = context.get_current_revision()
 
-            # Get head revision
-            head_rev = script.get_current_head()
+            # ``curr`` may be a string or a list of strings; normalise to list
+            if isinstance(curr, (list, tuple)):
+                current_heads = list(curr)
+            elif curr is None:
+                current_heads = []
+            else:
+                current_heads = [curr]
 
-            return current_rev != head_rev, current_rev, head_rev
+            # Get head revision (latest available in migration scripts).
+            try:
+                head_rev = script.get_current_head()
+            except Exception as e:
+                # Alembic errors when multiple heads exist; fall back to
+                # ``get_heads`` which returns a list.  Pick the first for
+                # reporting purposes, but note the branch situation.
+                try:
+                    heads_list = script.get_heads()
+                    head_rev = heads_list[0] if heads_list else None
+                except Exception:
+                    # Last resort: report None
+                    head_rev = None
+
+            # Determine if migrations are needed.  If there are multiple current
+            # heads or the head revision isn't in the current list, we need to
+            # upgrade.  ``head_rev`` may be None when we couldn't determine it.
+            needs = False
+            if head_rev is None:
+                needs = True
+            else:
+                needs = head_rev not in current_heads or len(current_heads) != 1
+
+            # For reporting we return a comma-separated string of current heads
+            current_rev_str = ','.join(current_heads) if current_heads else None
+            return needs, current_rev_str, head_rev
         except Exception as e:
             print(f"Error checking migrations: {e}")
             return None, None, None
@@ -150,14 +187,34 @@ def init_db():
                     print(f"   → Head revision: {head_rev}")
                     print("   → Pending migrations found. Running upgrade...")
                     try:
-                        upgrade()
+                        # when multiple current heads are recorded we know the
+                        # plain ``upgrade()`` will choke, so use alembic API
+                        if current_rev and ',' in str(current_rev):
+                            print("   ⚠ Multiple current heads detected, running upgrade('heads') via alembic...")
+                            from alembic import command
+                            from alembic.config import Config
+                            migrations_dir = os.path.abspath(
+                                os.path.join(os.path.dirname(__file__), '..', 'migrations')
+                            )
+                            alembic_cfg = Config(os.path.join(migrations_dir, 'alembic.ini'))
+                            alembic_cfg.set_main_option('script_location', migrations_dir)
+                            command.upgrade(alembic_cfg, 'heads')
+                        else:
+                            upgrade()
                         print("   ✓ Database upgraded successfully")
                     except Exception as e:
                         msg = str(e)
                         if 'Multiple head revisions' in msg:
                             print("   ⚠ Multiple heads detected while upgrading, upgrading all heads...")
                             try:
-                                upgrade('heads')
+                                from alembic import command
+                                from alembic.config import Config
+                                migrations_dir = os.path.abspath(
+                                    os.path.join(os.path.dirname(__file__), '..', 'migrations')
+                                )
+                                alembic_cfg = Config(os.path.join(migrations_dir, 'alembic.ini'))
+                                alembic_cfg.set_main_option('script_location', migrations_dir)
+                                command.upgrade(alembic_cfg, 'heads')
                                 print("   ✓ Database upgraded successfully (heads)")
                             except Exception as e2:
                                 print(f"   ✗ Head upgrade failed: {e2}")
