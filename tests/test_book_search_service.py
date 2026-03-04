@@ -17,8 +17,10 @@ def test_search_by_isbn_uses_google_if_bn_empty(monkeypatch, app):
         # return an author so we can assert formatting
         return {'title': 'From Google', 'isbn': isbn, 'authors': ['Jane Roe']}
 
-    monkeypatch.setattr(PremiumManager, 'is_enabled', lambda feature: feature in ['biblioteka_narodowa', 'google_books'])
-    monkeypatch.setattr(PremiumManager, 'call', lambda feature_id, class_name, method_name, **kwargs: fake_isbn(kwargs['isbn']) if feature_id == 'biblioteka_narodowa' else fake_google(kwargs['isbn']))
+    monkeypatch.setattr(PremiumManager, 'is_enabled', lambda feature: feature in [
+                        'biblioteka_narodowa', 'google_books'])
+    monkeypatch.setattr(PremiumManager, 'call', lambda feature_id, class_name, method_name, **
+                        kwargs: fake_isbn(kwargs['isbn']) if feature_id == 'biblioteka_narodowa' else fake_google(kwargs['isbn']))
 
     result = BookSearchService.search_by_isbn('9780306406157')
     assert result is not None
@@ -37,6 +39,7 @@ def test_search_by_isbn_prefers_bn_over_google(monkeypatch, app):
         pytest.fail("Google Books should not be called when BN returns a result")
 
     monkeypatch.setattr(PremiumManager, 'is_enabled', lambda feature: True)
+
     def fake_call(feature_id, class_name, method_name, **kwargs):
         if feature_id == 'biblioteka_narodowa':
             return fake_isbn_bn(kwargs['isbn'])
@@ -63,7 +66,8 @@ def test_search_by_title_fallback_to_google(monkeypatch, app):
 
     monkeypatch.setattr(OpenLibraryClient, 'search_by_title', fake_ol)
     monkeypatch.setattr(PremiumManager, 'is_enabled', lambda f: f == 'google_books' or f == 'biblioteka_narodowa')
-    monkeypatch.setattr(PremiumManager, 'call', lambda feature_id, class_name, method_name, **kwargs: fake_gb(**kwargs) if feature_id == 'google_books' else None)
+    monkeypatch.setattr(PremiumManager, 'call', lambda feature_id, class_name, method_name, **
+                        kwargs: fake_gb(**kwargs) if feature_id == 'google_books' else None)
 
     results = BookSearchService.search_by_title('some title')
     assert len(results) == 1
@@ -75,6 +79,7 @@ def test_search_by_title_prefers_ol_over_google(monkeypatch, app):
     """If OL returns something, Google Books must not be called."""
     def fake_ol(query, limit):
         return [{'title': 'OL Book', 'isbn': '9876'}]
+
     def fake_gb(title, author=None, limit=10):
         pytest.fail('Google Books should not be used when OL returns data')
 

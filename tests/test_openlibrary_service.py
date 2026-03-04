@@ -91,7 +91,8 @@ def test_search_by_title_and_limit_and_timeout(monkeypatch):
                 'docs': [
                     {'title': 'T1', 'author_name': ['A1'], 'first_publish_year': 2001, 'isbn': ['111'], 'cover_i': 10},
                     {'title': 'T2', 'author_name': ['A2'], 'first_publish_year': 2002, 'isbn': [], 'cover_i': 20},
-                    {'title': 'T3', 'author_name': ['A3'], 'first_publish_year': 2003, 'isbn': ['333'], 'cover_i': None},
+                    {'title': 'T3', 'author_name': ['A3'],
+                        'first_publish_year': 2003, 'isbn': ['333'], 'cover_i': None},
                 ]
             }
 
@@ -154,8 +155,6 @@ def test_parse_book_data_description_and_year_parsing(monkeypatch):
     assert parsed['authors'] == ['Author Edge']
     # medium cover should be picked
     assert parsed['cover'] and 'med.jpg' in parsed['cover']
-
-
 
 
 def test_author_formatting():
