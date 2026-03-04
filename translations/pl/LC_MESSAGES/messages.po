@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-03-01 12:55+0100\n"
-"PO-Revision-Date: 2026-03-01 13:14\n"
+"POT-Creation-Date: 2026-03-04 19:27+0100\n"
+"PO-Revision-Date: 2026-03-04 18:59\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -36,7 +36,7 @@ msgstr "Proszę podać co najmniej jeden ISBN."
 
 #: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:24
 #: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:73
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:348
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:362
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:101
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_detail.html:81
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/index.html:100
@@ -75,77 +75,73 @@ msgstr "Autor(-zy) (oddzielone przecinkami)"
 msgid "Genres"
 msgstr "Gatunki"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:83
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:96
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_detail.html:75
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/index.html:99
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/share/book_detail.html:6
 msgid "Year"
 msgstr "Rok"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:85
-msgid "Field 'Year' is required."
-msgstr "Pole 'Rok' jest wymagane."
-
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:89
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:103
 msgid "Please enter a valid year (e.g. 1999)."
 msgstr "Proszę wprowadzić poprawny rok (np. 1999)."
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:94
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:108
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_detail.html:78
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/share/book_detail.html:8
 msgid "Description"
 msgstr "Opis"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:98
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:112
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/index.html:95
 msgid "Cover"
 msgstr "Okładka"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:102
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:116
 msgid "Only image files (jpg, png, jpeg) are allowed!"
 msgstr "Dozwolone są tylko pliki obrazów (jpg, png, jpeg)!"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:107
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:121
 msgid "Cover URL"
 msgstr "Adres URL okładki"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:110
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:124
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_detail.html:99
 msgid "Shelf"
 msgstr "Półka"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:111
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:125
 msgid "Section"
 msgstr "Sekcja"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:112
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:126
 msgid "Room"
 msgstr "Pokój"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:113
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:127
 msgid "Location Notes"
 msgstr "Notatki lokalizacji"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:115
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:157
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:175
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:129
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:171
 #: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:189
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:209
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:203
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:223
 msgid "Submit"
 msgstr "Zatwierdź"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:140
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:150
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:247
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:154
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:164
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:261
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/tenant_detail.html:133
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/users/users.html:24
 msgid "Username"
 msgstr "Nazwa Użytkownika"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:141
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:151
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:162
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:243
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:155
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:165
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:176
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:257
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/tenant_detail.html:134
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/tenant_detail.html:182
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/superadmin/invitation_codes.html:189
@@ -154,33 +150,33 @@ msgstr "Nazwa Użytkownika"
 msgid "Email"
 msgstr "E-mail"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:142
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:156
 msgid "user@example.com"
 msgstr "użytkownik@przyklad.com"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:143
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:251
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:157
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:265
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/auth/login.html:41
 msgid "Password"
 msgstr "Hasło"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:144
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:255
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:158
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:269
 msgid "Confirm Password"
 msgstr "Potwierdź hasło"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:146
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:160
 msgid "Add User"
 msgstr "Dodaj użytkownika"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:152
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:166
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/tenant_detail.html:135
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/users/users.html:26
 msgid "Role"
 msgstr "Rola"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:153
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:203
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:167
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:217
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/tenant_detail.html:157
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/tenant_detail.html:177
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/loans/loans.html:34
@@ -189,144 +185,144 @@ msgstr "Rola"
 msgid "User"
 msgstr "Użytkownik"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:154
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:168
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/tenant_detail.html:153
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/tenant_detail.html:177
 msgid "Manager"
 msgstr "Menedżer"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:155
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:169
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/tenant_detail.html:149
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/tenant_detail.html:177
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/messaging/super_admin_messages.html:49
 msgid "Admin"
 msgstr "Admin"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:163
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:177
 msgid "Update Profile Picture"
 msgstr "Zmień Zdjęcie Profilowe"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:164
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:178
 msgid "Images only!"
 msgstr "Tylko zdjęcia!"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:166
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:180
 msgid "File size must be less than 2MB."
 msgstr "Rozmiar pliku musi być mniejszy niż 2MB."
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:168
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:182
 msgid "New Password"
 msgstr "Nowe Hasło"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:170
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:184
 msgid "Confirm New Password"
 msgstr "Potwierdź Nowe Hasło"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:171
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:185
 msgid "Passwords must match."
 msgstr "Hasła muszą się zgadzać."
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:174
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:188
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/base/layout.html:143
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/base/main_base.html:196
 msgid "Language"
 msgstr "Język"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:187
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:201
 msgid "Library Name"
 msgstr "Nazwa biblioteki"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:188
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:202
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/libraries/library_form.html:15
 msgid "Loan overdue days"
 msgstr "Dni opóźnienia wypożyczenia"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:197
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:211
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/loans/loans.html:138
 msgid "Book"
 msgstr "Książka"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:216
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:230
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_detail.html:119
 msgid "Your Comment"
 msgstr "Twój Komentarz"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:220
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:234
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_detail.html:150
 msgid "Add Comment"
 msgstr "Dodaj Komentarz"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:232
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:246
 msgid "Organization Name"
 msgstr "Nazwa organizacji"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:238
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:252
 msgid "Invitation Code"
 msgstr "Kod Zaproszenia"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:259
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:273
 msgid "First Name"
 msgstr "Imię"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:263
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:277
 msgid "Last Name"
 msgstr "Nazwisko"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:273
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:287
 msgid "Library name already exists"
 msgstr "Nazwa biblioteki już istnieje"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:281
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:295
 #: c:/Users/Marcin/Documents/Python/Libriya/app/routes/auth.py:410
 msgid "Invalid invitation code"
 msgstr "Nieprawidłowy kod zaproszenia"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:283
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:297
 msgid "Invitation code has expired or has already been used"
 msgstr "Kod zaproszenia wygasł lub został już użyty"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:294
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:337
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:308
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:351
 msgid "First name is required"
 msgstr "Imię jest wymagane"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:305
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:340
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:319
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:354
 msgid "Last name is required"
 msgstr "Nazwisko jest wymagane"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:311
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:325
 msgid "Email already registered"
 msgstr "Adres e-mail jest już zarejestrowany"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:317
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:331
 msgid "Username already taken"
 msgstr "Nazwa użytkownika jest zajęta"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:349
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:363
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/messaging/admin_support.html:46
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/messaging/admin_support_new.html:46
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/messaging/super_admin_messages.html:50
 msgid "Subject"
 msgstr "Temat"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:350
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:364
 #: c:/Users/Marcin/Documents/Python/Libriya/app/routes/users.py:125
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/messaging/admin_support_new.html:64
 msgid "Message"
 msgstr "Wiadomość"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:351
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:365
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/superadmin/contact.html:31
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/superadmin/my_messages.html:54
 msgid "Send"
 msgstr "Wyślij"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:363
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:377
 msgid "Tenant Name"
 msgstr "Nazwa Klienta"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:367
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:381
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/dashboard.html:77
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/tenant_detail.html:94
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/tenants_list.html:25
@@ -334,31 +330,31 @@ msgstr "Nazwa Klienta"
 msgid "Subdomain"
 msgstr "Subdomena"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:369
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:383
 msgid "URL-friendly name (e.g., \"mylib\"). Only lowercase letters, numbers and hyphens."
 msgstr "Przyjazna nazwa URL (np. \"moja-biblioteka\"). Tylko małe litery, cyfry i myślniki."
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:373
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:387
 msgid "Max Libraries"
 msgstr "Maksymalna liczba bibliotek"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:375
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:389
 msgid "Maximum number of libraries (leave blank or -1 for unlimited)"
 msgstr "Maksymalna liczba bibliotek (pozostaw puste lub -1 dla nieograniczonych)"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:378
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:392
 msgid "Max Books"
 msgstr "Maksymalna liczba książek"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:380
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:394
 msgid "Maximum number of books (leave blank or -1 for unlimited)"
 msgstr "Maksymalna liczba książek (pozostaw puste lub -1 dla nieograniczonych)"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:382
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:396
 msgid "Save Tenant"
 msgstr "Zapisz Klienta"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:408
+#: c:/Users/Marcin/Documents/Python/Libriya/app/forms.py:422
 msgid "This tenant name already exists."
 msgstr "Ta nazwa klienta już istnieje."
 
@@ -418,90 +414,90 @@ msgstr "Panel Administracyjny"
 msgid "Manage Premium Features"
 msgstr "Zarządzaj funkcjami Premium"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:414
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:415
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/audit_logs.html:7
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/base/main_base.html:329
 msgid "Audit Logs"
 msgstr "Dziennik zdarzeń"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:431
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:432
 msgid "Log file not available"
 msgstr "Plik dziennika niedostępny"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:452
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:453
 msgid "Failed to read log file"
 msgstr "Nie udało się odczytać pliku dziennika"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:462
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:463
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/audit_log_preview.html:7
 msgid "Audit Log Preview"
 msgstr "Podgląd dziennika kontroli"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:476
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:477
 msgid "Not allowed to delete this file"
 msgstr "Brak uprawnień do usunięcia tego pliku"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:492
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:493
 msgid "Audit log file deleted"
 msgstr "Usunięto plik dziennika audytu"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:495
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:496
 msgid "Failed to delete audit log file"
 msgstr "Błąd przy usuwaniu pliku dziennika audytu"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:514
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:515
 msgid "Audit log retention executed"
 msgstr "Zatrzymanie dziennika audytu wykonane"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:516
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:517
 #, python-format
 msgid "Failed to run audit log retention: %(error)s"
 msgstr "Nie udało się uruchomić przechowywania dziennika kontroli: %(error)s"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:546
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:547
 msgid "Premium Modules"
 msgstr "Moduły Premium"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:568
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:569
 msgid "No file provided"
 msgstr "Nie dostarczono żadnego pliku"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:575
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:576
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/base/macros.html:62
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/base/macros.html:67
 msgid "No file selected"
 msgstr "Nie wybrano pliku"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:579
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:580
 msgid "Only ZIP files are allowed"
 msgstr "Tylko pliki ZIP są dozwolone"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:623
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:624
 msgid "No valid premium modules found in ZIP"
 msgstr "Nie znaleziono prawidłowych modułów premium w ZIP"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:633
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:634
 msgid "Premium modules uploaded successfully"
 msgstr "Moduły Premium przesłane pomyślnie"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:640
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:641
 msgid "Invalid ZIP file"
 msgstr "Nieprawidłowy plik ZIP"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:656
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:657
 #, python-format
 msgid "Failed to extract premium modules: %(error)s"
 msgstr "Nie udało się wyodrębnić modułów premium: %(error)s"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:660
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:661
 msgid "Server error during upload"
 msgstr "Błąd serwera podczas przesyłania"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:675
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:676
 msgid "Premium modules reloaded"
 msgstr "Przeładowano moduły Premium"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:757
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/admin.py:758
 msgid "Audit Entries"
 msgstr "Wpisy audytu"
 
@@ -612,11 +608,11 @@ msgstr "Moduł masowego importu nie jest włączony dla Twojej organizacji."
 msgid "No libraries available for import."
 msgstr "Brak dostępnych bibliotek do importu."
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/books.py:268
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/books.py:276
 msgid "Your organization has reached the maximum number of books allowed. Contact support to increase your limit."
 msgstr "Twoja organizacja osiągnęła maksymalną dozwoloną liczbę książek. Skontaktuj się z pomocą techniczną, aby zwiększyć swój limit."
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/books.py:561
+#: c:/Users/Marcin/Documents/Python/Libriya/app/routes/books.py:572
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_detail.html:48
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/index.html:167
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/index.html:254
@@ -778,7 +774,7 @@ msgstr "Nie znaleziono danych dla tego ISBN. Proszę sprawdzić numer i spróbow
 
 #: c:/Users/Marcin/Documents/Python/Libriya/app/routes/main.py:459
 #: c:/Users/Marcin/Documents/Python/Libriya/app/routes/main.py:539
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:614
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:615
 msgid "Error during search. Please try again."
 msgstr "Błąd podczas wyszukiwania. Spróbuj ponownie."
 
@@ -1200,7 +1196,7 @@ msgid "Tenant Information"
 msgstr "Informacje o kliencie"
 
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/admin/tenant_detail.html:105
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:547
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:548
 msgid "Unknown"
 msgstr "Nieznany"
 
@@ -1823,7 +1819,7 @@ msgstr "Wprowadź ISBN lub skanuj..."
 
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:33
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:51
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:495
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:496
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/index.html:31
 msgid "Search"
 msgstr "Szukaj"
@@ -1924,7 +1920,7 @@ msgid "Please enter an ISBN."
 msgstr "Proszę wprowadzić ISBN."
 
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:331
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:515
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:516
 msgid "Searching..."
 msgstr "Wyszukiwanie..."
 
@@ -1944,46 +1940,50 @@ msgstr "Open Library"
 msgid "Premium Source (Cover Only)"
 msgstr "Źródło Premium (Tylko okłada)"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:365
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:364
+msgid "Google Books"
+msgstr ""
+
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:366
 msgid "Unknown Source"
 msgstr "Nieznane Źródło"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:375
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:376
 msgid "Limited Data"
 msgstr "Ograniczone Dane"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:376
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:377
 msgid "Book data not found in Open Library. Only cover image available from premium source."
 msgstr "Nie znaleziono danych kw Open Library. Tylko obraz okładki dostępny ze źródła premium."
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:377
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:380
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:378
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:381
 msgid "Data from:"
 msgstr "Dane z:"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:377
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:380
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:378
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:381
 msgid "Cover:"
 msgstr "Okładka:"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:377
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:380
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:378
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:381
 msgid "Local Default"
 msgstr "Domyślna"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:471
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:472
 msgid "Genres:"
 msgstr "Gatunki:"
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:491
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:492
 msgid "Could not find data for ISBN. Please check the number and try again."
 msgstr "Nie można znaleźć danych dla ISBN. Proszę sprawdzić numer i spróbować ponownie."
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:510
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:511
 msgid "Please enter at least 3 characters."
 msgstr "Proszę wpisać co najmniej 3 znaki."
 
-#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:529
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:530
 msgid "No books found."
 msgstr "Nie znaleziono książek."
 
@@ -2024,6 +2024,12 @@ msgstr "Autor(rzy)"
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_detail.html:72
 msgid "No genres assigned"
 msgstr "Brak przypisanych gatunków"
+
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_detail.html:75
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_detail.html:76
+#: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/index.html:130
+msgid "None"
+msgstr "Brak"
 
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_detail.html:83
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/index.html:51
@@ -3706,8 +3712,4 @@ msgstr "Subdomena może zawierać tylko małe litery, cyfry i myślniki, 3-20 zn
 #: c:/Users/Marcin/Documents/Python/Libriya/app/utils/validators.py:79
 msgid "This subdomain is already taken."
 msgstr "Ta subdomena jest już zajęta."
-
-#: C:/Users/Marcin/Documents/Python/Libriya/app/templates/books/index.html:130
-msgid "None"
-msgstr "Brak"
 
