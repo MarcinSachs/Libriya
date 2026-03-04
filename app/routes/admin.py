@@ -339,6 +339,7 @@ def toggle_tenant_premium_feature(tenant_id, feature_id):
             'bookcover_api': 'premium_bookcover_enabled',
             'biblioteka_narodowa': 'premium_biblioteka_narodowa_enabled',
             'batch_import': 'premium_batch_import_enabled',
+            'google_books': 'premium_google_books_enabled',
         }
         valid_features = {}
         available_features = PremiumManager.list_features()

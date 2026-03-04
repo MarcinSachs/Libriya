@@ -6,7 +6,8 @@ from app.models import Tenant, User, Book
 @pytest.fixture
 def premium_tenant(app):
     tenant = Tenant(name='TestTenant', subdomain='test', premium_bookcover_enabled=True,
-                    premium_biblioteka_narodowa_enabled=True, premium_batch_import_enabled=True)
+                    premium_biblioteka_narodowa_enabled=True, premium_batch_import_enabled=True,
+                    premium_google_books_enabled=True)
     db.session.add(tenant)
     db.session.commit()
     return tenant
@@ -54,3 +55,10 @@ def test_toggle_batch_import(superadmin_client, premium_tenant):
 def test_batch_import_view(superadmin_client, premium_tenant):
     resp = superadmin_client.get('/books/batch_import')
     assert resp.status_code in (200, 302)  # 302 if not admin/manager
+
+
+def test_toggle_google_books(superadmin_client, premium_tenant):
+    resp = superadmin_client.post(f'/admin/tenants/{premium_tenant.id}/premium/google_books/toggle')
+    assert resp.status_code == 200 or resp.status_code == 302
+    db.session.refresh(premium_tenant)
+    assert premium_tenant.premium_google_books_enabled in [True, False]

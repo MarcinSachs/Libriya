@@ -131,6 +131,14 @@ def get_genres_from_isbn():
                                             'search_by_isbn',
                                             isbn=isbn)
 
+            # if BN didn't return anything, try Google Books (another premium module)
+            if not book_data and PremiumManager.is_enabled('google_books'):
+                current_app.logger.info(f"Genres API - BN empty, trying Google Books for ISBN: {isbn}")
+                book_data = PremiumManager.call('google_books',
+                                                'GoogleBooksService',
+                                                'search_by_isbn',
+                                                isbn=isbn)
+
             if not book_data:
                 # Fallback to Open Library
                 current_app.logger.info(f"Genres API - Premium services failed, searching OL for ISBN: {isbn}")
@@ -289,11 +297,16 @@ def book_add():
         # Try to fetch description from APIs if not provided
         if not description and form.isbn.data:
             # Try BN first
-            # note: PremiumManager.call requires service class name as second arg
             book_data = PremiumManager.call('biblioteka_narodowa',
                                             'BibliotekaNarodowaService',
                                             'search_by_isbn',
                                             isbn=form.isbn.data)
+            # if BN didn't yield metadata and google books is enabled, try it
+            if not book_data and PremiumManager.is_enabled('google_books'):
+                book_data = PremiumManager.call('google_books',
+                                                'GoogleBooksService',
+                                                'search_by_isbn',
+                                                isbn=form.isbn.data)
             if not book_data:
                 book_data = OpenLibraryClient.search_by_isbn(form.isbn.data)
             if book_data:
@@ -481,9 +494,7 @@ def book_edit(book_id):
 
     if request.method == 'GET':
         # Pre-fill form data for fields not handled by obj=book
-        form.author.data = ", ".join([author.name for author in book.authors])
-        form.library.data = book.library_id
-
+        form.author.data = ", ".join([author.display_name for author in book.authors])
         # Pre-fill location data if it exists
         if book.location:
             form.shelf.data = book.location.shelf
@@ -771,7 +782,7 @@ def get_offline_books_data():
                 'title': book.title,
                 'isbn': book.isbn,
                 'year': book.year,
-                'authors': [{'id': a.id, 'name': a.name} for a in book.authors],
+                'authors': [{'id': a.id, 'name': a.display_name} for a in book.authors],
                 'library_id': book.library_id,
                 'library_name': book.library.name if book.library else None,
                 'has_cover': bool(book.cover),

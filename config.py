@@ -80,6 +80,10 @@ class Config(BaseSettings):
     # Premium Features (optional - defaults to disabled for safety)
     PREMIUM_BOOKCOVER_ENABLED: bool = False
     PREMIUM_BIBLIOTEKA_NARODOWA_ENABLED: bool = False
+    PREMIUM_GOOGLE_BOOKS_ENABLED: bool = False
+
+    # optional API key for Google Books (used by premium module)
+    GOOGLE_BOOKS_API_KEY: Optional[str] = None
 
     # Enforce whether requests to unknown subdomains should return 404.
     # Set to False during local development if you use custom hosts or wildcard domains.

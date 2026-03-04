@@ -24,11 +24,14 @@ def test_search_by_isbn_priority_premium(monkeypatch):
     }
 
     monkeypatch.setattr('app.services.book_service.PremiumManager.call', lambda *a, **k: bn_book)
-    monkeypatch.setattr('app.services.book_service.CoverService.get_cover_url', lambda **k: ('http://bn-cover', 'premium_bookcover'))
+    monkeypatch.setattr('app.services.book_service.CoverService.get_cover_url',
+                        lambda **k: ('http://bn-cover', 'premium_bookcover'))
 
     res = BookSearchService.search_by_isbn('9780000000000')
     assert res is not None
     assert res['title'] == 'BN Title'
+    # author list should have been reformatted
+    assert res['authors'] == ['X Autor']
     assert res['cover']['url'] == 'http://bn-cover'
     assert res['cover']['source'] == 'premium_bookcover'
 
@@ -49,11 +52,13 @@ def test_search_by_isbn_fallback_to_openlibrary(monkeypatch):
     }
 
     monkeypatch.setattr('app.services.book_service.OpenLibraryClient.search_by_isbn', lambda isbn: ol_book)
-    monkeypatch.setattr('app.services.book_service.CoverService.get_cover_url', lambda **k: ('http://ol-cover', 'open_library'))
+    monkeypatch.setattr('app.services.book_service.CoverService.get_cover_url',
+                        lambda **k: ('http://ol-cover', 'open_library'))
 
     res = BookSearchService.search_by_isbn('9781111111111')
     assert res is not None
     assert res['title'] == 'OL Title'
+    assert res['authors'] == ['Y Author']
     assert res['cover']['url'] == 'http://ol-cover'
     assert res['cover']['source'] == 'open_library'
 
@@ -65,7 +70,8 @@ def test_search_by_isbn_cover_only_premium(monkeypatch):
 
     monkeypatch.setattr('app.services.book_service.PremiumManager.is_enabled', lambda feature: False)
     monkeypatch.setattr('app.services.book_service.OpenLibraryClient.search_by_isbn', lambda isbn: None)
-    monkeypatch.setattr('app.services.book_service.CoverService._get_cover_from_premium_sources', lambda isbn: 'http://premium-cover')
+    monkeypatch.setattr('app.services.book_service.CoverService._get_cover_from_premium_sources',
+                        lambda isbn: 'http://premium-cover')
 
     res = BookSearchService.search_by_isbn('9782222222222')
     assert res is not None
@@ -85,7 +91,8 @@ def test_search_by_title_enhances_covers_and_handles_exceptions(monkeypatch):
         {'isbn': '9784444444444', 'title': 'T2', 'authors': ['A2']}
     ]
     monkeypatch.setattr('app.services.book_service.OpenLibraryClient.search_by_title', lambda title, limit: ol_results)
-    monkeypatch.setattr('app.services.book_service.CoverService.get_cover_url', lambda **k: ('http://cover', 'open_library'))
+    monkeypatch.setattr('app.services.book_service.CoverService.get_cover_url',
+                        lambda **k: ('http://cover', 'open_library'))
 
     res = BookSearchService.search_by_title('The Title')
     assert len(res) == 2
@@ -94,7 +101,8 @@ def test_search_by_title_enhances_covers_and_handles_exceptions(monkeypatch):
         assert r['cover']['source'] == 'open_library'
 
     # simulate CoverService failure -> cover set to local_default
-    monkeypatch.setattr('app.services.book_service.CoverService.get_cover_url', lambda **k: (_ for _ in ()).throw(Exception('fail')))
+    monkeypatch.setattr('app.services.book_service.CoverService.get_cover_url',
+                        lambda **k: (_ for _ in ()).throw(Exception('fail')))
     ol_single = [{'isbn': '9785555555555', 'title': 'T3', 'authors': ['A3']}]
     monkeypatch.setattr('app.services.book_service.OpenLibraryClient.search_by_title', lambda title, limit: ol_single)
 
@@ -106,9 +114,30 @@ def test_search_by_title_enhances_covers_and_handles_exceptions(monkeypatch):
 
 def test__enhance_with_cover_handles_cover_exceptions(monkeypatch):
     book = {'isbn': '9786666666666', 'title': 'Broken', 'authors': ['X']}
-    monkeypatch.setattr('app.services.book_service.CoverService.get_cover_url', lambda **k: (_ for _ in ()).throw(Exception('boom')))
+    monkeypatch.setattr('app.services.book_service.CoverService.get_cover_url',
+                        lambda **k: (_ for _ in ()).throw(Exception('boom')))
 
     # call the private helper; should not raise and should set local_default
     BookSearchService._enhance_with_cover(book)
     assert book['cover']['url'] is None
     assert book['cover']['source'] == 'local_default'
+
+
+def test_search_by_isbn_formats_authors(monkeypatch):
+    # ensure service goes through formatting step regardless of source
+    monkeypatch.setattr('app.services.book_service.ISBNValidator.is_valid', lambda v: True)
+    monkeypatch.setattr('app.services.book_service.ISBNValidator.normalize', lambda v: v)
+    monkeypatch.setattr('app.services.book_service.PremiumManager.is_enabled', lambda feature: False)
+    ol_book = {
+        'isbn': '9787777777777',
+        'title': 'Format Test',
+        'authors': ['John Smith'],
+        'cover': None,
+        'publisher': 'OL'
+    }
+    monkeypatch.setattr('app.services.book_service.OpenLibraryClient.search_by_isbn', lambda isbn: ol_book)
+    monkeypatch.setattr('app.services.book_service.CoverService.get_cover_url',
+                        lambda **k: ('http://cover', 'open_library'))
+
+    res = BookSearchService.search_by_isbn('9787777777777')
+    assert res['authors'] == ['Smith John']

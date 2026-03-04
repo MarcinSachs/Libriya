@@ -72,6 +72,22 @@ class BookSearchService:
             else:
                 logger.info("BookSearchService: Not found in BN, falling back to Open Library")
 
+        # 1.5 Try Google Books before falling back to Open Library
+        if PremiumManager.is_enabled('google_books'):
+            logger.debug(f"BookSearchService: Trying Google Books for ISBN {normalized_isbn}")
+            book_data = PremiumManager.call(
+                'google_books',
+                'GoogleBooksService',
+                'search_by_isbn',
+                isbn=normalized_isbn
+            )
+            if book_data:
+                logger.info(f"BookSearchService: Found in Google Books: {book_data.get('title')}")
+                BookSearchService._enhance_with_cover(book_data, normalized_isbn)
+                return book_data
+            else:
+                logger.info("BookSearchService: Not found in Google Books, falling back to Open Library")
+
         # 2. Try Open Library (fallback)
         logger.debug(f"BookSearchService: Searching Open Library for ISBN {normalized_isbn}")
         book_data = OpenLibraryClient.search_by_isbn(normalized_isbn)
@@ -135,6 +151,22 @@ class BookSearchService:
         # Search in Open Library
         ol_results = OpenLibraryClient.search_by_title(title, limit)
 
+        # if nothing found and premium Google Books is enabled, try there
+        if not ol_results and PremiumManager.is_enabled('google_books'):
+            logger.debug(f"BookSearchService: No OL results, trying Google Books for title '{title}'")
+            gb_results = PremiumManager.call(
+                'google_books',
+                'GoogleBooksService',
+                'search_by_title',
+                title=title,
+                author=author,
+                limit=limit
+            )
+            # gb_results should already be list
+            if gb_results:
+                ol_results = gb_results
+                logger.info(f"BookSearchService: Found {len(gb_results)} results from Google Books")
+
         # Enhance each result with cover info
         for result in ol_results:
             BookSearchService._enhance_with_cover(result)
@@ -165,6 +197,10 @@ class BookSearchService:
         try:
             isbn = isbn or book_data.get("isbn")
             title = book_data.get("title")
+            # Ensure authors are formatted consistently (Lastname, Firstname)
+            if isinstance(book_data.get("authors"), list):
+                from app.models import Author
+                book_data["authors"] = [Author.format_name(a) for a in book_data.get("authors", []) if a]
             authors = book_data.get("authors", [])
             author = authors[0] if authors else None
 

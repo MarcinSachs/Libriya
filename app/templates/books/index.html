@@ -117,7 +117,7 @@
                         {% endif %}
                     </td>
                     <td class="px-4 py-3 font-medium text-text-dark">{{ book.title }}</td>
-                    <td class="px-4 py-3">{{ book.authors|map(attribute='name')|join(', ') }}</td>
+                    <td class="px-4 py-3">{{ book.authors|map(attribute='display_name')|join(', ') }}</td>
                     <td class="px-4 py-3">
                         {% if book.genres %}
                         {% for genre in book.genres %}
@@ -202,7 +202,7 @@
                 <h3 class="book-card-title">{{ book.title }}</h3>
 
                 <!-- Author -->
-                <p class="book-card-author">{{ book.authors|map(attribute='name')|join(', ') }}</p>
+                <p class="book-card-author">{{ book.authors|map(attribute='display_name')|join(', ') }}</p>
 
                 <!-- Meta Info -->
                 <div class="book-card-meta">

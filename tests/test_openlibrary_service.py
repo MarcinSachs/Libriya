@@ -54,7 +54,8 @@ def test_search_by_isbn_parsing_and_errors(monkeypatch):
     result = OpenLibraryClient.search_by_isbn(sample_isbn)
     assert result is not None
     assert result['title'] == 'Sample Title'
-    assert result['authors'] == ['A. Author']
+    # names should be reformatted to Lastname, Firstname
+    assert result['authors'] == ['Author A.']
     assert result['year'] == 1999
     assert result['isbn'] == sample_isbn
     assert result['publisher'] == 'PubHouse'
@@ -90,7 +91,8 @@ def test_search_by_title_and_limit_and_timeout(monkeypatch):
                 'docs': [
                     {'title': 'T1', 'author_name': ['A1'], 'first_publish_year': 2001, 'isbn': ['111'], 'cover_i': 10},
                     {'title': 'T2', 'author_name': ['A2'], 'first_publish_year': 2002, 'isbn': [], 'cover_i': 20},
-                    {'title': 'T3', 'author_name': ['A3'], 'first_publish_year': 2003, 'isbn': ['333'], 'cover_i': None},
+                    {'title': 'T3', 'author_name': ['A3'],
+                        'first_publish_year': 2003, 'isbn': ['333'], 'cover_i': None},
                 ]
             }
 
@@ -149,8 +151,20 @@ def test_parse_book_data_description_and_year_parsing(monkeypatch):
     assert parsed is not None
     assert parsed['year'] == 2005
     assert parsed['description'] == 'Short desc'
+    # authors should also be formatted
+    assert parsed['authors'] == ['Author Edge']
     # medium cover should be picked
     assert parsed['cover'] and 'med.jpg' in parsed['cover']
+
+
+def test_author_formatting():
+    """Utility method on :class:`Author` should handle common cases."""
+    from app.models import Author
+    assert Author.format_name('John Doe') == 'Doe John'
+    assert Author.format_name('Single') == 'Single'
+    # already reversed should lose comma
+    assert Author.format_name('Smith, Jane') == 'Smith Jane'
+    assert Author.format_name('') == ''
 
 
 def test_map_ol_subjects_to_genres_handles_empty_and_duplicates():
