@@ -494,9 +494,7 @@ def book_edit(book_id):
 
     if request.method == 'GET':
         # Pre-fill form data for fields not handled by obj=book
-        form.author.data = ", ".join([author.name for author in book.authors])
-        form.library.data = book.library_id
-
+        form.author.data = ", ".join([author.display_name for author in book.authors])
         # Pre-fill location data if it exists
         if book.location:
             form.shelf.data = book.location.shelf
@@ -784,7 +782,7 @@ def get_offline_books_data():
                 'title': book.title,
                 'isbn': book.isbn,
                 'year': book.year,
-                'authors': [{'id': a.id, 'name': a.name} for a in book.authors],
+                'authors': [{'id': a.id, 'name': a.display_name} for a in book.authors],
                 'library_id': book.library_id,
                 'library_name': book.library.name if book.library else None,
                 'has_cover': bool(book.cover),

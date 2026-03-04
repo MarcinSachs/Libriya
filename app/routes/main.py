@@ -286,7 +286,7 @@ def api_search_books():
             {
                 'id': book.id,
                 'title': book.title,
-                'author': ', '.join([a.name for a in book.authors]) if book.authors else 'Unknown',
+                'author': ', '.join([a.display_name for a in book.authors]) if book.authors else 'Unknown',
                 'description': (book.description[:100] + '...') if book.description and len(book.description) > 100 else book.description,
                 'year': book.year,
                 'status': book.status,

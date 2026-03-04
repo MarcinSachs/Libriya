@@ -197,6 +197,10 @@ class BookSearchService:
         try:
             isbn = isbn or book_data.get("isbn")
             title = book_data.get("title")
+            # Ensure authors are formatted consistently (Lastname, Firstname)
+            if isinstance(book_data.get("authors"), list):
+                from app.models import Author
+                book_data["authors"] = [Author.format_name(a) for a in book_data.get("authors", []) if a]
             authors = book_data.get("authors", [])
             author = authors[0] if authors else None
 

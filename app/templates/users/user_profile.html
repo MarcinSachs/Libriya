@@ -168,7 +168,7 @@
                     <h5 class="font-semibold text-lg">{{ book.title }}</h5>
                     <p class="text-gray-600">
                         {% for author in book.authors %}
-                        {{ author.name }}{% if not loop.last %}, {% endif %}
+                        {{ author.display_name }}{% if not loop.last %}, {% endif %}
                         {% endfor %}
                     </p>
                 </div>

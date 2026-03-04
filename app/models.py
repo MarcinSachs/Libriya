@@ -216,7 +216,8 @@ class Book(db.Model):
     comments = db.relationship('Comment', back_populates='book', lazy=True, cascade='all, delete-orphan')
 
     def __str__(self):
-        author_names = ", ".join([author.name for author in self.authors])
+        # use ``str(author)`` which now returns the formatted display name
+        author_names = ", ".join([str(author) for author in self.authors])
         genre_names = ", ".join([genre.name for genre in self.genres])
         return f"{self.title} by {author_names} ({self.year}) - Genres: {genre_names}"
 
@@ -280,15 +281,45 @@ class Author(db.Model):
 
     Attributes:
         id (int): Primary key
-        name (str): Author full name
+        name (str): Author full name (stored in whatever order user/API provided)
     """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, index=True)
     books = db.relationship('Book', secondary=book_authors,
                             lazy='subquery', back_populates='authors')
 
+    @staticmethod
+    def format_name(name: str) -> str:
+        """Return an author name formatted as ``Lastname Firstname`` without a comma.
+
+        We treat any name containing a comma as already formatted (last, first)
+        and simply remove the comma so that the output is still ``Lastname Firstname``.
+        Single-token names are returned as-is.  This helper ensures a consistent
+        display across the UI while keeping commas reserved for separating
+        multiple authors.
+        """
+        if not name:
+            return ""
+        # if user shipped the name as "Last, First" convert to space form
+        if "," in name:
+            parts = [p.strip() for p in name.split(',') if p.strip()]
+            return " ".join(parts)
+        parts = name.strip().split()
+        if len(parts) <= 1:
+            return name
+        last = parts[-1]
+        firsts = " ".join(parts[:-1])
+        return f"{last} {firsts}"
+
+    @property
+    def display_name(self) -> str:
+        """Convenience property for use in templates and string representations."""
+        return Author.format_name(self.name)
+
     def __str__(self):
-        return self.name
+        # __str__ is used by Python code when printing the object; show
+        # the nicely formatted version rather than the raw ``name`` field.
+        return self.display_name
 
 
 class Genre(db.Model):

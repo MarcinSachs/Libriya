@@ -29,6 +29,8 @@ def test_search_by_isbn_priority_premium(monkeypatch):
     res = BookSearchService.search_by_isbn('9780000000000')
     assert res is not None
     assert res['title'] == 'BN Title'
+    # author list should have been reformatted
+    assert res['authors'] == ['X Autor']
     assert res['cover']['url'] == 'http://bn-cover'
     assert res['cover']['source'] == 'premium_bookcover'
 
@@ -54,6 +56,7 @@ def test_search_by_isbn_fallback_to_openlibrary(monkeypatch):
     res = BookSearchService.search_by_isbn('9781111111111')
     assert res is not None
     assert res['title'] == 'OL Title'
+    assert res['authors'] == ['Y Author']
     assert res['cover']['url'] == 'http://ol-cover'
     assert res['cover']['source'] == 'open_library'
 
@@ -112,3 +115,22 @@ def test__enhance_with_cover_handles_cover_exceptions(monkeypatch):
     BookSearchService._enhance_with_cover(book)
     assert book['cover']['url'] is None
     assert book['cover']['source'] == 'local_default'
+
+
+def test_search_by_isbn_formats_authors(monkeypatch):
+    # ensure service goes through formatting step regardless of source
+    monkeypatch.setattr('app.services.book_service.ISBNValidator.is_valid', lambda v: True)
+    monkeypatch.setattr('app.services.book_service.ISBNValidator.normalize', lambda v: v)
+    monkeypatch.setattr('app.services.book_service.PremiumManager.is_enabled', lambda feature: False)
+    ol_book = {
+        'isbn': '9787777777777',
+        'title': 'Format Test',
+        'authors': ['John Smith'],
+        'cover': None,
+        'publisher': 'OL'
+    }
+    monkeypatch.setattr('app.services.book_service.OpenLibraryClient.search_by_isbn', lambda isbn: ol_book)
+    monkeypatch.setattr('app.services.book_service.CoverService.get_cover_url', lambda **k: ('http://cover', 'open_library'))
+
+    res = BookSearchService.search_by_isbn('9787777777777')
+    assert res['authors'] == ['Smith John']

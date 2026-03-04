@@ -60,7 +60,7 @@
             <p><strong>{{ _('Title') }}:</strong> {{ book.title }}</p>
             <p><strong>{{ _('Author(s)') }}:</strong>
                 {% for author in book.authors %}
-                {{ author.name }}{% if not loop.last %}, {% endif %}
+                {{ author.display_name }}{% if not loop.last %}, {% endif %}
                 {% endfor %}
             </p>
             <p><strong>{{ _('Genres') }}:</strong>

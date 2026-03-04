@@ -14,7 +14,8 @@ def test_search_by_isbn_uses_google_if_bn_empty(monkeypatch, app):
 
     def fake_google(isbn):
         calls.append('google')
-        return {'title': 'From Google', 'isbn': isbn}
+        # return an author so we can assert formatting
+        return {'title': 'From Google', 'isbn': isbn, 'authors': ['Jane Roe']}
 
     monkeypatch.setattr(PremiumManager, 'is_enabled', lambda feature: feature in ['biblioteka_narodowa', 'google_books'])
     monkeypatch.setattr(PremiumManager, 'call', lambda feature_id, class_name, method_name, **kwargs: fake_isbn(kwargs['isbn']) if feature_id == 'biblioteka_narodowa' else fake_google(kwargs['isbn']))
@@ -22,6 +23,8 @@ def test_search_by_isbn_uses_google_if_bn_empty(monkeypatch, app):
     result = BookSearchService.search_by_isbn('9780306406157')
     assert result is not None
     assert result.get('title') == 'From Google'
+    # authors should be reformatted by the service helper
+    assert result.get('authors') == ['Roe Jane']
     assert calls == ['bn', 'google']
 
 

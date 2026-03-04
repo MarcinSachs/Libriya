@@ -218,13 +218,16 @@ class OpenLibraryClient:
             docs = data.get("docs", [])
 
             results = []
+            from app.models import Author
             for doc in docs[:limit]:
                 isbn_list = doc.get("isbn", [])
                 if isbn_list:  # Only return books with ISBN
+                    raw_auth = doc.get("author_name", []) or []
+                    formatted_auth = [Author.format_name(a) for a in raw_auth if a]
                     parsed = {
                         "source": "open_library",
                         "title": doc.get("title"),
-                        "authors": doc.get("author_name", []),
+                        "authors": formatted_auth,
                         "isbn": isbn_list[0],
                         "year": doc.get("first_publish_year"),
                         "cover_id": doc.get("cover_i"),
@@ -258,11 +261,15 @@ class OpenLibraryClient:
         """
         try:
             title = book_data.get("title", "").strip()
+            # collect raw names then format them
             authors = []
             for author in book_data.get("authors", []):
                 author_name = author.get("name", "").strip()
                 if author_name:
                     authors.append(author_name)
+            # format names consistently
+            from app.models import Author
+            authors = [Author.format_name(a) for a in authors]
 
             # Extract year from publish_date
             year = None
