@@ -883,7 +883,7 @@ msgstr "Dzieci"
 
 #: c:/Users/Marcin/Documents/Python/Libriya/app/seeds/seed.py:16
 msgid "Young Adult"
-msgstr "Young Adult"
+msgstr "Młodzieżowa"
 
 #: c:/Users/Marcin/Documents/Python/Libriya/app/seeds/seed.py:17
 msgid "Fantasy"
