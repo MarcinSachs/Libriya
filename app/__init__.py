@@ -35,6 +35,12 @@ cache = Cache()
 def create_app(config_class=Config):
     app = Flask(__name__)
 
+    # Globalny context_processor z bieżącym rokiem
+    from datetime import datetime
+
+    @app.context_processor
+    def inject_current_year():
+        return {'current_year': datetime.utcnow().year}
     # Initialize Pydantic Settings instance and update Flask config
     config = config_class()
     app.config.update(config.model_dump())
@@ -380,6 +386,7 @@ def create_app(config_class=Config):
         }
 
     # Error handlers
+
     @app.errorhandler(404)
     def not_found(error):
         """Handle 404 errors"""

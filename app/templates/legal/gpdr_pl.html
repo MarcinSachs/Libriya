@@ -1,0 +1,39 @@
+{% extends "legal/legal_base.html" %}
+{% block content %}
+    <!-- Libriya Etymology Section -->
+    <section class="py-4 bg-white" id="gpdr-etymology">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-primary mb-4">Obowiązek informacyjny RODO</h2>
+                <p class="text-lg text-gray-700 leading-relaxed mb-4">Poniższa informacja stanowi zwięzły, zrozumiały i przejrzysty skrót informacji zamieszczonych w <strong><a href="{{ url_for('legal.privacy') }}">Polityce Prywatności</a></strong> odnośnie Administratora danych, celu i sposobu przetwarzania danych osobowych oraz Twoich praw w związku z tym przetwarzaniem, w formie wymaganej do spełnienia obowiązku informacyjnego RODO. Szczegóły dotyczące sposobu przetwarzania i podmiotów uczestniczących w tym procesie dostępne są we wskazanej polityce.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="gpdr" class="py-10 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-24">
+                <h2 class="text-primary font-black tracking-[0.2em] text-xl mb-6">Administrator danych osobowych</h2>
+                <p class="text-lg text-gray-700 leading-relaxed mb-4">Administratorem Danych Osobowych (dalej Administrator) jest osoba fizyczna Marcin Sachs zamieszkała we Wrocławiu, prowadząca działalność nierejestrowaną, udziellająca dostęp do platformy Libriya (Saas).</p>
+            <h2 class="text-primary font-black tracking-[0.2em] text-xl mb-6">Kontakt z Administratorem</h2>
+                <p class="text-lg text-gray-700 leading-relaxed mb-4">Z Administratorem można skontaktować się poprzez pocztę elektroniczną. Adres poczty elektronicznej - <a href="mailto: support@libriya.app"> <strong>support@libriya.app</strong></a></p>
+            </div>
+        </div>
+    </section>
+
+
+<script>
+    window.addEventListener('scroll', function() {
+        const nav = document.querySelector('nav');
+        if (window.scrollY > 50) {
+            nav.classList.add('shadow-xl');
+            nav.classList.add('bg-white');
+            nav.classList.remove('glass-nav');
+        } else {
+            nav.classList.remove('shadow-xl');
+            nav.classList.remove('bg-white');
+            nav.classList.add('glass-nav');
+        }
+    });
+</script>
+{% endblock %}

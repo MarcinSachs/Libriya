@@ -403,9 +403,18 @@
     </main>
     <!-- Unified Footer -->
     <footer class="bg-white py-0.5 border-t border-gray-100 mt-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-[40px]" style="min-height:2.5rem;">
-            <p class="text-gray-400 text-base text-center w-full">&copy; 2026 Libriya. {{ _('All rights reserved.') }}</p>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between min-h-[40px]" style="min-height:2.5rem;">
+            <div class="flex items-center text-left gap-3">
+                <span class="text-gray-400 text-base">&copy; {{ current_year }} Libriya. {{ _('Wszelkie prawa zastrzeżone.') }}</span>
+            </div>
+            <div class="flex items-center text-right gap-3">          
+                <span class="text-gray-400 text-base hover:text-gray-700 transition-colors"><a href="{{ url_for('legal.terms') }}"><i class='bx bx-file'></i> {{ _('Terms & Conditions') }}</a></span>
+                <span class="text-gray-400 text-base hover:text-gray-700 transition-colors"><a href="{{ url_for('legal.gpdr') }}"><i class='bx bx-shield'></i> {{ _('GPDR') }}</a></span>
+                <span class="text-gray-400 text-base hover:text-gray-700 transition-colors"><a href="{{ url_for('legal.privacy') }}"><i class='bx bx-lock'></i> {{ _('Privacy Policy') }}</a></span>
+                <span class="text-gray-400 text-base hover:text-gray-700 transition-colors"><a href="{{ url_for('legal.cookies') }}"><i class='bx bx-cookie'></i></i> {{ _('Cookie Policy') }}</a></span>
+            </div>
         </div>
+
     </footer>
     <!-- Cookie Consent Banner -->
     <div id="cookie-consent-banner" class="fixed bottom-0 left-0 w-full bg-gray-900 text-white text-center py-3 px-4 z-[9999] shadow-lg transition-all duration-300" style="display:none;">
