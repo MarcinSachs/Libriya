@@ -188,7 +188,12 @@ def home():
     query = Book.query
 
     # --- LOCATION BASED FILTERING ---
-    if current_user.role != 'admin':
+    if current_user.is_super_admin:
+        pass  # superadmin sees all books across all tenants
+    elif current_user.role == 'admin':
+        # tenant admin sees all books within their tenant
+        query = query.filter(Book.tenant_id == current_user.tenant_id)
+    else:
         user_library_ids = [lib.id for lib in current_user.libraries]
         if not user_library_ids:
             # If user is not in any library, show no books
@@ -261,7 +266,11 @@ def api_search_books():
     query = Book.query
 
     # --- LOCATION BASED FILTERING ---
-    if current_user.role != 'admin':
+    if current_user.is_super_admin:
+        pass  # superadmin sees all books across all tenants
+    elif current_user.role == 'admin':
+        query = query.filter(Book.tenant_id == current_user.tenant_id)
+    else:
         user_library_ids = [lib.id for lib in current_user.libraries]
         if not user_library_ids:
             return jsonify({'books': []})

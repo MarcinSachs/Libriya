@@ -159,6 +159,13 @@ class UserForm(FlaskForm):
                                      DataRequired(), EqualTo('password')])
     submit = SubmitField(_('Add User'), render_kw={"class": "btn btn-primary"})
 
+    def validate_username(self, field):
+        from app.models import User
+        from flask_login import current_user
+        user = User.query.filter_by(username=field.data, tenant_id=current_user.tenant_id).first()
+        if user:
+            raise ValidationError(_('Username already taken'))
+
 
 class UserEditForm(FlaskForm):
     username = StringField(_('Username'), render_kw={'readonly': True})
@@ -325,10 +332,23 @@ class RegistrationForm(FlaskForm):
             raise ValidationError(_('Email already registered'))
 
     def validate_username(self, field):
-        from app.models import User
-        user = User.query.filter_by(username=field.data).first()
-        if user:
-            raise ValidationError(_('Username already taken'))
+        from app.models import User, InvitationCode
+        inv_code_val = self.invitation_code.data if self.invitation_code.data else None
+        if inv_code_val:
+            # Joining existing tenant via invitation code — check within that tenant only
+            code = InvitationCode.query.filter_by(code=inv_code_val).first()
+            if code:
+                user = User.query.filter_by(username=field.data, tenant_id=code.tenant_id).first()
+                if user:
+                    raise ValidationError(_('Username already taken'))
+        elif str(self.create_new_tenant.data).lower() == 'true':
+            # Creating a brand-new tenant — username is unique by definition in the new tenant
+            pass
+        else:
+            # Fallback: global uniqueness check (e.g. superadmin-level registration)
+            user = User.query.filter_by(username=field.data, tenant_id=None).first()
+            if user:
+                raise ValidationError(_('Username already taken'))
 
     def validate(self, *args, **kwargs):
         """Run standard validation then enforce first/last name when joining an existing tenant.

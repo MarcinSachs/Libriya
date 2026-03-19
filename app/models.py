@@ -348,9 +348,12 @@ class User(UserMixin, db.Model):
         role (str): Role identifier ('user','manager','admin','superadmin')
         tenant_id (int|None): FK to `Tenant` (NULL for super-admin)
     """
+    __table_args__ = (
+        db.UniqueConstraint('username', 'tenant_id', name='uq_user_username_tenant'),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True,
-                         nullable=False, index=True)
+    username = db.Column(db.String(50), nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)  # INCREASED from 128 to 255 to accommodate PBKDF2 hashes
     # Email verification status
