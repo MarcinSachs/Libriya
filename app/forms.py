@@ -276,14 +276,6 @@ class RegistrationForm(FlaskForm):
         _('Confirm Password'),
         validators=[DataRequired(), EqualTo('password')]
     )
-    first_name = StringField(
-        _('First Name'),
-        validators=[Optional(), Length(min=1, max=50)]
-    )
-    last_name = StringField(
-        _('Last Name'),
-        validators=[Optional(), Length(min=1, max=50)]
-    )
 
     def validate_tenant_name(self, field):
         # Only validate if user is creating new tenant and field has data
@@ -302,28 +294,6 @@ class RegistrationForm(FlaskForm):
                 raise ValidationError(_('Invalid invitation code'))
             if not code.is_valid():
                 raise ValidationError(_('Invitation code has expired or has already been used'))
-
-    def validate_first_name(self, field):
-        # Sanitize input and require first name when joining existing tenant
-        field.data = sanitize_string(field.data, max_length=50)
-        # treat empty or whitespace-only values as missing
-        joining_existing = (
-            str(self.create_new_tenant.data).lower() == 'false' or
-            bool(getattr(self, 'invitation_code', None) and str(self.invitation_code.data).strip())
-        )
-        if joining_existing and (not field.data or not str(field.data).strip()):
-            raise ValidationError(_('First name is required'))
-
-    def validate_last_name(self, field):
-        # Sanitize input and require last name when joining existing tenant
-        field.data = sanitize_string(field.data, max_length=50)
-        # treat empty or whitespace-only values as missing
-        joining_existing = (
-            str(self.create_new_tenant.data).lower() == 'false' or
-            bool(getattr(self, 'invitation_code', None) and str(self.invitation_code.data).strip())
-        )
-        if joining_existing and (not field.data or not str(field.data).strip()):
-            raise ValidationError(_('Last name is required'))
 
     def validate_email(self, field):
         from app.models import User
@@ -356,24 +326,6 @@ class RegistrationForm(FlaskForm):
         even if input population differs between request/formdata and `data=`.
         """
         valid = super().validate(*args, **kwargs)
-
-        inv_code = getattr(self, 'invitation_code', None).data if getattr(
-            self, 'invitation_code', None) is not None else None
-        has_code = bool(inv_code and str(inv_code).strip())
-        joining_existing = (
-            str(getattr(self, 'create_new_tenant', None).data).lower() == 'false' or
-            has_code
-        )
-
-        if joining_existing:
-            # Ensure first_name/last_name present when joining an existing tenant
-            if not (self.first_name.data and str(self.first_name.data).strip()):
-                self.first_name.errors.append(_('First name is required'))
-                valid = False
-            if not (self.last_name.data and str(self.last_name.data).strip()):
-                self.last_name.errors.append(_('Last name is required'))
-                valid = False
-
         return valid
 
 

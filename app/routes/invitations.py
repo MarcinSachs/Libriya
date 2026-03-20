@@ -114,7 +114,7 @@ def generate_code():
             try:
                 from app.utils.mailer import send_generic_email
                 subject = _('Invitation to join %(library)s on Libriya') % {'library': library.name}
-                register_url = url_for('auth.register', _external=True)
+                register_url = url_for('auth.register', mode='join', code=code, email=recipient_email, _external=True)
                 # build translated body text
                 body = _(
                     "Hello,\n\nYou've been invited to join the library '%(library)s' on Libriya.\n"
@@ -221,7 +221,7 @@ def send_invitation_email(code_id):
 
     # build message
     subject = _('Invitation to join %(library)s on Libriya') % {'library': code.library.name}
-    register_url = url_for('auth.register', _external=True)
+    register_url = url_for('auth.register', mode='join', code=code.code, email=email, _external=True)
     body = _(
         "Hello,\n\nYou've been invited to join the library '%(library)s' on Libriya.\n"
         "Use the invitation code below or visit the registration page:\n\n"
