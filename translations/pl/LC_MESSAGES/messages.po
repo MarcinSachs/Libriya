@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-03-04 19:27+0100\n"
-"PO-Revision-Date: 2026-03-05 06:43\n"
+"PO-Revision-Date: 2026-03-21 11:00\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -883,7 +883,7 @@ msgstr "Dzieci"
 
 #: c:/Users/Marcin/Documents/Python/Libriya/app/seeds/seed.py:16
 msgid "Young Adult"
-msgstr "Młodzieżowa"
+msgstr "Young Adult"
 
 #: c:/Users/Marcin/Documents/Python/Libriya/app/seeds/seed.py:17
 msgid "Fantasy"
