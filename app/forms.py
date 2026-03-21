@@ -203,6 +203,12 @@ class UserSettingsForm(FlaskForm):
         langs = current_app.config.get('LANGUAGES', [])
         self.language.choices = [(l, l.upper()) for l in langs]
 
+        # If user object provided, set the selected option from preferred locale (only for non-POST requests).
+        from flask import request
+        obj = kwargs.get('obj')
+        if obj is not None and hasattr(obj, 'preferred_locale') and request.method != 'POST':
+            self.language.data = getattr(obj, 'preferred_locale', None)
+
 
 class LibraryForm(FlaskForm):
     name = StringField(_('Library Name'), validators=[DataRequired()])

@@ -7,6 +7,7 @@
         <div class="ml-3">
             <h2 class="text-2xl font-bold text-gray-800 mb-0">{{ user.username }}</h2>
             <p class="text-gray-600 mb-0">{{ user.email }}</p>
+            <p class="text-gray-500 text-sm">{{ _('Preferred language') }}: <strong>{{ user.preferred_locale }}</strong></p>
         </div>
     </div>
     <hr class="my-4">
@@ -175,6 +176,7 @@
             </button>
             <div class="bg-white border-t border-gray-200 px-4 py-3 flex justify-end">
                 <form action="{{ url_for('books.remove_favorite', book_id=book.id) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                     <button type="submit" class="text-red-500 hover:text-red-700 transition" title="{{ _('Remove from Favorites') }}">
                         <i class="bx bx-trash text-lg"></i>
                     </button>
