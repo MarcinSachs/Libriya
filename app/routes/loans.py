@@ -107,8 +107,8 @@ def request_reservation(book_id, user_id):
         db.session.add(new_loan)
         db.session.commit()
 
-        # --- Notifications for admins ---
-        admins = User.query.filter_by(role='admin').all()
+        # --- Notifications for admins (tenant-scoped) ---
+        admins = User.query.filter_by(role='admin', tenant_id=current_user.tenant_id).all()
         message = _("%(username)s has requested to reserve \"%(title)s\".",
                     username=user.username, title=book.title)
         create_notification(admins, current_user, message,
@@ -350,8 +350,8 @@ def user_cancel_reservation(loan_id):
         except Exception:
             pass
 
-        # --- Create notyfication for admin ---
-        admins = User.query.filter_by(role='admin').all()
+        # --- Create notification for tenant admins ---
+        admins = User.query.filter_by(role='admin', tenant_id=current_user.tenant_id).all()
         message = _("%(username)s has cancelled their reservation for \"%(title)s\".",
                     username=current_user.username, title=loan.book.title)
         create_notification(admins, current_user, message,

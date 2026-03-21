@@ -69,8 +69,8 @@ def my_messages():
 
         # Create notification for admins and library managers
         library = msg.library
-        # Notify all admins
-        admins = User.query.filter_by(role='admin').all()
+        # Notify all tenant admins (scope to current tenant)
+        admins = User.query.filter_by(role='admin', tenant_id=current_user.tenant_id).all()
         for admin in admins:
             notification = Notification(
                 recipient_id=admin.id,
