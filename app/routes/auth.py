@@ -338,6 +338,12 @@ def register():
     # Set the create_new_tenant flag for form validation
     if request.method == 'GET':
         form.create_new_tenant.data = 'true' if creating_new_tenant else 'false'
+        invite_code = request.args.get('code')
+        if invite_code and not creating_new_tenant:
+            form.invitation_code.data = invite_code
+        invite_email = request.args.get('email')
+        if invite_email and not creating_new_tenant:
+            form.email.data = invite_email
 
     if form.validate_on_submit():
         try:
@@ -423,34 +429,40 @@ def register():
                 if lang_cookie and lang_cookie in current_app.config['LANGUAGES']:
                     user.preferred_locale = lang_cookie
                 user.set_password(form.password.data)
-                user.first_name = form.first_name.data
-                user.last_name = form.last_name.data
+                user.first_name = form.username.data.capitalize()
+                user.last_name = ''
 
                 db.session.add(user)
                 db.session.flush()  # Get user ID
 
                 # Mark code as used
                 code.mark_as_used(user.id)
+
+                # Auto-verify email if it matches the invitation recipient
+                if code.recipient_email and code.recipient_email.lower() == user.email.lower():
+                    user.is_email_verified = True
+
                 db.session.commit()
 
-                # Send verification email for new user (non-blocking)
-                try:
-                    token = EmailVerificationToken.generate_token(user.id, expires_in=86400)
-                    verify_url = url_for('auth.verify_email', token=token, _external=True)
-                    from app.utils.mailer import send_generic_email
-                    send_generic_email(user.email, 'Verify your email address',
-                                       f'Hello {user.first_name or user.username},\n\nPlease verify your email by clicking:\n\n{verify_url}\n\n--\nLibriya')
+                # Send verification email only if not already verified
+                if not user.is_email_verified:
                     try:
-                        log_action('EMAIL_VERIFICATION_SENT', f'Verification email sent to {user.email}', subject=user, additional_info={
-                                   'user_id': user.id})
+                        token = EmailVerificationToken.generate_token(user.id, expires_in=86400)
+                        verify_url = url_for('auth.verify_email', token=token, _external=True)
+                        from app.utils.mailer import send_generic_email
+                        send_generic_email(user.email, 'Verify your email address',
+                                           f'Hello {user.first_name or user.username},\n\nPlease verify your email by clicking:\n\n{verify_url}\n\n--\nLibriya')
+                        try:
+                            log_action('EMAIL_VERIFICATION_SENT', f'Verification email sent to {user.email}', subject=user, additional_info={
+                                       'user_id': user.id})
+                        except Exception:
+                            pass
                     except Exception:
-                        pass
-                except Exception:
-                    try:
-                        log_action('EMAIL_VERIFICATION_ERROR', f'Error sending verification email to {user.email}', subject=user, additional_info={
-                                   'user_id': user.id})
-                    except Exception:
-                        pass
+                        try:
+                            log_action('EMAIL_VERIFICATION_ERROR', f'Error sending verification email to {user.email}', subject=user, additional_info={
+                                       'user_id': user.id})
+                        except Exception:
+                            pass
 
                 # Audit log
                 log_invitation_code_used(

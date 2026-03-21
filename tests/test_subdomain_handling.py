@@ -1,4 +1,5 @@
 import pytest
+import re
 from app import create_app, db
 from app.models import Tenant, User
 
@@ -114,7 +115,6 @@ def test_login_on_subdomain_sets_session(client, app, setup_db):
     assert next_resp.status_code in (200, 302)
 
 
-
 def test_login_loop_without_cookie_domain(client, app, setup_db):
     """Verify that omitting SESSION_COOKIE_DOMAIN produces the old login loop.
 
@@ -155,7 +155,7 @@ def test_ip_subdomain_cookie_domain(client, app, setup_db):
     # Test with IP-based host (should not auto-configure domain)
     # Set to None initially (Flask default for no domain restriction)
     app.config['SESSION_COOKIE_DOMAIN'] = None
-    
+
     base = 'http://127.0.0.1:5001'
     resp = client.post(
         '/auth/login/',
@@ -165,4 +165,36 @@ def test_ip_subdomain_cookie_domain(client, app, setup_db):
     )
     # For IP addresses, SESSION_COOKIE_DOMAIN should remain None (host-only)
     # and should not be auto-configured to an invalid domain
-    assert app.config.get('SESSION_COOKIE_DOMAIN') in (None, '127.0.0.1')  # Should NOT be '.0.0.1' or other invalid format
+    # Should NOT be '.0.0.1' or other invalid format
+    assert app.config.get('SESSION_COOKIE_DOMAIN') in (None, '127.0.0.1')
+
+
+def test_superadmin_login_with_csrf(client, app):
+    app.config['WTF_CSRF_ENABLED'] = True
+
+    # Create a superadmin user without tenant to imitate production superadmin.
+    superadmin = User(username='superadmin', email='superadmin@example.com', role='superadmin')
+    superadmin.set_password('password')
+    superadmin.is_email_verified = True
+    db.session.add(superadmin)
+    db.session.commit()
+
+    # Fetch login page to get CSRF token and establish session cookie
+    login_page = client.get('/auth/login/', base_url='http://example.com')
+    assert login_page.status_code == 200
+    match = re.search(r'name="csrf_token" value="([^"]+)"', login_page.data.decode('utf-8'))
+    assert match is not None, 'CSRF token missing from login page'
+    csrf_token = match.group(1)
+
+    # Perform login with extracted CSRF token
+    resp = client.post('/auth/login/',
+                       data={
+                           'email_or_username': 'superadmin',
+                           'password': 'password',
+                           'csrf_token': csrf_token
+                       },
+                       base_url='http://example.com',
+                       follow_redirects=True)
+
+    assert resp.status_code in (200, 302)
+    assert b'/admin' in resp.data or b'Dashboard' in resp.data or b'Welcome Back' not in resp.data

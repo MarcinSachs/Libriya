@@ -1,6 +1,6 @@
 import os
 import secrets
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, make_response
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, make_response, session
 from flask_login import login_required, current_user
 from flask_babel import _
 
@@ -390,9 +390,10 @@ def user_settings():
             log_password_changed(user.id, user.username)
         db.session.commit()
         flash(USERS_SETTINGS_UPDATED, "success")
-        # set language cookie so UI updates immediately
+        # set language cookie + session so UI updates immediately and persistently
         resp = make_response(redirect(url_for('users.user_profile', user_id=user.id)))
         if hasattr(form, 'language') and form.language.data:
+            session['language'] = form.language.data
             resp.set_cookie('language', form.language.data, max_age=60*60*24*365*2, path='/')
         return resp
 

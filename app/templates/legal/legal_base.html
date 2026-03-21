@@ -1,0 +1,16 @@
+{% extends "base/main_base.html" %}
+{% block title %}Libriya - {{ _('house for your books') }}{% endblock %}
+{% block nav_links %}
+    <a href="#features" class="font-semibold text-gray-700 hover:text-primary transition-colors">{{ _('Features') }}</a>
+    <a href="#multi-tenant" class="font-semibold text-gray-700 hover:text-primary transition-colors">{{ _('For Whom') }}</a>
+    <a href="#premium" class="font-semibold text-gray-700 hover:text-primary transition-colors">{{ _('Premium') }}</a>
+    <a href="{{ url_for('auth.login') }}" class="bg-primary text-white px-6 py-2.5 rounded-xl font-bold hover:shadow-lg hover:scale-105 transition-all shadow-md">{{ _('Sign In') }}</a>
+{% endblock %}
+{% block mobile_menu_button %}
+    <button class="md:hidden text-primary text-3xl">
+        <i class='bx bx-menu'></i>
+    </button>
+{% endblock %}
+{% block content %}{% endblock %}
+
+

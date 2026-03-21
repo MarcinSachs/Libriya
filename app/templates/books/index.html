@@ -144,6 +144,7 @@
                         <div class="flex items-center">
                             <!-- Add to Favorites -->
                             <form action="{{ url_for('books.add_favorite', book_id=book.id) }}" method="POST" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                                 <button type="submit" class="p-2 text-primary hover:bg-gray-200 rounded transition" title="{{ _('Add to favorites') }}">
                                     <i class='bx bx-heart'></i>
                                 </button>
@@ -231,6 +232,7 @@
                 <div class="book-card-actions" onclick="event.stopPropagation();">
                     <!-- Add to Favorites -->
                     <form action="{{ url_for('books.add_favorite', book_id=book.id) }}" method="POST" style="flex: 1;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                         <button type="submit" class="w-full text-sm" title="{{ _('Add to favorites') }}">
                             <i class='bx bx-heart'></i> <span class="hidden sm:inline">{{ _('Like') }}</span>
                         </button>

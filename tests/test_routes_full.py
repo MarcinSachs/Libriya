@@ -118,6 +118,35 @@ def test_tenants_and_user_list_markup(client, app):
     user = User(username='slashtest', email='s@test.com', tenant_id=None)
     user.is_email_verified = True
     user.set_password('pw')
+
+
+def test_user_settings_change_language(client, app):
+    from app.models import User
+    from app import db
+
+    # Create a user and log them in
+    user = User(username='languser', email='languser@example.com', role='user')
+    user.is_email_verified = True
+    user.set_password('password')
+    db.session.add(user)
+    db.session.commit()
+
+    # Log in through the helper (without CSRF in tests)
+    login(client, 'languser')
+
+    # Update preferred language
+    response = client.post('/user/settings', data={
+        'email': 'languser@example.com',
+        'language': 'pl',
+        'password': '',
+        'confirm_password': ''
+    }, follow_redirects=True)
+
+    assert response.status_code == 200
+    updated_user = User.query.get(user.id)
+    assert updated_user.preferred_locale == 'pl'
+    # `Set-Cookie` may be consumed after redirects, so check database value only for reliability
+
     db.session.add(user)
     db.session.commit()
 
@@ -182,6 +211,7 @@ def test_reservation_and_admin_approval_flow(app, client, monkeypatch):
     # User requests reservation
     login(client, user.email)
     sent = []
+
     def fake_send(to_address, subject, body):
         sent.append((to_address, subject, body))
         return True
@@ -387,6 +417,7 @@ def test_admin_support_sends_email_to_superadmins(app, client, monkeypatch):
     db.session.commit()
 
     sent = []
+
     def fake_send(to_address, subject, body):
         sent.append((to_address, subject, body))
         return True
@@ -394,7 +425,8 @@ def test_admin_support_sends_email_to_superadmins(app, client, monkeypatch):
 
     # login as admin and post a new support message
     login(client, admin.email)
-    resp = client.post('/messaging/admin-support/new', data={'subject': 'Help', 'message': 'please'}, follow_redirects=True)
+    resp = client.post('/messaging/admin-support/new',
+                       data={'subject': 'Help', 'message': 'please'}, follow_redirects=True)
     assert resp.status_code == 200
     # superadmin should have received exactly one email
     assert any(supera.email == to for to, _, _ in sent)
@@ -423,6 +455,7 @@ def test_superadmin_reply_sends_email_to_admin(app, client, monkeypatch):
     db.session.commit()
 
     sent = []
+
     def fake_send(to_address, subject, body):
         sent.append((to_address, subject, body))
         return True

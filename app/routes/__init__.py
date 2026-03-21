@@ -8,6 +8,7 @@ from app.routes.invitations import bp as invitations_bp
 from app.routes.admin import bp as admin_bp
 from app.routes.messaging import bp as messaging_bp
 from app.routes.share import bp as share_bp
+from app.routes.legal import bp as legal_bp
 
 
 def register_blueprints(app):
@@ -22,3 +23,4 @@ def register_blueprints(app):
     app.register_blueprint(share_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(messaging_bp)
+    app.register_blueprint(legal_bp)

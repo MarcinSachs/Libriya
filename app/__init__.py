@@ -1,6 +1,6 @@
 from markupsafe import Markup
 from flask_caching import Cache
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, CSRFError
 from flask_limiter.util import get_remote_address
 from flask_limiter import Limiter
 from flask import session, request, render_template, flash, redirect, url_for, g
@@ -35,6 +35,12 @@ cache = Cache()
 def create_app(config_class=Config):
     app = Flask(__name__)
 
+    # Globalny context_processor z bieżącym rokiem
+    from datetime import datetime
+
+    @app.context_processor
+    def inject_current_year():
+        return {'current_year': datetime.utcnow().year}
     # Initialize Pydantic Settings instance and update Flask config
     config = config_class()
     app.config.update(config.model_dump())
@@ -342,6 +348,12 @@ def create_app(config_class=Config):
                 app.config['SESSION_COOKIE_DOMAIN'] = parent_domain
 
     # Add security headers
+    @app.errorhandler(CSRFError)
+    def handle_csrf_error(e):
+        # On production, users may hit this during expired or missing sessions.
+        flash(_('Your session has expired or the form was submitted from an invalid source.'), 'danger')
+        return redirect(url_for('auth.login'))
+
     @app.after_request
     def set_security_headers(response):
         response.headers['X-Content-Type-Options'] = 'nosniff'
@@ -380,6 +392,7 @@ def create_app(config_class=Config):
         }
 
     # Error handlers
+
     @app.errorhandler(404)
     def not_found(error):
         """Handle 404 errors"""

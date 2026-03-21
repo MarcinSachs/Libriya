@@ -18,7 +18,10 @@
       
       <!-- Option 1: New Customer -->
       <div class="glass-card rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow cursor-pointer group">
+        <a href="mailto:support@libriya.app" class="block h-full flex flex-col">
+        <!-- For future
         <a href="{{ url_for('auth.register', mode='create') }}" class="block h-full flex flex-col">
+           -->
           <!-- Icon -->
           <div class="mb-6 text-5xl flex justify-center">
             <i class='bx bx-plus-circle text-accent group-hover:scale-110 transition-transform'></i>
@@ -53,8 +56,13 @@
           <!-- Button -->
           <div class="mt-auto">
             <button class="w-full py-3 px-4 bg-[#1a535c] hover:bg-[#0f3a45] text-white font-semibold rounded-lg hover:shadow-lg transform hover:-translate-y-1 transition">
+              {{ _('Contact') }}
+            </button>
+            <!-- For Future
+            <button class="w-full py-3 px-4 bg-[#1a535c] hover:bg-[#0f3a45] text-white font-semibold rounded-lg hover:shadow-lg transform hover:-translate-y-1 transition">
               {{ _('Create Organization') }}
             </button>
+             -->
           </div>
         </a>
       </div>
