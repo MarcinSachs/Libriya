@@ -938,7 +938,7 @@ msgstr "Dzieci"
 
 #: c:/Users/Marcin/Documents/Python/Libriya/app/seeds/seed.py:16
 msgid "Young Adult"
-msgstr "Young Adult"
+msgstr "Młodzieżowa"
 
 #: c:/Users/Marcin/Documents/Python/Libriya/app/seeds/seed.py:17
 msgid "Fantasy"
@@ -2047,7 +2047,7 @@ msgstr ""
 
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:364
 msgid "Google Books"
-msgstr "Google Books"
+msgstr "Książki Google"
 
 #: c:/Users/Marcin/Documents/Python/Libriya/app/templates/books/book_add.html:366
 msgid "Unknown Source"
