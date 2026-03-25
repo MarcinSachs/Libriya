@@ -1,24 +1,26 @@
-
 msgid ""
 msgstr ""
-"Project-Id-Version:  libriya\n"
+"Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-03-25 20:14+0100\n"
-"PO-Revision-Date: 2026-03-21 11:00+0000\n"
+"PO-Revision-Date: 2026-03-25 19:20\n"
 "Last-Translator: \n"
-"Language: pl_PL\n"
 "Language-Team: Polish\n"
-"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && "
-"(n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
-"n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
+"X-Crowdin-Project: libriya\n"
+"X-Crowdin-Project-ID: 866606\n"
+"X-Crowdin-Language: pl\n"
+"X-Crowdin-File: /main/translations/messages.pot\n"
+"X-Crowdin-File-ID: 5\n"
+"Language: pl_PL\n"
 
 #: app/__init__.py:354
 msgid "Your session has expired or the form was submitted from an invalid source."
-msgstr ""
+msgstr "Twoja sesja wygasła lub formularz został przesłany z nieprawidłowego źródła."
 
 #: app/__init__.py:404
 msgid "You do not have permission to access this page"
@@ -274,12 +276,8 @@ msgid "Subdomain"
 msgstr "Subdomena"
 
 #: app/forms.py:361
-msgid ""
-"URL-friendly name (e.g., \"mylib\"). Only lowercase letters, numbers and "
-"hyphens."
-msgstr ""
-"Przyjazna nazwa URL (np. \"moja-biblioteka\"). Tylko małe litery, cyfry i"
-" myślniki."
+msgid "URL-friendly name (e.g., \"mylib\"). Only lowercase letters, numbers and hyphens."
+msgstr "Przyjazna nazwa URL (np. \"moja-biblioteka\"). Tylko małe litery, cyfry i myślniki."
 
 #: app/forms.py:365
 msgid "Max Libraries"
@@ -307,12 +305,8 @@ msgstr "Ta nazwa klienta już istnieje."
 
 #: app/routes/loans.py:376 app/tasks.py:24
 #, python-format
-msgid ""
-"Reminder: Your loan for \"%(title)s\" is overdue. Please return it as "
-"soon as possible."
-msgstr ""
-"Przypomnienie: Twoja książka \"%(title)s\" jest zaległa. Prosimy zwrócić "
-"ją tak szybko, jak to możliwe."
+msgid "Reminder: Your loan for \"%(title)s\" is overdue. Please return it as soon as possible."
+msgstr "Przypomnienie: Twoja książka \"%(title)s\" jest zaległa. Prosimy zwrócić ją tak szybko, jak to możliwe."
 
 #: app/routes/admin.py:35
 msgid "You do not have access to the super-admin panel."
@@ -446,37 +440,21 @@ msgid "Audit Entries"
 msgstr "Wpisy audytu"
 
 #: app/routes/auth.py:109
-msgid ""
-"This email exists in multiple libraries. Please log in from your "
-"library's page."
-msgstr ""
-"Ten e-mail istnieje w wielu bibliotekach. Proszę zalogować się ze strony "
-"biblioteki."
+msgid "This email exists in multiple libraries. Please log in from your library's page."
+msgstr "Ten e-mail istnieje w wielu bibliotekach. Proszę zalogować się ze strony biblioteki."
 
 #: app/routes/auth.py:137
-msgid ""
-"This username exists in multiple libraries. Please log in from your "
-"library's page."
-msgstr ""
-"Ta nazwa użytkownika istnieje w wielu bibliotekach. Zaloguj się ze strony"
-" biblioteki."
+msgid "This username exists in multiple libraries. Please log in from your library's page."
+msgstr "Ta nazwa użytkownika istnieje w wielu bibliotekach. Zaloguj się ze strony biblioteki."
 
 #: app/routes/auth.py:173
 #, python-brace-format
-msgid ""
-"A verification email was recently sent. Please check your inbox or wait "
-"{minutes} minutes."
-msgstr ""
-"E-mail weryfikacyjny niedawno został wysłany. Proszę sprawdzić skrzynkę "
-"odbiorczą lub poczekać {minutes} minut."
+msgid "A verification email was recently sent. Please check your inbox or wait {minutes} minutes."
+msgstr "E-mail weryfikacyjny niedawno został wysłany. Proszę sprawdzić skrzynkę odbiorczą lub poczekać {minutes} minut."
 
 #: app/routes/auth.py:196
-msgid ""
-"Please verify your email address before logging in. A verification email "
-"has been sent."
-msgstr ""
-"Proszę zweryfikować swój adres e-mail przed zalogowaniem. E-mail "
-"weryfikacyjny został wysłany."
+msgid "Please verify your email address before logging in. A verification email has been sent."
+msgstr "Proszę zweryfikować swój adres e-mail przed zalogowaniem. E-mail weryfikacyjny został wysłany."
 
 #: app/routes/auth.py:229
 msgid "Invalid password. Please check and try again."
@@ -484,9 +462,7 @@ msgstr "Nieprawidłowe hasło. Sprawdź i spróbuj ponownie."
 
 #: app/routes/auth.py:236
 msgid "User not found. Please check your email or username."
-msgstr ""
-"Użytkownik nie został znaleziony. Sprawdź swój adres e-mail lub nazwę "
-"użytkownika."
+msgstr "Użytkownik nie został znaleziony. Sprawdź swój adres e-mail lub nazwę użytkownika."
 
 #: app/routes/auth.py:353
 msgid "Organization name is required when creating a new organization"
@@ -512,12 +488,8 @@ msgid "An error occurred during registration: {}"
 msgstr "Wystąpił błąd podczas rejestracji: {}"
 
 #: app/routes/auth.py:529
-msgid ""
-"If an account with that email/username exists, a password reset link has "
-"been sent."
-msgstr ""
-"Jeśli konto z tym adresem e-mail/nazwą użytkownika istnieje, wysłano link"
-" do resetowania hasła."
+msgid "If an account with that email/username exists, a password reset link has been sent."
+msgstr "Jeśli konto z tym adresem e-mail/nazwą użytkownika istnieje, wysłano link do resetowania hasła."
 
 #: app/routes/auth.py:543
 msgid "Token and new password are required."
@@ -572,12 +544,8 @@ msgid "No libraries available for import."
 msgstr "Brak dostępnych bibliotek do importu."
 
 #: app/routes/books.py:278
-msgid ""
-"Your organization has reached the maximum number of books allowed. "
-"Contact support to increase your limit."
-msgstr ""
-"Twoja organizacja osiągnęła maksymalną dozwoloną liczbę książek. "
-"Skontaktuj się z pomocą techniczną, aby zwiększyć swój limit."
+msgid "Your organization has reached the maximum number of books allowed. Contact support to increase your limit."
+msgstr "Twoja organizacja osiągnęła maksymalną dozwoloną liczbę książek. Skontaktuj się z pomocą techniczną, aby zwiększyć swój limit."
 
 #: app/routes/books.py:574 app/templates/books/book_detail.html:51
 #: app/templates/books/index.html:195 app/templates/books/index.html:292
@@ -595,29 +563,18 @@ msgstr "Zaproszenie do dołączenia do %(library)s w Libriya"
 
 #: app/routes/invitations.py:120 app/routes/invitations.py:226
 #, python-format
-msgid ""
-"Hello,\n"
-"\n"
+msgid "Hello,\n\n"
 "You've been invited to join the library '%(library)s' on Libriya.\n"
-"Use the invitation code below or visit the registration page:\n"
-"\n"
-"Code: %(code)s\n"
-"\n"
-"Register here: %(url)s\n"
-"\n"
+"Use the invitation code below or visit the registration page:\n\n"
+"Code: %(code)s\n\n"
+"Register here: %(url)s\n\n"
 "--\n"
 "Libriya"
-msgstr ""
-"Witaj,\n"
-"\n"
-"Zostałeś zaproszony do dołączenia do biblioteki '%(library)s' na Libriya."
-"\n"
-"Użyj poniższego kodu zaproszenia lub odwiedź stronę rejestracji:\n"
-"\n"
-"Kod %(code)s\n"
-"\n"
-"Zarejestruj się tutaj: %(url)s\n"
-"\n"
+msgstr "Witaj,\n\n"
+"Zostałeś zaproszony do dołączenia do biblioteki '%(library)s' na Libriya.\n"
+"Użyj poniższego kodu zaproszenia lub odwiedź stronę rejestracji:\n\n"
+"Kod %(code)s\n\n"
+"Zarejestruj się tutaj: %(url)s\n\n"
 "--\n"
 "Libriya"
 
@@ -650,12 +607,8 @@ msgid "No active share link"
 msgstr "Brak aktywnego linku udostępniania"
 
 #: app/routes/libraries.py:99
-msgid ""
-"Your organization has reached the maximum number of libraries allowed. "
-"Contact support to increase your limit."
-msgstr ""
-"Twoja organizacja osiągnęła maksymalną dozwoloną liczbę bibliotek. "
-"Skontaktuj się z pomocą techniczną, aby zwiększyć swój limit."
+msgid "Your organization has reached the maximum number of libraries allowed. Contact support to increase your limit."
+msgstr "Twoja organizacja osiągnęła maksymalną dozwoloną liczbę bibliotek. Skontaktuj się z pomocą techniczną, aby zwiększyć swój limit."
 
 #: app/routes/libraries.py:115 app/templates/libraries/libraries.html:8
 msgid "Add Library"
@@ -699,9 +652,7 @@ msgstr "Książka \"%(title)s\", którą pożyczyłeś została oznaczona jako z
 
 #: app/routes/loans.py:317
 #, python-format
-msgid ""
-"A loan for \"%(title)s\" has been directly issued to you by an "
-"administrator."
+msgid "A loan for \"%(title)s\" has been directly issued to you by an administrator."
 msgstr "Wypożyczenie \"%(title)s\" zostało udzielone przez administratora."
 
 #: app/routes/loans.py:355
@@ -712,15 +663,11 @@ msgstr "%(username)s anulował rezerwację na \"%(title)s\"."
 #: app/routes/loans.py:380
 #, python-format
 msgid "Overdue reminder sent to %(username)s for book \"%(title)s\"."
-msgstr ""
-"Przypomnienie o przeterminowaniu wysłane do %(username)s dla książki "
-"\"%(title)s\"."
+msgstr "Przypomnienie o przeterminowaniu wysłane do %(username)s dla książki \"%(title)s\"."
 
 #: app/routes/loans.py:384
 msgid "Cannot send overdue reminder. Loan is not active or not overdue."
-msgstr ""
-"Nie można wysłać przypomnienia o zaległości. Wypożyczenie nie jest "
-"aktywne lub nie jest przeterminowane."
+msgstr "Nie można wysłać przypomnienia o zaległości. Wypożyczenie nie jest aktywne lub nie jest przeterminowane."
 
 #: app/routes/main.py:80 app/routes/main.py:92
 #, python-format
@@ -745,9 +692,7 @@ msgstr "Twoje powiadomienia"
 
 #: app/routes/main.py:429
 msgid "No data found for this ISBN. Please check the number and try again."
-msgstr ""
-"Nie znaleziono danych dla tego ISBN. Proszę sprawdzić numer i spróbować "
-"ponownie."
+msgstr "Nie znaleziono danych dla tego ISBN. Proszę sprawdzić numer i spróbować ponownie."
 
 #: app/routes/main.py:480 app/routes/main.py:560
 #: app/templates/books/book_add.html:615
@@ -918,12 +863,8 @@ msgid "Welcome to Libriya!"
 msgstr "Witaj w Libriya!"
 
 #: app/templates/index.html:5
-msgid ""
-"This is the main application page. Please use the navigation to access "
-"features."
-msgstr ""
-"To jest główna strona aplikacji. Użyj nawigacji, aby uzyskać dostęp do "
-"funkcji."
+msgid "This is the main application page. Please use the navigation to access features."
+msgstr "To jest główna strona aplikacji. Użyj nawigacji, aby uzyskać dostęp do funkcji."
 
 #: app/templates/index.html:6
 msgid "Go to landing page"
@@ -1225,9 +1166,7 @@ msgstr "Czy na pewno chcesz usunąć klienta \"%(name)s\"?"
 #: app/templates/admin/tenant_detail.html:276
 #, python-format
 msgid "Note: This tenant has %(count)d book(s) that will also be deleted."
-msgstr ""
-"Uwaga: Ten klient ma %(count)d książkę(ki), które również zostaną "
-"usunięte."
+msgstr "Uwaga: Ten klient ma %(count)d książkę(ki), które również zostaną usunięte."
 
 #: app/templates/admin/tenant_detail.html:283
 #: app/templates/admin/tenant_form.html:115 app/templates/base/macros.html:127
@@ -1268,12 +1207,8 @@ msgid "e.g., my-library"
 msgstr "np. moja-biblioteka"
 
 #: app/templates/admin/tenant_form.html:72
-msgid ""
-"Lowercase alphanumeric characters and hyphens only. This will be your "
-"library's unique web address."
-msgstr ""
-"Tylko małe litery alfanumeryczne i myślniki. To będzie unikalny adres "
-"internetowy twojej biblioteki."
+msgid "Lowercase alphanumeric characters and hyphens only. This will be your library's unique web address."
+msgstr "Tylko małe litery alfanumeryczne i myślniki. To będzie unikalny adres internetowy twojej biblioteki."
 
 #: app/templates/admin/tenant_form.html:98
 msgid "How subdomains work:"
@@ -1316,17 +1251,16 @@ msgid "Each subdomain must be unique across the system"
 msgstr "Każda subdomena musi być unikalna w całym systemie"
 
 #: app/templates/admin/tenant_premium.html:12
-#, fuzzy
 msgid "Back to list"
-msgstr "Wróć do listy"
+msgstr "Powrót do listy"
 
 #: app/templates/admin/tenant_premium.html:38
 msgid "Enabled"
-msgstr ""
+msgstr "Włączone"
 
 #: app/templates/admin/tenant_premium.html:40
 msgid "Disabled"
-msgstr ""
+msgstr "Wyłączone"
 
 #: app/templates/admin/tenant_premium.html:51
 msgid "No premium features available"
@@ -1413,14 +1347,8 @@ msgid "Creating New Organization"
 msgstr "Tworzenie nowej organizacji"
 
 #: app/templates/auth/register.html:22
-msgid ""
-"You're setting up a new organization. You'll become the owner with full "
-"administrative access. You can create multiple libraries and invite team "
-"members."
-msgstr ""
-"Ustawiasz nową organizację. Zostaniesz właścicielem z pełnym dostępem "
-"administracyjnym. Możesz tworzyć wiele bibliotek i zaprosić członków "
-"zespołu."
+msgid "You're setting up a new organization. You'll become the owner with full administrative access. You can create multiple libraries and invite team members."
+msgstr "Ustawiasz nową organizację. Zostaniesz właścicielem z pełnym dostępem administracyjnym. Możesz tworzyć wiele bibliotek i zaprosić członków zespołu."
 
 #: app/templates/auth/register.html:27 app/templates/auth/register.html:155
 #: app/templates/auth/register_choice.html:107
@@ -1436,13 +1364,8 @@ msgid "About Invitation Codes"
 msgstr "O kodach zaproszeń"
 
 #: app/templates/auth/register.html:38
-msgid ""
-"You've been invited to join an organization. Enter the invitation code "
-"provided by the organization administrator to create your account."
-msgstr ""
-"Zostałeś zaproszony do dołączenia do organizacji. Wprowadź kod "
-"zaproszenia podany przez administratora organizacji, aby utworzyć swoje "
-"konto."
+msgid "You've been invited to join an organization. Enter the invitation code provided by the organization administrator to create your account."
+msgstr "Zostałeś zaproszony do dołączenia do organizacji. Wprowadź kod zaproszenia podany przez administratora organizacji, aby utworzyć swoje konto."
 
 #: app/templates/auth/register.html:60
 msgid "e.g., My City Libraries"
@@ -1496,12 +1419,8 @@ msgid "Create New Organization Account"
 msgstr "Utwórz nowe konto organizacji"
 
 #: app/templates/auth/register_choice.html:37
-msgid ""
-"You're a new customer setting up your organization. Create your account "
-"and become the owner with full control."
-msgstr ""
-"Jesteś nowym klientem konfigurującym swoją organizację. Utwórz swoje "
-"konto i stań się właścicielem z pełną kontrolą."
+msgid "You're a new customer setting up your organization. Create your account and become the owner with full control."
+msgstr "Jesteś nowym klientem konfigurującym swoją organizację. Utwórz swoje konto i stań się właścicielem z pełną kontrolą."
 
 #: app/templates/auth/register_choice.html:44
 msgid "Set up your organization"
@@ -1527,12 +1446,8 @@ msgid "Join Existing Organization"
 msgstr "Dołącz do istniejącej organizacji"
 
 #: app/templates/auth/register_choice.html:85
-msgid ""
-"You've been invited to join an existing organization. Use your invitation"
-" code to create your account and join the team."
-msgstr ""
-"Zostałeś zaproszony do dołączenia do istniejącej organizacji. Użyj kodu "
-"zaproszenia, aby utworzyć swoje konto i dołączyć do zespołu."
+msgid "You've been invited to join an existing organization. Use your invitation code to create your account and join the team."
+msgstr "Zostałeś zaproszony do dołączenia do istniejącej organizacji. Użyj kodu zaproszenia, aby utworzyć swoje konto i dołączyć do zespołu."
 
 #: app/templates/auth/register_choice.html:92
 msgid "You have an invitation code"
@@ -1555,24 +1470,16 @@ msgid "Creating New Organization?"
 msgstr "Tworzenie nowej organizacji?"
 
 #: app/templates/auth/register_choice.html:122
-msgid ""
-"Choose the first option if you're setting up a new organization account "
-"for the first time."
-msgstr ""
-"Wybierz pierwszą opcję, jeśli po raz pierwszy ustawisz nowe konto "
-"organizacji."
+msgid "Choose the first option if you're setting up a new organization account for the first time."
+msgstr "Wybierz pierwszą opcję, jeśli po raz pierwszy ustawisz nowe konto organizacji."
 
 #: app/templates/auth/register_choice.html:123
 msgid "Joining a Team?"
 msgstr "Dołączasz do drużyny?"
 
 #: app/templates/auth/register_choice.html:123
-msgid ""
-"Choose the second option if you have an invitation code from an "
-"organization administrator."
-msgstr ""
-"Wybierz drugą opcję, jeśli masz kod zaproszenia od administratora "
-"organizacji."
+msgid "Choose the second option if you have an invitation code from an organization administrator."
+msgstr "Wybierz drugą opcję, jeśli masz kod zaproszenia od administratora organizacji."
 
 #: app/templates/auth/register_choice.html:124
 msgid "No Code?"
@@ -1580,9 +1487,7 @@ msgstr "Brak kodu?"
 
 #: app/templates/auth/register_choice.html:124
 msgid "Contact your organization administrator to request an invitation code."
-msgstr ""
-"Skontaktuj się z administratorem organizacji, aby poprosić o kod "
-"zaproszenia."
+msgstr "Skontaktuj się z administratorem organizacji, aby poprosić o kod zaproszenia."
 
 #: app/templates/base/layout.html:58
 msgid "You are offline"
@@ -1672,32 +1577,27 @@ msgstr "Skontaktuj się z Super Administratorem"
 
 #: app/templates/base/main_base.html:408
 msgid "Wszelkie prawa zastrzeżone."
-msgstr ""
+msgstr "Wszelkie prawa zastrzeżone."
 
 #: app/templates/base/main_base.html:411
 msgid "Terms & Conditions"
-msgstr ""
+msgstr "Regulamin"
 
 #: app/templates/base/main_base.html:412
 msgid "GPDR"
-msgstr ""
+msgstr "RODO"
 
 #: app/templates/base/main_base.html:413
 msgid "Privacy Policy"
-msgstr ""
+msgstr "Politykę Prywatności"
 
 #: app/templates/base/main_base.html:414
-#, fuzzy
 msgid "Cookie Policy"
-msgstr "politykę ciasteczek"
+msgstr "Polityka ciasteczek"
 
 #: app/templates/base/main_base.html:421
-msgid ""
-"This website uses cookies to ensure proper operation. By using it, you "
-"accept our"
-msgstr ""
-"Ta strona używa plików cookie, aby zapewnić właściwe działanie. Używając "
-"strony akceptujesz naszą"
+msgid "This website uses cookies to ensure proper operation. By using it, you accept our"
+msgstr "Ta strona używa plików cookie, aby zapewnić właściwe działanie. Używając strony akceptujesz naszą"
 
 #: app/templates/base/main_base.html:421
 msgid "cookie policy"
@@ -1709,9 +1609,7 @@ msgstr "Zaakceptuj"
 
 #: app/templates/base/main_base.html:600
 msgid "Request queued for offline sync. Will be performed when online."
-msgstr ""
-"Żądanie synchronizacji w kolejce do trybu offline. Zostanie wykonane, po "
-"przejściu w tryb online."
+msgstr "Żądanie synchronizacji w kolejce do trybu offline. Zostanie wykonane, po przejściu w tryb online."
 
 #: app/templates/base/offline.html:9
 msgid "You are currently offline"
@@ -1719,9 +1617,7 @@ msgstr "Jesteś obecnie offline"
 
 #: app/templates/base/offline.html:10
 msgid "Only cached content is available. Go online to access all features."
-msgstr ""
-"Dostępna jest tylko buforowana zawartość. Przejdź do trybu online, aby "
-"uzyskać dostęp do wszystkich funkcji."
+msgstr "Dostępna jest tylko buforowana zawartość. Przejdź do trybu online, aby uzyskać dostęp do wszystkich funkcji."
 
 #: app/templates/base/offline.html:19
 msgid "Available offline (after download)"
@@ -1789,9 +1685,7 @@ msgstr "Znajdź sekcję \"Tryb offline\""
 
 #: app/templates/base/offline.html:62
 msgid "Click \"Download\" button to cache your library"
-msgstr ""
-"Kliknij przycisk \"Pobierz\", aby przechowywać w pamięci podręcznej swoją"
-" bibliotekę"
+msgstr "Kliknij przycisk \"Pobierz\", aby przechowywać w pamięci podręcznej swoją bibliotekę"
 
 #: app/templates/base/offline.html:66
 msgid "Now you can go offline and view your books"
@@ -1968,12 +1862,8 @@ msgid "Limited Data"
 msgstr "Ograniczone Dane"
 
 #: app/templates/books/book_add.html:377
-msgid ""
-"Book data not found in Open Library. Only cover image available from "
-"premium source."
-msgstr ""
-"Nie znaleziono danych kw Open Library. Tylko obraz okładki dostępny ze "
-"źródła premium."
+msgid "Book data not found in Open Library. Only cover image available from premium source."
+msgstr "Nie znaleziono danych kw Open Library. Tylko obraz okładki dostępny ze źródła premium."
 
 #: app/templates/books/book_add.html:378 app/templates/books/book_add.html:381
 msgid "Data from:"
@@ -1993,9 +1883,7 @@ msgstr "Gatunki:"
 
 #: app/templates/books/book_add.html:492
 msgid "Could not find data for ISBN. Please check the number and try again."
-msgstr ""
-"Nie można znaleźć danych dla ISBN. Proszę sprawdzić numer i spróbować "
-"ponownie."
+msgstr "Nie można znaleźć danych dla ISBN. Proszę sprawdzić numer i spróbować ponownie."
 
 #: app/templates/books/book_add.html:511
 msgid "Please enter at least 3 characters."
@@ -2119,9 +2007,8 @@ msgstr[2] "Biblioteka ma obecnie %(n)s książek."
 msgstr[3] "Biblioteka ma obecnie %(n)s książek."
 
 #: app/templates/books/index.html:19 app/templates/users/user_profile.html:192
-#, fuzzy
 msgid "Recommended for you"
-msgstr "POLECANE"
+msgstr "Polecane dla Ciebie"
 
 #: app/templates/books/index.html:27 app/templates/books/index.html:76
 #: app/templates/books/index.html:116
@@ -2191,7 +2078,6 @@ msgid "No genres"
 msgstr "Brak gatunków"
 
 #: app/templates/books/index.html:167 app/templates/books/index.html:264
-#, fuzzy
 msgid "Remove from favorites"
 msgstr "Usuń z ulubionych"
 
@@ -2204,9 +2090,8 @@ msgid "Book not available for reservation"
 msgstr "Książka niedostępna do rezerwacji"
 
 #: app/templates/books/index.html:265
-#, fuzzy
 msgid "Unlike"
-msgstr "Polub"
+msgstr "Przestań lubić"
 
 #: app/templates/books/index.html:272
 msgid "Like"
@@ -2229,12 +2114,8 @@ msgid "Access Forbidden"
 msgstr "Dostęp wzbroniony"
 
 #: app/templates/errors/403.html:12
-msgid ""
-"You do not have permission to access this resource. If you believe this "
-"is an error, please contact the administrator."
-msgstr ""
-"Nie masz uprawnień dostępu do tego zasobu. Jeśli uważasz, że jest to "
-"błąd, skontaktuj się z administratorem."
+msgid "You do not have permission to access this resource. If you believe this is an error, please contact the administrator."
+msgstr "Nie masz uprawnień dostępu do tego zasobu. Jeśli uważasz, że jest to błąd, skontaktuj się z administratorem."
 
 #: app/templates/errors/403.html:17 app/templates/errors/404.html:17
 #: app/templates/errors/500.html:17
@@ -2263,12 +2144,8 @@ msgid "Internal Server Error"
 msgstr "Wewnętrzny błąd serwera"
 
 #: app/templates/errors/500.html:12
-msgid ""
-"Something went wrong on our end. Our team has been notified and is "
-"working to fix the issue."
-msgstr ""
-"Coś poszło nie tak po naszej stronie. Nasz zespół został powiadomiony i "
-"pracuje nad rozwiązaniem problemu."
+msgid "Something went wrong on our end. Our team has been notified and is working to fix the issue."
+msgstr "Coś poszło nie tak po naszej stronie. Nasz zespół został powiadomiony i pracuje nad rozwiązaniem problemu."
 
 #: app/templates/landing/landing.html:2 app/templates/legal/legal_base.html:2
 msgid "house for your books"
@@ -2293,19 +2170,11 @@ msgstr "Zaloguj się"
 
 #: app/templates/landing/landing.html:21
 msgid "Manage your <span class=\"text-primary\">library</span> the modern way."
-msgstr ""
-"Zarządzaj swoją <span class=\"text-primary\">biblioteką</span> w "
-"nowoczesny sposób."
+msgstr "Zarządzaj swoją <span class=\"text-primary\">biblioteką</span> w nowoczesny sposób."
 
 #: app/templates/landing/landing.html:24
-msgid ""
-"Libriya is a professional tool for cataloging collections, tracking book "
-"loans, and managing a reader community. Perfect for home and "
-"institutions."
-msgstr ""
-"Libriya jest profesjonalnym narzędziem katalogowania kolekcji, śledzenia "
-"wypożyczeń książek i zarządzania społecznością czytelników. Idealne dla "
-"domów i instytucji."
+msgid "Libriya is a professional tool for cataloging collections, tracking book loans, and managing a reader community. Perfect for home and institutions."
+msgstr "Libriya jest profesjonalnym narzędziem katalogowania kolekcji, śledzenia wypożyczeń książek i zarządzania społecznością czytelników. Idealne dla domów i instytucji."
 
 #: app/templates/landing/landing.html:28
 msgid "Start for free"
@@ -2332,44 +2201,20 @@ msgid "The Story Behind the Name: Libriya"
 msgstr "Historia nazwy: Libriya"
 
 #: app/templates/landing/landing.html:70
-msgid ""
-"Libriya is more than just a word. It is a thoughtful fusion of two "
-"distinct cultures, coming together to create the perfect sanctuary for "
-"every reader."
-msgstr ""
-"Libriya to coś więcej niż tylko słowo. Jest to przemyślane połączenie "
-"dwóch różnych kultur, łącząc się w celu stworzenia idealnej przestrzeni "
-"dla każdego czytelnika."
+msgid "Libriya is more than just a word. It is a thoughtful fusion of two distinct cultures, coming together to create the perfect sanctuary for every reader."
+msgstr "Libriya to coś więcej niż tylko słowo. Jest to przemyślane połączenie dwóch różnych kultur, łącząc się w celu stworzenia idealnej przestrzeni dla każdego czytelnika."
 
 #: app/templates/landing/landing.html:71
-msgid ""
-"<strong>Libri</strong> – rooted in Latin, meaning \"books.\" It "
-"represents the timeless tradition of collecting knowledge and literature."
-msgstr ""
-"<strong>Libri</strong> – pochodzi z łaciny i oznacza „książki”. To "
-"fundament, który nawiązuje do wielowiekowej tradycji gromadzenia wiedzy i"
-" literatury."
+msgid "<strong>Libri</strong> – rooted in Latin, meaning \"books.\" It represents the timeless tradition of collecting knowledge and literature."
+msgstr "<strong>Libri</strong> – pochodzi z łaciny i oznacza „książki”. To fundament, który nawiązuje do wielowiekowej tradycji gromadzenia wiedzy i literatury."
 
 #: app/templates/landing/landing.html:72
-msgid ""
-"<strong>Ya (屋)</strong> – a Japanese suffix meaning \"shop,\" "
-"\"establishment,\" or \"house of.\" In Japan, a Hon-ya is a "
-"bookstore—literally, a house where books reside."
-msgstr ""
-"<strong>Ya (屋)</strong> – o japoński przyrostek oznaczający „miejsce”, "
-"„sklep” lub „dom rzemiosła”. W Japonii Hon-ya to księgarnia, czyli dom, w"
-" którym mieszkają książki."
+msgid "<strong>Ya (屋)</strong> – a Japanese suffix meaning \"shop,\" \"establishment,\" or \"house of.\" In Japan, a Hon-ya is a bookstore—literally, a house where books reside."
+msgstr "<strong>Ya (屋)</strong> – o japoński przyrostek oznaczający „miejsce”, „sklep” lub „dom rzemiosła”. W Japonii Hon-ya to księgarnia, czyli dom, w którym mieszkają książki."
 
 #: app/templates/landing/landing.html:73
-msgid ""
-"<strong>Libriya</strong> translates to the \"House of Books\"—your "
-"personal, digital space where every story finds its home. It is a blend "
-"of European heritage and the Japanese art of organization and "
-"mindfulness."
-msgstr ""
-"<strong>Libriya</strong> to zatem „Dom Książek” – Twoja osobista, cyfrowa"
-" przestrzeń, w której każdy wolumin znajduje swoje miejsce. To połączenie"
-" europejskiej tradycji z japońskim zamiłowaniem do porządku i estetyki."
+msgid "<strong>Libriya</strong> translates to the \"House of Books\"—your personal, digital space where every story finds its home. It is a blend of European heritage and the Japanese art of organization and mindfulness."
+msgstr "<strong>Libriya</strong> to zatem „Dom Książek” – Twoja osobista, cyfrowa przestrzeń, w której każdy wolumin znajduje swoje miejsce. To połączenie europejskiej tradycji z japońskim zamiłowaniem do porządku i estetyki."
 
 #: app/templates/landing/landing.html:83
 msgid "Everything you need to manage your library"
@@ -2380,36 +2225,24 @@ msgid "ISBN Code Scanning"
 msgstr "Skanowanie kodu ISBN"
 
 #: app/templates/landing/landing.html:95
-msgid ""
-"Quickly and conveniently add books using the ISBN code scanning feature. "
-"Just scan the code from the cover to automatically fetch book data."
-msgstr ""
-"Szybko i wygodnie dodaj książki za pomocą funkcji skanowania kodu ISBN. "
-"Wystarczy zebrać kod z okładki, aby automatycznie pobrać dane książki."
+msgid "Quickly and conveniently add books using the ISBN code scanning feature. Just scan the code from the cover to automatically fetch book data."
+msgstr "Szybko i wygodnie dodaj książki za pomocą funkcji skanowania kodu ISBN. Wystarczy zebrać kod z okładki, aby automatycznie pobrać dane książki."
 
 #: app/templates/landing/landing.html:104
 msgid "Full History"
 msgstr "Pełna historia"
 
 #: app/templates/landing/landing.html:107
-msgid ""
-"Track every book loan, return, and reservation. Audit log system ensures "
-"complete control over your collections."
-msgstr ""
-"Śledź każde wypożyczenie, zwrot i rezerwację książki. System dziennika "
-"audytu zapewnia pełną kontrolę nad kolekcjami."
+msgid "Track every book loan, return, and reservation. Audit log system ensures complete control over your collections."
+msgstr "Śledź każde wypożyczenie, zwrot i rezerwację książki. System dziennika audytu zapewnia pełną kontrolę nad kolekcjami."
 
 #: app/templates/landing/landing.html:116
 msgid "PWA Support"
 msgstr "Obsługa PWA (Progresywna Aplikacja Internetowa)"
 
 #: app/templates/landing/landing.html:119
-msgid ""
-"Use Libriya on any device. App works offline and can be installed on your"
-" phone."
-msgstr ""
-"Użyj Libriya na dowolnym urządzeniu. Aplikacja działa w trybie offline i "
-"może być zainstalowana na telefonie."
+msgid "Use Libriya on any device. App works offline and can be installed on your phone."
+msgstr "Użyj Libriya na dowolnym urządzeniu. Aplikacja działa w trybie offline i może być zainstalowana na telefonie."
 
 #: app/templates/landing/landing.html:133
 msgid "SOLUTION FOR EVERYONE"
@@ -2424,9 +2257,7 @@ msgid "Multiple libraries, one account"
 msgstr "Wiele bibliotek, jedno konto"
 
 #: app/templates/landing/landing.html:148
-msgid ""
-"Manage separate collections for home, work, or association from a single "
-"dashboard."
+msgid "Manage separate collections for home, work, or association from a single dashboard."
 msgstr "Zarządzaj oddzielnymi kolekcjami dla domu, pracy z jednego pulpitu."
 
 #: app/templates/landing/landing.html:158
@@ -2435,27 +2266,19 @@ msgstr "Role i uprawnienia"
 
 #: app/templates/landing/landing.html:161
 msgid "Assign admin, manager, and reader roles, ensuring data security."
-msgstr ""
-"Przypisz uprawnienia administratora, menedżera i czytelnika, zapewniając "
-"bezpieczeństwo danych."
+msgstr "Przypisz uprawnienia administratora, menedżera i czytelnika, zapewniając bezpieczeństwo danych."
 
 #: app/templates/landing/landing.html:174
 msgid "Easily invite new users to your library using secure access codes."
-msgstr ""
-"Z łatwością zapraszaj nowych użytkowników do swojej biblioteki używając "
-"kodów bezpiecznego dostępu."
+msgstr "Z łatwością zapraszaj nowych użytkowników do swojej biblioteki używając kodów bezpiecznego dostępu."
 
 #: app/templates/landing/landing.html:183
 msgid "For Your Organization"
 msgstr "Dla Twojej organizacji"
 
 #: app/templates/landing/landing.html:186
-msgid ""
-"Libriya is designed for scaling. Each tenant receives their own, isolated"
-" space."
-msgstr ""
-"Libriya jest przeznaczona do skalowania. Każdy klient otrzymuje własną, "
-"izolowaną przestrzeń."
+msgid "Libriya is designed for scaling. Each tenant receives their own, isolated space."
+msgstr "Libriya jest przeznaczona do skalowania. Każdy klient otrzymuje własną, izolowaną przestrzeń."
 
 #: app/templates/landing/landing.html:189
 msgid "Data isolation"
@@ -2621,11 +2444,9 @@ msgid "Pending Approval"
 msgstr "Oczekujące zatwierdzenie"
 
 #: app/templates/loans/loans.html:25
-msgid ""
-"Active\n"
+msgid "Active\n"
 "                        Loan"
-msgstr ""
-"Aktywne\n"
+msgstr "Aktywne\n"
 "                        Wypożyczenie"
 
 #: app/templates/loans/loans.html:28 app/templates/loans/loans.html:89
@@ -2945,9 +2766,7 @@ msgid "Recipient Email (optional)"
 msgstr "E-mail odbiorcy (opcjonalnie)"
 
 #: app/templates/superadmin/generate_invitation.html:27
-msgid ""
-"If provided, you may choose to send the invitation immediately or later "
-"from the list."
+msgid "If provided, you may choose to send the invitation immediately or later from the list."
 msgstr "Jeśli podane, możesz natychmiast lub później wysłać zaproszenie."
 
 #: app/templates/superadmin/generate_invitation.html:31
@@ -2963,12 +2782,8 @@ msgid "Code will expire after this many days"
 msgstr "Kod wygaśnie po tej liczbie dni"
 
 #: app/templates/superadmin/generate_invitation.html:43
-msgid ""
-"This code will be valid for ONE registration only. Once used, it cannot "
-"be reused."
-msgstr ""
-"Ten kod będzie ważny tylko dla JEDNEJ rejestracji. Po użyciu nie może być"
-" ponownie użyty."
+msgid "This code will be valid for ONE registration only. Once used, it cannot be reused."
+msgstr "Ten kod będzie ważny tylko dla JEDNEJ rejestracji. Po użyciu nie może być ponownie użyty."
 
 #: app/templates/superadmin/generate_invitation.html:48
 msgid "Generate Code"
@@ -3423,9 +3238,7 @@ msgstr "Książka %(title)s została pomyślnie usunięta."
 
 #: app/utils/messages.py:36
 msgid "Book has been reserved successfully. An admin will approve it shortly."
-msgstr ""
-"Książka została pomyślnie zarezerwowana. Administrator zatwierdzi ją "
-"wkrótce."
+msgstr "Książka została pomyślnie zarezerwowana. Administrator zatwierdzi ją wkrótce."
 
 #: app/utils/messages.py:37 app/utils/messages.py:94
 msgid "This book is already reserved by another user."
@@ -3545,12 +3358,8 @@ msgstr "Książka nie jest w ulubionych."
 
 #: app/utils/messages.py:75
 #, python-format
-msgid ""
-"Cannot delete \"%(title)s\" because it is currently \"%(status)s\". "
-"Consider marking it as inactive instead."
-msgstr ""
-"Nie można usunąć \"%(title)s\", ponieważ jest ona obecnie \"%(status)s\"."
-" Zamiast tego należy uznać go za nieaktywny."
+msgid "Cannot delete \"%(title)s\" because it is currently \"%(status)s\". Consider marking it as inactive instead."
+msgstr "Nie można usunąć \"%(title)s\", ponieważ jest ona obecnie \"%(status)s\". Zamiast tego należy uznać go za nieaktywny."
 
 #: app/utils/messages.py:76
 msgid "You can only edit books within your libraries."
@@ -3599,9 +3408,7 @@ msgstr "Nieprawidłowy identyfikator użytkownika do filtrowania."
 
 #: app/utils/messages.py:93
 msgid "Book has been reserved successfully! An admin will approve it shortly."
-msgstr ""
-"Książka została zarezerwowana pomyślnie! Administrator wkrótce ją "
-"zatwierdzi."
+msgstr "Książka została zarezerwowana pomyślnie! Administrator wkrótce ją zatwierdzi."
 
 #: app/utils/messages.py:95
 msgid "This book is currently on loan."
@@ -3629,12 +3436,8 @@ msgid "Loan for \"%(title)s\" to %(username)s has been approved!"
 msgstr "Wypożyczenie \"%(title)s\" na rzecz %(username)s została zatwierdzona!"
 
 #: app/utils/messages.py:102
-msgid ""
-"Cannot approve loan: Book status is not \"reserved\". It might have been "
-"cancelled or loaned differently."
-msgstr ""
-"Nie można zatwierdzić wypożyczenia: Status książki nie jest "
-"\"zarezerwowany\". Może zostać anulowany lub pożyczony w inny sposób."
+msgid "Cannot approve loan: Book status is not \"reserved\". It might have been cancelled or loaned differently."
+msgstr "Nie można zatwierdzić wypożyczenia: Status książki nie jest \"zarezerwowany\". Może zostać anulowany lub pożyczony w inny sposób."
 
 #: app/utils/messages.py:103
 msgid "Loan is not in \"pending\" status and cannot be approved."
@@ -3681,9 +3484,7 @@ msgstr "Twoja rezerwacja %(title)s została anulowana."
 
 #: app/utils/messages.py:113
 msgid "This reservation cannot be cancelled as it is not in 'pending' status."
-msgstr ""
-"Ta rezerwacja nie może zostać anulowana, ponieważ nie ma statusu "
-"\"oczekującego\"."
+msgstr "Ta rezerwacja nie może zostać anulowana, ponieważ nie ma statusu \"oczekującego\"."
 
 #: app/utils/messages.py:116
 msgid "Cannot delete a library that has books associated with it."
@@ -3777,34 +3578,13 @@ msgstr "To hasło pojawiło się w naruszeniu danych i nie może być używane."
 
 #: app/utils/validators.py:12
 msgid "Username must be 3-20 chars, alphanumeric with - and _"
-msgstr ""
-"Nazwa użytkownika musi zawierać 3-20 znaków, alfanumeryczne lub \"-\", "
-"\"_\""
+msgstr "Nazwa użytkownika musi zawierać 3-20 znaków, alfanumeryczne lub \"-\", \"_\""
 
 #: app/utils/validators.py:72
-msgid ""
-"Subdomain can only contain lowercase letters, numbers, and hyphens, 3-20 "
-"chars, cannot start/end with hyphen."
-msgstr ""
-"Subdomena może zawierać tylko małe litery, cyfry i myślniki, 3-20 znaków,"
-" nie może zaczynać się lub kończyć myślnikiem."
+msgid "Subdomain can only contain lowercase letters, numbers, and hyphens, 3-20 chars, cannot start/end with hyphen."
+msgstr "Subdomena może zawierać tylko małe litery, cyfry i myślniki, 3-20 znaków, nie może zaczynać się lub kończyć myślnikiem."
 
 #: app/utils/validators.py:79
 msgid "This subdomain is already taken."
 msgstr "Ta subdomena jest już zajęta."
-
-#~ msgid "First Name"
-#~ msgstr "Imię"
-
-#~ msgid "Last Name"
-#~ msgstr "Nazwisko"
-
-#~ msgid "First name is required"
-#~ msgstr "Imię jest wymagane"
-
-#~ msgid "Last name is required"
-#~ msgstr "Nazwisko jest wymagane"
-
-#~ msgid "All rights reserved."
-#~ msgstr "Wszelkie prawa zastrzeżone."
 
