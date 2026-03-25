@@ -1576,7 +1576,7 @@ msgid "Contact Super Admin"
 msgstr "Skontaktuj się z Super Administratorem"
 
 #: app/templates/base/main_base.html:408
-msgid "Wszelkie prawa zastrzeżone."
+msgid "All rights reserved."
 msgstr "Wszelkie prawa zastrzeżone."
 
 #: app/templates/base/main_base.html:411
