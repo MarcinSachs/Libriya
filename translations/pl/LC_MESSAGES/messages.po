@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-03-25 20:14+0100\n"
-"PO-Revision-Date: 2026-03-25 19:17\n"
+"PO-Revision-Date: 2026-03-25 19:20\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -20,7 +20,7 @@ msgstr ""
 
 #: app/__init__.py:354
 msgid "Your session has expired or the form was submitted from an invalid source."
-msgstr ""
+msgstr "Twoja sesja wygasła lub formularz został przesłany z nieprawidłowego źródła."
 
 #: app/__init__.py:404
 msgid "You do not have permission to access this page"
@@ -1252,15 +1252,15 @@ msgstr "Każda subdomena musi być unikalna w całym systemie"
 
 #: app/templates/admin/tenant_premium.html:12
 msgid "Back to list"
-msgstr ""
+msgstr "Powrót do listy"
 
 #: app/templates/admin/tenant_premium.html:38
 msgid "Enabled"
-msgstr ""
+msgstr "Włączone"
 
 #: app/templates/admin/tenant_premium.html:40
 msgid "Disabled"
-msgstr ""
+msgstr "Wyłączone"
 
 #: app/templates/admin/tenant_premium.html:51
 msgid "No premium features available"
@@ -1577,23 +1577,23 @@ msgstr "Skontaktuj się z Super Administratorem"
 
 #: app/templates/base/main_base.html:408
 msgid "Wszelkie prawa zastrzeżone."
-msgstr ""
+msgstr "Wszelkie prawa zastrzeżone."
 
 #: app/templates/base/main_base.html:411
 msgid "Terms & Conditions"
-msgstr ""
+msgstr "Regulamin"
 
 #: app/templates/base/main_base.html:412
 msgid "GPDR"
-msgstr ""
+msgstr "RODO"
 
 #: app/templates/base/main_base.html:413
 msgid "Privacy Policy"
-msgstr ""
+msgstr "Politykę Prywatności"
 
 #: app/templates/base/main_base.html:414
 msgid "Cookie Policy"
-msgstr ""
+msgstr "Polityka ciasteczek"
 
 #: app/templates/base/main_base.html:421
 msgid "This website uses cookies to ensure proper operation. By using it, you accept our"
@@ -2008,7 +2008,7 @@ msgstr[3] "Biblioteka ma obecnie %(n)s książek."
 
 #: app/templates/books/index.html:19 app/templates/users/user_profile.html:192
 msgid "Recommended for you"
-msgstr ""
+msgstr "Polecane dla Ciebie"
 
 #: app/templates/books/index.html:27 app/templates/books/index.html:76
 #: app/templates/books/index.html:116
@@ -2079,7 +2079,7 @@ msgstr "Brak gatunków"
 
 #: app/templates/books/index.html:167 app/templates/books/index.html:264
 msgid "Remove from favorites"
-msgstr ""
+msgstr "Usuń z ulubionych"
 
 #: app/templates/books/index.html:174 app/templates/books/index.html:271
 msgid "Add to favorites"
@@ -2091,7 +2091,7 @@ msgstr "Książka niedostępna do rezerwacji"
 
 #: app/templates/books/index.html:265
 msgid "Unlike"
-msgstr ""
+msgstr "Przestań lubić"
 
 #: app/templates/books/index.html:272
 msgid "Like"
