@@ -1,6 +1,7 @@
 {% extends "base/main_base.html" %}
 {% block content %}
 <div class="max-w-7xl mx-auto px-4">
+    {{ macros.display_flashes() }}
     <h2 class="text-2xl font-bold text-gray-800">{{ book.title }}</h2>
     <hr class="my-4">
 
@@ -21,7 +22,7 @@
                 {% if current_user in book.favorited_by %}
                 <form method="POST" action="{{ url_for('books.remove_favorite', book_id=book.id) }}" style="display: inline;">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                    <button type="submit" class="text-yellow-500 hover:text-yellow-600 transition" title="{{ _('Remove from Favorites') }}" style="background: none; border: none; cursor: pointer;">
+                    <button type="submit" class="text-red-500 hover:text-red-600 transition" title="{{ _('Remove from Favorites') }}" style="background: none; border: none; cursor: pointer;">
                         <i class="bx bxs-heart" style="font-size: 2rem;"></i>
                     </button>
                 </form>

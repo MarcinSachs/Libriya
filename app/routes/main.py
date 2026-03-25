@@ -12,6 +12,7 @@ from app.models import Book, Genre, Notification, User, ContactMessage, Author
 from app.forms import ContactForm
 from app.services.book_service import BookSearchService
 from app.services.cover_service import CoverService
+from app.services.recommendation_service import RecommendationService
 from app.utils.messages import (
     INFO_LANGUAGE_CHANGED_EN, INFO_LANGUAGE_CHANGED_PL,
     ERROR_UNSUPPORTED_LANGUAGE, ERROR_PERMISSION_DENIED, NOTIFICATION_MARKED_READ,
@@ -240,12 +241,23 @@ def home():
     genres = Genre.query.all()
     genres = sorted(genres, key=lambda g: _(g.name))
 
+    # Prepare recommendations (based on favorite books + description similarity)
+    recommended_books = []
+    if current_user.is_authenticated:
+        recommended_books = RecommendationService.get_recommendations_for_user(current_user, max_results=8)
+
     # Numbers of unread notifications to layout
     unread_notifications_count = Notification.query.filter_by(
         recipient=current_user, is_read=False
     ).count()
 
+    favorite_book_ids = set()
+    if current_user.is_authenticated and not current_user.is_anonymous:
+        favorite_book_ids = {b.id for b in current_user.favorites}
+
     return render_template("books/index.html", books=books, genres=genres, active_page="books",
+                           recommended_books=recommended_books,
+                           favorite_book_ids=favorite_book_ids,
                            unread_notifications_count=unread_notifications_count)
 
 
