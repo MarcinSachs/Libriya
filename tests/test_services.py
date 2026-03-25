@@ -9,7 +9,7 @@ from app.services.cover_service import CoverService
 from app.services.openlibrary_service import OpenLibraryClient
 from app.services import cache_service
 from app import db
-from app.models import Tenant, Genre, User
+from app.models import Tenant, Genre, User, Book, Author
 
 
 def test_validate_url_blocklist_and_schemes():
@@ -335,3 +335,51 @@ def test_validate_url_rejects_if_any_resolved_ip_is_private(monkeypatch):
 
 def test_validate_url_blocks_ipv6_loopback():
     assert not CoverService._validate_url('http://[::1]/secret')
+
+
+def test_recommendations_based_on_description_author_genre(app):
+    from app.services.recommendation_service import RecommendationService
+
+    tenant = Tenant(name='R1', subdomain='r1')
+    db.session.add(tenant)
+    db.session.commit()
+
+    user = User(username='recuser', email='rec@test.com', tenant_id=tenant.id, role='admin')
+    user.is_email_verified = True
+    user.set_password('password')
+    db.session.add(user)
+
+    g_fantasy = Genre(name='Fantasy')
+    g_sf = Genre(name='Science Fiction')
+    db.session.add_all([g_fantasy, g_sf])
+
+    author1 = Author(name='J. Wizard')
+    author2 = Author(name='C. Cook')
+    db.session.add_all([author1, author2])
+
+    b1 = Book(title='Magic Spaceship', tenant_id=tenant.id, library_id=1,
+              description='Heroic wizard travels in space', status='available')
+    b1.genres.append(g_fantasy)
+    b1.authors.append(author1)
+
+    b2 = Book(title='Deep Space Quest', tenant_id=tenant.id, library_id=1,
+              description='A spaceship and a wizard agent exploring the galaxy', status='available')
+    b2.genres.append(g_sf)
+    b2.authors.append(author1)
+
+    b3 = Book(title='Cooking 101', tenant_id=tenant.id, library_id=1,
+              description='A cookbook with recipes', status='available')
+    b3.genres.append(g_fantasy)
+    b3.authors.append(author2)
+
+    db.session.add_all([b1, b2, b3])
+    db.session.commit()
+
+    user.favorites.append(b1)
+    db.session.commit()
+
+    recommendations = RecommendationService.get_recommendations_for_user(user, max_results=3)
+
+    assert recommendations
+    assert recommendations[0].id == b2.id
+    assert b3 not in recommendations or (b3 in recommendations and recommendations.index(b3) > 0)

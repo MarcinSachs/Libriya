@@ -104,6 +104,43 @@ def test_book_add_post_as_admin(app, client, monkeypatch):
     assert called['flag'] is True
 
 
+def test_add_and_remove_favorite(client, app):
+    t = Tenant(name='FavT', subdomain='fav')
+    db.session.add(t)
+    db.session.commit()
+
+    lib = Library(name='FavLib', tenant_id=t.id)
+    db.session.add(lib)
+    db.session.commit()
+
+    user = User(username='favuser', email='favuser@test.com', role='user', tenant_id=t.id)
+    user.is_email_verified = True
+    user.set_password('password')
+    db.session.add(user)
+    db.session.commit()
+
+    # link user to library for main.home visibility in UI
+    user.libraries.append(lib)
+    db.session.commit()
+
+    book = Book(title='FavBook', library_id=lib.id, tenant_id=t.id)
+    db.session.add(book)
+    db.session.commit()
+
+    login(client, user.email)
+    # add favorite
+    response_add = client.post(f'/favorites/add/{book.id}', data={'csrf_token': ''}, follow_redirects=True)
+    assert response_add.status_code == 200
+    db.session.refresh(user)
+    assert book in user.favorites
+
+    # remove favorite
+    response_remove = client.post(f'/favorites/remove/{book.id}', data={'csrf_token': ''}, follow_redirects=True)
+    assert response_remove.status_code == 200
+    db.session.refresh(user)
+    assert book not in user.favorites
+
+
 def test_list_page_shows_dash_for_missing_year(client, app):
     """Verify that books without a year display '-' in the main table."""
     # create tenant, library, book without year

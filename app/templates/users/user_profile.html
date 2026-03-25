@@ -7,7 +7,6 @@
         <div class="ml-3">
             <h2 class="text-2xl font-bold text-gray-800 mb-0">{{ user.username }}</h2>
             <p class="text-gray-600 mb-0">{{ user.email }}</p>
-            <p class="text-gray-500 text-sm">{{ _('Preferred language') }}: <strong>{{ user.preferred_locale }}</strong></p>
         </div>
     </div>
     <hr class="my-4">
@@ -156,13 +155,13 @@
     {% if user.favorites %}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for book in user.favorites %}
-        <form action="{{ url_for('books.book_detail', book_id=book.id) }}" method="GET" class="bg-white rounded-lg shadow-sm border border-gray-200 h-full overflow-hidden hover:shadow-md transition">
-            <button type="submit" class="w-full p-0 text-left">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 h-full overflow-hidden hover:shadow-md transition">
+            <a href="{{ url_for('books.book_detail', book_id=book.id) }}" class="block">
                 {% if book.cover %}
                     <img src="{{ url_for('static', filename='uploads/' + book.cover) }}" class="w-full"
                         alt="{{ book.title }}" style="object-fit: cover; height: 200px;">
                 {% else %}
-                    <img src="{{ url_for('static', filename='img/default_book_cover.jpg') }}" class="w-full"
+                    <img src="{{ url_for('static', filename='images/default-book-cover.png') }}" class="w-full"
                         alt="{{ _('No cover available') }}" style="object-fit: cover; height: 200px;">
                 {% endif %}
                 <div class="px-4 py-3 flex flex-col h-full">
@@ -173,7 +172,7 @@
                         {% endfor %}
                     </p>
                 </div>
-            </button>
+            </a>
             <div class="bg-white border-t border-gray-200 px-4 py-3 flex justify-end">
                 <form action="{{ url_for('books.remove_favorite', book_id=book.id) }}" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
@@ -182,11 +181,31 @@
                     </button>
                 </form>
             </div>
-        </form>
+        </div>
         {% endfor %}
     </div>
     {% else %}
     <p class="text-gray-600">{{ _('No favorite books yet.') }}</p>
+    {% endif %}
+
+    {% if recommended_books %}
+    <h3 class="mt-10 text-xl font-bold">{{ _('Recommended for you') }}</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for book in recommended_books %}
+        <a href="{{ url_for('books.book_detail', book_id=book.id) }}" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition">
+            {% if book.cover %}
+            <img src="{{ url_for('static', filename='uploads/' + book.cover) }}" class="w-full" alt="{{ book.title }}" style="object-fit: cover; height: 200px;">
+            {% else %}
+            <img src="{{ url_for('static', filename='images/default-book-cover.png') }}" class="w-full" alt="{{ _('No cover available') }}" style="object-fit: cover; height: 200px;">
+            {% endif %}
+            <div class="px-4 py-3">
+                <h5 class="font-semibold text-lg">{{ book.title }}</h5>
+                <p class="text-gray-600">{{ book.authors|map(attribute='display_name')|join(', ') }}</p>
+                <p class="text-gray-500 text-xs mt-1 line-clamp-2">{{ (book.description or '')[:80] ~ ('...' if book.description and book.description|length > 80 else '') }}</p>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
     {% endif %}
 
 </div>

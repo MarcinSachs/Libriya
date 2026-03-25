@@ -11,9 +11,10 @@ from app.utils.messages import (
 )
 from app.utils.audit_log import log_book_deleted, log_action
 from app.utils import role_required
-from app.models import Book, Author, Library, Location, Genre, Tenant, Loan
+from app.models import Book, Author, Library, Location, Genre, Tenant, Loan, User
 from app.forms import BookForm
 from app import db, csrf
+from app.services.cache_service import invalidate_user_cache
 from io import BytesIO
 from PIL import Image
 from werkzeug.datastructures import FileStorage
@@ -21,6 +22,7 @@ from werkzeug.utils import secure_filename
 from flask_babel import gettext as _
 from flask_login import login_required, current_user
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file, jsonify
+from sqlalchemy import and_
 from datetime import datetime
 from urllib.parse import urlparse
 import requests
@@ -575,32 +577,55 @@ def book_edit(book_id):
 @bp.route('/favorites/add/<int:book_id>', methods=['POST'])
 @login_required
 def add_favorite(book_id):
-    user = current_user
+    from app.models import favorites as favorites_table
     book = Book.query.get_or_404(book_id)
-    if book in user.favorites:
+
+    existing = db.session.execute(
+        favorites_table.select().where(
+            and_(
+                favorites_table.c.user_id == current_user.id,
+                favorites_table.c.book_id == book_id
+            )
+        )
+    ).first()
+
+    if existing:
         flash(BOOK_ALREADY_IN_FAVORITES, 'info')
     else:
-        user.favorites.append(book)
+        db.session.execute(
+            favorites_table.insert().values(user_id=current_user.id, book_id=book_id)
+        )
         db.session.commit()
-        # Audit
+        invalidate_user_cache(current_user.id)
         try:
             log_action('FAVORITE_ADDED', f'User {current_user.username} added book {book.title} to favorites', subject=book, additional_info={
                        'book_id': book.id, 'user_id': current_user.id})
         except Exception:
             pass
         flash(BOOK_ADDED_TO_FAVORITES, 'success')
-    return redirect(url_for('main.home'))
+
+    next_url = request.referrer or url_for('books.book_detail', book_id=book.id)
+    return redirect(next_url)
 
 
 @bp.route('/favorites/remove/<int:book_id>', methods=['POST'])
 @login_required
 def remove_favorite(book_id):
-    user = current_user
+    from app.models import favorites as favorites_table
     book = Book.query.get_or_404(book_id)
-    if book in user.favorites:
-        user.favorites.remove(book)
+
+    result = db.session.execute(
+        favorites_table.delete().where(
+            and_(
+                favorites_table.c.user_id == current_user.id,
+                favorites_table.c.book_id == book_id
+            )
+        )
+    )
+
+    if result.rowcount > 0:
         db.session.commit()
-        # Audit
+        invalidate_user_cache(current_user.id)
         try:
             log_action('FAVORITE_REMOVED', f'User {current_user.username} removed book {book.title} from favorites', subject=book, additional_info={
                        'book_id': book.id, 'user_id': current_user.id})
@@ -609,7 +634,9 @@ def remove_favorite(book_id):
         flash(BOOK_REMOVED_FROM_FAVORITES, 'success')
     else:
         flash(BOOK_NOT_IN_FAVORITES, 'info')
-    return redirect(url_for('books.book_detail', book_id=book.id))
+
+    next_url = request.referrer or url_for('books.book_detail', book_id=book.id)
+    return redirect(next_url)
 
 
 @bp.route("/api/cleanup-cover", methods=["POST"])

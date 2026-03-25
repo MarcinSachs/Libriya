@@ -327,6 +327,8 @@ def user_delete(user_id):
 def user_profile(user_id):
     # fetch fresh user instance (allows viewing other profiles later)
     from app.models import User
+    from app.services.recommendation_service import RecommendationService
+
     user = User.query.options(
         db.subqueryload(User.loans),
         db.subqueryload(User.favorites)
@@ -345,6 +347,11 @@ def user_profile(user_id):
     # Access favorites (already eager-loaded)
     favorite_books = user.favorites
 
+    # Get recommendations from available libraries and user's favorites
+    recommended_books = []
+    if user.favorites:
+        recommended_books = RecommendationService.get_recommendations_for_user(user, max_results=8)
+
     return render_template(
         "users/user_profile.html",
         user=user,
@@ -353,6 +360,7 @@ def user_profile(user_id):
         loan_history=loan_history,
         pending_loans=pending_loans,
         favorite_books=favorite_books,
+        recommended_books=recommended_books,
         title=f"{user.username}"
     )
 

@@ -14,6 +14,24 @@
         </p>
     </div>
 
+    {% if recommended_books %}
+    <div class="mb-6 p-4 bg-blue-50 border border-blue-150 rounded-lg">
+        <h3 class="text-xl font-bold text-primary mb-3">{{ _('Recommended for you') }}</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            {% for book in recommended_books %}
+            <a href="{{ url_for('books.book_detail', book_id=book.id) }}" class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition">
+                <div class="font-semibold">{{ book.title }}</div>
+                <div class="text-sm text-gray-600">{{ book.authors|map(attribute='display_name')|join(', ') }}</div>
+                <div class="text-xs text-gray-500 mt-1 line-clamp-2">{{ (book.description or '')[:80] ~ ('...' if book.description and book.description|length > 80 else '') }}</div>
+                {% if book.genres %}
+                <div class="text-xs text-primary mt-1">{{ _('Genre') }}: {{ book.genres|map(attribute='name')|join(', ') }}</div>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <h2 class="text-3xl font-bold text-primary mb-6">{{ _('List of books') }}</h2>
     <!-- Add Book Button (Admin/Manager) -->
     {% if current_user and (current_user.role == 'admin' or current_user.role == 'manager') %}
@@ -142,13 +160,22 @@
                     </td>
                     <td class="px-4 py-3" onclick="event.stopPropagation();">
                         <div class="flex items-center">
-                            <!-- Add to Favorites -->
+                            <!-- Add to / Remove from Favorites -->
+                            {% if book.id in favorite_book_ids %}
+                            <form action="{{ url_for('books.remove_favorite', book_id=book.id) }}" method="POST" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                <button type="submit" class="p-2 text-red-500 hover:bg-gray-200 rounded transition" title="{{ _('Remove from favorites') }}">
+                                    <i class='bx bxs-heart'></i>
+                                </button>
+                            </form>
+                            {% else %}
                             <form action="{{ url_for('books.add_favorite', book_id=book.id) }}" method="POST" style="display: inline;">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                                 <button type="submit" class="p-2 text-primary hover:bg-gray-200 rounded transition" title="{{ _('Add to favorites') }}">
                                     <i class='bx bx-heart'></i>
                                 </button>
                             </form>
+                            {% endif %}
 
                             <!-- Request Reservation -->
                             {% if book.status == 'available' %}
@@ -230,13 +257,22 @@
 
                 <!-- Actions -->
                 <div class="book-card-actions" onclick="event.stopPropagation();">
-                    <!-- Add to Favorites -->
+                    <!-- Add to / Remove from Favorites -->
+                    {% if book.id in favorite_book_ids %}
+                    <form action="{{ url_for('books.remove_favorite', book_id=book.id) }}" method="POST" style="flex: 1;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <button type="submit" class="w-full text-sm text-red-500" title="{{ _('Remove from favorites') }}">
+                            <i class='bx bxs-heart'></i> <span class="hidden sm:inline">{{ _('Unlike') }}</span>
+                        </button>
+                    </form>
+                    {% else %}
                     <form action="{{ url_for('books.add_favorite', book_id=book.id) }}" method="POST" style="flex: 1;">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                         <button type="submit" class="w-full text-sm" title="{{ _('Add to favorites') }}">
                             <i class='bx bx-heart'></i> <span class="hidden sm:inline">{{ _('Like') }}</span>
                         </button>
                     </form>
+                    {% endif %}
 
                     <!-- Request Reservation -->
                     {% if book.status == 'available' %}

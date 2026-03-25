@@ -1,6 +1,6 @@
 """Cache service for frequently accessed data with TTL-based expiration"""
 
-from app import cache
+from app import cache, db
 from flask import current_app
 
 
@@ -115,10 +115,14 @@ def get_user_by_id_cached(user_id):
 
     **Important:** SQLAlchemy model instances stored in the cache become
     ``detached`` when the request-local session that originally loaded them is
-    torn down.  Any later attempt to access a relationship will raise
-    ``DetachedInstanceError``.  To avoid this we merge the cached instance back
-    into the current session before returning it.  This keeps client code
-    (especially ``load_user`` in ``app/__init__.py``) oblivious to caching.
+    torn down.  Relationships declared with ``lazy='subquery'`` (such as
+    ``User.favorites`` and ``User.libraries``) are eagerly pre-loaded as Python
+    lists and remain accessible on detached instances.  Calling
+    ``db.session.merge()`` on a stale cached object was found to corrupt the
+    current session's identity-map by overwriting live state with cached stale
+    state, so the cached object is now returned as-is.  Call
+    ``invalidate_user_cache(user_id)`` whenever user data (including favorites)
+    is changed so the next request fetches a fresh copy from the database.
     """
     from app.models import User
 
@@ -129,15 +133,7 @@ def get_user_by_id_cached(user_id):
     def _get_user():
         return User.query.get(user_id)
 
-    user = _get_user()
-    if user is not None:
-        try:
-            # merge returns an instance bound to the current session
-            return db.session.merge(user)
-        except Exception:
-            # if merging fails for any reason just return original
-            return user
-    return None
+    return _get_user()
 
 
 def invalidate_user_cache(user_id):
