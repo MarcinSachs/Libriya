@@ -9,7 +9,6 @@ import argparse
 import os
 import sys
 import subprocess
-from babel.messages.frontend import extract_messages, update_catalog, compile_catalog
 
 # Run from repository root so all modules/templates are scanned correctly
 repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,9 +20,42 @@ args = parser.parse_args()
 
 out_path = os.path.join(repo_root, 'translations', 'messages.pot')
 
+
+def run_pybabel(cmd_args):
+    try:
+        subprocess.run(['pybabel'] + cmd_args, check=True)
+        return True
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return False
+
+
 # Step 1: Extract messages to POT
-sys.argv = ['extract_messages', '-F', 'babel.cfg', '-o', out_path, repo_root]
-extract_messages()
+print('Extracting messages...')
+if not run_pybabel(['extract', '-F', 'babel.cfg', '-o', out_path, '.']):
+    # Fallback: use Babel Python API directly
+    from babel.messages.extract import extract_from_dir
+    from babel.messages.catalog import Catalog
+    from babel.messages.pofile import write_po
+    import io
+
+    catalog = Catalog()
+    for filename, lineno, message, comments, context in extract_from_dir(
+        repo_root,
+        method_map=[
+            ('**.py', 'python'),
+            ('**/templates/**.html', 'jinja2'),
+        ],
+        options_map={
+            '**/templates/**.html': {'extensions': 'jinja2.ext.i18n'},
+        },
+        comment_tags=('NOTE:',),
+    ):
+        catalog.add(message, locations=[(filename, lineno)], user_comments=comments)
+
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    with open(out_path, 'wb') as f:
+        write_po(f, catalog)
+
 print(f"Done! Wrote: {out_path}")
 
 # Step 2: Update locale catalogs (all existing locales under translations)
@@ -38,20 +70,14 @@ for entry in os.listdir(locales_dir):
 if not locales:
     print('No locale directories found under translations/. Skipping locale update.')
 else:
-    def run_pybabel(args):
-        try:
-            subprocess.run(['pybabel'] + args, check=True)
-            return True
-        except (FileNotFoundError, subprocess.CalledProcessError):
-            return False
-
     for lang in locales:
         print(f'Updating locale "{lang}"...')
 
         if run_pybabel(['update', '-i', out_path, '-d', locales_dir, '-l', lang]):
             continue
 
-        print('`pybabel` CLI not available; falling back to Babel frontend update_catalog')
+        print('`pybabel` CLI not available; falling back to Babel API for update_catalog')
+        from babel.messages.frontend import update_catalog
         update_cmd = update_catalog()
         update_cmd.initialize_options()
         update_cmd.input_file = out_path
@@ -65,7 +91,8 @@ if args.compile:
     print('Compiling translation catalogs...')
 
     if not run_pybabel(['compile', '-d', locales_dir]):
-        print('`pybabel` CLI not available; falling back to Babel frontend compile_catalog')
+        print('`pybabel` CLI not available; falling back to Babel API for compile_catalog')
+        from babel.messages.frontend import compile_catalog
         compile_cmd = compile_catalog()
         compile_cmd.initialize_options()
         compile_cmd.directory = locales_dir
