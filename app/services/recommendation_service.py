@@ -6,6 +6,37 @@ from typing import Dict, List
 from app import db
 from app.models import Book
 
+# Lazy singleton – ładowanie modelu Stempel (~3 s) odbywa się tylko raz.
+_stempel_stemmer = None
+
+
+def _get_stempel_stemmer():
+    """Zwraca (i ew. inicjalizuje) singleton stemmera Stempel dla języka polskiego."""
+    global _stempel_stemmer
+    if _stempel_stemmer is None:
+        try:
+            from pystempel import Stemmer
+            _stempel_stemmer = Stemmer.polimorf()
+        except Exception:
+            _stempel_stemmer = False  # False sygnalizuje brak biblioteki
+    return _stempel_stemmer if _stempel_stemmer is not False else None
+
+
+def _detect_language(text: str) -> str:
+    """Wykrywa język tekstu. Zwraca 'pl', 'en' lub 'unknown'.
+
+    Używa langdetect na połączonym tekście (tytuł + opis), więc działa
+    poprawnie nawet gdy tytuł po polsku nie zawiera polskich znaków
+    diakrytycznych (np. 'zagadki jezykowe').
+    """
+    if not text or len(text.strip()) < 10:
+        return 'unknown'
+    try:
+        from langdetect import detect, LangDetectException
+        return detect(text)
+    except Exception:
+        return 'unknown'
+
 
 class RecommendationService:
     # Very small stopword list for Polish and English. Extend as needed.
@@ -14,11 +45,6 @@ class RecommendationService:
         'jest', 'to', 'na', 'do', 'z', 'oraz', 'ale', 'się', 'nie', 'tak', 'jak', 'co', 'może',
         'czy', 'a', 'o', 'w', 'po', 'przez'
     }
-
-    # Genre and author tokens are repeated this many times when building the
-    # user profile, so the text-similarity component reflects structural
-    # preferences more strongly.
-    GENRE_AUTHOR_BOOST = 3
 
     @staticmethod
     def _normalize_text(value: str) -> str:
@@ -29,11 +55,31 @@ class RecommendationService:
         return re.sub(r'\s+', ' ', text).strip()
 
     @staticmethod
-    def _tokenize(text: str) -> List[str]:
+    def _stem_pl(token: str) -> str:
+        """Stemuje polski token przez Stempel. Dla nieznanych słów zwraca token bez zmian."""
+        stemmer = _get_stempel_stemmer()
+        if stemmer is None:
+            return token
+        result = stemmer(token)
+        return result if result is not None else token
+
+    @staticmethod
+    def _tokenize(text: str, lang: str = 'unknown') -> List[str]:
+        """Tokenizuje tekst, stosując stemmer właściwy dla wykrytego języka.
+
+        - lang='pl'  → Stempel (morfologika polska, działa też dla tekstów
+                        bez polskich znaków diakrytycznych)
+        - inne języki → brak stemowania (angielski i inne języki są
+                        znacznie mniej fleksyjne, brak stemowania nie psuje wyników)
+        """
         text = RecommendationService._normalize_text(text)
-        tokens = [token for token in text.split(' ') if token and len(
-            token) > 2 and token not in RecommendationService.STOPWORDS]
-        return tokens
+        raw_tokens = [
+            token for token in text.split(' ')
+            if token and len(token) > 2 and token not in RecommendationService.STOPWORDS
+        ]
+        if lang == 'pl':
+            return [RecommendationService._stem_pl(t) for t in raw_tokens]
+        return raw_tokens
 
     @staticmethod
     def _tf(tokens: List[str]) -> Dict[str, float]:
@@ -82,17 +128,35 @@ class RecommendationService:
         return dot / (norm_a * norm_b)
 
     @staticmethod
-    def _book_tokens(book: Book, genre_author_boost: int = 1) -> List[str]:
-        """Return all tokens for a book, repeating genre/author tokens *boost* times."""
+    def _book_text_tokens(book: Book) -> List[str]:
+        """Zwraca tokeny z tytułu i opisu książki (bez gatunków i autorów).
+
+        Używane wyłącznie do budowania wektorów TF-IDF.
+        Gatunki i autorzy są obsługiwane osobno przez genre_score i author_score,
+        więc wykluczamy je z podobieństwa kosinusowego, żeby uniknąć podwójnego
+        liczenia (double-counting) sygnałów strukturalnych.
+        """
+        combined_text = ' '.join(filter(None, [book.title, book.description]))
+        lang = _detect_language(combined_text)
         tokens: List[str] = []
-        tokens.extend(RecommendationService._tokenize(book.title or ''))
-        tokens.extend(RecommendationService._tokenize(book.description or ''))
+        tokens.extend(RecommendationService._tokenize(book.title or '', lang=lang))
+        tokens.extend(RecommendationService._tokenize(book.description or '', lang=lang))
+        return tokens
+
+    @staticmethod
+    def _book_tokens(book: Book) -> List[str]:
+        """Zwraca wszystkie tokeny książki (treść + gatunki + autorzy).
+
+        Używane do obliczania IDF na korpusie kandydatów, żeby rzadkie terminy
+        (np. nazwy własne, specjalistyczne słownictwo) otrzymały wyższe wagi.
+        """
+        tokens = RecommendationService._book_text_tokens(book)
         author_tokens = RecommendationService._tokenize(
-            ' '.join([a.name for a in book.authors or []]))
+            ' '.join([a.name for a in book.authors or []]), lang='pl')
         genre_tokens = RecommendationService._tokenize(
-            ' '.join([g.name for g in book.genres or []]))
-        tokens.extend(author_tokens * genre_author_boost)
-        tokens.extend(genre_tokens * genre_author_boost)
+            ' '.join([g.name for g in book.genres or []]), lang='pl')
+        tokens.extend(author_tokens)
+        tokens.extend(genre_tokens)
         return tokens
 
     @staticmethod
@@ -191,24 +255,23 @@ class RecommendationService:
         # ------------------------------------------------------------------
         # 2. Build TF-IDF representations
         # ------------------------------------------------------------------
-        # Computing IDF from the candidate corpus causes words that appear in
-        # many books ("story", "world", "człowiek") to be down-weighted
-        # automatically, making the cosine similarity far more discriminative.
-        candidate_tokens: List[List[str]] = [
+        # IDF liczymy na pełnym korpusie (treść + gatunki + autorzy), żeby
+        # rzadkie terminy tematyczne miały wyższe wagi niż powszechne słowa.
+        idf_corpus: List[List[str]] = [
             RecommendationService._book_tokens(b) for b in candidates
         ]
-        idf = RecommendationService._compute_idf(candidate_tokens)
+        idf = RecommendationService._compute_idf(idf_corpus)
 
-        # Aggregate user profile from all favourite books.  Genre and author
-        # tokens are boosted so that structural preferences are reflected
-        # directly in the text-similarity component.
+        # Wektory TF-IDF profilu i kandydatów budujemy TYLKO z tytułu i opisu.
+        # Gatunki i autorzy są osobnymi sygnałami (genre_score, author_score),
+        # więc nie mieszamy ich z podobieństwem treściowym.
+        candidate_tokens: List[List[str]] = [
+            RecommendationService._book_text_tokens(b) for b in candidates
+        ]
+
         profile_tokens: List[str] = []
         for book in favorite_books:
-            profile_tokens.extend(
-                RecommendationService._book_tokens(
-                    book, genre_author_boost=RecommendationService.GENRE_AUTHOR_BOOST
-                )
-            )
+            profile_tokens.extend(RecommendationService._book_text_tokens(book))
 
         if not profile_tokens:
             return []
@@ -237,6 +300,10 @@ class RecommendationService:
             #   text_similarity (TF-IDF cosine)  — 50 pts  richest signal
             #   author coverage                  — 30 pts  strong structural proxy
             #   genre coverage                   — 20 pts  broad thematic signal
+            #
+            if text_similarity == 0:
+                continue
+
             score = text_similarity * 50 + author_score * 30 + genre_score * 20
 
             if score <= 0:

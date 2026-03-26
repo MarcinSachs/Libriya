@@ -244,7 +244,7 @@ def home():
     # Prepare recommendations (based on favorite books + description similarity)
     recommended_books = []
     if current_user.is_authenticated:
-        recommended_books = RecommendationService.get_recommendations_for_user(current_user, max_results=8)
+        recommended_books = RecommendationService.get_recommendations_for_user(current_user, max_results=4)
 
     # Numbers of unread notifications to layout
     unread_notifications_count = Notification.query.filter_by(
