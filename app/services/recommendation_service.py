@@ -15,6 +15,11 @@ class RecommendationService:
         'czy', 'a', 'o', 'w', 'po', 'przez'
     }
 
+    # Genre and author tokens are repeated this many times when building the
+    # user profile, so the text-similarity component reflects structural
+    # preferences more strongly.
+    GENRE_AUTHOR_BOOST = 3
+
     @staticmethod
     def _normalize_text(value: str) -> str:
         if not value:
@@ -39,6 +44,29 @@ class RecommendationService:
         return {token: freq / total for token, freq in cnt.items()}
 
     @staticmethod
+    def _compute_idf(documents: List[List[str]]) -> Dict[str, float]:
+        """Compute smoothed IDF for each token across a list of token lists.
+
+        Formula: idf(t) = log((N + 1) / (df(t) + 1)) + 1
+        where N = number of documents and df(t) = number of docs containing t.
+        The smoothing prevents zero division and gives unseen terms a non-zero
+        fallback weight of 1.0.
+        """
+        n = len(documents)
+        df: Counter = Counter()
+        for tokens in documents:
+            for token in set(tokens):
+                df[token] += 1
+        return {token: math.log((n + 1) / (count + 1)) + 1.0
+                for token, count in df.items()}
+
+    @staticmethod
+    def _tfidf(tokens: List[str], idf: Dict[str, float]) -> Dict[str, float]:
+        """Return a TF-IDF vector for the given token list."""
+        tf = RecommendationService._tf(tokens)
+        return {token: tf_val * idf.get(token, 1.0) for token, tf_val in tf.items()}
+
+    @staticmethod
     def _cosine_similarity(a: Dict[str, float], b: Dict[str, float]) -> float:
         if not a or not b:
             return 0.0
@@ -54,16 +82,35 @@ class RecommendationService:
         return dot / (norm_a * norm_b)
 
     @staticmethod
+    def _book_tokens(book: Book, genre_author_boost: int = 1) -> List[str]:
+        """Return all tokens for a book, repeating genre/author tokens *boost* times."""
+        tokens: List[str] = []
+        tokens.extend(RecommendationService._tokenize(book.title or ''))
+        tokens.extend(RecommendationService._tokenize(book.description or ''))
+        author_tokens = RecommendationService._tokenize(
+            ' '.join([a.name for a in book.authors or []]))
+        genre_tokens = RecommendationService._tokenize(
+            ' '.join([g.name for g in book.genres or []]))
+        tokens.extend(author_tokens * genre_author_boost)
+        tokens.extend(genre_tokens * genre_author_boost)
+        return tokens
+
+    @staticmethod
     def _build_document_vector(book: Book) -> Dict[str, float]:
-        words = []
+        """Build a simple TF vector (kept for backward compatibility)."""
+        return RecommendationService._tf(RecommendationService._book_tokens(book))
 
-        # Use title + description + authors + genres.
-        words.extend(RecommendationService._tokenize(book.title or ''))
-        words.extend(RecommendationService._tokenize(book.description or ''))
-        words.extend(RecommendationService._tokenize(' '.join([a.name for a in book.authors or []])))
-        words.extend(RecommendationService._tokenize(' '.join([g.name for g in book.genres or []])))
+    @staticmethod
+    def _coverage(candidate_ids: set, reference_ids: set) -> float:
+        """Fraction of *candidate* attributes that appear in the reference set.
 
-        return RecommendationService._tf(words)
+        Returns a value in [0, 1].  Normalising by the candidate's own count
+        means a book whose single author is a known favourite scores 1.0,
+        regardless of how many other favourite authors the user has.
+        """
+        if not candidate_ids:
+            return 0.0
+        return len(candidate_ids & reference_ids) / len(candidate_ids)
 
     @staticmethod
     def get_recommendations_for_user(user, max_results: int = 8, candidate_limit: int = 300):
@@ -74,20 +121,10 @@ class RecommendationService:
         favorite_author_ids = {author.id for book in favorite_books for author in book.authors}
         favorite_genre_ids = {genre.id for book in favorite_books for genre in book.genres}
 
-        # Build aggregated user profile vector from favorites
-        profile_tokens = []
-        for book in favorite_books:
-            profile_tokens.extend(RecommendationService._tokenize(book.title or ''))
-            profile_tokens.extend(RecommendationService._tokenize(book.description or ''))
-            profile_tokens.extend(RecommendationService._tokenize(' '.join([a.name for a in book.authors or []])))
-            profile_tokens.extend(RecommendationService._tokenize(' '.join([g.name for g in book.genres or []])))
-
-        if not profile_tokens:
-            return []
-
-        user_profile_vector = RecommendationService._tf(profile_tokens)
-
-        # Choose candidates within user's access scope
+        # ------------------------------------------------------------------
+        # 1. Build candidate set, prioritising genre/author overlap
+        # ------------------------------------------------------------------
+        # Base query scoped to what the user can access.
         query = Book.query
         if user.is_super_admin:
             pass
@@ -102,30 +139,105 @@ class RecommendationService:
         favorite_ids = {book.id for book in favorite_books}
         query = query.filter(~Book.id.in_(favorite_ids))
 
-        candidates = query.options(
-            db.subqueryload(Book.authors),
-            db.subqueryload(Book.genres)
-        ).limit(candidate_limit).all()
+        load_opts = [db.subqueryload(Book.authors), db.subqueryload(Book.genres)]
 
+        from app.models import book_genres as bg_table, book_authors as ba_table
+
+        seen_ids: set = set()
+        candidates: List[Book] = []
+
+        # Pull books that share at least one genre with the user's favourites.
+        if favorite_genre_ids:
+            genre_q = (
+                query.join(bg_table, Book.id == bg_table.c.book_id)
+                .filter(bg_table.c.genre_id.in_(favorite_genre_ids))
+                .distinct()
+                .options(*load_opts)
+                .limit(candidate_limit)
+            )
+            for book in genre_q.all():
+                if book.id not in seen_ids:
+                    seen_ids.add(book.id)
+                    candidates.append(book)
+
+        # Pull books that share at least one author with the user's favourites.
+        if favorite_author_ids:
+            author_q = (
+                query.join(ba_table, Book.id == ba_table.c.book_id)
+                .filter(ba_table.c.author_id.in_(favorite_author_ids))
+                .distinct()
+                .options(*load_opts)
+                .limit(candidate_limit)
+            )
+            for book in author_q.all():
+                if book.id not in seen_ids:
+                    seen_ids.add(book.id)
+                    candidates.append(book)
+
+        # Fill remaining slots so we always return something even when the
+        # user's favourite genres/authors are absent from the library.
+        remaining = candidate_limit - len(candidates)
+        if remaining > 0:
+            filler_q = (
+                query.filter(~Book.id.in_(seen_ids))
+                .options(*load_opts)
+                .limit(remaining)
+            )
+            candidates.extend(filler_q.all())
+
+        if not candidates:
+            return []
+
+        # ------------------------------------------------------------------
+        # 2. Build TF-IDF representations
+        # ------------------------------------------------------------------
+        # Computing IDF from the candidate corpus causes words that appear in
+        # many books ("story", "world", "człowiek") to be down-weighted
+        # automatically, making the cosine similarity far more discriminative.
+        candidate_tokens: List[List[str]] = [
+            RecommendationService._book_tokens(b) for b in candidates
+        ]
+        idf = RecommendationService._compute_idf(candidate_tokens)
+
+        # Aggregate user profile from all favourite books.  Genre and author
+        # tokens are boosted so that structural preferences are reflected
+        # directly in the text-similarity component.
+        profile_tokens: List[str] = []
+        for book in favorite_books:
+            profile_tokens.extend(
+                RecommendationService._book_tokens(
+                    book, genre_author_boost=RecommendationService.GENRE_AUTHOR_BOOST
+                )
+            )
+
+        if not profile_tokens:
+            return []
+
+        user_profile_vector = RecommendationService._tfidf(profile_tokens, idf)
+
+        # ------------------------------------------------------------------
+        # 3. Score and rank candidates
+        # ------------------------------------------------------------------
         scored = []
-        for candidate in candidates:
+        for i, candidate in enumerate(candidates):
             cand_author_ids = {a.id for a in candidate.authors}
             cand_genre_ids = {g.id for g in candidate.genres}
 
-            author_matches = len(cand_author_ids & favorite_author_ids)
-            genre_matches = len(cand_genre_ids & favorite_genre_ids)
+            # Coverage: what fraction of the candidate's own authors/genres
+            # are already represented in the user's favourite set?
+            author_score = RecommendationService._coverage(cand_author_ids, favorite_author_ids)
+            genre_score = RecommendationService._coverage(cand_genre_ids, favorite_genre_ids)
 
-            candidate_vector = RecommendationService._build_document_vector(candidate)
-            text_similarity = RecommendationService._cosine_similarity(user_profile_vector, candidate_vector)
+            candidate_vector = RecommendationService._tfidf(candidate_tokens[i], idf)
+            text_similarity = RecommendationService._cosine_similarity(
+                user_profile_vector, candidate_vector
+            )
 
-            # Score weights:
-            # - author match strong
-            # - genre match medium
-            # - description/title similarity strong
-            score = 0.0
-            score += author_matches * 6
-            score += genre_matches * 3
-            score += text_similarity * 30
+            # Composite score weights:
+            #   text_similarity (TF-IDF cosine)  — 50 pts  richest signal
+            #   author coverage                  — 30 pts  strong structural proxy
+            #   genre coverage                   — 20 pts  broad thematic signal
+            score = text_similarity * 50 + author_score * 30 + genre_score * 20
 
             if score <= 0:
                 continue
