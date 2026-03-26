@@ -24,7 +24,7 @@
                 <div class="text-sm text-gray-600">{{ book.authors|map(attribute='display_name')|join(', ') }}</div>
                 <div class="text-xs text-gray-500 mt-1 line-clamp-2">{{ (book.description or '')[:80] ~ ('...' if book.description and book.description|length > 80 else '') }}</div>
                 {% if book.genres %}
-                <div class="text-xs text-primary mt-1">{{ _('Genre') }}: {{ book.genres|map(attribute='name')|join(', ') }}</div>
+                <div class="text-xs text-primary mt-1">{{ _('Genre') }}: {% for genre in book.genres %}{{ _(genre.name) }}{% if not loop.last %}, {% endif %}{% endfor %}</div>
                 {% endif %}
             </a>
             {% endfor %}
