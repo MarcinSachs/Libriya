@@ -12,6 +12,47 @@
         {{ macros.form_field(form.email, field_type='email', icon='bx-mail-send', placeholder=form.email.render_kw.placeholder if form.email.render_kw and 'placeholder' in form.email.render_kw else None) }}
         {{ macros.form_field(form.password, field_type='password', icon='bx-lock-alt', placeholder=form.password.render_kw.placeholder if form.password.render_kw and 'placeholder' in form.password.render_kw else None) }}
         {{ macros.form_field(form.confirm_password, field_type='password', icon='bx-lock-alt', placeholder=form.confirm_password.render_kw.placeholder if form.confirm_password.render_kw and 'placeholder' in form.confirm_password.render_kw else None) }}
+        {{ macros.form_field(form.role, field_type='select', icon='bx-shield-alt') }}
+
+        <!-- Library Memberships -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-3">
+            <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
+                <h5 class="font-semibold text-lg mb-0">{{ _('Library Memberships') }}</h5>
+            </div>
+            <div class="px-4 py-3">
+                {% if selectable_libraries %}
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-gray-500 border-b border-gray-200">
+                            <th class="pb-2 pr-6 font-medium">{{ _('Library') }}</th>
+                            <th class="pb-2 pr-6 font-medium text-center">{{ _('No access') }}</th>
+                            <th class="pb-2 pr-6 font-medium text-center">{{ _('Member') }}</th>
+                            <th class="pb-2 font-medium text-center">{{ _('Manager') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for library in selectable_libraries %}
+                        <tr class="border-b border-gray-100 last:border-0">
+                            <td class="py-2 pr-6 text-gray-700 font-medium">{{ library.name }}</td>
+                            <td class="py-2 pr-6 text-center">
+                                <input type="radio" name="lib_role_{{ library.id }}" value="none" checked>
+                            </td>
+                            <td class="py-2 pr-6 text-center">
+                                <input type="radio" name="lib_role_{{ library.id }}" value="member">
+                            </td>
+                            <td class="py-2 text-center">
+                                <input type="radio" name="lib_role_{{ library.id }}" value="manager">
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                    <p class="text-gray-600">{{ _('No libraries available to assign.') }}</p>
+                {% endif %}
+            </div>
+        </div>
+
         {{ macros.form_submit(form.submit.label.text, cancel_url=url_for('users.users')) }}
     </form>
 </div>

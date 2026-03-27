@@ -32,7 +32,7 @@ def loans():
 
     # --- LIBRARY BASED FILTERING FOR MANAGERS ---
     if current_user.role == 'manager':
-        manager_lib_ids = [lib.id for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
+        manager_lib_ids = [lib.id for lib in current_user.managed_libraries if lib.tenant_id == current_user.tenant_id]
         if not manager_lib_ids:
             # If manager has no libraries, show no loans
             loan_query = loan_query.filter(Book.id == -1)
@@ -65,7 +65,7 @@ def loans():
     if current_user.role == 'admin':
         all_users = User.query.order_by(User.username).all()
     else:  # manager
-        manager_lib_ids = [lib.id for lib in current_user.libraries]
+        manager_lib_ids = [lib.id for lib in current_user.managed_libraries]
         if not manager_lib_ids:
             all_users = []
         else:

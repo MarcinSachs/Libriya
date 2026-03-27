@@ -37,8 +37,8 @@ def invitation_codes_list():
     if current_user.role == 'admin':
         codes = InvitationCode.query.filter_by(tenant_id=current_user.tenant_id).order_by(
             InvitationCode.created_at.desc()).all()
-    else:  # manager - only for their libraries
-        library_ids = [lib.id for lib in current_user.libraries]
+    else:  # manager - only for their managed libraries
+        library_ids = [lib.id for lib in current_user.managed_libraries]
         codes = InvitationCode.query.filter(
             InvitationCode.library_id.in_(library_ids),
             InvitationCode.tenant_id == current_user.tenant_id
@@ -57,6 +57,9 @@ def generate_code():
         library_id = request.form.get('library_id', type=int)
         days_valid = request.form.get('days_valid', 7, type=int)
         recipient_email = request.form.get('recipient_email', '').strip()
+        library_role = request.form.get('library_role', 'member')
+        if library_role not in ('member', 'manager'):
+            library_role = 'member'
         send_now = request.form.get('send_now') == 'on'
 
         # Validate library selection
@@ -65,15 +68,16 @@ def generate_code():
             if current_user.role == 'admin':
                 libraries = Library.query.filter_by(tenant_id=current_user.tenant_id).all()
             else:
-                libraries = [lib for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
-            return render_template('superadmin/generate_invitation.html', libraries=libraries)
+                libraries = [lib for lib in current_user.managed_libraries if lib.tenant_id == current_user.tenant_id]
+            return render_template('superadmin/generate_invitation.html', libraries=libraries,
+                                   library_role=library_role)
 
         # Verify library access
         library = Library.query.filter_by(id=library_id, tenant_id=current_user.tenant_id).first_or_404()
 
         if current_user.role == 'manager':
-            # Manager can only generate codes for their libraries
-            if library_id not in [lib.id for lib in current_user.libraries]:
+            # Manager can only generate codes for their managed libraries
+            if library_id not in [lib.id for lib in current_user.managed_libraries]:
                 flash(INVITATIONS_ONLY_OWN_LIBRARIES, 'danger')
                 return redirect(url_for('invitations.invitation_codes_list'))
 
@@ -87,8 +91,9 @@ def generate_code():
                 if current_user.role == 'admin':
                     libraries = Library.query.filter_by(tenant_id=current_user.tenant_id).all()
                 else:
-                    libraries = [lib for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
-                return render_template('superadmin/generate_invitation.html', libraries=libraries)
+                    libraries = [lib for lib in current_user.managed_libraries if lib.tenant_id == current_user.tenant_id]
+                return render_template('superadmin/generate_invitation.html', libraries=libraries,
+                                       library_role=library_role)
 
         # Generate code
         code = generate_invitation_code()
@@ -100,7 +105,8 @@ def generate_code():
             library_id=library_id,
             tenant_id=current_user.tenant_id,
             expires_at=expires_at,
-            recipient_email=recipient_email if recipient_email else None
+            recipient_email=recipient_email if recipient_email else None,
+            library_role=library_role
         )
 
         db.session.add(invitation)
@@ -134,9 +140,9 @@ def generate_code():
     if current_user.role == 'admin':
         libraries = Library.query.filter_by(tenant_id=current_user.tenant_id).all()
     else:  # manager
-        libraries = [lib for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
+        libraries = [lib for lib in current_user.managed_libraries if lib.tenant_id == current_user.tenant_id]
 
-    return render_template('superadmin/generate_invitation.html', libraries=libraries)
+    return render_template('superadmin/generate_invitation.html', libraries=libraries, library_role='member')
 
 
 @bp.route('/<int:code_id>/deactivate', methods=['POST'])

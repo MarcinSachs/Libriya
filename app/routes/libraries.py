@@ -28,7 +28,7 @@ def libraries():
         all_libraries = all_libraries.filter_by(tenant_id=current_user.tenant_id).order_by(Library.name).all()
     elif current_user.is_manager:
         # limit to manager's libraries, load links manually
-        libs = [lib for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
+        libs = [lib for lib in current_user.managed_libraries if lib.tenant_id == current_user.tenant_id]
         # ensure links are loaded (iterate without assigning to _)
         for l in libs:
             _unused = l.shared_links
@@ -45,7 +45,7 @@ def libraries():
 def library_share(library_id):
     """Generate a share link for a library"""
     library = Library.query.filter_by(id=library_id, tenant_id=current_user.tenant_id).first_or_404()
-    if current_user.role == 'manager' and library not in current_user.libraries:
+    if current_user.role == 'manager' and library not in current_user.managed_libraries:
         return jsonify({'error': _('You do not have permission to share this library')}), 403
 
     expires_str = request.form.get('expires_at', '').strip()
@@ -77,7 +77,7 @@ def library_share(library_id):
 @role_required('admin', 'manager')
 def library_share_deactivate(library_id):
     lib = Library.query.filter_by(id=library_id, tenant_id=current_user.tenant_id).first_or_404()
-    if current_user.role == 'manager' and lib not in current_user.libraries:
+    if current_user.role == 'manager' and lib not in current_user.managed_libraries:
         return jsonify({'error': _('You do not have permission')}), 403
     # find active link
     link = SharedLink.query.filter_by(library_id=lib.id, active=True).first()
@@ -121,7 +121,7 @@ def library_add():
 def library_edit(library_id):
     library = Library.query.filter_by(id=library_id, tenant_id=current_user.tenant_id).first_or_404()
     # Manager może edytować tylko swoje biblioteki
-    if current_user.is_manager and library not in current_user.libraries:
+    if current_user.is_manager and library not in current_user.managed_libraries:
         flash(_('You do not have permission to edit this library.'), 'danger')
         return redirect(url_for('libraries.libraries'))
     form = LibraryForm(obj=library)

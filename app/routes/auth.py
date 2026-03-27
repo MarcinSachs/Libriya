@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_babel import _
 
-from app.models import User, InvitationCode, Tenant, PasswordResetToken, EmailVerificationToken
+from app.models import User, InvitationCode, Tenant, PasswordResetToken, EmailVerificationToken, UserLibrary
 from app import db, limiter
 from app.forms import RegistrationForm
 from app.utils.audit_log import log_invitation_code_used, log_failed_login, log_action
@@ -417,12 +417,13 @@ def register():
                     return render_template('auth/register.html', form=form, creating_new_tenant=creating_new_tenant)
 
                 # Create user - tenant is determined from invitation code
+                # User.role is 'manager' if the invitation grants manager role, otherwise 'user'
+                user_role = 'manager' if code.library_role == 'manager' else 'user'
                 user = User(
                     username=form.username.data,
                     email=form.email.data,
                     tenant_id=code.tenant_id,
-                    libraries=[code.library],
-                    role='user'
+                    role=user_role
                 )
                 # set locale from cookie if available
                 lang_cookie = request.cookies.get('language')
@@ -434,6 +435,13 @@ def register():
 
                 db.session.add(user)
                 db.session.flush()  # Get user ID
+
+                # Assign library membership with the role from the invitation code
+                db.session.add(UserLibrary(
+                    user_id=user.id,
+                    library_id=code.library_id,
+                    library_role=code.library_role
+                ))
 
                 # Mark code as used
                 code.mark_as_used(user.id)

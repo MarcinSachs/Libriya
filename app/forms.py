@@ -157,6 +157,11 @@ class UserForm(FlaskForm):
     password = PasswordField(_('Password'), validators=[DataRequired(), validate_password_field])
     confirm_password = PasswordField(_('Confirm Password'), validators=[
                                      DataRequired(), EqualTo('password')])
+    role = SelectField(_('Role'), choices=[
+        ('user', _('User')),
+        ('manager', _('Manager')),
+        ('admin', _('Admin'))
+    ], default='user', validators=[DataRequired()])
     submit = SubmitField(_('Add User'), render_kw={"class": "btn btn-primary"})
 
     def validate_username(self, field):
@@ -170,11 +175,6 @@ class UserForm(FlaskForm):
 class UserEditForm(FlaskForm):
     username = StringField(_('Username'), render_kw={'readonly': True})
     email = StringField(_('Email'), validators=[DataRequired(), validate_email_field])
-    role = SelectField(_('Role'), choices=[
-        ('user', _('User')),
-        ('manager', _('Manager')),
-        ('admin', _('Admin'))
-    ], validators=[DataRequired()])
     submit = SubmitField(_('Submit'), render_kw={
                          "class": "btn btn-primary"})
 
