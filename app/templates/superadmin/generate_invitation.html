@@ -45,13 +45,11 @@
                                 <input type="radio" name="library_role" value="member"
                                        {% if library_role != 'manager' %}checked{% endif %}>
                                 <span class="text-gray-700">{{ _('Member') }}</span>
-                                <span class="text-xs text-gray-500">({{ _('borrow books only') }})</span>
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer">
                                 <input type="radio" name="library_role" value="manager"
                                        {% if library_role == 'manager' %}checked{% endif %}>
                                 <span class="text-gray-700">{{ _('Manager') }}</span>
-                                <span class="text-xs text-gray-500">({{ _('manage books & loans') }})</span>
                             </label>
                         </div>
                     </div>
