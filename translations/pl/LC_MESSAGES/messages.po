@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-03-27 17:35+0100\n"
-"PO-Revision-Date: 2026-03-27 16:43\n"
+"PO-Revision-Date: 2026-03-27 16:46\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -2786,20 +2786,20 @@ msgstr "Kod wygaśnie po tej liczbie dni"
 
 #: app/templates/superadmin/generate_invitation.html:42
 msgid "Role in library"
-msgstr ""
+msgstr "Rola w bibliotece"
 
 #: app/templates/superadmin/generate_invitation.html:47
 #: app/templates/users/user_add.html:29
 msgid "Member"
-msgstr ""
+msgstr "Członek"
 
 #: app/templates/superadmin/generate_invitation.html:48
 msgid "borrow books only"
-msgstr ""
+msgstr "tylko pożyczaj książki"
 
 #: app/templates/superadmin/generate_invitation.html:54
 msgid "manage books & loans"
-msgstr ""
+msgstr "zarządzaj książkami i wypożyczeniami"
 
 #: app/templates/superadmin/generate_invitation.html:61
 msgid "This code will be valid for ONE registration only. Once used, it cannot be reused."
@@ -2977,7 +2977,7 @@ msgstr "Członkowie Biblioteki"
 
 #: app/templates/users/user_add.html:28 app/templates/users/user_edit.html:32
 msgid "No access"
-msgstr ""
+msgstr "Bez dostępu"
 
 #: app/templates/users/user_add.html:51 app/templates/users/user_edit.html:59
 msgid "No libraries available to assign."
