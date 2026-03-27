@@ -175,11 +175,6 @@ class UserForm(FlaskForm):
 class UserEditForm(FlaskForm):
     username = StringField(_('Username'), render_kw={'readonly': True})
     email = StringField(_('Email'), validators=[DataRequired(), validate_email_field])
-    role = SelectField(_('Role'), choices=[
-        ('user', _('User')),
-        ('manager', _('Manager')),
-        ('admin', _('Admin'))
-    ], validators=[DataRequired()])
     submit = SubmitField(_('Submit'), render_kw={
                          "class": "btn btn-primary"})
 

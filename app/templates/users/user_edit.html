@@ -10,7 +10,13 @@
         {{ form.hidden_tag() }}
         {{ macros.form_field(form.username, field_type='text', icon='bx-user', readonly=true) }}
         {{ macros.form_field(form.email, field_type='email', icon='bx-mail-send') }}
-        {{ macros.form_field(form.role, field_type='select', icon='bx-shield-alt') }}
+        {% if user.role == 'admin' %}
+        <div class="mb-3 flex items-center gap-2">
+            <i class='bx bx-shield-alt text-gray-400 text-xl'></i>
+            <span class="text-sm font-medium text-gray-700">{{ _('Role') }}:</span>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">{{ _('Admin') }}</span>
+        </div>
+        {% endif %}
 
         <!-- Library Memberships -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-3">
@@ -24,7 +30,7 @@
                         <tr class="text-left text-gray-500 border-b border-gray-200">
                             <th class="pb-2 pr-6 font-medium">{{ _('Library') }}</th>
                             <th class="pb-2 pr-6 font-medium text-center">{{ _('No access') }}</th>
-                            <th class="pb-2 pr-6 font-medium text-center">{{ _('Member') }}</th>
+                            <th class="pb-2 pr-6 font-medium text-center">{{ _('User') }}</th>
                             <th class="pb-2 font-medium text-center">{{ _('Manager') }}</th>
                         </tr>
                     </thead>

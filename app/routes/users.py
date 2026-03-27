@@ -16,7 +16,7 @@ from app.utils.messages import (
     USER_ADDED, USER_UPDATED, USER_DELETED, USER_CANNOT_DELETE_SELF,
     USER_CANNOT_DELETE_ADMIN, USER_NO_PERMISSION_EDIT, USER_NOT_IN_LIBRARY,
     USERS_NO_LIBRARY_MANAGED, USERS_NO_PERMISSION_EDIT_ROLE, USERS_ONLY_EDIT_OWN_LIBRARIES,
-    USERS_CANNOT_REVOKE_LAST_ADMIN, USERS_NO_PERMISSION_CREATE_ADMIN, USERS_ONLY_DELETE_OWN_LIBRARIES,
+    USERS_NO_PERMISSION_CREATE_ADMIN, USERS_ONLY_DELETE_OWN_LIBRARIES,
     USERS_SETTINGS_NO_USER, USERS_SETTINGS_UPDATED, ERROR_PERMISSION_DENIED
 )
 
@@ -132,7 +132,8 @@ def users():
     if current_user.role == 'admin':
         all_users = User.for_tenant(current_user.tenant_id).distinct().all()
     else:  # manager
-        manager_library_ids = [lib.id for lib in current_user.managed_libraries if lib.tenant_id == current_user.tenant_id]
+        manager_library_ids = [
+            lib.id for lib in current_user.managed_libraries if lib.tenant_id == current_user.tenant_id]
         if not manager_library_ids:
             # Show only self if not managing any library
             all_users = [current_user]
@@ -234,41 +235,10 @@ def user_edit(user_id):
         manageable_libraries = Library.query.filter_by(tenant_id=current_user.tenant_id).order_by('name').all()
     else:  # manager
         manageable_libraries = [lib for lib in current_user.managed_libraries
-                                 if lib.tenant_id == current_user.tenant_id]
-
-    # A manager should not be able to elevate a user to admin
-    if current_user.role == 'manager':
-        form.role.choices = [
-            ('user', 'User'),
-            ('manager', 'Manager')
-        ]
+                                if lib.tenant_id == current_user.tenant_id]
 
     if form.validate_on_submit():
-        # Prevent the last admin from being demoted
-        last_admin = (
-            user_to_edit.role == 'admin' and
-            form.role.data != 'admin' and
-            User.query.filter_by(role='admin').count() <= 1
-        )
-        if last_admin:
-            flash(USERS_CANNOT_REVOKE_LAST_ADMIN, "danger")
-            return redirect(url_for('users.user_edit',
-                                    user_id=user_to_edit.id))
-
-        # Prevent a manager from making someone an admin
-        if current_user.role == 'manager' and form.role.data == 'admin':
-            flash(USERS_NO_PERMISSION_CREATE_ADMIN, "danger")
-            return redirect(url_for('users.user_edit',
-                                    user_id=user_to_edit.id))
-
-        # Track role changes for audit log
-        old_role = user_to_edit.role
         user_to_edit.email = form.email.data
-        user_to_edit.role = form.role.data
-
-        # Log role change if it occurred
-        if old_role != user_to_edit.role:
-            log_user_role_changed(user_to_edit.id, user_to_edit.username, old_role, user_to_edit.role)
 
         # --- Update Library Memberships (per-library role) ---
         existing = {m.library_id: m for m in user_to_edit.user_library_memberships}
@@ -285,6 +255,14 @@ def user_edit(user_id):
                 else:
                     new_membership = UserLibrary(library_id=lib.id, library_role=role_value)
                     user_to_edit.user_library_memberships.append(new_membership)
+
+        # Auto-derive global role from library memberships (admin role is never changed)
+        if user_to_edit.role != 'admin':
+            has_manager = any(m.library_role == 'manager' for m in user_to_edit.user_library_memberships)
+            new_role = 'manager' if has_manager else 'user'
+            if new_role != user_to_edit.role:
+                log_user_role_changed(user_to_edit.id, user_to_edit.username, user_to_edit.role, new_role)
+            user_to_edit.role = new_role
 
         db.session.commit()
         flash(USER_UPDATED % {'username': user_to_edit.username}, "success")

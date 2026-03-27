@@ -409,8 +409,7 @@
             </div>
             <div class="flex items-center text-right gap-3">          
                 <span class="text-gray-400 text-base hover:text-gray-700 transition-colors"><a href="{{ url_for('legal.terms') }}"><i class='bx bx-file'></i> {{ _('Terms & Conditions') }}</a></span>
-                <span class="text-gray-400 text-base hover:text-gray-700 transition-colors"><a href="{{ url_for('legal.gpdr') }}"><i class='bx bx-shield'></i> {{ _('GPDR') }}</a></span>
-                <span class="text-gray-400 text-base hover:text-gray-700 transition-colors"><a href="{{ url_for('legal.privacy') }}"><i class='bx bx-lock'></i> {{ _('Privacy Policy') }}</a></span>
+                <span class="text-gray-400 text-base hover:text-gray-700 transition-colors"><a href="{{ url_for('legal.privacy_policy') }}"><i class='bx bx-shield'></i> {{ _('Privacy Policy') }}</a></span>
                 <span class="text-gray-400 text-base hover:text-gray-700 transition-colors"><a href="{{ url_for('legal.cookies') }}"><i class='bx bx-cookie'></i></i> {{ _('Cookie Policy') }}</a></span>
             </div>
         </div>
@@ -418,7 +417,7 @@
     </footer>
     <!-- Cookie Consent Banner -->
     <div id="cookie-consent-banner" class="fixed bottom-0 left-0 w-full bg-gray-900 text-white text-center py-3 px-4 z-[9999] shadow-lg transition-all duration-300" style="display:none;">
-        <span>{{ _('This website uses cookies to ensure proper operation. By using it, you accept our') }} <a href="#" class="underline text-accent">{{ _('cookie policy') }}</a>.</span>
+        <span>{{ _('This website uses cookies to ensure proper operation. By using it, you accept our') }} <a href="{{ url_for('legal.cookies') }}" class="underline text-accent">{{ _('cookie policy') }}</a>.</span>
         <button id="cookie-consent-accept" class="ml-4 bg-accent hover:bg-primary text-white font-semibold py-1 px-4 rounded transition">{{ _('Accept') }}</button>
     </div>
     {% block extra_body %}{% endblock %}

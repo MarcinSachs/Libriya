@@ -5,17 +5,12 @@ from flask_babel import get_locale
 bp = Blueprint("legal", __name__, url_prefix="/legal")
 
 
-@bp.route("/gpdr", methods=["GET"])
-def gpdr():
+@bp.route("/privacy-policy", methods=["GET"])
+def privacy_policy():
     lang = str(get_locale())
     if lang.startswith('en'):
-        return render_template("legal/gpdr_en.html")
-    return render_template("legal/gpdr_pl.html")
-
-
-@bp.route("/privacy", methods=["GET"])
-def privacy():
-    return render_template("legal/privacy_pl.html")
+        return render_template("legal/privacy-policy_en.html")
+    return render_template("legal/privacy-policy_pl.html")
 
 
 @bp.route("/terms", methods=["GET"])
