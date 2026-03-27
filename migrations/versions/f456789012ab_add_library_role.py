@@ -1,15 +1,17 @@
-"""Add library_role column to user_libraries
+"""Add library_role to user_libraries and invitation_code
 
 Revision ID: f456789012ab
 Revises: e345678901ab
 Create Date: 2026-03-27 00:00:00.000000
 
-Adds a per-library role to the user_libraries association table.
-  'member'  – read/borrow access only (default for all existing rows)
-  'manager' – can manage books, loans and users in this library
+Changes:
+  1. user_libraries — adds library_role ('member' | 'manager').
+     Existing rows for users with role='manager' are promoted to
+     library_role='manager' so behaviour stays unchanged after migration.
 
-Existing rows for users with role='manager' are promoted to
-library_role='manager' so behaviour stays unchanged after the migration.
+  2. invitation_code — adds library_role ('member' | 'manager').
+     Allows setting the role granted in the library at invitation-creation
+     time, which is then applied automatically on registration.
 """
 from alembic import op
 import sqlalchemy as sa
@@ -21,6 +23,7 @@ depends_on = None
 
 
 def upgrade():
+    # --- user_libraries ---
     with op.batch_alter_table('user_libraries', schema=None) as batch_op:
         batch_op.add_column(
             sa.Column('library_role', sa.String(20), nullable=False, server_default='member')
@@ -34,7 +37,16 @@ def upgrade():
         "WHERE user_id IN (SELECT id FROM user WHERE role = 'manager')"
     )
 
+    # --- invitation_code ---
+    with op.batch_alter_table('invitation_code', schema=None) as batch_op:
+        batch_op.add_column(
+            sa.Column('library_role', sa.String(20), nullable=False, server_default='member')
+        )
+
 
 def downgrade():
+    with op.batch_alter_table('invitation_code', schema=None) as batch_op:
+        batch_op.drop_column('library_role')
+
     with op.batch_alter_table('user_libraries', schema=None) as batch_op:
         batch_op.drop_column('library_role')

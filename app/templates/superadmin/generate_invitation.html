@@ -38,6 +38,24 @@
                         <small class="text-gray-600 block mt-1">{{ _('Code will expire after this many days') }}</small>
                     </div>
 
+                    <div class="mb-3">
+                        <label class="block font-medium text-gray-700 mb-2">{{ _('Role in library') }}</label>
+                        <div class="flex gap-6 mt-1">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="library_role" value="member"
+                                       {% if library_role != 'manager' %}checked{% endif %}>
+                                <span class="text-gray-700">{{ _('Member') }}</span>
+                                <span class="text-xs text-gray-500">({{ _('borrow books only') }})</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="library_role" value="manager"
+                                       {% if library_role == 'manager' %}checked{% endif %}>
+                                <span class="text-gray-700">{{ _('Manager') }}</span>
+                                <span class="text-xs text-gray-500">({{ _('manage books & loans') }})</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg mb-4">
                         <i class='bx bx-info-circle'></i>
                         {{ _('This code will be valid for ONE registration only. Once used, it cannot be reused.') }}

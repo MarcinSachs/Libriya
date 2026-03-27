@@ -601,6 +601,8 @@ class InvitationCode(db.Model):
     recipient_email = db.Column(db.String(200), nullable=True)
     # timestamp when invitation was emailed (optional)
     email_sent_at = db.Column(db.DateTime, nullable=True)
+    # role granted in the library when the code is used
+    library_role = db.Column(db.String(20), nullable=False, default='member')
 
     def is_valid(self):
         """Sprawdza czy kod jest jeszcze ważny i nieużyty"""

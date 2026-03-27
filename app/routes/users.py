@@ -150,35 +150,58 @@ def users():
 @role_required('admin', 'manager')
 def user_add():
     form = UserForm()
+
+    # Restrict role choices for managers
+    if current_user.role == 'manager':
+        form.role.choices = [
+            ('user', _('User')),
+            ('manager', _('Manager'))
+        ]
+
+    # Determine selectable libraries
+    if current_user.role == 'admin':
+        selectable_libraries = Library.query.filter_by(tenant_id=current_user.tenant_id).order_by('name').all()
+    else:
+        selectable_libraries = [lib for lib in current_user.managed_libraries
+                                if lib.tenant_id == current_user.tenant_id]
+
     if form.validate_on_submit():
-        username = form.username.data
-        email = form.email.data
-        password = form.password.data
-
-        # Create a new user and set their password
-        user = User(username=username, email=email)
-        user.set_password(password)
-
-        # If manager is adding user, block if they manage no libraries
-        if current_user.role == 'manager' and not current_user.managed_libraries:
+        # If manager has no managed libraries, block
+        if current_user.role == 'manager' and not selectable_libraries:
             flash(USERS_NO_LIBRARY_MANAGED, "danger")
-            return render_template("users/user_add.html", form=form, parent_page="admin", active_page="users")
+            return render_template("users/user_add.html", form=form,
+                                   selectable_libraries=selectable_libraries,
+                                   parent_page="admin", active_page="users")
 
-        # Add the user to the database first, then create memberships
+        # Prevent manager from assigning admin role
+        if current_user.role == 'manager' and form.role.data == 'admin':
+            flash(USERS_NO_PERMISSION_CREATE_ADMIN, "danger")
+            return render_template("users/user_add.html", form=form,
+                                   selectable_libraries=selectable_libraries,
+                                   parent_page="admin", active_page="users")
+
+        user = User(username=form.username.data, email=form.email.data,
+                    tenant_id=current_user.tenant_id, role=form.role.data)
+        user.set_password(form.password.data)
+
         db.session.add(user)
-        db.session.flush()  # flush to get user.id
-        # If manager is adding user, assign to manager's managed libraries as member
-        if current_user.role == 'manager':
-            for library in current_user.managed_libraries:
-                db.session.add(UserLibrary(user_id=user.id, library_id=library.id, library_role='member'))
+        db.session.flush()  # get user.id
+
+        # Build library memberships from submitted lib_role_ fields
+        for lib in selectable_libraries:
+            role_value = request.form.get(f'lib_role_{lib.id}', 'none')
+            if role_value in ('member', 'manager'):
+                db.session.add(UserLibrary(user_id=user.id, library_id=lib.id,
+                                           library_role=role_value))
+
         db.session.commit()
-
-        # Log user creation
         log_user_created(user.id, user.username, user.email)
-
         flash(USER_ADDED % {'username': user.username}, "success")
         return redirect(url_for("users.users"))
-    return render_template("users/user_add.html", form=form, parent_page="admin", active_page="users")
+
+    return render_template("users/user_add.html", form=form,
+                           selectable_libraries=selectable_libraries,
+                           parent_page="admin", active_page="users")
 
 
 @bp.route("/users/edit/<int:user_id>", methods=["GET", "POST"])
