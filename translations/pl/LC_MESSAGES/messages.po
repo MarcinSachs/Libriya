@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: libriya\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-03-27 17:35+0100\n"
-"PO-Revision-Date: 2026-03-27 17:57\n"
+"PO-Revision-Date: 2026-03-27 19:05\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
@@ -1592,7 +1592,7 @@ msgstr "Regulamin"
 
 #: app/templates/base/main_base.html:412
 msgid "Privacy Policy"
-msgstr "Politykę Prywatności"
+msgstr "Polityka Prywatności"
 
 #: app/templates/base/main_base.html:413
 msgid "Cookie Policy"
