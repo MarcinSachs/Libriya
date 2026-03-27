@@ -82,9 +82,10 @@ def my_messages():
             )
             db.session.add(notification)
 
-        # Notify library managers
-        for manager in library.users:
-            if manager.role == 'manager':
+        # Notify library managers (users with manager role in this library)
+        for membership in library.user_library_memberships:
+            if membership.library_role == 'manager':
+                manager = membership.user
                 notification = Notification(
                     recipient_id=manager.id,
                     sender_id=current_user.id,

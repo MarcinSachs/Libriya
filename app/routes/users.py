@@ -6,7 +6,7 @@ from flask_babel import _
 
 from app import db
 from app.forms import UserForm, UserEditForm, UserSettingsForm
-from app.models import User, Library, ContactMessage, Notification
+from app.models import User, Library, UserLibrary, ContactMessage, Notification
 from app.utils import role_required
 from app.utils.audit_log import (
     log_user_created, log_user_deleted, log_user_role_changed
@@ -43,7 +43,7 @@ def contact_messages():
     elif current_user.role == 'admin':
         messages = ContactMessage.for_tenant(current_user.tenant_id).order_by(ContactMessage.created_at.desc()).all()
     else:
-        library_ids = [lib.id for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
+        library_ids = [lib.id for lib in current_user.managed_libraries if lib.tenant_id == current_user.tenant_id]
         messages = ContactMessage.query.filter(ContactMessage.library_id.in_(library_ids),
                                                Library.tenant_id == current_user.tenant_id).order_by(ContactMessage.created_at.desc()).all()
 
@@ -66,7 +66,7 @@ def reply_to_message(message_id):
     # Check if admin/manager has permission to reply
     if current_user.role == 'manager':
         # Manager can only reply to messages from their libraries
-        if message.library not in current_user.libraries:
+        if message.library not in current_user.managed_libraries:
             flash(ERROR_PERMISSION_DENIED, "danger")
             return redirect(url_for('users.contact_messages'))
 
@@ -99,7 +99,7 @@ def mark_message_resolved(message_id):
     # Check if admin/manager has permission
     if current_user.role == 'manager':
         # Manager can only mark messages from their libraries as resolved
-        if message.library not in current_user.libraries:
+        if message.library not in current_user.managed_libraries:
             flash(ERROR_PERMISSION_DENIED, "danger")
             return redirect(url_for('users.contact_messages'))
 
@@ -118,7 +118,7 @@ def view_contact_message(message_id):
     message = ContactMessage.query.filter_by(id=message_id, tenant_id=current_user.tenant_id).first_or_404()
 
     # Check if admin/manager has permission to view
-    if current_user.role == 'manager' and message.library not in current_user.libraries:
+    if current_user.role == 'manager' and message.library not in current_user.managed_libraries:
         flash(ERROR_PERMISSION_DENIED, "danger")
         return redirect(url_for('users.contact_messages'))
 
@@ -132,7 +132,7 @@ def users():
     if current_user.role == 'admin':
         all_users = User.for_tenant(current_user.tenant_id).distinct().all()
     else:  # manager
-        manager_library_ids = [lib.id for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
+        manager_library_ids = [lib.id for lib in current_user.managed_libraries if lib.tenant_id == current_user.tenant_id]
         if not manager_library_ids:
             # Show only self if not managing any library
             all_users = [current_user]
@@ -159,28 +159,24 @@ def user_add():
         user = User(username=username, email=email)
         user.set_password(password)
 
-        # If manager is adding user, assign to manager's library
-        if current_user.role == 'manager':
-            if not current_user.libraries:
-                flash(USERS_NO_LIBRARY_MANAGED, "danger")
-                return render_template("users/user_add.html", form=form, parent_page="admin", active_page="users")
-            # Add user to all libraries managed by this manager
-            for library in current_user.libraries:
-                user.libraries.append(library)
+        # If manager is adding user, block if they manage no libraries
+        if current_user.role == 'manager' and not current_user.managed_libraries:
+            flash(USERS_NO_LIBRARY_MANAGED, "danger")
+            return render_template("users/user_add.html", form=form, parent_page="admin", active_page="users")
 
-        # Add the user to the database
+        # Add the user to the database first, then create memberships
         db.session.add(user)
+        db.session.flush()  # flush to get user.id
+        # If manager is adding user, assign to manager's managed libraries as member
+        if current_user.role == 'manager':
+            for library in current_user.managed_libraries:
+                db.session.add(UserLibrary(user_id=user.id, library_id=library.id, library_role='member'))
         db.session.commit()
 
         # Log user creation
         log_user_created(user.id, user.username, user.email)
 
-        # Provide detailed success message
-        if current_user.role == 'manager':
-            library_names = ', '.join([lib.name for lib in current_user.libraries])
-            flash(USER_ADDED % {'username': user.username}, "success")
-        else:
-            flash(USER_ADDED % {'username': user.username}, "success")
+        flash(USER_ADDED % {'username': user.username}, "success")
         return redirect(url_for("users.users"))
     return render_template("users/user_add.html", form=form, parent_page="admin", active_page="users")
 
@@ -201,8 +197,8 @@ def user_edit(user_id):
             flash(USERS_NO_PERMISSION_EDIT_ROLE, "danger")
             return redirect(url_for('users.users'))
 
-        # Check if the user is in one of the manager's libraries (unless editing self)
-        manager_libs_ids = {lib.id for lib in current_user.libraries}
+        # Check if the user is in one of the manager's managed libraries (unless editing self)
+        manager_libs_ids = {lib.id for lib in current_user.managed_libraries}
         user_libs_ids = {lib.id for lib in user_to_edit.libraries}
         if not manager_libs_ids.intersection(user_libs_ids) and user_to_edit.id != current_user.id:
             flash(USERS_ONLY_EDIT_OWN_LIBRARIES, "danger")
@@ -210,11 +206,12 @@ def user_edit(user_id):
 
     form = UserEditForm(obj=user_to_edit)
 
-    # Determine which libraries can be managed
+    # Determine which libraries can be managed by the current editor
     if current_user.role == 'admin':
-        manageable_libraries = Library.query.order_by('name').all()
-    else:  # manager
         manageable_libraries = Library.query.filter_by(tenant_id=current_user.tenant_id).order_by('name').all()
+    else:  # manager
+        manageable_libraries = [lib for lib in current_user.managed_libraries
+                                 if lib.tenant_id == current_user.tenant_id]
 
     # A manager should not be able to elevate a user to admin
     if current_user.role == 'manager':
@@ -250,23 +247,21 @@ def user_edit(user_id):
         if old_role != user_to_edit.role:
             log_user_role_changed(user_to_edit.id, user_to_edit.username, old_role, user_to_edit.role)
 
-        # --- Update Library Memberships ---
-        submitted_ids = {int(id) for id in request.form.getlist('libraries')}
-        manageable_ids = {lib.id for lib in manageable_libraries}
+        # --- Update Library Memberships (per-library role) ---
+        existing = {m.library_id: m for m in user_to_edit.user_library_memberships}
 
-        # Add new memberships
-        for lib_id in submitted_ids:
-            if lib_id in manageable_ids:
-                library = Library.query.get(lib_id)
-                if library not in user_to_edit.libraries:
-                    user_to_edit.libraries.append(library)
-
-        # Remove old memberships
-        for lib_id in manageable_ids:
-            if lib_id not in submitted_ids:
-                library = Library.query.get(lib_id)
-                if library in user_to_edit.libraries:
-                    user_to_edit.libraries.remove(library)
+        for lib in manageable_libraries:
+            role_value = request.form.get(f'lib_role_{lib.id}', 'none')
+            if role_value not in ('member', 'manager'):
+                # Remove membership if present
+                if lib.id in existing:
+                    user_to_edit.user_library_memberships.remove(existing[lib.id])
+            else:
+                if lib.id in existing:
+                    existing[lib.id].library_role = role_value
+                else:
+                    new_membership = UserLibrary(library_id=lib.id, library_role=role_value)
+                    user_to_edit.user_library_memberships.append(new_membership)
 
         db.session.commit()
         flash(USER_UPDATED % {'username': user_to_edit.username}, "success")
@@ -277,6 +272,7 @@ def user_edit(user_id):
         form=form,
         user=user_to_edit,
         all_libraries=manageable_libraries,
+        library_roles={m.library_id: m.library_role for m in user_to_edit.user_library_memberships},
         parent_page="admin",
         active_page="users",
         title=_("Edit User: %(username)s", username=user_to_edit.username)

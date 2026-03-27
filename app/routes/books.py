@@ -67,10 +67,10 @@ def batch_import_books():
     # Create form and set library choices
     form = BatchImportForm()
     form.library.choices = [
-        (lib.id, lib.name) for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id
+        (lib.id, lib.name) for lib in current_user.managed_libraries if lib.tenant_id == current_user.tenant_id
     ]
 
-    # Check if user has any libraries
+    # Check if user has any managed libraries
     if not form.library.choices:
         flash(_('No libraries available for import.'), 'danger')
         return redirect(url_for('main.home'))
@@ -286,11 +286,11 @@ def book_add():
         ]
     else:  # manager
         form.library.choices = [
-            (lib.id, lib.name) for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id
+            (lib.id, lib.name) for lib in current_user.managed_libraries if lib.tenant_id == current_user.tenant_id
         ]
-        # If manager has only one library, set it as default
-        if len(current_user.libraries) == 1:
-            form.library.data = current_user.libraries[0].id
+        # If manager has only one managed library, set it as default
+        if len(current_user.managed_libraries) == 1:
+            form.library.data = current_user.managed_libraries[0].id
 
     if form.validate_on_submit():
         # Try to get description from form, or from Open Library/BN if available
@@ -435,7 +435,7 @@ def book_delete(book_id):
 
     # --- Authorization ---
     if current_user.role == 'manager':
-        user_libs_ids = [lib.id for lib in current_user.libraries]
+        user_libs_ids = [lib.id for lib in current_user.managed_libraries]
         if book.library_id not in user_libs_ids:
             flash(BOOKS_ONLY_EDIT_OWN_LIBRARIES, "danger")
             return redirect(url_for('main.home'))
@@ -491,7 +491,7 @@ def book_edit(book_id):
         ]
     else:  # manager
         form.library.choices = [
-            (lib.id, lib.name) for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id
+            (lib.id, lib.name) for lib in current_user.managed_libraries if lib.tenant_id == current_user.tenant_id
         ]
 
     if request.method == 'GET':

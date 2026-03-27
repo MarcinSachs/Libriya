@@ -1,4 +1,4 @@
-from app.models import Genre, Library, User, Tenant
+from app.models import Genre, Library, User, UserLibrary, Tenant
 from app import create_app, db
 from flask_babel import _
 import sys
@@ -147,9 +147,10 @@ def seed_database():
             admin_user.set_password('admin')
             # Mark seeded user as verified
             admin_user.is_email_verified = True
-            # Add user to the default library
-            admin_user.libraries.append(default_library)
             db.session.add(admin_user)
+            db.session.flush()
+            # Add admin to the default library as member (role='admin' covers global access)
+            db.session.add(UserLibrary(user_id=admin_user.id, library_id=default_library.id, library_role='member'))
             db.session.commit()
             print("Admin user created for default tenant.")
         else:
@@ -169,9 +170,10 @@ def seed_database():
             manager_user.set_password('manager')
             # Mark seeded user as verified
             manager_user.is_email_verified = True
-            # Add manager to the default library
-            manager_user.libraries.append(default_library)
             db.session.add(manager_user)
+            db.session.flush()
+            # Add manager to the default library as manager
+            db.session.add(UserLibrary(user_id=manager_user.id, library_id=default_library.id, library_role='manager'))
             db.session.commit()
             print("Manager user created and assigned to the default library.")
         else:
@@ -191,9 +193,10 @@ def seed_database():
             regular_user.set_password('user')
             # Mark seeded user as verified
             regular_user.is_email_verified = True
-            # Add user to the default library
-            regular_user.libraries.append(default_library)
             db.session.add(regular_user)
+            db.session.flush()
+            # Add user to the default library as member
+            db.session.add(UserLibrary(user_id=regular_user.id, library_id=default_library.id, library_role='member'))
             db.session.commit()
             print("Regular user created and assigned to the default library.")
         else:

@@ -119,13 +119,6 @@ favorites = db.Table('favorites',
                          'book.id'), primary_key=True)
                      )
 
-# Define the association table for user-library relationship
-user_libraries = db.Table('user_libraries',
-                          db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-                          db.Column('library_id', db.Integer, db.ForeignKey('library.id'), primary_key=True)
-                          )
-
-
 class Library(db.Model):
     """Represents a library belonging to a tenant.
 
@@ -143,8 +136,10 @@ class Library(db.Model):
     # cover file from disk.
     books = db.relationship('Book', back_populates='library', lazy=True,
                             cascade='all, delete-orphan')
-    users = db.relationship('User', secondary=user_libraries, lazy='subquery',
-                            back_populates='libraries')
+    users = db.relationship('User', secondary='user_libraries', lazy='subquery',
+                            viewonly=True, overlaps='user_library_memberships')
+    user_library_memberships = db.relationship('UserLibrary', back_populates='library',
+                                               lazy='subquery', overlaps='users')
     loan_overdue_days = db.Column(db.Integer, nullable=False, default=14)
 
     def __str__(self):
@@ -392,7 +387,10 @@ class User(UserMixin, db.Model):
         return self.role == 'admin' and self.tenant_id is None
 
     libraries = db.relationship('Library', secondary='user_libraries', lazy='subquery',
-                                back_populates='users')
+                                viewonly=True, overlaps='user_library_memberships')
+    user_library_memberships = db.relationship('UserLibrary', back_populates='user',
+                                               lazy='subquery', cascade='all, delete-orphan',
+                                               overlaps='libraries')
     favorites = db.relationship('Book', secondary=favorites, lazy='subquery',
                                 backref=db.backref('favorited_by', lazy=True))
     # Add relation to notifications
@@ -415,6 +413,30 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    @property
+    def managed_libraries(self):
+        """Libraries where this user has manager role."""
+        return [m.library for m in self.user_library_memberships if m.library_role == 'manager']
+
+
+class UserLibrary(db.Model):
+    """Association between User and Library with a per-library role.
+
+    library_role values:
+        'member'  – read/borrow access only
+        'manager' – can manage books, loans and users in this library
+    """
+    __tablename__ = 'user_libraries'
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    library_id = db.Column(db.Integer, db.ForeignKey('library.id'), primary_key=True)
+    library_role = db.Column(db.String(20), nullable=False, default='member')
+
+    user = db.relationship('User', back_populates='user_library_memberships',
+                           overlaps='libraries')
+    library = db.relationship('Library', back_populates='user_library_memberships',
+                              overlaps='users')
 
 
 class Loan(db.Model):

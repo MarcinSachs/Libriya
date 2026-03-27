@@ -18,23 +18,40 @@
                 <h5 class="font-semibold text-lg mb-0">{{ _('Library Memberships') }}</h5>
             </div>
             <div class="px-4 py-3">
-                <div class="flex flex-wrap gap-6">
-                {% for library in all_libraries %}
-                    <div class="mb-3">
-                        <div class="flex items-center">
-                            <input class="w-4 h-4 rounded" type="checkbox" name="libraries" value="{{ library.id }}" id="lib-{{ library.id }}"
-                                   {% if library in user.libraries %}checked{% endif %}>
-                            <label class="ml-2 text-gray-700" for="lib-{{ library.id }}">
-                                {{ library.name }}
-                            </label>
-                        </div>
-                    </div>
+                {% if all_libraries %}
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-gray-500 border-b border-gray-200">
+                            <th class="pb-2 pr-6 font-medium">{{ _('Library') }}</th>
+                            <th class="pb-2 pr-6 font-medium text-center">{{ _('No access') }}</th>
+                            <th class="pb-2 pr-6 font-medium text-center">{{ _('Member') }}</th>
+                            <th class="pb-2 font-medium text-center">{{ _('Manager') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for library in all_libraries %}
+                        {% set current_role = library_roles.get(library.id) %}
+                        <tr class="border-b border-gray-100 last:border-0">
+                            <td class="py-2 pr-6 text-gray-700 font-medium">{{ library.name }}</td>
+                            <td class="py-2 pr-6 text-center">
+                                <input type="radio" name="lib_role_{{ library.id }}" value="none"
+                                       {% if current_role is none %}checked{% endif %}>
+                            </td>
+                            <td class="py-2 pr-6 text-center">
+                                <input type="radio" name="lib_role_{{ library.id }}" value="member"
+                                       {% if current_role == 'member' %}checked{% endif %}>
+                            </td>
+                            <td class="py-2 text-center">
+                                <input type="radio" name="lib_role_{{ library.id }}" value="manager"
+                                       {% if current_role == 'manager' %}checked{% endif %}>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
                 {% else %}
-                    <div class="w-full">
-                        <p class="text-gray-600">{{ _('No libraries available to assign.') }}</p>
-                    </div>
-                {% endfor %}
-                </div>
+                    <p class="text-gray-600">{{ _('No libraries available to assign.') }}</p>
+                {% endif %}
             </div>
         </div>
         {{ macros.form_submit(form.submit.label.text, cancel_url=url_for('users.users')) }}
