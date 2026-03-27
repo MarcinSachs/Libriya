@@ -6,28 +6,27 @@ from typing import Dict, List
 from app import db
 from app.models import Book
 
-# Lazy singleton – ładowanie modelu Stempel (~3 s) odbywa się tylko raz.
 _stempel_stemmer = None
 
 
 def _get_stempel_stemmer():
-    """Zwraca (i ew. inicjalizuje) singleton stemmera Stempel dla języka polskiego."""
+    """Returns (and initializes if necessary) the singleton Stempel stemmer for Polish."""
     global _stempel_stemmer
     if _stempel_stemmer is None:
         try:
             from pystempel import Stemmer
             _stempel_stemmer = Stemmer.polimorf()
         except Exception:
-            _stempel_stemmer = False  # False sygnalizuje brak biblioteki
+            _stempel_stemmer = False  # False indicates the library is not available
     return _stempel_stemmer if _stempel_stemmer is not False else None
 
 
 def _detect_language(text: str) -> str:
-    """Wykrywa język tekstu. Zwraca 'pl', 'en' lub 'unknown'.
+    """Detects the language of the text. Returns 'pl', 'en', or 'unknown'.
 
-    Używa langdetect na połączonym tekście (tytuł + opis), więc działa
-    poprawnie nawet gdy tytuł po polsku nie zawiera polskich znaków
-    diakrytycznych (np. 'zagadki jezykowe').
+    Uses langdetect on the combined text (title + description), so it works
+    correctly even if the Polish title does not contain Polish diacritical marks
+    (e.g., 'zagadki jezykowe').
     """
     if not text or len(text.strip()) < 10:
         return 'unknown'
@@ -56,7 +55,7 @@ class RecommendationService:
 
     @staticmethod
     def _stem_pl(token: str) -> str:
-        """Stemuje polski token przez Stempel. Dla nieznanych słów zwraca token bez zmian."""
+        """Stems a Polish token using the Stempel stemmer. Returns the token unchanged for unknown words."""
         stemmer = _get_stempel_stemmer()
         if stemmer is None:
             return token
@@ -65,12 +64,12 @@ class RecommendationService:
 
     @staticmethod
     def _tokenize(text: str, lang: str = 'unknown') -> List[str]:
-        """Tokenizuje tekst, stosując stemmer właściwy dla wykrytego języka.
+        """Tokenizes text, applying the appropriate stemmer for the detected language.
 
-        - lang='pl'  → Stempel (morfologika polska, działa też dla tekstów
-                        bez polskich znaków diakrytycznych)
-        - inne języki → brak stemowania (angielski i inne języki są
-                        znacznie mniej fleksyjne, brak stemowania nie psuje wyników)
+        - lang='pl'  → Stempel (Polish morphology, also works for texts
+                        without Polish diacritical marks)
+        - other languages → no stemming (English and other languages are
+                        much less inflectional, lack of stemming does not harm results)
         """
         text = RecommendationService._normalize_text(text)
         raw_tokens = [
@@ -129,12 +128,12 @@ class RecommendationService:
 
     @staticmethod
     def _book_text_tokens(book: Book) -> List[str]:
-        """Zwraca tokeny z tytułu i opisu książki (bez gatunków i autorów).
+        """Returns tokens from the book's title and description (excluding genres and authors).
 
-        Używane wyłącznie do budowania wektorów TF-IDF.
-        Gatunki i autorzy są obsługiwane osobno przez genre_score i author_score,
-        więc wykluczamy je z podobieństwa kosinusowego, żeby uniknąć podwójnego
-        liczenia (double-counting) sygnałów strukturalnych.
+        Used exclusively for building TF-IDF vectors.
+        Genres and authors are handled separately by genre_score and author_score,
+        so we exclude them from cosine similarity to avoid double-counting structural signals.
+
         """
         combined_text = ' '.join(filter(None, [book.title, book.description]))
         lang = _detect_language(combined_text)
@@ -145,10 +144,7 @@ class RecommendationService:
 
     @staticmethod
     def _book_tokens(book: Book) -> List[str]:
-        """Zwraca wszystkie tokeny książki (treść + gatunki + autorzy).
-
-        Używane do obliczania IDF na korpusie kandydatów, żeby rzadkie terminy
-        (np. nazwy własne, specjalistyczne słownictwo) otrzymały wyższe wagi.
+        """Returns tokens from the book's title, description, authors, and genres.
         """
         tokens = RecommendationService._book_text_tokens(book)
         author_tokens = RecommendationService._tokenize(
@@ -255,16 +251,14 @@ class RecommendationService:
         # ------------------------------------------------------------------
         # 2. Build TF-IDF representations
         # ------------------------------------------------------------------
-        # IDF liczymy na pełnym korpusie (treść + gatunki + autorzy), żeby
-        # rzadkie terminy tematyczne miały wyższe wagi niż powszechne słowa.
         idf_corpus: List[List[str]] = [
             RecommendationService._book_tokens(b) for b in candidates
         ]
         idf = RecommendationService._compute_idf(idf_corpus)
 
-        # Wektory TF-IDF profilu i kandydatów budujemy TYLKO z tytułu i opisu.
-        # Gatunki i autorzy są osobnymi sygnałami (genre_score, author_score),
-        # więc nie mieszamy ich z podobieństwem treściowym.
+        # We build TF-IDF vectors for the profile and candidates ONLY from the title and description.
+        # Genres and authors are separate signals (genre_score, author_score),
+        # so we do not mix them with content similarity.
         candidate_tokens: List[List[str]] = [
             RecommendationService._book_text_tokens(b) for b in candidates
         ]
