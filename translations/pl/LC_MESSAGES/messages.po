@@ -1592,7 +1592,7 @@ msgstr "Regulamin"
 
 #: app/templates/base/main_base.html:412
 msgid "Privacy Policy"
-msgstr "Politykę Prywatności"
+msgstr "Polityka Prywatności"
 
 #: app/templates/base/main_base.html:413
 msgid "Cookie Policy"

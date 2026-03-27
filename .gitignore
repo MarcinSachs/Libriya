@@ -229,3 +229,7 @@ app/static/uploads/*
 
 # Premium modules (uploaded by clients after purchase - should not be in public repo)
 app/services/premium/*/
+
+# Legal files
+docs/legal/*
+app/templates/legal/*
