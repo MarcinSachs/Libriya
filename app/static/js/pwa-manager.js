@@ -47,40 +47,19 @@ class PWAManager {
         // Otherwise `registration.update()` will keep fetching that URL every
         // interval (seen as requests in the logs).  The redirect route still
         // handles it, but unregistering keeps the network quieter.
+        // Unregister any existing service workers — caching disabled.
         if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
             this.cleanupOldRegistrations();
         }
 
-        // Purge caches that do not include the current version string.  This is
-        // useful for laptops/devices that may have stale pages (login redirects)
-        // from earlier precache runs; cleaning them ensures only fresh content
-        // will ever be served.
+        // Purge any leftover libriya caches from previous SW versions.
         this.cleanupOldCaches();
 
-        // Check if Service Worker is supported
-        if ('serviceWorker' in navigator) {
-            // Allow Service Worker on:
-            // 1. Secure context (HTTPS)
-            // 2. localhost (development)
-            // 3. Local network IPs (development on LAN)
-            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            const isLocalIP = (
-                window.location.hostname.startsWith('192.168.') ||
-                window.location.hostname.startsWith('10.') ||
-                window.location.hostname.startsWith('172.')
-            );
-            const canUseServiceWorker = window.isSecureContext || isLocalhost || isLocalIP;
+        // Service Worker registration is intentionally disabled.
+        // Caching caused stale-UI bugs (e.g. favourites not reflecting after
+        // toggle) and offline sync is not yet implemented.
+        console.log('[PWA] Service Worker registration disabled — caching off.');
 
-            if (canUseServiceWorker) {
-                this.registerServiceWorker();
-            } else {
-                console.warn('[PWA] Not in secure context and not on local network. Service Worker disabled.');
-                console.warn('[PWA] Showing fallback install method for HTTP access.');
-                this.showInstallPromptFallback();
-            }
-        } else {
-            console.warn('[PWA] Service Worker not supported in this browser');
-        }
 
         // Online/Offline event listeners
         window.addEventListener('online', () => this.handleOnline());
@@ -145,24 +124,17 @@ class PWAManager {
     }
 
     /**
-     * Remove any existing service worker registrations that still point at the
-     * old static path. Browsers will continue to call `.update()` on the
-     * registered URL, which was previously `/static/service-worker.js`.
-     * Unregistering here keeps those requests from recurring once the new
-     * worker is installed.
+     * Unregister ALL service worker registrations — caching is disabled.
      */
     async cleanupOldRegistrations() {
         try {
             const regs = await navigator.serviceWorker.getRegistrations();
             for (const reg of regs) {
-                // older versions registered from /static/service-worker.js
-                if (reg.scriptURL && reg.scriptURL.includes('/static/service-worker.js')) {
-                    console.log('[PWA] Unregistering legacy service worker:', reg.scriptURL);
-                    await reg.unregister();
-                }
+                console.log('[PWA] Unregistering service worker:', reg.scriptURL);
+                await reg.unregister();
             }
         } catch (e) {
-            console.warn('[PWA] error cleaning old registrations', e);
+            console.warn('[PWA] error cleaning registrations', e);
         }
     }
 
@@ -170,13 +142,13 @@ class PWAManager {
         try {
             const keys = await caches.keys();
             for (const name of keys) {
-                if (name.startsWith('libriya-') && !name.includes(this.cacheVersion)) {
+                if (name.startsWith('libriya-')) {
                     await caches.delete(name);
-                    console.log('[PWA] Deleted old cache', name);
+                    console.log('[PWA] Deleted cache', name);
                 }
             }
         } catch (e) {
-            console.warn('[PWA] error cleaning old caches', e);
+            console.warn('[PWA] error cleaning caches', e);
         }
     }
 
