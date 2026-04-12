@@ -318,7 +318,7 @@ def book_add():
                 current_app.logger.info(f"[DEBUG] Set description for ISBN {form.isbn.data}: {description}")
 
         new_book = Book(
-            isbn=form.isbn.data,
+            isbn=form.isbn.data or None,
             title=form.title.data,
             year=form.year.data,
             library_id=form.library.data,  # Assign library
@@ -326,6 +326,8 @@ def book_add():
             status='available',
             description=description
         )
+
+        db.session.add(new_book)
 
         author_names = [name.strip()
                         for name in form.author.data.split(',') if name.strip()]
@@ -335,9 +337,6 @@ def book_add():
                 author = Author(name=name)
                 db.session.add(author)
             new_book.authors.append(author)
-
-        # Add book to session first to avoid SQLAlchemy warnings
-        db.session.add(new_book)
 
         selected_genres = form.genres.data
         if selected_genres:
@@ -506,7 +505,7 @@ def book_edit(book_id):
 
     if form.validate_on_submit():
         # Update book fields from form data
-        book.isbn = form.isbn.data
+        book.isbn = form.isbn.data or None
         book.title = form.title.data
         book.year = form.year.data
         book.library_id = form.library.data  # Update library

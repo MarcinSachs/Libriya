@@ -15,9 +15,15 @@ def privacy_policy():
 
 @bp.route("/terms", methods=["GET"])
 def terms():
+    lang = str(get_locale())
+    if lang.startswith('en'):
+        return render_template("legal/terms_en.html")
     return render_template("legal/terms_pl.html")
 
 
 @bp.route("/cookies", methods=["GET"])
 def cookies():
+    lang = str(get_locale())
+    if lang.startswith('en'):
+        return render_template("legal/cookie_en.html")
     return render_template("legal/cookie_pl.html")
