@@ -317,8 +317,17 @@ def book_add():
                 description = book_data['description']
                 current_app.logger.info(f"[DEBUG] Set description for ISBN {form.isbn.data}: {description}")
 
+        # Check for duplicate ISBN before attempting to insert
+        isbn_value = form.isbn.data or None
+        if isbn_value:
+            existing = Book.query.filter_by(isbn=isbn_value).first()
+            if existing:
+                flash(_('A book with ISBN %(isbn)s already exists: %(title)s.',
+                      isbn=isbn_value, title=existing.title), 'danger')
+                return render_template("books/book_add.html", form=form)
+
         new_book = Book(
-            isbn=form.isbn.data or None,
+            isbn=isbn_value,
             title=form.title.data,
             year=form.year.data,
             library_id=form.library.data,  # Assign library
