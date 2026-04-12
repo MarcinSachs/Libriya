@@ -140,7 +140,7 @@
             <div class="px-4 py-3">
                 <div class="flex items-center gap-2">
                 <div class="flex flex-wrap gap-2">
-                    {{ macros.form_submit(_('Add Book'), 'success', 'bx-check') }}
+                    {{ macros.form_submit(_('Submit'), 'success', 'bx-check') }}
                     <button type="button" class="btn btn-outline" id="cancel-btn" onclick="handleCancel()">
                         <i class='bx bx-x me-1'></i> {{ _('Cancel') }}
                     </button>
@@ -284,6 +284,17 @@
     // Initialize when DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM loaded, Html5Qrcode available:', typeof Html5Qrcode !== 'undefined');
+
+        // Show all genre options without scrolling
+        var genreSelect = document.getElementById('genres');
+        if (genreSelect) {
+            genreSelect.size = genreSelect.options.length;
+            genreSelect.style.overflowY = 'hidden';
+            genreSelect.style.appearance = 'none';
+            genreSelect.style.webkitAppearance = 'none';
+            genreSelect.style.MozAppearance = 'none';
+            genreSelect.style.backgroundImage = 'none';
+        }
 
         // ensure temporary cover is removed if user leaves page without clicking cancel
         window.addEventListener('beforeunload', function(e) {

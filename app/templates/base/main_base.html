@@ -628,5 +628,50 @@
             }
         }, true); // Use CAPTURE phase instead of BUBBLE
     </script>
+
+    <!-- Custom tooltips (replaces native browser title tooltips) -->
+    <div id="custom-tooltip"></div>
+    <script>
+    (function () {
+        var tip = document.getElementById('custom-tooltip');
+        var currentTarget = null;
+
+        document.addEventListener('mouseover', function (e) {
+            var el = e.target.closest('[title]');
+            if (!el || !el.getAttribute('title')) return;
+            currentTarget = el;
+            tip.textContent = el.getAttribute('title');
+            el.dataset._title = el.getAttribute('title');
+            el.removeAttribute('title');
+            tip.style.opacity = '1';
+        });
+
+        document.addEventListener('mousemove', function (e) {
+            if (!currentTarget) return;
+            var x = e.clientX + 12;
+            var y = e.clientY + 14;
+            if (x + tip.offsetWidth + 10 > window.innerWidth) {
+                x = e.clientX - tip.offsetWidth - 8;
+            }
+            if (y + tip.offsetHeight + 10 > window.innerHeight) {
+                y = e.clientY - tip.offsetHeight - 8;
+            }
+            tip.style.left = x + 'px';
+            tip.style.top = y + 'px';
+        });
+
+        document.addEventListener('mouseout', function (e) {
+            if (!currentTarget) return;
+            if (!currentTarget.contains(e.relatedTarget)) {
+                if (currentTarget.dataset._title) {
+                    currentTarget.setAttribute('title', currentTarget.dataset._title);
+                    delete currentTarget.dataset._title;
+                }
+                tip.style.opacity = '0';
+                currentTarget = null;
+            }
+        });
+    })();
+    </script>
 </body>
 </html>

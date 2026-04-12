@@ -94,15 +94,14 @@
             </p>
 
             {% if book.location %}
-            <p><strong>{{ _('Location') }}:</strong> {{ book.location }}</p>
-            <div class="mt-2">
-                <small class="text-gray-600">
-                    {% if book.location.room %}<i class='bx bx-home'></i> {{ book.location.room }}{% endif %}
-                    {% if book.location.section %}<i class='bx bx-category'></i> {{ book.location.section }}{% endif %}
-                    {% if book.location.shelf %}<i class='bx bx-layer'></i> {{ _('Shelf') }} {{ book.location.shelf }}{% endif %}
-                    {% if book.location.notes %}<i class='bx bx-note'></i> {{ book.location.notes }}{% endif %}
-                </small>
-            </div>
+            <p><strong>{{ _('Location') }}:</strong>
+                {% set loc_parts = [] %}
+                {% if book.location.room %}{% set _x = loc_parts.append(_('Room') ~ ': ' ~ book.location.room) %}{% endif %}
+                {% if book.location.section %}{% set _x = loc_parts.append(_('Section') ~ ': ' ~ book.location.section) %}{% endif %}
+                {% if book.location.shelf %}{% set _x = loc_parts.append(_('Shelf') ~ ': ' ~ book.location.shelf) %}{% endif %}
+                {% if book.location.notes %}{% set _x = loc_parts.append('(' ~ book.location.notes ~ ')') %}{% endif %}
+                {{ loc_parts | join(', ') }}
+            </p>
             {% endif %}
             
             <div class="mt-4 flex flex-wrap items-center gap-2">
