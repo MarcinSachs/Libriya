@@ -444,15 +444,23 @@ def book_delete(book_id):
         flash(BOOK_CANNOT_DELETE_NOT_AVAILABLE % {'title': book.title, 'status': book.status}, "danger")
         return redirect(url_for("main.home"))
 
-    # Delete cover file if exists
+    # Delete cover file and thumbnail cache if exists
     if book.cover:
-        cover_path = os.path.join(current_app.config["UPLOAD_FOLDER"], book.cover)
+        upload_folder = current_app.config["UPLOAD_FOLDER"]
+        cover_path = os.path.join(upload_folder, book.cover)
         if os.path.exists(cover_path) and os.path.isfile(cover_path):
             try:
                 os.remove(cover_path)
                 current_app.logger.info(f"Deleted cover file: {book.cover}")
             except OSError as e:
                 current_app.logger.warning(f"Could not delete cover file {book.cover}: {e}")
+        for cache_subdir in ('thumbnails', 'micro'):
+            cached = os.path.join(upload_folder, cache_subdir, f"{book.id}.jpg")
+            if os.path.exists(cached):
+                try:
+                    os.remove(cached)
+                except OSError:
+                    pass
 
     # Delete all associated loans first (cascade delete)
     Loan.query.filter_by(book_id=book.id).delete()
@@ -542,6 +550,15 @@ def book_edit(book_id):
                 f.save(os.path.join(
                     current_app.config["UPLOAD_FOLDER"], cover_filename))
                 book.cover = cover_filename
+                # Invalidate thumbnail cache for this book
+                upload_folder = current_app.config["UPLOAD_FOLDER"]
+                for cache_subdir in ('thumbnails', 'micro'):
+                    cached = os.path.join(upload_folder, cache_subdir, f"{book.id}.jpg")
+                    if os.path.exists(cached):
+                        try:
+                            os.remove(cached)
+                        except OSError:
+                            pass
 
         # Handle location update
         if any([form.shelf.data, form.section.data, form.room.data, form.location_notes.data]):
@@ -704,42 +721,39 @@ def cleanup_cover():
 
 @bp.route("/api/books/<int:book_id>/cover/thumbnail")
 def get_cover_thumbnail(book_id):
-    # load book before inspecting
-    book = Book.query.get_or_404(book_id)
     book = Book.query.get_or_404(book_id)
     if not book.cover:
         return {'error': 'No cover image'}, 404
 
     try:
-        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], secure_filename(book.cover))
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        file_path = os.path.join(upload_folder, secure_filename(book.cover))
 
         if not os.path.exists(file_path):
             current_app.logger.warning(f"Cover file not found: {file_path}")
             return {'error': 'Cover file not found'}, 404
 
-        img = Image.open(file_path)
+        # Serve from disk cache if available
+        cache_dir = os.path.join(upload_folder, 'thumbnails')
+        cache_filename = f"{book_id}.jpg"
+        cache_path = os.path.join(cache_dir, cache_filename)
 
-        # Convert RGBA to RGB if necessary
-        if img.mode in ('RGBA', 'LA', 'P'):
-            background = Image.new('RGB', img.size, (255, 255, 255))
-            background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
-            img = background
-
-        # Create regular thumbnail: 200x300px
-        img.thumbnail((200, 300), Image.Resampling.LANCZOS)
-
-        # High compression JPEG quality 60 (~2-5KB per image)
-        buffer = BytesIO()
-        img.save(buffer, format='JPEG', quality=60, optimize=True)
-        buffer.seek(0)
+        if not os.path.exists(cache_path):
+            os.makedirs(cache_dir, exist_ok=True)
+            img = Image.open(file_path)
+            if img.mode in ('RGBA', 'LA', 'P'):
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                img = background
+            img.thumbnail((200, 300), Image.Resampling.LANCZOS)
+            img.save(cache_path, format='JPEG', quality=60, optimize=True)
 
         response = send_file(
-            buffer,
+            cache_path,
             mimetype='image/jpeg',
             as_attachment=False,
-            download_name=f'micro_{book_id}.jpg'
+            download_name=f'thumbnail_{book_id}.jpg'
         )
-        # Long cache - micro thumbnails rarely change
         response.headers['Cache-Control'] = 'public, max-age=604800'  # 7 days
         return response
 
@@ -757,22 +771,29 @@ def get_cover_micro(book_id):
         return {'error': 'No cover image'}, 404
 
     try:
-        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], secure_filename(book.cover))
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        file_path = os.path.join(upload_folder, secure_filename(book.cover))
         if not os.path.exists(file_path):
             current_app.logger.warning(f"Cover file not found: {file_path}")
             return {'error': 'Cover file not found'}, 404
-        img = Image.open(file_path)
-        if img.mode in ('RGBA', 'LA', 'P'):
-            background = Image.new('RGB', img.size, (255, 255, 255))
-            background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
-            img = background
-        # micro-size
-        img.thumbnail((50, 75), Image.Resampling.LANCZOS)
-        buffer = BytesIO()
-        img.save(buffer, format='JPEG', quality=60, optimize=True)
-        buffer.seek(0)
+
+        # Serve from disk cache if available
+        cache_dir = os.path.join(upload_folder, 'micro')
+        cache_filename = f"{book_id}.jpg"
+        cache_path = os.path.join(cache_dir, cache_filename)
+
+        if not os.path.exists(cache_path):
+            os.makedirs(cache_dir, exist_ok=True)
+            img = Image.open(file_path)
+            if img.mode in ('RGBA', 'LA', 'P'):
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                img = background
+            img.thumbnail((50, 75), Image.Resampling.LANCZOS)
+            img.save(cache_path, format='JPEG', quality=60, optimize=True)
+
         response = send_file(
-            buffer,
+            cache_path,
             mimetype='image/jpeg',
             as_attachment=False,
             download_name=f'micro_{book_id}.jpg'
