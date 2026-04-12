@@ -43,9 +43,10 @@
     {% endif %}
     <!-- Filtering Form -->
     <form method="GET" action="{{ url_for('main.home') }}" class="mb-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div class="flex flex-wrap gap-4 mb-4">
+
             <!-- Title Search with Live Results -->
-            <div class="form-group relative">
+            <div class="form-group relative flex-1 min-w-48">
                 <label for="title" class="block text-sm font-semibold mb-2">{{ _('Search') }}</label>
                 <input type="text" id="title" name="title"
                     value="{{ request.args.get('title', '') }}" 
@@ -62,7 +63,7 @@
             </div>
 
             <!-- Status Filter -->
-            <div class="form-group">
+            <div class="form-group flex-1 min-w-36">
                 <label for="status" class="block text-sm font-semibold mb-2">{{ _('Status') }}</label>
                 <select id="status" name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition">
                     <option value="">{{ _('All') }}</option>
@@ -72,7 +73,7 @@
             </div>
 
             <!-- Genre Filter -->
-            <div class="form-group">
+            <div class="form-group flex-1 min-w-36">
                 <label for="genre" class="block text-sm font-semibold mb-2">{{ _('Genre') }}</label>
                 <select id="genre" name="genre" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition">
                     <option value="">{{ _('All') }}</option>
@@ -82,8 +83,21 @@
                 </select>
             </div>
 
+            <!-- Library Filter -->
+            {% if user_libraries|length > 1 %}
+            <div class="form-group flex-1 min-w-36">
+                <label for="library" class="block text-sm font-semibold mb-2">{{ _('Library') }}</label>
+                <select id="library" name="library" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition">
+                    <option value="">{{ _('All') }}</option>
+                    {% for lib in user_libraries %}
+                    <option value="{{ lib.id }}" {% if request.args.get('library')==lib.id|string %}selected{% endif %}>{{ lib.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
             <!-- Sort By -->
-            <div class="form-group">
+            <div class="form-group flex-1 min-w-36">
                 <label for="sort_by" class="block text-sm font-semibold mb-2">{{ _('Sort by') }}</label>
                 <select id="sort_by" name="sort_by" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent focus:ring-opacity-20 transition">
                     <option value="title" {% if request.args.get('sort_by','title')=='title' %}selected{% endif %}>{{ _('Title A-Z') }}</option>
@@ -94,7 +108,7 @@
             </div>
         </div>
 
-        <!-- Filter & Reset Buttons -->
+        <!-- Buttons always below filters -->
         <div class="flex gap-2">
             <button type="submit" class="btn btn-primary">
                 <i class='bx bx-filter'></i> {{ _('Filter') }}

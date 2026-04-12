@@ -8,7 +8,7 @@ from sqlalchemy import or_
 import os
 
 from app import db, csrf
-from app.models import Book, Genre, Notification, User, ContactMessage, Author
+from app.models import Book, Genre, Notification, User, ContactMessage, Author, Library
 from app.forms import ContactForm
 from app.services.book_service import BookSearchService
 from app.services.cover_service import CoverService
@@ -184,6 +184,7 @@ def home():
         current_app.logger.warning(f'Nie udało się wygenerować offline.html: {e}')
     status_filter = request.args.get('status')
     genre_filter_id = request.args.get('genre', type=int)
+    library_filter_id = request.args.get('library', type=int)
     title_filter = request.args.get('title')
     sort_by = request.args.get('sort_by', 'title')  # Default sort by title
 
@@ -203,6 +204,9 @@ def home():
         else:
             query = query.filter(Book.library_id.in_(user_library_ids))
     # --- END OF FILTERING ---
+
+    if library_filter_id:
+        query = query.filter(Book.library_id == library_filter_id)
 
     if title_filter:
         # Search in title, description, and author names with stemming support
@@ -242,6 +246,14 @@ def home():
     genres = Genre.query.all()
     genres = sorted(genres, key=lambda g: _(g.name))
 
+    # Libraries visible to the current user (for library filter dropdown)
+    if current_user.is_super_admin:
+        user_libraries = Library.query.order_by(Library.name).all()
+    elif current_user.role == 'admin':
+        user_libraries = Library.query.filter_by(tenant_id=current_user.tenant_id).order_by(Library.name).all()
+    else:
+        user_libraries = sorted(current_user.libraries, key=lambda l: l.name)
+
     # Prepare recommendations (based on favorite books + description similarity)
     recommended_books = []
     if current_user.is_authenticated:
@@ -259,6 +271,7 @@ def home():
     return render_template("books/index.html", books=books, genres=genres, active_page="books",
                            recommended_books=recommended_books,
                            favorite_book_ids=favorite_book_ids,
+                           user_libraries=user_libraries,
                            unread_notifications_count=unread_notifications_count)
 
 
