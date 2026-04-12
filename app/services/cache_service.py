@@ -145,3 +145,4 @@ def invalidate_user_cache(user_id):
         user_id: User ID to invalidate
     """
     cache.delete(f'user_id_{user_id}')
+    cache.delete(f'recs_{user_id}')

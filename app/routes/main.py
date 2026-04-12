@@ -172,14 +172,16 @@ def index():
 @bp.route("/dashboard")
 @login_required
 def home():
-    # Automatyczne generowanie tłumaczonego offline.html przy każdym wejściu na dashboard
+    # Generate offline.html only when the locale changes or the file is missing
     try:
-        from flask import render_template
-        import os
-        html = render_template('base/offline.html', title=_('Offline'))
+        from flask_babel import get_locale
+        current_locale = str(get_locale())
         static_path = os.path.join(os.path.dirname(__file__), '..', 'static', 'offline.html')
-        with open(static_path, 'w', encoding='utf-8') as f:
-            f.write(html)
+        if not os.path.exists(static_path) or session.get('offline_html_locale') != current_locale:
+            html = render_template('base/offline.html', title=_('Offline'))
+            with open(static_path, 'w', encoding='utf-8') as f:
+                f.write(html)
+            session['offline_html_locale'] = current_locale
     except Exception as e:
         current_app.logger.warning(f'Nie udało się wygenerować offline.html: {e}')
     status_filter = request.args.get('status')
@@ -256,8 +258,13 @@ def home():
 
     # Prepare recommendations (based on favorite books + description similarity)
     recommended_books = []
-    if current_user.is_authenticated:
-        recommended_books = RecommendationService.get_recommendations_for_user(current_user, max_results=4)
+    if current_user.is_authenticated and current_user.favorites:
+        from app import cache
+        cache_key = f'recs_{current_user.id}'
+        recommended_books = cache.get(cache_key)
+        if recommended_books is None:
+            recommended_books = RecommendationService.get_recommendations_for_user(current_user, max_results=4)
+            cache.set(cache_key, recommended_books, timeout=300)
 
     # Numbers of unread notifications to layout
     unread_notifications_count = Notification.query.filter_by(
