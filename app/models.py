@@ -1,4 +1,5 @@
 from sqlalchemy import event
+import html
 import os
 from flask import current_app
 from app import db
@@ -119,6 +120,7 @@ favorites = db.Table('favorites',
                          'book.id'), primary_key=True)
                      )
 
+
 class Library(db.Model):
     """Represents a library belonging to a tenant.
 
@@ -163,6 +165,12 @@ class Book(db.Model):
     tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
     isbn = db.Column(db.String(13), unique=True, nullable=True, index=True)
     title = db.Column(db.String(200), nullable=False, index=True)
+
+    @db.validates('title')
+    def _normalize_title(self, key, value):
+        if value is None:
+            return value
+        return html.unescape(value)
 
     @db.validates('isbn')
     def _normalize_isbn(self, key, value):
