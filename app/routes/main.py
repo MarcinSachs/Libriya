@@ -5,9 +5,10 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from flask_babel import _, ngettext
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload, subqueryload
 import os
 
-from app import db, csrf
+from app import db, csrf, limiter, cache
 from app.models import Book, Genre, Notification, User, ContactMessage, Author, Library
 from app.forms import ContactForm
 from app.services.book_service import BookSearchService
@@ -171,6 +172,7 @@ def index():
 
 @bp.route("/dashboard")
 @login_required
+@limiter.limit("20 per minute")
 def home():
     # Generate offline.html only when the locale changes or the file is missing
     try:
@@ -243,7 +245,11 @@ def home():
     else:
         query = query.order_by(Book.title.asc())
 
-    books = query.all()
+    books = query.options(
+        joinedload(Book.library),
+        subqueryload(Book.authors),
+        subqueryload(Book.genres),
+    ).all()
 
     genres = Genre.query.all()
     genres = sorted(genres, key=lambda g: _(g.name))
@@ -257,14 +263,30 @@ def home():
         user_libraries = sorted(current_user.libraries, key=lambda l: l.name)
 
     # Prepare recommendations (based on favorite books + description similarity)
+    # Cache stores only book IDs (plain ints) to avoid SQLAlchemy DetachedInstanceError
+    # when deserialising objects from Redis across worker processes.
     recommended_books = []
     if current_user.is_authenticated and current_user.favorites:
-        from app import cache
         cache_key = f'recs_{current_user.id}'
-        recommended_books = cache.get(cache_key)
-        if recommended_books is None:
-            recommended_books = RecommendationService.get_recommendations_for_user(current_user, max_results=4)
-            cache.set(cache_key, recommended_books, timeout=300)
+        lock_key = f'recs_lock_{current_user.id}'
+        cached_ids = cache.get(cache_key)
+        if cached_ids is not None:
+            # Fast path: reload by primary key – always safe across all workers
+            id_map = {b.id: b for b in Book.query.filter(Book.id.in_(cached_ids)).all()}
+            recommended_books = [id_map[bid] for bid in cached_ids if bid in id_map]
+        elif not cache.get(lock_key):
+            # Only one worker computes at a time; others return empty list (page still loads)
+            cache.set(lock_key, True, timeout=15)
+            try:
+                recommended_books = RecommendationService.get_recommendations_for_user(
+                    current_user, max_results=4
+                )
+                cache.set(cache_key, [b.id for b in recommended_books], timeout=300)
+            except Exception as exc:
+                current_app.logger.warning(f'Recommendations failed: {exc}')
+                recommended_books = []
+            finally:
+                cache.delete(lock_key)
 
     # Numbers of unread notifications to layout
     unread_notifications_count = Notification.query.filter_by(

@@ -93,7 +93,13 @@ class Config(BaseSettings):
     HTTPS_REDIRECT: bool = False  # Set to False for development without HTTPS
 
     # Caching configuration
-    CACHE_TYPE: str = 'SimpleCache'  # in-memory cache suitable for single-server deployments
+    # Use RedisCache when a Redis URL is available (shared across all LSAPI worker processes),
+    # otherwise fall back to SimpleCache (per-process in-memory).
+    # CACHE_REDIS_URL takes priority; if absent, falls back to RATELIMIT_STORAGE_URL (same Redis,
+    # different DB index recommended to avoid key collisions with the rate limiter).
+    CACHE_REDIS_URL: Optional[str] = os.getenv('CACHE_REDIS_URL') or os.getenv('RATELIMIT_STORAGE_URL')
+    CACHE_TYPE: str = 'RedisCache' if (os.getenv('CACHE_REDIS_URL')
+                                       or os.getenv('RATELIMIT_STORAGE_URL')) else 'SimpleCache'
     CACHE_DEFAULT_TIMEOUT: int = 3600  # 1 hour (can be overridden per cache key)
     CACHE_TENANT_TIMEOUT: int = 3600  # Cache tenant lookups for 1 hour
     CACHE_PREMIUM_FEATURES_TIMEOUT: int = 3600  # Cache premium features for 1 hour
