@@ -158,7 +158,7 @@ def get_genres_from_isbn():
             if 'genres' in book_data and book_data['genres']:
                 current_app.logger.info(
                     f"Genres API - Found {len(book_data['genres'])} genres from premium service: {book_data['genres']}")
-                # Map genre names to IDs
+                # Map genre names to IDs (genres are already mapped by GoogleBooksService)
                 for genre_name in book_data['genres']:
                     genre = Genre.query.filter_by(name=genre_name).first()
                     if genre:
@@ -356,7 +356,7 @@ def book_add():
         if form.cover.data:
             # User uploaded a file directly
             f = form.cover.data
-            _, f_ext = os.path.splitext(f.filename)
+            _stem, f_ext = os.path.splitext(f.filename)
             cover_filename = secrets.token_hex(8) + f_ext
             f.save(os.path.join(current_app.config["UPLOAD_FOLDER"], cover_filename))
             new_book.cover = cover_filename
@@ -392,7 +392,7 @@ def book_add():
                             if len(content) > 5 * 1024 * 1024:
                                 raise ValueError("File too large")
 
-                        _, f_ext = os.path.splitext(urlparse(cover_url).path)
+                        _stem, f_ext = os.path.splitext(urlparse(cover_url).path)
                         if not f_ext or f_ext.lower() not in ['.jpg', '.jpeg', '.png', '.gif']:
                             f_ext = '.jpg'
                         cover_filename = secrets.token_hex(8) + f_ext
