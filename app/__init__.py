@@ -158,7 +158,7 @@ def create_app(config_class=Config):
         from app.services.cache_service import get_tenant_by_subdomain_cached
 
         # Allow static files and logout for everyone
-        if request.path.startswith('/static') or request.path == '/auth/logout':
+        if request.path.startswith('/static') or request.endpoint == 'auth.logout':
             return
 
         # Get tenant from subdomain
@@ -229,7 +229,7 @@ def create_app(config_class=Config):
             g.premium_features = set()
 
         # Pozwól na static files i logout dla wszystkich
-        if request.path.startswith('/static') or request.path == '/auth/logout':
+        if request.path.startswith('/static') or request.endpoint == 'auth.logout':
             return
 
         # Super-admin ma dostęp TYLKO do /admin, /admin/*, /messaging/admin/*,
@@ -241,7 +241,7 @@ def create_app(config_class=Config):
                 request.path.startswith('/messaging/admin') or
                 request.path.startswith('/notifications') or
                 request.path.startswith('/user/settings') or
-                request.path == '/auth/logout'
+                request.endpoint == 'auth.logout'
             ):
                 return  # Pozwól
             else:

@@ -174,18 +174,6 @@ def index():
 @login_required
 @limiter.limit("20 per minute")
 def home():
-    # Generate offline.html only when the locale changes or the file is missing
-    try:
-        from flask_babel import get_locale
-        current_locale = str(get_locale())
-        static_path = os.path.join(os.path.dirname(__file__), '..', 'static', 'offline.html')
-        if not os.path.exists(static_path) or session.get('offline_html_locale') != current_locale:
-            html = render_template('base/offline.html', title=_('Offline'))
-            with open(static_path, 'w', encoding='utf-8') as f:
-                f.write(html)
-            session['offline_html_locale'] = current_locale
-    except Exception as e:
-        current_app.logger.warning(f'Nie udało się wygenerować offline.html: {e}')
     status_filter = request.args.get('status')
     genre_filter_id = request.args.get('genre', type=int)
     library_filter_id = request.args.get('library', type=int)
