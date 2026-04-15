@@ -452,6 +452,45 @@ def register_cli_commands(app):
         db.session.commit()
         click.echo(f'Deleted {deleted_count} old notifications (older than {days} days)')
 
+    @app.cli.command('cleanup-audit-logs')
+    @click.option('--days', default=30, help='Delete audit log files older than X days (default: 30)')
+    def cleanup_audit_logs(days):
+        """Delete old audit log files from disk and their DB metadata rows"""
+        from app.models import AuditLogFile
+        import os
+        cutoff = datetime.utcnow() - timedelta(days=days)
+        logs_root = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs')
+        deleted_files = 0
+        for alf in AuditLogFile.query.filter(AuditLogFile.created_at < cutoff).all():
+            try:
+                filepath = os.path.abspath(alf.filename)
+                if filepath.startswith(os.path.abspath(logs_root)) and os.path.exists(filepath):
+                    os.remove(filepath)
+                db.session.delete(alf)
+                deleted_files += 1
+            except Exception as e:
+                click.echo(f'Failed to remove {alf.filename}: {e}')
+        db.session.commit()
+        click.echo(f'Deleted {deleted_files} audit log files older than {days} days')
+
+    @app.cli.command('cleanup-audit-rows')
+    @click.option('--days', default=30, help='Delete audit DB rows older than X days (default: 30)')
+    def cleanup_audit_rows(days):
+        """Delete old audit log DB rows in batches"""
+        from app.models import AuditLog
+        cutoff = datetime.utcnow() - timedelta(days=days)
+        batch_size = 1000
+        total_deleted = 0
+        while True:
+            ids = [r.id for r in AuditLog.query.with_entities(AuditLog.id).filter(
+                AuditLog.timestamp < cutoff).order_by(AuditLog.id).limit(batch_size).all()]
+            if not ids:
+                break
+            deleted = AuditLog.query.filter(AuditLog.id.in_(ids)).delete(synchronize_session=False)
+            total_deleted += deleted
+            db.session.commit()
+        click.echo(f'Deleted {total_deleted} audit log rows older than {days} days')
+
 
 @login_manager.user_loader
 def load_user(user_id):
