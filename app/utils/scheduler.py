@@ -11,8 +11,19 @@ scheduler = None
 
 
 def init_scheduler(app):
-    """Initialize APScheduler with Flask app context"""
+    """Initialize APScheduler with Flask app context.
+
+    Disabled under Passenger (CloudLinux/cPanel) because Passenger spawns
+    multiple short-lived worker processes.  Each worker would start its own
+    BackgroundScheduler thread, resulting in N duplicate schedulers that keep
+    the worker busy and exhaust the LSAPI_CHILDREN pool.  Use cron jobs
+    (Flask CLI commands) instead of APScheduler in that environment.
+    """
     global scheduler
+
+    if os.environ.get('PASSENGER_APP_ENV') or os.environ.get('PASSENGER_BASE_URI') or os.environ.get('APP_ENV') == 'production':
+        logger.info("Passenger environment detected – skipping APScheduler (use cron instead)")
+        return
 
     if scheduler is not None:
         return  # Already initialized
@@ -126,7 +137,8 @@ def cleanup_old_audit_rows(app):
             total_deleted = 0
             while True:
                 # select a batch of IDs first, then delete by id list (supported by SQLAlchemy)
-                ids = [r.id for r in AuditLog.query.with_entities(AuditLog.id).filter(AuditLog.timestamp < cutoff).order_by(AuditLog.id).limit(batch_size).all()]
+                ids = [r.id for r in AuditLog.query.with_entities(AuditLog.id).filter(
+                    AuditLog.timestamp < cutoff).order_by(AuditLog.id).limit(batch_size).all()]
                 if not ids:
                     break
                 deleted = AuditLog.query.filter(AuditLog.id.in_(ids)).delete(synchronize_session=False)
