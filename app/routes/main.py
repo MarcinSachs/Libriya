@@ -454,7 +454,12 @@ def get_book_by_isbn(isbn):
     try:
         current_app.logger.info(f"API /api/v1/isbn/ called with: {isbn}")
 
-        book_data = BookSearchService.search_by_isbn(isbn=isbn)
+        isbn_cache_key = f'isbn_raw_{isbn}'
+        book_data = cache.get(isbn_cache_key)
+        if book_data is None:
+            book_data = BookSearchService.search_by_isbn(isbn=isbn)
+            if book_data:
+                cache.set(isbn_cache_key, book_data, timeout=120)
 
         if not book_data:
             return jsonify({"error": _("No data found for this ISBN. Please check the number and try again.")}), 404

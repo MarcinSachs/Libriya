@@ -379,6 +379,11 @@ def create_app(config_class=Config):
         if request.path.endswith('service-worker.js'):
             response.headers['Service-Worker-Allowed'] = '/'
 
+        # Upload filenames are content-hashes — they never change, so cache them
+        # permanently. This eliminates conditional (304) requests to Python workers.
+        if request.path.startswith('/static/uploads/') and response.status_code in (200, 304):
+            response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+
         return response
 
     # Global PWA context (applies to all blueprints/templates)

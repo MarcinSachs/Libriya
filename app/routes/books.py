@@ -13,7 +13,7 @@ from app.utils.audit_log import log_book_deleted, log_action
 from app.utils import role_required
 from app.models import Book, Author, Library, Location, Genre, Tenant, Loan, User
 from app.forms import BookForm
-from app import db, csrf
+from app import db, csrf, cache
 from app.services.cache_service import invalidate_user_cache
 from io import BytesIO
 from PIL import Image
@@ -125,27 +125,36 @@ def get_genres_from_isbn():
             return jsonify({'error': 'ISBN is required'}), 400
 
         try:
-            # Try premium metadata services (like Biblioteka Narodowa) first
-            current_app.logger.info(f"Genres API - Searching premium services for ISBN: {isbn}")
-            # call signature: feature_id, class_name, method_name
-            book_data = PremiumManager.call('biblioteka_narodowa',
-                                            'BibliotekaNarodowaService',
-                                            'search_by_isbn',
-                                            isbn=isbn)
-
-            # if BN didn't return anything, try Google Books (another premium module)
-            if not book_data and PremiumManager.is_enabled('google_books'):
-                current_app.logger.info(f"Genres API - BN empty, trying Google Books for ISBN: {isbn}")
-                book_data = PremiumManager.call('google_books',
-                                                'GoogleBooksService',
+            # Use shared ISBN cache (populated by /api/v1/isbn/ endpoint)
+            isbn_cache_key = f'isbn_raw_{isbn}'
+            book_data = cache.get(isbn_cache_key)
+            if book_data is not None:
+                current_app.logger.info(f"Genres API - Cache hit for ISBN: {isbn}")
+            else:
+                # Try premium metadata services (like Biblioteka Narodowa) first
+                current_app.logger.info(f"Genres API - Cache miss, searching premium services for ISBN: {isbn}")
+                # call signature: feature_id, class_name, method_name
+                book_data = PremiumManager.call('biblioteka_narodowa',
+                                                'BibliotekaNarodowaService',
                                                 'search_by_isbn',
                                                 isbn=isbn)
 
-            if not book_data:
-                # Fallback to Open Library
-                current_app.logger.info(f"Genres API - Premium services failed, searching OL for ISBN: {isbn}")
-                book_data = OpenLibraryClient.search_by_isbn(isbn)
-                current_app.logger.info(f"Genres API - Book data from OL: {book_data is not None}")
+                # if BN didn't return anything, try Google Books (another premium module)
+                if not book_data and PremiumManager.is_enabled('google_books'):
+                    current_app.logger.info(f"Genres API - BN empty, trying Google Books for ISBN: {isbn}")
+                    book_data = PremiumManager.call('google_books',
+                                                    'GoogleBooksService',
+                                                    'search_by_isbn',
+                                                    isbn=isbn)
+
+                if not book_data:
+                    # Fallback to Open Library
+                    current_app.logger.info(f"Genres API - Premium services failed, searching OL for ISBN: {isbn}")
+                    book_data = OpenLibraryClient.search_by_isbn(isbn)
+                    current_app.logger.info(f"Genres API - Book data from OL: {book_data is not None}")
+
+                if book_data:
+                    cache.set(isbn_cache_key, book_data, timeout=120)
 
             if not book_data:
                 current_app.logger.warning(f"Genres API - Book not found for ISBN: {isbn}")
