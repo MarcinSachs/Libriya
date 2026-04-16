@@ -823,13 +823,15 @@ def get_offline_books_data():
     Used by PWA to pre-cache all books for offline access.
     """
     try:
+        from sqlalchemy.orm import joinedload, subqueryload
+        load_opts = [joinedload(Book.library), subqueryload(Book.authors)]
         # Admin gets all books, others get only books from their libraries
         if current_user.role == 'admin':
-            books = Book.query.filter_by(tenant_id=current_user.tenant_id).all()
+            books = Book.query.options(*load_opts).filter_by(tenant_id=current_user.tenant_id).all()
         else:
             user_library_ids = [lib.id for lib in current_user.libraries if lib.tenant_id == current_user.tenant_id]
-            books = Book.query.filter(Book.library_id.in_(user_library_ids),
-                                      Book.tenant_id == current_user.tenant_id).all()
+            books = Book.query.options(*load_opts).filter(Book.library_id.in_(user_library_ids),
+                                                          Book.tenant_id == current_user.tenant_id).all()
 
         books_data = []
         for book in books:
