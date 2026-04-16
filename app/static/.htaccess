@@ -1,0 +1,37 @@
+# Serve all files in /static/ directly by LiteSpeed, bypassing Python/LSAPI.
+# This prevents unnecessary worker allocation for CSS, JS, images, and uploads.
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # Uploads: content-hash filenames, never change
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png  "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+
+    # CSS / JS with versioned query strings (?v=v03)
+    ExpiresByType text/css              "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+
+    # Fonts
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/woff  "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Uploads: immutable (content-hash filenames never change)
+    <FilesMatch "\.(jpg|jpeg|png|webp|gif)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+
+    # SVG (logo etc.) — długi cache
+    <FilesMatch "\.svg$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+
+    # Versioned CSS/JS
+    <FilesMatch "\.(css|js)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+</IfModule>

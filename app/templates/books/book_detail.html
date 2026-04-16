@@ -105,10 +105,18 @@
             {% endif %}
             
             <div class="mt-4 flex flex-wrap items-center gap-2">
-                <a href="{{ url_for('main.home') }}" class="btn btn-outline">
+                <a href="{{ url_for('main.home') }}" id="back-to-list" class="btn btn-outline">
                     <i class="bx bx-arrow-back align-middle"></i> {{ _('Back to List') }}
                 </a>
             </div>
+            <script>
+            (function () {
+                var saved = sessionStorage.getItem('book_list_filters');
+                if (saved) {
+                    document.getElementById('back-to-list').href = '{{ url_for("main.home") }}' + saved;
+                }
+            })();
+            </script>
         </div>
     </div>
 

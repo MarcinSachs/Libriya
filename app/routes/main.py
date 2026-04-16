@@ -305,6 +305,19 @@ def api_search_books():
     if len(search_query) < 2:
         return jsonify({'books': []})
 
+    # Cache key scoped to user role/tenant so results are never leaked across tenants
+    if current_user.is_super_admin:
+        scope = 'superadmin'
+    elif current_user.role == 'admin':
+        scope = f't{current_user.tenant_id}'
+    else:
+        scope = f'u{current_user.id}'
+
+    cache_key = f'search_{scope}_{search_query}_{limit}'
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return jsonify(cached)
+
     # Same filtering as home() route
     query = Book.query
 
@@ -348,6 +361,7 @@ def api_search_books():
         ]
     }
 
+    cache.set(cache_key, result, timeout=30)
     return jsonify(result)
 
 
