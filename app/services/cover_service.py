@@ -41,7 +41,7 @@ class CoverService:
     # Limits
     MAX_COVER_SIZE = 5 * 1024 * 1024  # 5MB
     ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif']
-    TIMEOUT = 5
+    TIMEOUT = (3, 5)  # (connect, read) – keep workers free
 
     @staticmethod
     def get_cover_url(

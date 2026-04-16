@@ -126,8 +126,8 @@ class OpenLibraryClient:
     SEARCH_API_URL = "https://openlibrary.org/search.json"
     COVERS_URL = "https://covers.openlibrary.org/b"
 
-    # Timeouts
-    TIMEOUT = 10
+    # Timeouts – (connect_timeout, read_timeout) to keep workers free
+    TIMEOUT = (3, 6)
 
     @staticmethod
     def search_by_isbn(isbn: str) -> Optional[Dict]:
