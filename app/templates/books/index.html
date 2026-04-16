@@ -141,11 +141,13 @@
                         {% if book.cover %}
                         <img src="{{ url_for('static', filename='uploads/' + book.cover) }}"
                             alt="{{ _('Book cover %(title)s', title=book.title) }}"
-                            class="w-12 h-16 object-cover rounded">
+                            class="w-12 h-16 object-cover rounded"
+                            loading="lazy">
                         {% else %}
                         <img src="{{ url_for('static', filename='images/default-book-cover.png') }}"
                             alt="{{ _('Default book cover') }}"
-                            class="w-12 h-16 object-cover rounded">
+                            class="w-12 h-16 object-cover rounded"
+                            loading="lazy">
                         {% endif %}
                     </td>
                     <td class="px-4 py-3 font-medium text-text-dark">{{ book.title }}</td>
@@ -231,10 +233,12 @@
             <div class="book-card-header">
                 {% if book.cover %}
                 <img src="{{ url_for('static', filename='uploads/' + book.cover) }}"
-                    alt="{{ _('Book cover %(title)s', title=book.title) }}">
+                    alt="{{ _('Book cover %(title)s', title=book.title) }}"
+                    loading="lazy">
                 {% else %}
                 <img src="{{ url_for('static', filename='images/default-book-cover.png') }}"
-                    alt="{{ _('Default book cover') }}">
+                    alt="{{ _('Default book cover') }}"
+                    loading="lazy">
                 {% endif %}
             </div>
 
