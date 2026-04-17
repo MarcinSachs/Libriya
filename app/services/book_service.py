@@ -18,12 +18,18 @@ from app.services.cover_service import CoverService
 from app.services.isbn_validator import ISBNValidator
 from app.services.premium.manager import PremiumManager
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
 
 class BookSearchService:
     """Main service for searching books with premium source support."""
+
+    # Circuit breaker for Google Books: skip if it recently fast-failed (503/network error)
+    _gbooks_circuit_until: float = 0.0
+    _GBOOKS_CIRCUIT_SECONDS: int = 60
+    _GBOOKS_FAST_FAIL_THRESHOLD: float = 0.3  # seconds
 
     @staticmethod
     def search_by_isbn(isbn: str) -> Optional[Dict]:
@@ -74,19 +80,32 @@ class BookSearchService:
 
         # 1.5 Try Google Books before falling back to Open Library
         if PremiumManager.is_enabled('google_books'):
-            logger.debug(f"BookSearchService: Trying Google Books for ISBN {normalized_isbn}")
-            book_data = PremiumManager.call(
-                'google_books',
-                'GoogleBooksService',
-                'search_by_isbn',
-                isbn=normalized_isbn
-            )
-            if book_data:
-                logger.info(f"BookSearchService: Found in Google Books: {book_data.get('title')}")
-                BookSearchService._enhance_with_cover(book_data, normalized_isbn)
-                return book_data
+            if time.monotonic() < BookSearchService._gbooks_circuit_until:
+                logger.debug("BookSearchService: Google Books circuit open, skipping")
             else:
-                logger.info("BookSearchService: Not found in Google Books, falling back to Open Library")
+                _t0 = time.monotonic()
+                logger.debug(f"BookSearchService: Trying Google Books for ISBN {normalized_isbn}")
+                book_data = PremiumManager.call(
+                    'google_books',
+                    'GoogleBooksService',
+                    'search_by_isbn',
+                    isbn=normalized_isbn
+                )
+                _elapsed = time.monotonic() - _t0
+                if book_data:
+                    logger.info(f"BookSearchService: Found in Google Books: {book_data.get('title')}")
+                    BookSearchService._enhance_with_cover(book_data, normalized_isbn)
+                    return book_data
+                elif _elapsed < BookSearchService._GBOOKS_FAST_FAIL_THRESHOLD:
+                    BookSearchService._gbooks_circuit_until = (
+                        time.monotonic() + BookSearchService._GBOOKS_CIRCUIT_SECONDS
+                    )
+                    logger.warning(
+                        f"BookSearchService: Google Books fast-fail ({_elapsed:.3f}s), "
+                        f"circuit open for {BookSearchService._GBOOKS_CIRCUIT_SECONDS}s"
+                    )
+                else:
+                    logger.info("BookSearchService: Not found in Google Books, falling back to Open Library")
 
         # 2. Try Open Library (fallback)
         logger.debug(f"BookSearchService: Searching Open Library for ISBN {normalized_isbn}")

@@ -1,7 +1,9 @@
 import os
 import logging
+import time
 from app.services.premium.manager import PremiumManager
 from app.services.openlibrary_service import OpenLibraryClient
+from app.services.book_service import BookSearchService
 from app.utils.messages import (
     SUCCESS_CREATED, SUCCESS_UPDATED, SUCCESS_DELETED, ERROR_PERMISSION_DENIED,
     BOOK_ADDED, BOOK_UPDATED, BOOK_DELETED, ERROR_NOT_FOUND,
@@ -141,11 +143,24 @@ def get_genres_from_isbn():
 
                 # if BN didn't return anything, try Google Books (another premium module)
                 if not book_data and PremiumManager.is_enabled('google_books'):
-                    current_app.logger.info(f"Genres API - BN empty, trying Google Books for ISBN: {isbn}")
-                    book_data = PremiumManager.call('google_books',
-                                                    'GoogleBooksService',
-                                                    'search_by_isbn',
-                                                    isbn=isbn)
+                    if time.monotonic() < BookSearchService._gbooks_circuit_until:
+                        current_app.logger.debug("Genres API - Google Books circuit open, skipping")
+                    else:
+                        current_app.logger.info(f"Genres API - BN empty, trying Google Books for ISBN: {isbn}")
+                        _t0 = time.monotonic()
+                        book_data = PremiumManager.call('google_books',
+                                                        'GoogleBooksService',
+                                                        'search_by_isbn',
+                                                        isbn=isbn)
+                        _elapsed = time.monotonic() - _t0
+                        if not book_data and _elapsed < BookSearchService._GBOOKS_FAST_FAIL_THRESHOLD:
+                            BookSearchService._gbooks_circuit_until = (
+                                time.monotonic() + BookSearchService._GBOOKS_CIRCUIT_SECONDS
+                            )
+                            current_app.logger.warning(
+                                f"Genres API - Google Books fast-fail ({_elapsed:.3f}s), "
+                                f"circuit open for {BookSearchService._GBOOKS_CIRCUIT_SECONDS}s"
+                            )
 
                 if not book_data:
                     # Fallback to Open Library
