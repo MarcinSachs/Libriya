@@ -9,11 +9,12 @@
     <div class="info-card mb-6">
         <i class='bx bxs-info-circle text-2xl'></i>
         <p class="m-0">
-            {% set n = books|length %}
+            {% set n = total_books %}
             {{ ngettext('Library currently has %(n)s book.', 'Library currently has %(n)s books.', n, n=n) }}
         </p>
     </div>
 
+    
     {% if recommended_books %}
     <div class="mb-6 p-4 bg-blue-50 border border-blue-150 rounded-lg">
         <h3 class="text-xl font-bold text-primary mb-3">{{ _('Recommended for you') }}</h3>
@@ -316,6 +317,36 @@
         </div>
         {% endfor %}
     </div>
+
+    <!-- Pagination -->
+    {% if pagination.pages > 1 %}
+    <div class="flex justify-center items-center gap-2 mt-6 mb-4 flex-wrap">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('main.home', page=pagination.prev_num, title=request.args.get('title',''), status=request.args.get('status',''), genre=request.args.get('genre',''), library=request.args.get('library',''), sort_by=request.args.get('sort_by','title')) }}"
+           class="btn btn-outline px-3 py-1 text-sm">
+            <i class='bx bx-chevron-left'></i> {{ _('Previous') }}
+        </a>
+        {% endif %}
+
+        {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if p %}
+            <a href="{{ url_for('main.home', page=p, title=request.args.get('title',''), status=request.args.get('status',''), genre=request.args.get('genre',''), library=request.args.get('library',''), sort_by=request.args.get('sort_by','title')) }}"
+               class="px-3 py-1 rounded border text-sm {{ 'bg-primary text-white border-primary' if p == pagination.page else 'border-gray-300 hover:border-accent' }}">
+                {{ p }}
+            </a>
+            {% else %}
+            <span class="px-2 text-gray-400">…</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+        <a href="{{ url_for('main.home', page=pagination.next_num, title=request.args.get('title',''), status=request.args.get('status',''), genre=request.args.get('genre',''), library=request.args.get('library',''), sort_by=request.args.get('sort_by','title')) }}"
+           class="btn btn-outline px-3 py-1 text-sm">
+            {{ _('Next') }} <i class='bx bx-chevron-right'></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
 
     
 </div>

@@ -233,11 +233,17 @@ def home():
     else:
         query = query.order_by(Book.title.asc())
 
-    books = query.options(
+    page = request.args.get('page', 1, type=int)
+    per_page = 100
+
+    pagination = query.options(
         joinedload(Book.library),
         subqueryload(Book.authors),
         subqueryload(Book.genres),
-    ).all()
+    ).paginate(page=page, per_page=per_page, error_out=False)
+
+    books = pagination.items
+    total_books = pagination.total
 
     genres = Genre.query.all()
     genres = sorted(genres, key=lambda g: _(g.name))
@@ -289,7 +295,9 @@ def home():
                            recommended_books=recommended_books,
                            favorite_book_ids=favorite_book_ids,
                            user_libraries=user_libraries,
-                           unread_notifications_count=unread_notifications_count)
+                           unread_notifications_count=unread_notifications_count,
+                           pagination=pagination,
+                           total_books=total_books)
 
 
 @bp.route("/api/v1/search", methods=['GET'])
