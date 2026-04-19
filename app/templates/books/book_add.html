@@ -92,6 +92,7 @@
                     {% endif %}
                 </div>
                 {{ form.cover_url(id="cover_url_hidden") }}
+                {{ form.referrer(id="referrer_hidden") }}
                 {{ macros.form_field(form.cover, field_type='file', icon='bx-cloud-upload', help_text=_('Supported formats: JPG, PNG, JPEG (Max 5MB)')) }}
             </div>
         </div>

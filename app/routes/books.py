@@ -35,13 +35,13 @@ from urllib.parse import urlparse, parse_qs
 # Helper to extract dashboard filter params from referrer
 
 
-def get_dashboard_filter_params_from_referrer():
+def get_dashboard_filter_params_from_referrer(referrer_url=None):
     """
     Extracts dashboard filter params from the referrer URL (query string) and returns as a dict.
     Only allows known filter keys.
     """
     allowed_keys = {"status", "genre", "library", "title", "sort_by", "page"}
-    ref = request.referrer
+    ref = referrer_url or request.referrer
     if not ref:
         return {}
     parsed = urlparse(ref)
@@ -347,6 +347,14 @@ def book_add():
         if len(current_user.managed_libraries) == 1:
             form.library.data = current_user.managed_libraries[0].id
 
+    if request.method == 'GET':
+        # Preserve the dashboard query string when the add-book page was opened from a filtered dashboard.
+        if request.referrer:
+            form.referrer.data = request.referrer
+        elif request.args:
+            # If the current add page URL already contains filter values, keep those.
+            form.referrer.data = request.url
+
     if form.validate_on_submit():
         # Try to get description from form, or from Open Library/BN if available
         description = form.description.data.strip() if form.description.data else None
@@ -484,7 +492,7 @@ def book_add():
             db.session.commit()
 
         flash(BOOK_ADDED % {'title': new_book.title}, "success")
-        filter_params = get_dashboard_filter_params_from_referrer()
+        filter_params = get_dashboard_filter_params_from_referrer(form.referrer.data if form.referrer.data else None)
         return redirect(url_for("main.home", **filter_params))
 
     return render_template("books/book_add.html", form=form)
