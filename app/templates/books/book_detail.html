@@ -105,20 +105,10 @@
             {% endif %}
             
             <div class="mt-4 flex flex-wrap items-center gap-2">
-                <a href="{{ url_for('main.home') }}" id="back-to-list" class="btn btn-outline">
+                <a href="{{ url_for('main.home') }}{{ back_to_list_query|default('') }}" class="btn btn-outline">
                     <i class="bx bx-arrow-back align-middle"></i> {{ _('Back to List') }}
                 </a>
             </div>
-            <script>
-            (function () {
-                // Restore back-to-list URL from cookie (set by book list page)
-                var match = document.cookie.match(/(?:^|; )book_list_filters=([^;]*)/);
-                var saved = match ? decodeURIComponent(match[1]) : null;
-                if (saved && saved !== '?') {
-                    document.getElementById('back-to-list').href = '{{ url_for("main.home") }}' + saved;
-                }
-            })();
-            </script>
         </div>
     </div>
 

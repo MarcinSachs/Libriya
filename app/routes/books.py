@@ -1,9 +1,23 @@
 import os
-import logging
-import time
-from app.services.premium.manager import PremiumManager
-from app.services.openlibrary_service import OpenLibraryClient
-from app.services.book_service import BookSearchService
+from app.forms import BatchImportForm
+import secrets
+import requests
+from urllib.parse import urlparse
+from datetime import datetime
+from sqlalchemy import and_
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file, jsonify
+from flask_login import login_required, current_user
+from flask_babel import gettext as _
+from werkzeug.utils import secure_filename
+from werkzeug.datastructures import FileStorage
+from PIL import Image
+from io import BytesIO
+from app.services.cache_service import invalidate_user_cache
+from app import db, csrf, cache
+from app.forms import BookForm
+from app.models import Book, Author, Library, Location, Genre, Tenant, Loan, User
+from app.utils import role_required
+from app.utils.audit_log import log_book_deleted, log_action
 from app.utils.messages import (
     SUCCESS_CREATED, SUCCESS_UPDATED, SUCCESS_DELETED, ERROR_PERMISSION_DENIED,
     BOOK_ADDED, BOOK_UPDATED, BOOK_DELETED, ERROR_NOT_FOUND,
@@ -11,25 +25,30 @@ from app.utils.messages import (
     BOOK_REMOVED_FROM_FAVORITES, BOOK_NOT_IN_FAVORITES, BOOK_CANNOT_DELETE_NOT_AVAILABLE,
     BOOKS_ONLY_EDIT_OWN_LIBRARIES, COVER_IMAGE_ERROR
 )
-from app.utils.audit_log import log_book_deleted, log_action
-from app.utils import role_required
-from app.models import Book, Author, Library, Location, Genre, Tenant, Loan, User
-from app.forms import BookForm
-from app import db, csrf, cache
-from app.services.cache_service import invalidate_user_cache
-from io import BytesIO
-from PIL import Image
-from werkzeug.datastructures import FileStorage
-from werkzeug.utils import secure_filename
-from flask_babel import gettext as _
-from flask_login import login_required, current_user
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file, jsonify
-from sqlalchemy import and_
-from datetime import datetime
-from urllib.parse import urlparse
-import requests
-import secrets
-from app.forms import BatchImportForm
+from app.services.book_service import BookSearchService
+from app.services.openlibrary_service import OpenLibraryClient
+from app.services.premium.manager import PremiumManager
+import time
+import logging
+from urllib.parse import urlparse, parse_qs
+
+# Helper to extract dashboard filter params from referrer
+
+
+def get_dashboard_filter_params_from_referrer():
+    """
+    Extracts dashboard filter params from the referrer URL (query string) and returns as a dict.
+    Only allows known filter keys.
+    """
+    allowed_keys = {"status", "genre", "library", "title", "sort_by", "page"}
+    ref = request.referrer
+    if not ref:
+        return {}
+    parsed = urlparse(ref)
+    params = parse_qs(parsed.query)
+    # Flatten and filter only allowed keys
+    return {k: v[0] for k, v in params.items() if k in allowed_keys and v}
+
 
 logger = logging.getLogger(__name__)
 
@@ -53,18 +72,21 @@ def batch_import_books():
     # Role check
     if current_user.role not in ['admin', 'manager'] and not current_user.is_super_admin:
         flash(_('You do not have the required privileges to access this page.'), 'danger')
-        return redirect(url_for('main.home'))
+        filter_params = get_dashboard_filter_params_from_referrer()
+        return redirect(url_for('main.home', **filter_params))
 
     # Check if BatchImportService is available
     if not BATCH_IMPORT_AVAILABLE:
         flash(_('Batch import service is not available.'), 'danger')
-        return redirect(url_for('main.home'))
+        filter_params = get_dashboard_filter_params_from_referrer()
+        return redirect(url_for('main.home', **filter_params))
 
     # Load tenant and check if batch_import feature is enabled
     tenant = Tenant.query.get(current_user.tenant_id)
     if not tenant or not tenant.is_premium_enabled('batch_import'):
         flash(_('Batch import module is not enabled for your organization.'), 'danger')
-        return redirect(url_for('main.home'))
+        filter_params = get_dashboard_filter_params_from_referrer()
+        return redirect(url_for('main.home', **filter_params))
 
     # Create form and set library choices
     form = BatchImportForm()
@@ -75,7 +97,8 @@ def batch_import_books():
     # Check if user has any managed libraries
     if not form.library.choices:
         flash(_('No libraries available for import.'), 'danger')
-        return redirect(url_for('main.home'))
+        filter_params = get_dashboard_filter_params_from_referrer()
+        return redirect(url_for('main.home', **filter_params))
 
     results = None
     if form.validate_on_submit():
@@ -283,8 +306,18 @@ def book_detail(book_id):
 
         return redirect(url_for('books.book_detail', book_id=book.id))
 
+    # Pobierz query string z referrera (jeśli wracamy z listy książek)
+    back_to_list_query = ''
+    ref = request.referrer
+    if ref:
+        parsed = urlparse(ref)
+        # Upewnij się, że referrer to dashboard/lista książek
+        if parsed.path.endswith('/dashboard') or parsed.path.endswith('/index'):
+            if parsed.query:
+                back_to_list_query = '?' + parsed.query
     return render_template("books/book_detail.html", book=book, active_page="books",
-                           user_comment=user_comment, comment_form=comment_form)
+                           user_comment=user_comment, comment_form=comment_form,
+                           back_to_list_query=back_to_list_query)
 
 
 @bp.route("/books/add/", methods=["GET", "POST"])
@@ -297,7 +330,8 @@ def book_add():
     # Enforce book limit for non-superadmin
     if not current_user.is_super_admin and not tenant.can_add_book():
         flash(_('Your organization has reached the maximum number of books allowed. Contact support to increase your limit.'), 'danger')
-        return redirect(url_for('main.home'))
+        filter_params = get_dashboard_filter_params_from_referrer()
+        return redirect(url_for('main.home', **filter_params))
 
     # --- Populate Library Choices ---
     if current_user.role == 'admin':
@@ -446,7 +480,8 @@ def book_add():
             db.session.commit()
 
         flash(BOOK_ADDED % {'title': new_book.title}, "success")
-        return redirect(url_for("main.home"))
+        filter_params = get_dashboard_filter_params_from_referrer()
+        return redirect(url_for("main.home", **filter_params))
 
     return render_template("books/book_add.html", form=form)
 
@@ -458,7 +493,8 @@ def book_delete(book_id):
     # Role check
     if current_user.role not in ['admin', 'manager']:
         flash(ERROR_PERMISSION_DENIED, "danger")
-        return redirect(url_for('main.home'))
+        filter_params = get_dashboard_filter_params_from_referrer()
+        return redirect(url_for('main.home', **filter_params))
 
     book = Book.query.get_or_404(book_id)
 
@@ -467,12 +503,14 @@ def book_delete(book_id):
         user_libs_ids = [lib.id for lib in current_user.managed_libraries]
         if book.library_id not in user_libs_ids:
             flash(BOOKS_ONLY_EDIT_OWN_LIBRARIES, "danger")
-            return redirect(url_for('main.home'))
+            filter_params = get_dashboard_filter_params_from_referrer()
+            return redirect(url_for('main.home', **filter_params))
 
     # Prevent deletion if the book has any associated loans (active or past)
     if book.status != 'available':
         flash(BOOK_CANNOT_DELETE_NOT_AVAILABLE % {'title': book.title, 'status': book.status}, "danger")
-        return redirect(url_for("main.home"))
+        filter_params = get_dashboard_filter_params_from_referrer()
+        return redirect(url_for("main.home", **filter_params))
 
     # Delete cover file and thumbnail cache if exists
     if book.cover:
@@ -501,7 +539,8 @@ def book_delete(book_id):
     db.session.delete(book)
     db.session.commit()
     flash(BOOK_DELETED % {'title': book.title}, "success")
-    return redirect(url_for("main.home"))
+    filter_params = get_dashboard_filter_params_from_referrer()
+    return redirect(url_for("main.home", **filter_params))
 
 
 @bp.route("/book_edit/<int:book_id>", methods=["GET", "POST"])
@@ -515,7 +554,8 @@ def book_edit(book_id):
         user_libs_ids = [lib.id for lib in current_user.libraries]
         if book.library_id not in user_libs_ids:
             flash(BOOKS_ONLY_EDIT_OWN_LIBRARIES, "danger")
-            return redirect(url_for('main.home'))
+            filter_params = get_dashboard_filter_params_from_referrer()
+            return redirect(url_for('main.home', **filter_params))
 
     # The form needs to be instantiated before it can be populated
     form = BookForm(obj=book)
@@ -614,7 +654,8 @@ def book_edit(book_id):
 
         db.session.commit()
         flash(BOOK_UPDATED % {'title': book.title}, "success")
-        return redirect(url_for("main.home"))
+        filter_params = get_dashboard_filter_params_from_referrer()
+        return redirect(url_for("main.home", **filter_params))
 
     # Render template for GET request or form validation error
     return render_template("books/book_edit.html", form=form, book=book, active_page="books", title=_("Edit Book"))

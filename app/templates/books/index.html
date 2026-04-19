@@ -429,56 +429,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .replace(/'/g, "&#039;");
     }
 
-    // --- Cookie-based filter persistence ---
-    // Filters are saved to a cookie so they survive redirects after book edits.
-    var FILTER_COOKIE = 'book_list_filters';
-
-    function setCookie(name, value, days) {
-        var expires = '';
-        if (days) {
-            var d = new Date();
-            d.setTime(d.getTime() + days * 86400000);
-            expires = '; expires=' + d.toUTCString();
-        }
-        document.cookie = name + '=' + encodeURIComponent(value) + expires + '; path=/';
-    }
-
-    function getCookie(name) {
-        var match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
-        return match ? decodeURIComponent(match[1]) : null;
-    }
-
-    function deleteCookie(name) {
-        document.cookie = name + '=; Max-Age=0; path=/';
-    }
-
-    var currentSearch = window.location.search;
-    var params = new URLSearchParams(currentSearch);
-
-    // If "Reset" was explicitly clicked (no meaningful filter params), clear cookie.
-    // Meaningful params: anything except an empty query string.
-    var hasFilters = (currentSearch !== '' && currentSearch !== '?');
-
-    if (hasFilters) {
-        // Save current filters to cookie (7 days)
-        setCookie(FILTER_COOKIE, currentSearch, 7);
-    } else {
-        // No params in URL — restore from cookie if available
-        var saved = getCookie(FILTER_COOKIE);
-        if (saved && saved !== '' && saved !== '?') {
-            window.location.replace('{{ url_for("main.home") }}' + saved);
-        }
-    }
-
-    // "Reset" button: clear cookie before navigating
-    var resetBtn = document.getElementById('reset-filters-btn');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            deleteCookie(FILTER_COOKIE);
-            window.location.href = this.href;
-        });
-    }
+    // ...istniejący kod bez obsługi ciasteczek filtrów...
 });
 </script>
     </div>
