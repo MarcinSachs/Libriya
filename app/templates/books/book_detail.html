@@ -111,8 +111,10 @@
             </div>
             <script>
             (function () {
-                var saved = sessionStorage.getItem('book_list_filters');
-                if (saved) {
+                // Restore back-to-list URL from cookie (set by book list page)
+                var match = document.cookie.match(/(?:^|; )book_list_filters=([^;]*)/);
+                var saved = match ? decodeURIComponent(match[1]) : null;
+                if (saved && saved !== '?') {
                     document.getElementById('back-to-list').href = '{{ url_for("main.home") }}' + saved;
                 }
             })();
