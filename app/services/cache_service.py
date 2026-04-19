@@ -146,3 +146,39 @@ def invalidate_user_cache(user_id):
     """
     cache.delete(f'user_id_{user_id}')
     cache.delete(f'recs_{user_id}')
+
+
+def get_dashboard_cache_version(tenant_id=None, superadmin=False):
+    """Return the current dashboard cache version.
+
+    Uses per-tenant versioning for tenant users and admins, and a separate
+    superadmin version for the global dashboard.
+    """
+    if superadmin:
+        version = cache.get('dashboard_version_superadmin')
+    elif tenant_id is not None:
+        version = cache.get(f'dashboard_version_tenant_{tenant_id}')
+    else:
+        version = None
+
+    try:
+        return int(version) if version is not None else 0
+    except (TypeError, ValueError):
+        return 0
+
+
+def bump_dashboard_cache_version(tenant_id=None, superadmin=False):
+    """Increment the dashboard cache version to invalidate stale dashboard pages."""
+    if superadmin:
+        key = 'dashboard_version_superadmin'
+    elif tenant_id is not None:
+        key = f'dashboard_version_tenant_{tenant_id}'
+    else:
+        return
+
+    current_version = cache.get(key)
+    try:
+        next_version = int(current_version) + 1 if current_version is not None else 1
+    except (TypeError, ValueError):
+        next_version = 1
+    cache.set(key, next_version)

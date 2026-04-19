@@ -1,6 +1,8 @@
 import re
 import requests
+import hashlib
 from datetime import datetime
+from math import ceil
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, make_response, jsonify, session, Response
 from flask_login import login_required, current_user
 from flask_babel import _, ngettext
@@ -14,6 +16,7 @@ from app.forms import ContactForm
 from app.services.book_service import BookSearchService
 from app.services.cover_service import CoverService
 from app.services.recommendation_service import RecommendationService
+from app.services.cache_service import get_dashboard_cache_version
 from app.utils.messages import (
     INFO_LANGUAGE_CHANGED_EN, INFO_LANGUAGE_CHANGED_PL,
     ERROR_UNSUPPORTED_LANGUAGE, ERROR_PERMISSION_DENIED, NOTIFICATION_MARKED_READ,
@@ -21,6 +24,78 @@ from app.utils.messages import (
 )
 
 bp = Blueprint("main", __name__)
+
+
+def make_dashboard_cache_key(user_scope, cache_version, title_filter, status_filter, genre_filter_id, library_filter_id, sort_by, page):
+    key_parts = [
+        user_scope,
+        str(cache_version),
+        title_filter or '',
+        status_filter or '',
+        str(genre_filter_id) if genre_filter_id is not None else '',
+        str(library_filter_id) if library_filter_id is not None else '',
+        sort_by or '',
+        str(page)
+    ]
+    digest = hashlib.sha256('|'.join(key_parts).encode('utf-8')).hexdigest()
+    return f'dashboard_query_{user_scope}_{cache_version}_{page}_{digest}'
+
+
+class SimplePagination:
+    def __init__(self, page, per_page, total, items):
+        self.page = page
+        self.per_page = per_page
+        self.total = total
+        self.items = items
+
+    @property
+    def pages(self):
+        if not self.total:
+            return 0
+        return ceil(self.total / self.per_page)
+
+    @property
+    def has_prev(self):
+        return self.page > 1
+
+    @property
+    def prev_num(self):
+        return self.page - 1 if self.has_prev else None
+
+    def iter_pages(self, left_edge=1, right_edge=1, left_current=2, right_current=2):
+        if self.pages == 0:
+            return
+
+        left_end = min(1 + left_edge, self.pages + 1)
+        yield from range(1, left_end)
+
+        if left_end > self.pages:
+            return
+
+        mid_start = max(left_end, self.page - left_current)
+        mid_end = min(self.page + right_current + 1, self.pages + 1)
+
+        if mid_start - left_end > 0:
+            yield None
+
+        yield from range(mid_start, mid_end)
+
+        if mid_end > self.pages:
+            return
+
+        right_start = max(mid_end, self.pages + 1 - right_edge)
+        if right_start - mid_end > 0:
+            yield None
+
+        yield from range(right_start, self.pages + 1)
+
+    @property
+    def has_next(self):
+        return self.page < self.pages
+
+    @property
+    def next_num(self):
+        return self.page + 1 if self.has_next else None
 
 
 # --- HELPER FUNCTIONS ---
@@ -179,71 +254,105 @@ def home():
     library_filter_id = request.args.get('library', type=int)
     title_filter = request.args.get('title')
     sort_by = request.args.get('sort_by', 'title')  # Default sort by title
-
-    query = Book.query
-
-    # --- LOCATION BASED FILTERING ---
-    if current_user.is_super_admin:
-        pass  # superadmin sees all books across all tenants
-    elif current_user.role == 'admin':
-        # tenant admin sees all books within their tenant
-        query = query.filter(Book.tenant_id == current_user.tenant_id)
-    else:
-        user_library_ids = [lib.id for lib in current_user.libraries]
-        if not user_library_ids:
-            # If user is not in any library, show no books
-            query = query.filter(Book.id == -1)  # a trick to return no results
-        else:
-            query = query.filter(Book.library_id.in_(user_library_ids))
-    # --- END OF FILTERING ---
-
-    if library_filter_id:
-        query = query.filter(Book.library_id == library_filter_id)
-
-    if title_filter:
-        # Search in title, description, and author names with stemming support
-        search_term = f"%{title_filter}%"
-        query = query.outerjoin(Book.authors).filter(
-            or_(
-                Book.title.ilike(search_term),
-                Book.description.ilike(search_term),
-                Author.name.ilike(search_term)
-            )
-        ).distinct()
-
-    if status_filter:
-        if status_filter == 'available':
-            query = query.filter(Book.status == 'available')
-        elif status_filter == 'on_loan':
-            query = query.filter(
-                or_(Book.status == 'on_loan', Book.status == 'reserved'))
-
-    if genre_filter_id:
-        query = query.join(Book.genres).filter(Genre.id == genre_filter_id)
-
-    # Apply sorting
-    if sort_by == 'title':
-        query = query.order_by(Book.title.asc())
-    elif sort_by == 'title_desc':
-        query = query.order_by(Book.title.desc())
-    elif sort_by == 'year':
-        query = query.order_by(Book.year.asc())
-    elif sort_by == 'year_desc':
-        query = query.order_by(Book.year.desc())
-    else:
-        query = query.order_by(Book.title.asc())
-
     page = request.args.get('page', 1, type=int)
     per_page = 100
 
-    pagination = query.options(
-        joinedload(Book.library),
-        subqueryload(Book.authors),
-        subqueryload(Book.genres),
-    ).paginate(page=page, per_page=per_page, error_out=False)
+    if current_user.is_super_admin:
+        user_scope = 'superadmin'
+        cache_version = get_dashboard_cache_version(superadmin=True)
+    elif current_user.role == 'admin':
+        user_scope = f'tenant_{current_user.tenant_id}'
+        cache_version = get_dashboard_cache_version(tenant_id=current_user.tenant_id)
+    else:
+        user_scope = f'user_{current_user.id}'
+        cache_version = get_dashboard_cache_version(tenant_id=current_user.tenant_id)
 
-    books = pagination.items
-    total_books = pagination.total
+    cache_key = make_dashboard_cache_key(
+        user_scope, cache_version, title_filter, status_filter,
+        genre_filter_id, library_filter_id, sort_by, page
+    )
+    cached_page = cache.get(cache_key)
+
+    if cached_page is not None:
+        book_ids = cached_page.get('ids', [])
+        total_books = cached_page.get('total', 0)
+
+        if book_ids:
+            books = Book.query.options(
+                joinedload(Book.library),
+                subqueryload(Book.authors),
+                subqueryload(Book.genres),
+            ).filter(Book.id.in_(book_ids)).all()
+            books_by_id = {book.id: book for book in books}
+            books = [books_by_id[bid] for bid in book_ids if bid in books_by_id]
+        else:
+            books = []
+
+        pagination = SimplePagination(page, per_page, total_books, books)
+    else:
+        query = Book.query
+
+        # --- LOCATION BASED FILTERING ---
+        if current_user.is_super_admin:
+            pass  # superadmin sees all books across all tenants
+        elif current_user.role == 'admin':
+            # tenant admin sees all books within their tenant
+            query = query.filter(Book.tenant_id == current_user.tenant_id)
+        else:
+            user_library_ids = [lib.id for lib in current_user.libraries]
+            if not user_library_ids:
+                # If user is not in any library, show no books
+                query = query.filter(Book.id == -1)  # a trick to return no results
+            else:
+                query = query.filter(Book.library_id.in_(user_library_ids))
+        # --- END OF FILTERING ---
+
+        if library_filter_id:
+            query = query.filter(Book.library_id == library_filter_id)
+
+        if title_filter:
+            # Search in title, description, and author names with stemming support
+            search_term = f"%{title_filter}%"
+            query = query.outerjoin(Book.authors).filter(
+                or_(
+                    Book.title.ilike(search_term),
+                    Book.description.ilike(search_term),
+                    Author.name.ilike(search_term)
+                )
+            ).distinct()
+
+        if status_filter:
+            if status_filter == 'available':
+                query = query.filter(Book.status == 'available')
+            elif status_filter == 'on_loan':
+                query = query.filter(
+                    or_(Book.status == 'on_loan', Book.status == 'reserved'))
+
+        if genre_filter_id:
+            query = query.join(Book.genres).filter(Genre.id == genre_filter_id)
+
+        # Apply sorting
+        if sort_by == 'title':
+            query = query.order_by(Book.title.asc())
+        elif sort_by == 'title_desc':
+            query = query.order_by(Book.title.desc())
+        elif sort_by == 'year':
+            query = query.order_by(Book.year.asc())
+        elif sort_by == 'year_desc':
+            query = query.order_by(Book.year.desc())
+        else:
+            query = query.order_by(Book.title.asc())
+
+        pagination = query.options(
+            joinedload(Book.library),
+            subqueryload(Book.authors),
+            subqueryload(Book.genres),
+        ).paginate(page=page, per_page=per_page, error_out=False)
+
+        books = pagination.items
+        total_books = pagination.total
+
+        cache.set(cache_key, {'ids': [book.id for book in books], 'total': total_books}, timeout=20)
 
     genres = Genre.query.all()
     genres = sorted(genres, key=lambda g: _(g.name))
@@ -509,25 +618,8 @@ def get_book_by_isbn(isbn):
             cover_url = cover_info
             cover_source = "open_library"
 
-        # Download and cache external cover URLs locally
-        if cover_url and cover_source != "local_default" and cover_url.startswith(("http://", "https://")):
-            try:
-                uploaded_filename = CoverService.download_and_save_cover(
-                    cover_url,
-                    current_app.config['UPLOAD_FOLDER']
-                )
-                if uploaded_filename:
-                    # Use local cached URL
-                    response_data["cover_image"] = f"/static/uploads/{uploaded_filename}"
-                    current_app.logger.info(f"Cached cover locally: {uploaded_filename}")
-                else:
-                    # Keep external URL as fallback
-                    response_data["cover_image"] = cover_url
-            except Exception as e:
-                current_app.logger.warning(f"Failed to cache cover: {e}")
-                response_data["cover_image"] = cover_url
-        else:
-            response_data["cover_image"] = cover_url
+        # Return cover image URL for preview only; do not download locally in the ISBN lookup API.
+        response_data["cover_image"] = cover_url
 
         response_data["cover_source"] = cover_source
 
@@ -588,25 +680,8 @@ def search_book_by_title():
                 cover_url = cover_info
                 cover_source = "open_library"
 
-            # Download and cache external cover URLs locally
-            if cover_url and cover_source != "local_default" and cover_url.startswith(("http://", "https://")):
-                try:
-                    uploaded_filename = CoverService.download_and_save_cover(
-                        cover_url,
-                        current_app.config['UPLOAD_FOLDER']
-                    )
-                    if uploaded_filename:
-                        # Use local cached URL
-                        formatted_book["cover_id"] = f"/static/uploads/{uploaded_filename}"
-                        current_app.logger.debug(f"Cached cover locally: {uploaded_filename}")
-                    else:
-                        # Keep external URL as fallback
-                        formatted_book["cover_id"] = cover_url
-                except Exception as e:
-                    current_app.logger.warning(f"Failed to cache cover: {e}")
-                    formatted_book["cover_id"] = cover_url
-            else:
-                formatted_book["cover_id"] = cover_url
+            # Return cover image URL for preview only; do not download locally in the title search API.
+            formatted_book["cover_id"] = cover_url
 
             formatted_book["cover_source"] = cover_source
             formatted_results.append(formatted_book)

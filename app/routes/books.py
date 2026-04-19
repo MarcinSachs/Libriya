@@ -12,7 +12,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 from PIL import Image
 from io import BytesIO
-from app.services.cache_service import invalidate_user_cache
+from app.services.cache_service import invalidate_user_cache, bump_dashboard_cache_version
 from app import db, csrf, cache
 from app.forms import BookForm
 from app.models import Book, Author, Library, Location, Genre, Tenant, Loan, User
@@ -467,6 +467,10 @@ def book_add():
         except Exception:
             pass
 
+        # Invalidate dashboard cache for this tenant and superadmin so new book appears immediately.
+        bump_dashboard_cache_version(tenant_id=current_user.tenant_id)
+        bump_dashboard_cache_version(superadmin=True)
+
         # Add location if any location field is provided
         if any([form.shelf.data, form.section.data, form.room.data, form.location_notes.data]):
             location = Location(
@@ -538,6 +542,8 @@ def book_delete(book_id):
 
     db.session.delete(book)
     db.session.commit()
+    bump_dashboard_cache_version(tenant_id=current_user.tenant_id)
+    bump_dashboard_cache_version(superadmin=True)
     flash(BOOK_DELETED % {'title': book.title}, "success")
     filter_params = get_dashboard_filter_params_from_referrer()
     return redirect(url_for("main.home", **filter_params))
@@ -653,6 +659,8 @@ def book_edit(book_id):
             db.session.delete(book.location)
 
         db.session.commit()
+        bump_dashboard_cache_version(tenant_id=current_user.tenant_id)
+        bump_dashboard_cache_version(superadmin=True)
         flash(BOOK_UPDATED % {'title': book.title}, "success")
         filter_params = get_dashboard_filter_params_from_referrer()
         return redirect(url_for("main.home", **filter_params))
