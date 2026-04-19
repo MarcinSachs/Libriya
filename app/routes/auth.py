@@ -295,6 +295,8 @@ def debug_test_password(username):
 @login_required
 def logout():
     logout_user()
+    from flask import session
+    session.clear()
     try:
         log_action('USER_LOGOUT', f'User {current_user.username} logged out',
                    subject=current_user, additional_info={'user_id': current_user.id})
