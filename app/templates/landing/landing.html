@@ -36,7 +36,10 @@
                     <div class="absolute -inset-10 hero-gradient opacity-10 blur-[100px] rounded-full"></div>
                     <div class="relative bg-white p-5 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(26,83,92,0.15)] border border-gray-100">
                         <div class="hero-image-container relative overflow-hidden rounded-[1.5rem]">
-                            <img src="{{ url_for('static', filename='images/library-bg.jpg') }}" alt="Libriya App" class="w-full h-auto">
+                            <picture>
+                              <source srcset="{{ url_for('static', filename='images/library-bg.webp') }}" type="image/webp">
+                              <img src="{{ url_for('static', filename='images/library-bg.jpg') }}" alt="Libriya App" class="w-full h-auto">
+                            </picture>
                         </div>
                         <!-- Photo attribution -->
                         <div class="absolute bottom-8 right-8 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[10px] opacity-70 hover:opacity-100 transition-opacity">
