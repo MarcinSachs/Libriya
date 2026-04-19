@@ -41,12 +41,16 @@ class ISBNValidator:
             # Remove hyphens and spaces
             isbn = field.data.replace('-', '').replace(' ', '')
 
-            # Check if it's all digits
-            if not isbn.isdigit():
-                raise ValidationError(self.message)
-
             # Check length (ISBN-10 or ISBN-13)
-            if len(isbn) not in [10, 13]:
+            if len(isbn) == 10:
+                # ISBN-10: 9 cyfr + cyfra lub X/x
+                if not (isbn[:9].isdigit() and (isbn[9].isdigit() or isbn[9] in ['X', 'x'])):
+                    raise ValidationError(self.message)
+            elif len(isbn) == 13:
+                # ISBN-13: tylko cyfry
+                if not isbn.isdigit():
+                    raise ValidationError(self.message)
+            else:
                 raise ValidationError(self.message)
 
 
