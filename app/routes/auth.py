@@ -493,10 +493,13 @@ def register():
     return render_template('auth/register.html', form=form, creating_new_tenant=creating_new_tenant)
 
 
-@bp.route('/password-reset', methods=['POST'])
-@limiter.limit("3 per hour")
+@bp.route('/password-reset', methods=['GET', 'POST'])
+@limiter.limit("3 per hour", methods=['POST'])
 def password_reset():
-    """Handle password reset requests (rate-limited)."""
+    """Display password reset form (GET) or handle the request (POST, rate-limited)."""
+    if request.method == 'GET':
+        return render_template('auth/password_reset.html')
+
     email_or_username = request.form.get('email_or_username') or request.form.get(
         'email') or request.form.get('username') or ''
 

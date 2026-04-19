@@ -28,8 +28,46 @@ class BookSearchService:
 
     # Circuit breaker for Google Books: skip if it recently fast-failed (503/network error)
     _gbooks_circuit_until: float = 0.0
-    _GBOOKS_CIRCUIT_SECONDS: int = 60
+    _GBOOKS_CIRCUIT_SECONDS: int = 300  # 5 minutes; shared via Redis so all workers honour it
     _GBOOKS_FAST_FAIL_THRESHOLD: float = 0.3  # seconds
+    _GBOOKS_CIRCUIT_REDIS_KEY: str = 'gbooks_503_circuit'
+
+    @staticmethod
+    def _is_gbooks_circuit_open() -> bool:
+        """Return True if the Google Books circuit is tripped (locally or via Redis)."""
+        if time.monotonic() < BookSearchService._gbooks_circuit_until:
+            return True
+        # Shared Redis check so any worker can read another worker's trip
+        try:
+            from app import cache as _c  # lazy import avoids circular dependency
+            if _c.get(BookSearchService._GBOOKS_CIRCUIT_REDIS_KEY):
+                BookSearchService._gbooks_circuit_until = (
+                    time.monotonic() + BookSearchService._GBOOKS_CIRCUIT_SECONDS
+                )
+                return True
+        except Exception:
+            pass
+        return False
+
+    @staticmethod
+    def _open_gbooks_circuit(elapsed: float) -> None:
+        """Trip the circuit breaker locally and in Redis."""
+        BookSearchService._gbooks_circuit_until = (
+            time.monotonic() + BookSearchService._GBOOKS_CIRCUIT_SECONDS
+        )
+        try:
+            from app import cache as _c
+            _c.set(
+                BookSearchService._GBOOKS_CIRCUIT_REDIS_KEY,
+                1,
+                timeout=BookSearchService._GBOOKS_CIRCUIT_SECONDS,
+            )
+        except Exception:
+            pass
+        logger.warning(
+            f"BookSearchService: Google Books fast-fail ({elapsed:.3f}s), "
+            f"circuit open for {BookSearchService._GBOOKS_CIRCUIT_SECONDS}s"
+        )
 
     @staticmethod
     def search_by_isbn(isbn: str) -> Optional[Dict]:
@@ -80,7 +118,7 @@ class BookSearchService:
 
         # 1.5 Try Google Books before falling back to Open Library
         if PremiumManager.is_enabled('google_books'):
-            if time.monotonic() < BookSearchService._gbooks_circuit_until:
+            if BookSearchService._is_gbooks_circuit_open():
                 logger.debug("BookSearchService: Google Books circuit open, skipping")
             else:
                 _t0 = time.monotonic()
@@ -97,13 +135,7 @@ class BookSearchService:
                     BookSearchService._enhance_with_cover(book_data, normalized_isbn)
                     return book_data
                 elif _elapsed < BookSearchService._GBOOKS_FAST_FAIL_THRESHOLD:
-                    BookSearchService._gbooks_circuit_until = (
-                        time.monotonic() + BookSearchService._GBOOKS_CIRCUIT_SECONDS
-                    )
-                    logger.warning(
-                        f"BookSearchService: Google Books fast-fail ({_elapsed:.3f}s), "
-                        f"circuit open for {BookSearchService._GBOOKS_CIRCUIT_SECONDS}s"
-                    )
+                    BookSearchService._open_gbooks_circuit(_elapsed)
                 else:
                     logger.info("BookSearchService: Not found in Google Books, falling back to Open Library")
 

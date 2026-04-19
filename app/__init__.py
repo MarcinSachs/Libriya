@@ -157,8 +157,10 @@ def create_app(config_class=Config):
         from flask_login import current_user
         from app.services.cache_service import get_tenant_by_subdomain_cached
 
-        # Allow static files and logout for everyone
-        if request.path.startswith('/static') or request.endpoint == 'auth.logout':
+        # Allow static files, favicon and logout for everyone
+        if (request.path.startswith('/static') or
+                request.path == '/favicon.ico' or
+                request.endpoint == 'auth.logout'):
             return
 
         # Get tenant from subdomain

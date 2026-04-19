@@ -60,7 +60,7 @@
         </button>
       </form>
       <div class="text-center mt-4">
-        <a href="#" class="text-primary hover:text-accent underline transition text-sm">{{ _('Forgot Password?') }}</a>
+        <a href="{{ url_for('auth.password_reset') }}" class="text-primary hover:text-accent underline transition text-sm">{{ _('Forgot Password?') }}</a>
       </div>
     </div>
     <p class="text-center text-gray-600 text-sm">

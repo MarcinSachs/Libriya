@@ -143,7 +143,7 @@ def get_genres_from_isbn():
 
                 # if BN didn't return anything, try Google Books (another premium module)
                 if not book_data and PremiumManager.is_enabled('google_books'):
-                    if time.monotonic() < BookSearchService._gbooks_circuit_until:
+                    if BookSearchService._is_gbooks_circuit_open():
                         current_app.logger.debug("Genres API - Google Books circuit open, skipping")
                     else:
                         current_app.logger.info(f"Genres API - BN empty, trying Google Books for ISBN: {isbn}")
@@ -154,12 +154,9 @@ def get_genres_from_isbn():
                                                         isbn=isbn)
                         _elapsed = time.monotonic() - _t0
                         if not book_data and _elapsed < BookSearchService._GBOOKS_FAST_FAIL_THRESHOLD:
-                            BookSearchService._gbooks_circuit_until = (
-                                time.monotonic() + BookSearchService._GBOOKS_CIRCUIT_SECONDS
-                            )
+                            BookSearchService._open_gbooks_circuit(_elapsed)
                             current_app.logger.warning(
-                                f"Genres API - Google Books fast-fail ({_elapsed:.3f}s), "
-                                f"circuit open for {BookSearchService._GBOOKS_CIRCUIT_SECONDS}s"
+                                f"Genres API - Google Books fast-fail ({_elapsed:.3f}s)"
                             )
 
                 if not book_data:
