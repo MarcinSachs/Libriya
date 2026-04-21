@@ -35,10 +35,12 @@
                         <tr class="border-b border-gray-100 last:border-0">
                             <td class="py-2 pr-6 text-gray-700 font-medium">{{ library.name }}</td>
                             <td class="py-2 pr-6 text-center">
-                                <input type="radio" name="lib_role_{{ library.id }}" value="none" checked>
+                                <input type="radio" name="lib_role_{{ library.id }}" value="none"
+                                       {% if current_user.role != 'manager' %}checked{% endif %}>
                             </td>
                             <td class="py-2 pr-6 text-center">
-                                <input type="radio" name="lib_role_{{ library.id }}" value="member">
+                                <input type="radio" name="lib_role_{{ library.id }}" value="member"
+                                       {% if current_user.role == 'manager' %}checked{% endif %}>
                             </td>
                             <td class="py-2 text-center">
                                 <input type="radio" name="lib_role_{{ library.id }}" value="manager">

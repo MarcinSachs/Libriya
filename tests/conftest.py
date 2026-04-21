@@ -1,7 +1,7 @@
 import os
 import pytest
 from app import create_app, db
-from app.models import User
+from app.models import User, UserLibrary
 
 
 @pytest.fixture
@@ -71,8 +71,8 @@ def manager_user(app):
     db.session.flush()  # assign user.id/tenant_id
     lib = Library(name='Test Lib', tenant_id=user.tenant_id or 1)
     db.session.add(lib)
-    db.session.commit()
-    # establish relationship
-    user.libraries.append(lib)
+    db.session.flush()
+    # establish manager membership explicitly
+    db.session.add(UserLibrary(user_id=user.id, library_id=lib.id, library_role='manager'))
     db.session.commit()
     return user

@@ -1,6 +1,6 @@
 import pytest
 from app import db
-from app.models import User, Tenant, Library, Genre, Book, Comment
+from app.models import User, Tenant, Library, Genre, Book, Comment, UserLibrary
 from app.services.premium.manager import PremiumManager
 import os
 import io
@@ -117,10 +117,8 @@ def test_add_and_remove_favorite(client, app):
     user.is_email_verified = True
     user.set_password('password')
     db.session.add(user)
-    db.session.commit()
-
-    # link user to library for main.home visibility in UI
-    user.libraries.append(lib)
+    db.session.flush()
+    db.session.add(UserLibrary(user_id=user.id, library_id=lib.id, library_role='member'))
     db.session.commit()
 
     book = Book(title='FavBook', library_id=lib.id, tenant_id=t.id)
@@ -243,7 +241,9 @@ def test_book_delete_and_manager_permissions(app, client):
     manager = User(username='mgr', email='mgr@example.com', role='manager', tenant_id=t.id)
     manager.is_email_verified = True
     manager.set_password('password')
-    manager.libraries.append(lib1)
+    db.session.add(manager)
+    db.session.flush()
+    db.session.add(UserLibrary(user_id=manager.id, library_id=lib1.id, library_role='manager'))
 
     admin = User(username='adm2', email='adm2@example.com', role='admin', tenant_id=t.id)
     admin.is_email_verified = True
