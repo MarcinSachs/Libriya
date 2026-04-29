@@ -37,7 +37,7 @@
     <!-- Add Book Button (Admin/Manager) -->
     {% if current_user and (current_user.role == 'admin' or current_user.role == 'manager') %}
     <div class="mt-8 mb-4 flex justify-end">
-        <a href="{{ url_for('books.book_add') }}" class="btn btn-primary">
+        <a href="{{ url_for('books.book_add', **request.args) }}" class="btn btn-primary">
             <i class='bx bx-plus'></i> {{ _('Add book') }}
         </a>
     </div>

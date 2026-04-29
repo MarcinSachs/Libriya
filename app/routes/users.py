@@ -7,6 +7,7 @@ from flask_babel import _
 from app import db
 from app.forms import UserForm, UserEditForm, UserSettingsForm
 from app.models import User, Library, UserLibrary, ContactMessage, Notification
+from app.services.cache_service import invalidate_user_cache
 from app.utils import role_required
 from app.utils.audit_log import (
     log_user_created, log_user_deleted, log_user_role_changed
@@ -190,7 +191,9 @@ def user_add():
 
         # Build library memberships from submitted lib_role_ fields
         for lib in selectable_libraries:
-            role_value = request.form.get(f'lib_role_{lib.id}', 'none')
+            role_value = request.form.get(f'lib_role_{lib.id}')
+            if role_value not in ('member', 'manager'):
+                role_value = 'member' if current_user.role == 'manager' else 'none'
             if role_value in ('member', 'manager'):
                 db.session.add(UserLibrary(user_id=user.id, library_id=lib.id,
                                            library_role=role_value))
@@ -265,6 +268,7 @@ def user_edit(user_id):
             user_to_edit.role = new_role
 
         db.session.commit()
+        invalidate_user_cache(user_to_edit.id)
         flash(USER_UPDATED % {'username': user_to_edit.username}, "success")
         return redirect(url_for("users.users"))
 
@@ -311,6 +315,7 @@ def user_delete(user_id):
     username = user_to_delete.username
     db.session.delete(user_to_delete)
     db.session.commit()
+    invalidate_user_cache(user_to_delete.id)
 
     # Log user deletion
     log_user_deleted(user_to_delete.id, username)

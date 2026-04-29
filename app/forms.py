@@ -123,6 +123,8 @@ class BookForm(FlaskForm):
     )
     # Hidden field to preserve cover URL on form validation errors
     cover_url = HiddenField(_('Cover URL'))
+    # Hidden field to preserve original dashboard referrer and filters
+    referrer = HiddenField(_('Referrer'))
 
     # Location fields (optional)
     shelf = StringField(_('Shelf'), validators=[Optional(), Length(max=50)])

@@ -12,7 +12,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 from PIL import Image
 from io import BytesIO
-from app.services.cache_service import invalidate_user_cache
+from app.services.cache_service import invalidate_user_cache, bump_dashboard_cache_version
 from app import db, csrf, cache
 from app.forms import BookForm
 from app.models import Book, Author, Library, Location, Genre, Tenant, Loan, User
@@ -35,13 +35,13 @@ from urllib.parse import urlparse, parse_qs
 # Helper to extract dashboard filter params from referrer
 
 
-def get_dashboard_filter_params_from_referrer():
+def get_dashboard_filter_params_from_referrer(referrer_url=None):
     """
     Extracts dashboard filter params from the referrer URL (query string) and returns as a dict.
     Only allows known filter keys.
     """
     allowed_keys = {"status", "genre", "library", "title", "sort_by", "page"}
-    ref = request.referrer
+    ref = referrer_url or request.referrer
     if not ref:
         return {}
     parsed = urlparse(ref)
@@ -347,6 +347,14 @@ def book_add():
         if len(current_user.managed_libraries) == 1:
             form.library.data = current_user.managed_libraries[0].id
 
+    if request.method == 'GET':
+        # Preserve the dashboard query string when the add-book page was opened from a filtered dashboard.
+        if request.referrer:
+            form.referrer.data = request.referrer
+        elif request.args:
+            # If the current add page URL already contains filter values, keep those.
+            form.referrer.data = request.url
+
     if form.validate_on_submit():
         # Try to get description from form, or from Open Library/BN if available
         description = form.description.data.strip() if form.description.data else None
@@ -467,6 +475,10 @@ def book_add():
         except Exception:
             pass
 
+        # Invalidate dashboard cache for this tenant and superadmin so new book appears immediately.
+        bump_dashboard_cache_version(tenant_id=current_user.tenant_id)
+        bump_dashboard_cache_version(superadmin=True)
+
         # Add location if any location field is provided
         if any([form.shelf.data, form.section.data, form.room.data, form.location_notes.data]):
             location = Location(
@@ -480,7 +492,7 @@ def book_add():
             db.session.commit()
 
         flash(BOOK_ADDED % {'title': new_book.title}, "success")
-        filter_params = get_dashboard_filter_params_from_referrer()
+        filter_params = get_dashboard_filter_params_from_referrer(form.referrer.data if form.referrer.data else None)
         return redirect(url_for("main.home", **filter_params))
 
     return render_template("books/book_add.html", form=form)
@@ -538,6 +550,8 @@ def book_delete(book_id):
 
     db.session.delete(book)
     db.session.commit()
+    bump_dashboard_cache_version(tenant_id=current_user.tenant_id)
+    bump_dashboard_cache_version(superadmin=True)
     flash(BOOK_DELETED % {'title': book.title}, "success")
     filter_params = get_dashboard_filter_params_from_referrer()
     return redirect(url_for("main.home", **filter_params))
@@ -653,6 +667,8 @@ def book_edit(book_id):
             db.session.delete(book.location)
 
         db.session.commit()
+        bump_dashboard_cache_version(tenant_id=current_user.tenant_id)
+        bump_dashboard_cache_version(superadmin=True)
         flash(BOOK_UPDATED % {'title': book.title}, "success")
         filter_params = get_dashboard_filter_params_from_referrer()
         return redirect(url_for("main.home", **filter_params))
