@@ -106,5 +106,3 @@ Further reading
 - See `docs/models.md` for the data model overview
 - See `tests/` for extensive examples of using fixtures, mocking external services and testing subdomain-based routes
 
-If you want, I can also add a CONTRIBUTING.md, examples/.env.example, or CI/test workflow (GitHub Actions).
-
